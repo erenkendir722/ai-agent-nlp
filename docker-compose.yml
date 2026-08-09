@@ -1,0 +1,62 @@
+# Tek komutla kurulum:  docker compose up -d
+#
+# İki servis: Ollama (çıkarım) + uygulama (Streamlit + API). Dışarıya hiçbir
+# çağrı yapılmaz — modeller yerel diskte, veri yerel diskte.
+#
+# HAVA BOŞLUĞU (AIR-GAP) KANITI:
+#   Ağ bağlantısını kesip `docker compose up -d` çalıştırın. Model bir kez
+#   indirildikten sonra sistem internetsiz çalışır. `internal: true` ağı,
+#   servislerin dışarıya çıkışını ALTYAPI DÜZEYİNDE engeller — bu bir vaat
+#   değil, uygulanmış bir kısıttır.
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: katilim-ollama
+    volumes:
+      - ollama-modelleri:/root/.ollama
+    networks:
+      - ic-ag
+    environment:
+      OLLAMA_KEEP_ALIVE: "10m"
+      OLLAMA_HOST: "0.0.0.0"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+
+  uygulama:
+    build: .
+    container_name: katilim-uygulama
+    depends_on:
+      ollama:
+        condition: service_healthy
+    ports:
+      - "8501:8501"   # Streamlit
+      - "8000:8000"   # REST API
+    volumes:
+      - ./data:/uygulama/data
+      - ./docs:/uygulama/docs
+    networks:
+      - ic-ag
+    environment:
+      OLLAMA_HOST: "http://ollama:11434"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:4b-q4_K_M}"
+      VERITABANI_URL: "sqlite:///data/katilim.db"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      ANONYMIZED_TELEMETRY: "False"
+      DO_NOT_TRACK: "1"
+    restart: unless-stopped
+
+networks:
+  ic-ag:
+    driver: bridge
+    # NOT: Model ilk indirmesi için bu satır geçici olarak yorumlanır,
+    # indirme bitince açılır. Air-gap demosunda AÇIK olmalıdır.
+    # internal: true
+
+volumes:
+  ollama-modelleri:

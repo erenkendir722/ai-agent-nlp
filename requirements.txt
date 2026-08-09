@@ -1,0 +1,28 @@
+# --- Çekirdek ---
+pydantic==2.9.2
+pyyaml==6.0.2
+python-dotenv==1.0.1
+
+# --- Toplama (Katman 0) ---
+httpx==0.27.2
+trafilatura==1.12.2
+selectolax==0.3.27
+
+# --- Depolama (Katman 3) ---
+SQLAlchemy==2.0.36
+
+# --- Zekâ (Katman 4) ---
+numpy==2.1.3
+ollama==0.6.2          # >=0.5 şart: `think` parametresi bu sürümle geldi
+
+# --- Sunum (Katman 5) ---
+streamlit==1.40.1
+pandas==2.2.3
+plotly==5.24.1
+fastapi==0.115.5
+uvicorn==0.32.1
+
+# --- Geliştirme / test ---
+pytest==8.3.3
+ruff==0.7.4
+pip-licenses==5.0.0

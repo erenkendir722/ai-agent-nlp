@@ -1,0 +1,21 @@
+// TOHUM VERİ — herkes 10 kampanya metni ekler (Eren, Samet, Görkem, Esra)
+//
+// NEDEN: Toplayıcı hazır olmadan çıkarım ve arayüz geliştirilebilsin diye.
+// Düşük kapasitede bloke olmak en pahalı şeydir.
+//
+// NASIL: Bir katılım bankasının sitesinden kampanya metnini kopyala, aşağıdaki
+// biçimde tek satır JSON olarak ekle. Satır sonunda virgül YOK (bu JSONL).
+// `//` ile başlayan satırlar yorumdur, ayrıştırıcı atlar.
+//
+// ZORUNLU ALANLAR: banka_adi, banka_kodu, url, metin
+// İSTEĞE BAĞLI   : baslik, cekim_tarihi (ISO 8601)
+//
+// ÇALIŞTIR: make seed      (ağ gerekmez, yalnız yerel LLM)
+//
+// ---------------------------------------------------------------------------
+// Aşağıdaki iki satır ÖRNEKTİR — biçimi göstermek için. Gerçek veri eklerken
+// bunları silin, çünkü kaynak URL'leri gerçek değil ve altın sete karışmamalı.
+// ---------------------------------------------------------------------------
+
+{"banka_adi": "Örnek Katılım Bankası A.Ş.", "banka_kodu": "ORNEK", "url": "https://ornek.test/kampanya/konut", "baslik": "Konut Finansmanı Kampanyası", "metin": "Konut Finansmanı kampanyası. Aylık kâr payı oranı %1,89'dan başlayan oranlarla, 120 aya kadar vade imkânı sunuyoruz. 5.000.000 TL'ye kadar finansman. Dosya masrafı alınmaz. Kampanya 31 Aralık 2026 tarihine kadar geçerlidir. Yeni müşterilerimize özeldir."}
+{"banka_adi": "Örnek Katılım Bankası A.Ş.", "banka_kodu": "ORNEK", "url": "https://ornek.test/kampanya/kart", "baslik": "Kredi Kartı Kampanyası", "metin": "Kredi kartınızla yapacağınız market alışverişlerinde %10 indirim ve 750 TL'ye varan nakit iade fırsatı! 6 taksit imkânı. Kampanya 30 Eylül 2026 tarihinde sona erecektir. Mevcut müşterilerimiz katılabilir."}

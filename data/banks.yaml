@@ -1,0 +1,188 @@
+# Katılım bankaları kayıt defteri — şartname 5.1
+#
+# KAYNAK: BDDK Kuruluş Listesi — https://www.bddk.org.tr/Kurulus/Liste/77
+# YÖNTEM: BDDK sitesi robots.txt ile otomatik erişimi engellediği için liste
+#         tarayıcıdan MANUEL alınmıştır (şartname "manuel veri toplama
+#         teknikleri"ne izin veriyor). Ekran görüntüsü: docs/kanit/bddk-liste.png
+#
+# ÖNEMLİ: Faaliyete geçmemiş bankalar da listede tutulur ve `durum` ile
+# işaretlenir. Sitelerinde kampanya olmayacaktır; bu bir eksiklik değil,
+# kayıt defterinin eksiksizliğidir (bkz. docs/VERI_METODOLOJISI.md).
+#
+# `kod_dogrulandi: false` olan satırlar Görkem tarafından BDDK/TBB kaynağından
+# teyit edilmeli. Kod yalnız kimlik üretiminde kullanılır; yanlış olması
+# çıkarımı bozmaz ama yayınlanan veri setinde hata olur.
+
+- kod: "0203"
+  ad: "Albaraka Türk Katılım Bankası A.Ş."
+  kisa_ad: "Albaraka Türk"
+  site: "https://www.albaraka.com.tr"
+  durum: "faal"
+  kod_dogrulandi: false
+  seed_urls:
+    - "https://www.albaraka.com.tr/tr/kampanyalar"
+  url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/urun"]
+  robots_kontrol: true
+
+- kod: "0205"
+  ad: "Kuveyt Türk Katılım Bankası A.Ş."
+  kisa_ad: "Kuveyt Türk"
+  site: "https://www.kuveytturk.com.tr"
+  durum: "faal"
+  kod_dogrulandi: true
+  seed_urls:
+    - "https://www.kuveytturk.com.tr/kampanyalar"
+  url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/bireysel"]
+  robots_kontrol: true
+
+- kod: "0206"
+  ad: "Türkiye Finans Katılım Bankası A.Ş."
+  kisa_ad: "Türkiye Finans"
+  site: "https://www.turkiyefinans.com.tr"
+  durum: "faal"
+  kod_dogrulandi: true
+  seed_urls:
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx"
+  url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/bireysel"]
+  robots_kontrol: true
+
+- kod: "0209"
+  ad: "Ziraat Katılım Bankası A.Ş."
+  kisa_ad: "Ziraat Katılım"
+  site: "https://www.ziraatkatilim.com.tr"
+  durum: "faal"
+  kod_dogrulandi: true
+  seed_urls:
+    - "https://www.ziraatkatilim.com.tr/bireysel/kampanyalar"
+  url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
+  robots_kontrol: true
+
+- kod: "0210"
+  ad: "Vakıf Katılım Bankası A.Ş."
+  kisa_ad: "Vakıf Katılım"
+  site: "https://www.vakifkatilim.com.tr"
+  durum: "faal"
+  kod_dogrulandi: true
+  seed_urls:
+    - "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar"
+  url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
+  robots_kontrol: true
+
+- kod: "0211"
+  ad: "Türkiye Emlak Katılım Bankası A.Ş."
+  kisa_ad: "Emlak Katılım"
+  site: "https://www.emlakkatilim.com.tr"
+  durum: "faal"
+  kod_dogrulandi: true
+  seed_urls:
+    - "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar"
+    - "https://www.emlakkatilim.com.tr/tr/kurumsal/kampanyalar"
+  url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
+  robots_kontrol: true
+
+- kod: "0212"
+  ad: "Hayat Finans Katılım Bankası A.Ş."
+  kisa_ad: "Hayat Finans"
+  site: "https://hayatfinans.com.tr"
+  durum: "faal"
+  kod_dogrulandi: false
+  not: "Türkiye'nin ilk dijital katılım bankası (2023). Şubesiz model."
+  seed_urls:
+    - "https://hayatfinans.com.tr/kampanyalar"
+  url_desenleri: ["/kampanya", "/finansman", "/kart"]
+  robots_kontrol: true
+
+- kod: "0213"
+  ad: "T.O.M. Katılım Bankası A.Ş."
+  kisa_ad: "TOM Katılım"
+  site: "https://www.tom.com.tr"
+  durum: "faal"
+  kod_dogrulandi: false
+  not: >-
+    9 Ağustos 2026 sondajında ana sayfada kampanya bağlantısı bulunamadı;
+    site büyük ölçüde JS ile render ediliyor olabilir. GÖRKEM: kampanya
+    sayfasını elle bul, buraya yaz. Bulunamazsa manuel toplama yedeği
+    kullanılacak (şartname izin veriyor).
+  seed_urls: []
+  url_desenleri: ["/kampanya", "/finansman", "/kart"]
+  robots_kontrol: true
+
+- kod: "0214"
+  ad: "Dünya Katılım Bankası A.Ş."
+  kisa_ad: "Dünya Katılım"
+  site: "https://dunyakatilim.com.tr"
+  durum: "faal"
+  kod_dogrulandi: false
+  seed_urls:
+    - "https://dunyakatilim.com.tr/kampanyalar"
+  url_desenleri: ["/kampanya", "/finansman", "/kart"]
+  robots_kontrol: true
+
+- kod: "DOGRULA-ADIL"
+  ad: "Adil Katılım Bankası A.Ş."
+  kisa_ad: "Adil Katılım"
+  site: "https://www.adilkatilim.com.tr"
+  durum: "faaliyete_gecmedi"
+  kod_dogrulandi: false
+  not: "Eylül 2025 kuruluş izni. Faaliyet durumu 9 Ağustos 2026 itibarıyla teyit edilmeli."
+  seed_urls: []
+  url_desenleri: []
+  robots_kontrol: true
+
+- kod: "DOGRULA-IKTISAT"
+  ad: "İktisat Katılım Bankası A.Ş."
+  kisa_ad: "İktisat Katılım"
+  site: "https://www.iktisatkatilim.com.tr"
+  durum: "faaliyete_gecmedi"
+  kod_dogrulandi: false
+  not: >-
+    26 Şubat 2026'da BDDK faaliyet izni aldı (Duyuru 11424), 2026 ikinci
+    yarısında faaliyete geçmesi planlanıyordu. 9 Ağustos 2026 itibarıyla
+    faaliyet durumu kontrol edilmeli — geçtiyse durum "faal" yapılır.
+  seed_urls: []
+  url_desenleri: []
+  robots_kontrol: true
+
+- kod: "DOGRULA-HALK"
+  ad: "Halk Katılım Bankası A.Ş."
+  kisa_ad: "Halk Katılım"
+  site: ""
+  durum: "kurulus_asamasinda"
+  kod_dogrulandi: false
+  not: "13 Mart 2026 BDDK kuruluş izni. Web sitesi ve kampanya beklenmez."
+  seed_urls: []
+  url_desenleri: []
+  robots_kontrol: true
+
+- kod: "DOGRULA-FUZUL"
+  ad: "Fuzul Katılım Bankası A.Ş."
+  kisa_ad: "Fuzul Katılım"
+  site: ""
+  durum: "kurulus_asamasinda"
+  kod_dogrulandi: false
+  not: "12 Mart 2026 BDDK kuruluş izni."
+  seed_urls: []
+  url_desenleri: []
+  robots_kontrol: true
+
+- kod: "DOGRULA-DOST"
+  ad: "Dost Katılım Bankası A.Ş."
+  kisa_ad: "Dost Katılım"
+  site: ""
+  durum: "kurulus_asamasinda"
+  kod_dogrulandi: false
+  not: "Haziran 2026 BDDK kuruluş izni, 10 milyar TL sermaye (BİM sermayeli)."
+  seed_urls: []
+  url_desenleri: []
+  robots_kontrol: true
+
+- kod: "DOGRULA-KATILIMEVIM"
+  ad: "Katılımevim Katılım Bankası A.Ş."
+  kisa_ad: "Katılımevim Katılım"
+  site: ""
+  durum: "kurulus_asamasinda"
+  kod_dogrulandi: false
+  not: "Kuruluş aşamasında — BDDK duyurusundan teyit edilmeli."
+  seed_urls: []
+  url_desenleri: []
+  robots_kontrol: true

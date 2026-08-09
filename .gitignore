@@ -1,0 +1,20 @@
+# Ortam
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.DS_Store
+
+# Türetilmiş veri (yeniden üretilebilir)
+data/katilim.db
+data/raw/**/*.html
+data/embeddings.npy
+
+# Ham anlık görüntülerin META VERİSİ repoda kalır (izlenebilirlik kanıtı),
+# ham HTML dosyaları kalmaz (depo şişer + telif riski).
+
+# Araç çıktıları
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+data/raw/**/*.html

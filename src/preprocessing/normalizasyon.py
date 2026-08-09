@@ -1,0 +1,407 @@
+"""Türkçe metin normalizasyonu (şartname 5.6).
+
+Bu modül %30'luk "eksik veya farklı yazılmış bilgiler karşısında doğru sonuç"
+kriterinin kalbidir. Buradaki her fonksiyon saf ve test edilebilirdir: girdi bir
+metin parçası, çıktı normalize değer. Metin İÇİNDE arama yapmak bu modülün işi
+değil — o iş `src/extraction/kural.py`'nin.
+
+Türkçe'ye özgü tuzaklar ve nasıl çözüldükleri dosya içinde işaretlidir.
+"""
+
+from __future__ import annotations
+
+import re
+import unicodedata
+from datetime import date
+
+# ---------------------------------------------------------------------------
+# TUZAK 1 — İ/I/ı/i sorunu
+# ---------------------------------------------------------------------------
+# Python'un str.lower() metodu Türkçe için YANLIŞTIR:
+#     "İSTANBUL".lower() -> "i̇stanbul"   (i + U+0307 birleşik nokta kalır)
+#     "IRAK".lower()     -> "irak"        (olması gereken: "ırak")
+# Bu sessiz hata, eşleştirme ve sınıflandırmada saatlerce sürecek hata avına yol
+# açar. Önce Türkçe'ye özgü harfleri elle eşleriz, sonra genel lower() uygularız.
+
+_KUCULTME = str.maketrans({"I": "ı", "İ": "i", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ö": "ö", "Ç": "ç"})
+_BUYULTME = str.maketrans({"ı": "I", "i": "İ", "ş": "Ş", "ğ": "Ğ", "ü": "Ü", "ö": "Ö", "ç": "Ç"})
+_BIRLESIK_NOKTA = "̇"  # COMBINING DOT ABOVE
+
+
+def tr_kucult(metin: str) -> str:
+    """Türkçe'ye doğru küçük harfe çevirme.
+
+    >>> tr_kucult("İSTANBUL")
+    'istanbul'
+    >>> tr_kucult("IRAK")
+    'ırak'
+    >>> tr_kucult("KÂR PAYI")
+    'kâr payı'
+    """
+    return metin.translate(_KUCULTME).lower().replace(_BIRLESIK_NOKTA, "")
+
+
+def tr_buyult(metin: str) -> str:
+    """Türkçe'ye doğru büyük harfe çevirme.
+
+    >>> tr_buyult("istanbul")
+    'İSTANBUL'
+    """
+    return metin.translate(_BUYULTME).upper()
+
+
+# ---------------------------------------------------------------------------
+# TUZAK 2 — şapkalı harfler ve kesme işareti
+# ---------------------------------------------------------------------------
+# "kâr" ve "kar" metinlerde iki türlü de geçiyor; aramada birleştirilmeli.
+# "TL'ye", "Bankası'nın", "2026'da" tokenizasyonu bozar.
+
+_SAPKALI = str.maketrans({"â": "a", "î": "i", "û": "u", "Â": "A", "Î": "İ", "Û": "U"})
+_KESME_ISARETLERI = "'’ʼ´`"
+
+
+def sapkasiz(metin: str) -> str:
+    """Şapkalı harfleri düzleştirir: kâr -> kar. Yalnız ARAMA için kullanın.
+
+    Kullanıcıya gösterilen metinde şapkayı koruyun; bu yalnız eşleştirme anahtarı.
+    """
+    return metin.translate(_SAPKALI)
+
+
+def arama_anahtari(metin: str) -> str:
+    """Eşleştirme için kanonik biçim: küçük harf, şapkasız, tek boşluk, kesmesiz.
+
+    >>> arama_anahtari("KÂR PAYI  ORANI")
+    'kar payi orani'
+    """
+    s = tr_kucult(metin)
+    s = sapkasiz(s)
+    for k in _KESME_ISARETLERI:
+        s = s.replace(k, "")
+    # Türkçe'ye özgü harfleri ASCII'ye indir (yalnız anahtar üretiminde)
+    s = s.translate(str.maketrans({"ı": "i", "ş": "s", "ğ": "g", "ü": "u", "ö": "o", "ç": "c"}))
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def bosluk_duzelt(metin: str) -> str:
+    """Görünmez karakterleri temizler, boşlukları teke indirir, satırları korur."""
+    metin = metin.replace(" ", " ").replace("​", "")
+    metin = unicodedata.normalize("NFC", metin)
+    metin = re.sub(r"[ \t]+", " ", metin)
+    metin = re.sub(r"\n{3,}", "\n\n", metin)
+    return metin.strip()
+
+
+# ---------------------------------------------------------------------------
+# TUZAK 3 — binlik / ondalık ayracı
+# ---------------------------------------------------------------------------
+# Türkçe'de "1.500,50" = bin beş yüz elli kuruş. Standart float() bunu 1.5 okur.
+# Ayrı bir ayrıştırıcı şart.
+
+_SAYI_DESENI = re.compile(r"[-+]?\d[\d.,\s]*\d|\d")
+
+
+def sayi_ayristir(parca: str) -> float | None:
+    """Türkçe biçimli sayıyı float'a çevirir.
+
+    Karar kuralı:
+      - Hem '.' hem ',' varsa  -> '.' binlik, ',' ondalık   ("1.500,50" -> 1500.5)
+      - Yalnız ',' varsa       -> ',' ondalık                ("2,05"     -> 2.05)
+      - Yalnız '.' varsa       -> son grup tam 3 haneliyse binlik, değilse ondalık
+                                  ("50.000" -> 50000 · "2.05" -> 2.05)
+
+    Son kural bir sezgidir ve Türkçe metinlerde doğru çalışır: kimse ondalık
+    kısmı üç haneli yazmaz ("2.050" oran değil, iki bin elli demektir).
+
+    >>> sayi_ayristir("1.500,50")
+    1500.5
+    >>> sayi_ayristir("50.000")
+    50000.0
+    >>> sayi_ayristir("2.05")
+    2.05
+    >>> sayi_ayristir("% 2 , 05")
+    2.05
+    """
+    if not parca:
+        return None
+    eslesme = _SAYI_DESENI.search(parca)
+    if not eslesme:
+        return None
+
+    ham = eslesme.group(0)
+    ham = re.sub(r"\s+", "", ham)  # "2 , 05" -> "2,05" (bozma varyantı)
+    ham = ham.rstrip(".,")
+    if not ham:
+        return None
+
+    isaret = -1.0 if ham.startswith("-") else 1.0
+    ham = ham.lstrip("+-")
+
+    if "." in ham and "," in ham:
+        govde = ham.replace(".", "").replace(",", ".")
+    elif "," in ham:
+        govde = ham.replace(",", ".")
+    elif "." in ham:
+        son_grup = ham.rsplit(".", 1)[1]
+        govde = ham.replace(".", "") if len(son_grup) == 3 else ham
+    else:
+        govde = ham
+
+    try:
+        return isaret * float(govde)
+    except ValueError:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Oran (kâr payı, indirim)
+# ---------------------------------------------------------------------------
+
+_YUZDE_SOZCUGU = re.compile(r"y[üu]zde", re.IGNORECASE)
+
+
+def oran_ayristir(parca: str) -> float | None:
+    """Yüzde ifadesini sayıya çevirir. Tüm yazım varyantlarını kabul eder.
+
+    >>> oran_ayristir("%2,05")
+    2.05
+    >>> oran_ayristir("% 2.05")
+    2.05
+    >>> oran_ayristir("2.05 %")
+    2.05
+    >>> oran_ayristir("yüzde 2,05")
+    2.05
+    >>> oran_ayristir("aylık %1,89'dan başlayan")
+    1.89
+    """
+    if not parca:
+        return None
+    temiz = _YUZDE_SOZCUGU.sub("%", parca)
+    if "%" not in temiz and "٪" not in temiz:
+        return None
+
+    deger = sayi_ayristir(temiz.replace("%", " "))
+    if deger is None:
+        return None
+
+    # Akıl sağlığı kontrolü: kâr payı/indirim oranı 0-100 aralığındadır.
+    # "50.000" gibi bir sayı yanlışlıkla oran olarak okunduysa reddet.
+    if not 0.0 <= deger <= 100.0:
+        return None
+    return deger
+
+
+# ---------------------------------------------------------------------------
+# Para tutarı
+# ---------------------------------------------------------------------------
+
+_CARPANLAR = (
+    (re.compile(r"\bmilyar\b", re.IGNORECASE), 1_000_000_000),
+    (re.compile(r"\bmilyon\b", re.IGNORECASE), 1_000_000),
+    (re.compile(r"\bbin\b", re.IGNORECASE), 1_000),
+)
+# Dikkat: "50.000TL" yazımı gerçek metinlerde sık geçer. `\bTL\b` bunu KAÇIRIR,
+# çünkü rakam ile 'T' arasında sözcük sınırı yoktur. Bu yüzden başta sözcük
+# sınırı yerine "önünde harf olmasın" koşulu kullanıyoruz — böylece "50.000TL"
+# eşleşir ama "HTL", "ATL" gibi kısaltmalar eşleşmez.
+_HARF_ONCESI_YOK = r"(?<![A-Za-zÇĞİÖŞÜçğıöşü])"
+_PARA_BIRIMI = re.compile(
+    rf"(₺|{_HARF_ONCESI_YOK}TL\b|{_HARF_ONCESI_YOK}TRY\b"
+    rf"|\bT[üu]rk\s+Liras[ıi]\b|\blira\b)",
+    re.IGNORECASE,
+)
+
+
+def para_ayristir(parca: str, birim_zorunlu: bool = True) -> float | None:
+    """TL tutarını float'a çevirir. Çarpan sözcüklerini uygular.
+
+    >>> para_ayristir("500 TL")
+    500.0
+    >>> para_ayristir("50.000 TL")
+    50000.0
+    >>> para_ayristir("500₺")
+    500.0
+    >>> para_ayristir("1,5 milyon TL")
+    1500000.0
+    >>> para_ayristir("500 bin Türk Lirası")
+    500000.0
+    """
+    if not parca:
+        return None
+    if birim_zorunlu and not _PARA_BIRIMI.search(parca):
+        return None
+
+    taban = sayi_ayristir(parca)
+    if taban is None:
+        return None
+
+    for desen, carpan in _CARPANLAR:
+        if desen.search(parca):
+            return taban * carpan
+    return taban
+
+
+# ---------------------------------------------------------------------------
+# Vade / taksit
+# ---------------------------------------------------------------------------
+
+# Türkçe eklerine dikkat: "120 ay", "120 aya kadar", "36 aylık", "24 ayda".
+# Basit \bay\b sınırı bunların hepsini kaçırır. Ek listesi kapalı tutulur ki
+# "ayrıca" gibi sözcükler yanlışlıkla eşleşmesin.
+_TR_EKLER = r"(?:a|e|ı|i|da|de|ta|te|dan|den|tan|ten|lık|lik|luk|lük|lı|li|ya|ye|nın|nin)?"
+_AY_DESENI = re.compile(rf"(\d+)\s*(?:ay|taksit){_TR_EKLER}\b", re.IGNORECASE)
+_YIL_DESENI = re.compile(rf"(\d+)\s*(?:y[ıi]l|sene){_TR_EKLER}\b", re.IGNORECASE)
+
+
+def vade_ayristir(parca: str) -> int | None:
+    """Vadeyi AY cinsine çevirir. Yıl geçiyorsa 12 ile çarpar.
+
+    Birden fazla süre geçiyorsa en büyüğünü alır: "12-120 ay" -> 120,
+    çünkü şemadaki alan `vade_ay_max`.
+
+    >>> vade_ayristir("120 ay")
+    120
+    >>> vade_ayristir("120 aya kadar")
+    120
+    >>> vade_ayristir("10 yıl")
+    120
+    >>> vade_ayristir("120 taksit")
+    120
+    >>> vade_ayristir("36 aya varan vade seçeneği")
+    36
+    """
+    if not parca:
+        return None
+    adaylar: list[int] = [int(s) for s in _AY_DESENI.findall(parca)]
+    adaylar += [int(s) * 12 for s in _YIL_DESENI.findall(parca)]
+    if not adaylar:
+        return None
+    en_buyuk = max(adaylar)
+    # Akıl sağlığı: 600 aydan (50 yıl) uzun vade yok, muhtemelen tutar okunmuş.
+    return en_buyuk if 0 < en_buyuk <= 600 else None
+
+
+# ---------------------------------------------------------------------------
+# Tarih
+# ---------------------------------------------------------------------------
+
+_AYLAR = {
+    "ocak": 1, "şubat": 2, "subat": 2, "mart": 3, "nisan": 4, "mayıs": 5, "mayis": 5,
+    "haziran": 6, "temmuz": 7, "ağustos": 8, "agustos": 8, "eylül": 9, "eylul": 9,
+    "ekim": 10, "kasım": 11, "kasim": 11, "aralık": 12, "aralik": 12,
+}
+_AY_ADLARI = "|".join(_AYLAR)
+
+_TARIH_METIN = re.compile(rf"(\d{{1,2}})\s+({_AY_ADLARI})\s+(\d{{4}})", re.IGNORECASE)
+_TARIH_NOKTALI = re.compile(r"\b(\d{1,2})[./](\d{1,2})[./](\d{4})\b")
+_YIL_SONU = re.compile(r"\b(\d{4})\s*(?:y[ıi]l\s*sonu|sonuna\s+kadar)", re.IGNORECASE)
+_AY_SONU = re.compile(rf"\b({_AY_ADLARI})\s+(\d{{4}})\s*(?:sonu|ay\s*sonu)", re.IGNORECASE)
+
+_AY_GUN_SAYISI = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+
+
+def _ayin_son_gunu(yil: int, ay: int) -> int:
+    if ay == 2 and (yil % 4 == 0 and (yil % 100 != 0 or yil % 400 == 0)):
+        return 29
+    return _AY_GUN_SAYISI[ay - 1]
+
+
+def tarih_ayristir(parca: str) -> date | None:
+    """Türkçe tarih ifadelerini `date` nesnesine çevirir.
+
+    Belirsiz ifadeler ("yıl sonuna kadar") kampanya bitişi bağlamında SON güne
+    yorumlanır — kampanya o tarihe kadar geçerli demektir.
+
+    >>> tarih_ayristir("31 Aralık 2026")
+    datetime.date(2026, 12, 31)
+    >>> tarih_ayristir("31.12.2026")
+    datetime.date(2026, 12, 31)
+    >>> tarih_ayristir("2026 yıl sonuna kadar")
+    datetime.date(2026, 12, 31)
+    >>> tarih_ayristir("Eylül 2026 sonu")
+    datetime.date(2026, 9, 30)
+    """
+    if not parca:
+        return None
+    kucuk = tr_kucult(parca)
+
+    if (m := _TARIH_METIN.search(kucuk)) is not None:
+        gun, ay_adi, yil = int(m.group(1)), m.group(2), int(m.group(3))
+        return _guvenli_tarih(yil, _AYLAR[ay_adi], gun)
+
+    if (m := _TARIH_NOKTALI.search(kucuk)) is not None:
+        gun, ay, yil = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        return _guvenli_tarih(yil, ay, gun)
+
+    if (m := _AY_SONU.search(kucuk)) is not None:
+        ay, yil = _AYLAR[m.group(1)], int(m.group(2))
+        return _guvenli_tarih(yil, ay, _ayin_son_gunu(yil, ay))
+
+    if (m := _YIL_SONU.search(kucuk)) is not None:
+        return _guvenli_tarih(int(m.group(1)), 12, 31)
+
+    return None
+
+
+def _guvenli_tarih(yil: int, ay: int, gun: int) -> date | None:
+    if not (1 <= ay <= 12 and 1 <= gun <= 31 and 2000 <= yil <= 2100):
+        return None
+    try:
+        return date(yil, ay, gun)
+    except ValueError:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Masrafsızlık (bool alan)
+# ---------------------------------------------------------------------------
+
+_MASRAFSIZ_IFADELERI = (
+    "masraf alinmaz", "masraf alinmiyor", "masrafsiz", "masraf yok",
+    "dosya masrafi yok", "dosya masrafi alinmaz", "tahsis ucreti yok",
+    "tahsis ucreti alinmaz", "sifir masraf", "0 masraf", "ucretsiz",
+    "komisyon alinmaz", "hicbir masraf",
+)
+_MASRAFLI_IFADELERI = (
+    "masraf alinir", "dosya masrafi alinir", "tahsis ucreti alinir",
+)
+
+
+def masrafsiz_mi(parca: str) -> bool | None:
+    """Masrafsızlık beyanını bool'a çevirir. Belirsizse None döner.
+
+    None ile False farkı önemlidir: None = "metinde bilgi yok" (Belirtilmemiş),
+    False = "metin masraf alındığını söylüyor".
+
+    >>> masrafsiz_mi("Dosya masrafı yok!")
+    True
+    >>> masrafsiz_mi("masrafsız konut finansmanı")
+    True
+    >>> masrafsiz_mi("Dosya masrafı alınır.")
+    False
+    >>> masrafsiz_mi("Konut finansmanı kampanyası") is None
+    True
+    """
+    if not parca:
+        return None
+    anahtar = arama_anahtari(parca)
+    if any(ifade in anahtar for ifade in _MASRAFSIZ_IFADELERI):
+        return True
+    if any(ifade in anahtar for ifade in _MASRAFLI_IFADELERI):
+        return False
+    return None
+
+
+__all__ = [
+    "arama_anahtari",
+    "bosluk_duzelt",
+    "masrafsiz_mi",
+    "oran_ayristir",
+    "para_ayristir",
+    "sapkasiz",
+    "sayi_ayristir",
+    "tarih_ayristir",
+    "tr_buyult",
+    "tr_kucult",
+    "vade_ayristir",
+]
