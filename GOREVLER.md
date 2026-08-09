@@ -14,7 +14,7 @@ buraya bak.**
 1. **Kendi bölümünü bul** (aşağıda adın var), sırayla yukarıdan aşağı çalış.
    Görevler öncelik sırasına dizildi; en üstteki senin bir sonraki işin.
 2. **Bitirdiğinde `[ ]` yerine `[x]` yaz**, yanına tarihini ekle.
-   Örnek: `- [x] **G-01** EFT kodlarını doğrula *(bitti: 11 Ağu)*`
+   Örnek: `- [x] **G-01** EFT/BDDK kodlarını doğrula *(bitti: 11 Ağu)*`
 3. **Sonra durma, bir sonraki `[ ]` göreve geç.** Kimseyi beklemene gerek yok.
 4. Değişikliği commit'le: `git add GOREVLER.md && git commit -m "G-01 bitti"`
 5. **Takıldıysan 30 dakika kuralı:** 30 dakikadan fazla takılan kişi gruba yazar.
@@ -31,11 +31,19 @@ kriterini doğrudan görür.
 
 ### Görev satırı nasıl okunur
 
+Aşağıdaki, Samet'in listesinden **gerçek** bir görev:
+
 ```
-- [ ] **S-03** Sayısal alanlara akıl sağlığı sınırları · 📅 14 Ağu
+- [ ] **S-04** Sayısal alanlara akıl sağlığı sınırları · 📅 14 Ağu
       ↳ Bitti sayılır: 1000 TL'lik "finansman limiti" gibi saçma değerler kalmadı
 ```
-`S-03` = görev kodu (S: Samet) · `📅` = son tarih · `↳` = ne zaman bitmiş sayılır
+
+| Parça | Anlamı |
+|---|---|
+| `S-04` | Görev kodu — **E**: Eren · **S**: Samet · **G**: Görkem · **ES**: Esra · **H**: Herkes |
+| `📅` | Son tarih |
+| `↳ Bitti sayılır:` | Hangi şart sağlanınca tik atabilirsin |
+| 🔴 | Kritik — gecikirse puan kaybettirir |
 
 ---
 
@@ -51,6 +59,21 @@ kriterini doğrudan görür.
 
 **Bugünkü durum:** 96 kampanya · 8 banka · halüsinasyon %0,25 · 100 test geçiyor
 Ayrıntı: [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
+
+### Yük dağılımı
+
+| Kişi | Açık görev | Sprint 0'da biten | Ana sorumluluk |
+|---|---|---|---|
+| Eren | 19 | 9 | Mimari · entegrasyon · on-prem · teslim |
+| Esra | 18 | 5 | Arayüz · dashboard · **video ve sunum** |
+| Samet | 17 | 6 | Çıkarım motoru · LLM · **ölçüm (%30)** |
+| Görkem | 16 | 5 | Veri toplama · veri kalitesi · terim sözlüğü |
+| Herkes | 4 | — | Altın set · etiketleme · stand-up |
+
+Yük bilerek eşitlendi. Kimsenin işi diğerinden hafif değil; sadece farklı
+sprintlerde yoğunlaşıyor. **Esra'nın işi Sprint 2 ve 4'te ağırlaşıyor**
+(yan yana karşılaştırma, dışa aktarma, video, sunum), **Samet'inki Sprint 3'te**
+(ölçüm ve ablasyon), **Görkem'inki Sprint 1'de** (300+ kampanya).
 
 ### 🚨 En kritik 3 şey
 
@@ -146,17 +169,48 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır: Bir arkadaşın senin dokümanınla kurdu, süre tutuldu
       ↳ **Kendi makinende çalışması sayılmaz.** 20 dakikayı geçiyorsa doküman eksik.
 
+- [ ] **E-12** Şartname uyum takibi — madde madde · 📅 22 Ağu
+      ↳ Bitti sayılır: `docs/SARTNAME_UYUM.md` — şartnamedeki **her maddeyi tek
+        tek satır** olarak gir (~60 satır): madde no · gereklilik · sorumlu ·
+        durum · kanıt linki
+      ↳ Jüri şartnameye göre puanlıyor. Madde madde takip, unutulan bir
+        gereklilik yüzünden puan kaybetmenin **tek panzehiri**.
+
+- [ ] **E-13** Fiziki final hazırlığı — çanta listesi · 📅 23 Ağu
+      ↳ Bitti sayılır: Demo laptopu (tam sistem kurulu, offline test edilmiş),
+        yedek laptop (ikinci kişide aynı kurulum), şarj + uzatma,
+        **HDMI + USB-C ve HDMI + USB-A adaptörleri**, USB bellek (repo + model +
+        slaytlar + video), slaytların yazıcı çıktısı, mobil hotspot
+      ↳ Projeksiyon bağlantısı en sık yaşanan aksilik
+
+- [ ] **E-14** Offline kurulum paketi hazırla · 📅 23 Ağu
+      ↳ Bitti sayılır: `pip download -r requirements.txt -d paketler/` ile
+        bağımlılıklar indirildi, USB'de duruyor
+      ↳ Şartname "son 24 saat fiziki" diyor ve orada ek geliştirme istenebilir.
+        Etkinlik Wi-Fi'ıyla `pip install` yapmayı planlama.
+
 ### Sprint 4 — teslim (24–26 Ağustos)
 
-- [ ] **E-12** Dokümantasyon başlıkları 1, 6, 7 · 📅 24 Ağu
+- [ ] **E-15** Dokümantasyon başlıkları 1, 6, 7 · 📅 24 Ağu
       ↳ (1) Sistem mimarisi ve veri akışı — `docs/MIMARI.md` hazır, gözden geçir
       ↳ (6) Ürünlerin nasıl karşılaştırıldığı
       ↳ (7) Adım adım çalıştırma talimatları — `docs/KURULUM.md` hazır, gözden geçir
 
-- [ ] **E-13** Teslim kontrol listesini baştan sona tara · 📅 25 Ağu
-      ↳ README bölüm "GitHub ve Teslimat Kontrol Listesi"ndeki her satır
+- [ ] **E-16** Dokümantasyon başlığı 8'i derle · 📅 24 Ağu
+      ↳ (8) Karşılaşılan problemler ve çözüm yaklaşımları
+      ↳ `docs/SPRINT0_RAPORU.md` bölüm 5'te 6 hata zaten yazılı + `docs/kararlar/`
+        altındaki ADR'ler. **Derlemesi 30 dakika**, sıfırdan yazmak 4 saat.
 
-- [ ] **E-14** 🔴 **TESLİM** — her şey GitHub'da, `v1.0` etiketi · 📅 **25 Ağu 20:00**
+- [ ] **E-17** 🔴 Teslim kontrol listesini baştan sona tara · 📅 **25 Ağu**
+      ↳ README bölüm "GitHub ve Teslimat Kontrol Listesi"ndeki her satır
+      ↳ 10 dokümantasyon başlığının hepsi var mı, PDF **ve** PPTX var mı,
+        5 dk **ve** 1 dk video var mı, veri seti bağlantısı çalışıyor mu
+
+- [ ] **E-18** 🔴 **TESLİM** — her şey GitHub'da, `v1.0` etiketi · 📅 **25 Ağu 20:00**
+
+- [ ] **E-19** Jüri soru-cevap provası · 📅 26 Ağu
+      ↳ Bitti sayılır: Aşağıdaki 8 sorunun her birine 30 saniyede cevap
+        verilebiliyor, herkes kendi alanını savunabiliyor
 
 ### ✅ Eren — bitenler (Sprint 0)
 
@@ -206,52 +260,87 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         doğruladığı durum az; bu, güven skorunun kalibrasyonunu zayıflatıyor.
       ↳ Bitti sayılır: hibrit alan sayısı ≥ 50
 
+- [ ] **S-06** Deney kaydı tut · 📅 sürekli
+      ↳ Bitti sayılır: `docs/DENEYLER.md` — tarih, model/ayar, metrik, sonuç, commit
+      ↳ İstemi 5 kez değiştirip hangisinin işe yaradığını hatırlamamak, aynı işi
+        iki kez yapmak demektir. `docs/SONUCLAR.md` bu tablodan doğacak.
+
 ### Sprint 1 hafta sonu (15–16 Ağustos)
 
-- [ ] **S-06** Dayanıklılık seti üreteci — **kodla üret, elle yazma** · 📅 16 Ağu
+- [ ] **S-07** Dayanıklılık seti üreteci — **kodla üret, elle yazma** · 📅 16 Ağu
       ↳ Bitti sayılır: `make eval-robust` çalışıyor, ~400 bozuk varyant üretiliyor
       ↳ Bozma fonksiyonları: format değiştir (`%1,89` → `1.89 %`), para birimi
         değiştir, alan sil, dolaylı ifadeye çevir, boşluk ekle, tamamı büyük harf
       ↳ ~2 saatlik kod, elle 400 örnek yazmaya göre 20 saat tasarruf
+      ↳ Şartnamenin *"eksik veya farklı yazılmış bilgiler karşısında doğru sonuç"*
+        kriterini **doğrudan** ölçer
+
+- [ ] **S-08** Dolaylı ifade testi (şartname 5.2) · 📅 16 Ağu
+      ↳ Şartname dört ifadeyi açıkça sayıyor: *"%2,05 kâr payı oranı"*,
+        *"avantajlı kâr payı fırsatı"*, *"özel oranlı finansman"*,
+        *"düşük maliyetli finansman"*
+      ↳ Bitti sayılır: Dördü de test setinde var; sayısız olanlarda model
+        **sayı uydurmuyor**, ifadeyi `kampanya_avantaji`'na yazıyor
 
 ### Sprint 2 (17–21 Ağustos)
 
-- [ ] **S-07** Gömme boru hattı + kosinüs benzerlik RAG · 📅 19 Ağu
+- [ ] **S-09** Gömme boru hattı + kosinüs benzerlik RAG · 📅 19 Ağu
       ↳ Model: `ytu-ce-cosmos/turkish-e5-large` (lisansını repodan doğrula!)
         Yedek: BGE-M3 (MIT)
       ↳ Bitti sayılır: `src/rag/` içinde gömme + kosinüs arama var, chatbot'un
         `_kosul_cevabi` fonksiyonu anahtar sözcük yerine bunu kullanıyor
       ↳ ⚠️ Gemma tabanlı gömme modeli **KULLANMA** (EmbeddingGemma dahil) — lisans
+      ↳ ⚠️ Gömmeler diske yazılsın (`data/embeddings.npy`); her açılışta yeniden
+        hesaplamak final laptopunda demoyu geciktirir
 
-- [ ] **S-08** Chatbot 30 soruluk test seti · 📅 20 Ağu
+- [ ] **S-10** Chatbot 30 soruluk test seti · 📅 20 Ağu
       ↳ Bitti sayılır: 30 soru + beklenen cevap, doğruluk ölçülüyor (hedef ≥0,88),
         kaynak gösterme oranı 1,00
       ↳ Şartname madde 11'deki iki senaryoyu mutlaka içersin
+      ↳ Kapsam dışı sorular da olsun — sistem "bilmiyorum" diyebilmeli
+
+- [ ] **S-11** Güven skoru kalibrasyonu · 📅 21 Ağu
+      ↳ Bitti sayılır: Güven skoru ile gerçek doğruluk arasındaki ilişki ölçüldü;
+        yüksek güvenli alanlar gerçekten daha doğru mu?
+      ↳ Altın set gelince yapılabilir. Kalibre olmayan bir güven skoru,
+        kullanıcıyı yanıltır — olmamasından kötüdür.
 
 ### Sprint 3 (22–23 Ağustos)
 
-- [ ] **S-09** 🔴 `make eval` tam metrik takımı · 📅 **22 Ağu**
+- [ ] **S-12** 🔴 `make eval` tam metrik takımı · 📅 **22 Ağu**
       ↳ Bitti sayılır: alan bazlı doğruluk, F1, makro-F1, halüsinasyon oranı
         `docs/SONUCLAR.md`'de otomatik dolduruluyor
       ↳ İskelet hazır (`eval/calistir.py`), altın set gelince aktifleşiyor
 
-- [ ] **S-10** 🔴 **ABLASYON TABLOSU** · 📅 **22 Ağu**
+- [ ] **S-13** 🔴 **ABLASYON TABLOSU** · 📅 **22 Ağu**
       ↳ Bitti sayılır: üç yapılandırma koşuldu ve tablo doldu:
         `make extract-kural && make eval` / `make extract-llm && make eval` /
         `make extract && make eval`
       ↳ **Sunumun en güçlü slaydı.** Jürinin "neden sadece LLM kullanmadınız?"
         sorusunun hazır cevabı. ~3 saat.
 
-- [ ] **S-11** Model boyutu karşılaştırması (4B / 9B / 27B) · 📅 23 Ağu
+- [ ] **S-14** Hata analizi — en çok hangi alan yanlış? · 📅 23 Ağu
+      ↳ Bitti sayılır: `docs/HATA_ANALIZI.md` — altın sete göre en çok hatalı
+        3 alan, sebepleri ve alınan aksiyon
+      ↳ "Neyi bilmiyoruz"u bilmek, jüriye olgunluk sinyali verir. Ayrıca
+        dokümantasyon başlığı 8'in malzemesi.
+
+- [ ] **S-15** Model boyutu karşılaştırması (4B / 9B / 27B) · 📅 23 Ağu
       ↳ Bitti sayılır: `docs/SONUCLAR.md`'ye "model boyutu vs doğruluk" satırı eklendi
       ↳ 30 dakikalık iş, ölçeklenebilirlik iddiasını kanıtlar (şartname 5.10)
+      ↳ 27B için 3090 gerekiyor — S-01'i erken bitir
 
 ### Sprint 4 (24–26 Ağustos)
 
-- [ ] **S-12** Dokümantasyon başlıkları 2, 5, 10 · 📅 24 Ağu
+- [ ] **S-16** Dokümantasyon başlıkları 2, 5, 10 · 📅 24 Ağu
       ↳ (2) Kullanılan NLP yaklaşımı · (5) Model veya kural yapısı ·
         (10) Performans değerlendirme yöntemleri
       ↳ `docs/MIMARI.md` bölüm 3 iyi bir başlangıç
+
+- [ ] **S-17** Sunum metrik slaytını hazırla (2:00–2:45 senin) · 📅 25 Ağu
+      ↳ Bitti sayılır: Metrik tablosu + ablasyon + halüsinasyon oranı tek slaytta,
+        45 saniyede anlatılacak şekilde prova edildi
+      ↳ Sayıları `docs/SONUCLAR.md`'den kopyala — elle yazma, hata kaynağı
 
 ### ✅ Samet — bitenler (Sprint 0)
 
@@ -291,36 +380,78 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         `/avantajlar` gibi farklı yollar kullanıyor
       ↳ ⚠️ `make extract` koşarken **Streamlit'i kapat** — açıkken 12 kat yavaş
 
+- [ ] **G-05** **Kampanya olmayan sayfaları ayıkla** · 📅 14 Ağu
+      ↳ Bitti sayılır: Toplanan sayfaların kaçı gerçek kampanya, kaçı genel ürün
+        sayfası — sayıldı ve toplayıcı süzgeci buna göre düzeltildi
+      ↳ Samet'in `diger` oranı %38 sorununun (S-03) muhtemel kaynağı bu.
+        **Ona bu ölçümü ver, birlikte çözün.**
+
+- [ ] **G-06** Manuel toplama yedeği · 📅 14 Ağu
+      ↳ Bitti sayılır: JS ile render edilen sitelerden (T.O.M. gibi) elle
+        toplanan kampanyalar `data/seed/` biçiminde sisteme girdi
+      ↳ Şartname 5.1 manuel toplamaya açıkça izin veriyor — utanılacak bir şey değil,
+        dokümantasyonda **yöntem olarak** anlat
+
 ### Sprint 1 hafta sonu (15–16 Ağustos)
 
-- [ ] **G-05** Veri kalitesi kontrolleri · 📅 16 Ağu
+- [ ] **G-07** Veri kalitesi kontrolleri · 📅 16 Ağu
       ↳ Bitti sayılır: `docs/VERI_KALITESI.md` — aykırı değer, çelişki, eksiklik raporu
       ↳ Ör: finansman tutarı < 5.000 TL olanlar, vade > 360 ay olanlar, aynı
         bankada çelişen oranlar
+      ↳ Jürinin "bankalar sitelerini değiştirirse?" sorusunun cevabı bu rapor:
+        kırılma olduğunda uyarı üretiyoruz
+
+- [ ] **G-08** Banka bazlı kapsam raporu · 📅 16 Ağu
+      ↳ Bitti sayılır: Hangi bankadan kaç kampanya, hangi türlerde — tablo halinde
+      ↳ Bir bankadan 40, diğerinden 2 kampanya varsa karşılaştırma yanlı olur.
+        Dengesizliği **bilerek** raporlamak, fark etmemekten iyidir.
 
 ### Sprint 2 (17–21 Ağustos)
 
-- [ ] **G-06** Katılım bankacılığı terim sözlüğü — **min. 60 terim** · 📅 20 Ağu
+- [ ] **G-09** Katılım bankacılığı terim sözlüğü — **min. 60 terim** · 📅 19 Ağu
       ↳ Bitti sayılır: `docs/TERIM_SOZLUGU.md` yayınlandı
       ↳ Şartname 5.5'teki 5 resmî tanımla başla (kâr payı oranı, finansman
         maliyeti, katılım fonu, masrafsız finansman, avantajlı finansman),
         üstüne murabaha, muşaraka, mudaraba, icara, sukuk, tekafül... ekle
-      ↳ Bu sözlük LLM istemine de besleniyor (`src/extraction/llm.py`, `TERIMLER`)
+      ↳ Bu sözlük LLM istemine de besleniyor (`src/extraction/llm.py`, `TERIMLER`) —
+        yani doğrudan model başarısını etkiliyor, süs değil
 
-- [ ] **G-07** Veri seti dışa aktarım sürümü + `DATASET_CARD.md` · 📅 21 Ağu
+- [ ] **G-10** Terim sözlüğünü LLM istemine bağla · 📅 20 Ağu
+      ↳ Bitti sayılır: `TERIMLER` sabiti `docs/TERIM_SOZLUGU.md`'den besleniyor,
+        sözlük büyüyünce istem kendiliğinden güncelleniyor
+      ↳ **Samet ile birlikte yap** — çıkarım doğruluğu ölçülerek karşılaştırılsın
+
+- [ ] **G-11** Veri seti dışa aktarım sürümü + `DATASET_CARD.md` · 📅 21 Ağu
       ↳ Bitti sayılır: `data/exports/` altında yayınlanabilir veri seti var
       ↳ ⚠️ **Tam sayfa metni koyma** — yapısal alanlar + URL + alıntı parçası.
         Telif riski böyle sıfırlanır.
       ↳ Şartname madde 9: "veri setinin indirilebileceği herkese açık bağlantı" zorunlu
 
-### Sprint 3–4
+### Sprint 3 (22–23 Ağustos)
 
-- [ ] **G-08** Veri setini GitHub Release ve/veya Hugging Face'te yayınla · 📅 22 Ağu
-- [ ] **G-09** Lisans raporunu güncelle (`make lisanslar`) · 📅 22 Ağu
+- [ ] **G-12** 🔴 Veri setini yayınla — GitHub Release ve/veya Hugging Face · 📅 **22 Ağu**
+      ↳ Bitti sayılır: Herkese açık indirme bağlantısı var ve README'de duruyor
+      ↳ Bağlantı yoksa şartname madde 9 ihlal edilmiş olur
+
+- [ ] **G-13** Lisans raporunu güncelle (`make lisanslar`) · 📅 22 Ağu
       ↳ Yeni bağımlılık eklendiyse rapor değişir; ✅ şu an 72 paketin tamamı temiz
-- [ ] **G-10** Dokümantasyon başlıkları 3, 4 · 📅 24 Ağu
+      ↳ ⚠️ Samet gömme modeli eklerken (S-07) **lisansını sen doğrula** —
+        Gemma tabanlı model gelirse şartname 5.10 ihlali olur
+
+- [ ] **G-14** Veri toplama etiği kanıt dosyası · 📅 23 Ağu
+      ↳ Bitti sayılır: `docs/kanit/` altında BDDK ekran görüntüsü, robots.txt
+        kontrol günlüğü örneği, kullanılan User-Agent kaydı
+      ↳ Jüri "veri toplarken hukuki durum?" diye soracak; cevabın **kanıtı** olsun
+
+### Sprint 4 (24–26 Ağustos)
+
+- [ ] **G-15** Dokümantasyon başlıkları 3, 4 · 📅 24 Ağu
       ↳ (3) Kullanılan veri seti ve açıklaması · (4) Veri ön işleme adımları
-      ↳ `docs/VERI_METODOLOJISI.md` hazır, gözden geçirip tamamla
+      ↳ `docs/VERI_METODOLOJISI.md` hazır, gerçek sayılarla güncelle
+
+- [ ] **G-16** Veri seti bağlantılarını son kontrol · 📅 25 Ağu
+      ↳ Bitti sayılır: README'deki veri seti ve lisans bağlantıları çalışıyor,
+        gizli/özel depo değil
 
 ### ✅ Görkem — bitenler (Sprint 0)
 
@@ -332,49 +463,108 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ---
 
-# 🎨 ESRA — arayüz, dashboard, chatbot paneli, sunum
+# 🎨 ESRA — arayüz, dashboard, chatbot paneli, sunum ve video
+
+> **Senin işin jürinin GÖRDÜĞÜ her şey.** Fonksiyonellik (%20) kriterinin
+> "çıktıların doğru ve anlaşılır olması" maddesi ve Yenilikçilik (%10)
+> kriterinin "dokümantasyonun açık ve anlaşılır olması" maddesi senin elinde.
+> Ayrıca **video ve sunum zorunlu teslimat** — bunlar olmadan yarışamayız.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **ES-01** Genel Bakış ekranını gerçek veriyle cilala · 📅 12 Ağu
-      ↳ Bitti sayılır: 96+ kayıtla grafikler okunaklı, ısı haritası taşmıyor
+- [ ] **ES-01** Genel Bakış ekranını gerçek veriyle cilala · 📅 11 Ağu
+      ↳ Bitti sayılır: 96+ kayıtla grafikler okunaklı, ısı haritası taşmıyor,
+        uzun banka adları kırpılıyor
       ↳ `app/Genel_Bakis.py` çalışıyor; tür dağılımı ve banka×tür ısı haritası var
 
-- [ ] **ES-02** Karşılaştırma ekranı — açılır kanıt panelini gözden geçir · 📅 13 Ağu
+- [ ] **ES-02** Karşılaştırma ekranı — açılır kanıt panelini gözden geçir · 📅 12 Ağu
       ↳ Bitti sayılır: Her satır açıldığında tüm alanlar + güven skoru +
         **kaynak alıntısı ve URL** görünüyor
       ↳ Bankacılıkta izlenebilirlik olmadan hiçbir sistem kabul edilmez — bu panel
         o iddianın arayüzdeki karşılığı
 
-- [ ] **ES-03** Yükleniyor / hata / boş durumlar · 📅 14 Ağu
+- [ ] **ES-03** Yükleniyor / hata / boş durumlar · 📅 13 Ağu
       ↳ Bitti sayılır: Veritabanı boşken, sorgu sonuç döndürmediğinde, LLM
         cevap veremediğinde ekran kırılmıyor, anlamlı mesaj gösteriyor
+      ↳ Jüri demo sırasında boş bir filtre seçerse ekran patlamamalı
 
-### Sprint 2 (17–21 Ağustos)
+- [ ] **ES-04** Arama ve filtreleme · 📅 14 Ağu
+      ↳ Bitti sayılır: Kampanya adı/metninde serbest metin araması, banka +
+        kampanya türü + tarih aralığı filtreleri çalışıyor
+      ↳ 300 kampanyaya çıkınca tabloyu gözle taramak imkânsız olacak
 
-- [ ] **ES-04** Chatbot paneli — kaynak kartları ve doğrulama rozeti · 📅 19 Ağu
+- [ ] **ES-05** **Veri kalitesi paneli** · 📅 14 Ağu
+      ↳ Bitti sayılır: Genel Bakış'ta alan doluluk oranları, güven skoru dağılımı
+        ve `Belirtilmemiş` sayıları görünüyor
+      ↳ Bu ekran banka çalışanına "hangi veriye ne kadar güvenebilirim" der.
+        Veriyi olduğundan iyi göstermemek jüriye dürüstlük sinyali verir.
+
+### Sprint 2 — zekâ katmanı arayüzü (17–21 Ağustos)
+
+- [ ] **ES-06** Chatbot paneli — kaynak kartları ve doğrulama rozeti · 📅 18 Ağu
       ↳ İskelet hazır (`app/pages/2_Chatbot.py`)
       ↳ Bitti sayılır: Her cevapta niyet etiketi, ✅/⛔ doğrulama rozeti ve
-        kaynak kartları görünüyor
+        kaynak kartları görünüyor; sohbet geçmişi korunuyor
 
-- [ ] **ES-05** Ağırlık kaydırıcıları + vade farkı uyarısı · 📅 20 Ağu
+- [ ] **ES-07** Ağırlık kaydırıcıları + vade farkı uyarısı · 📅 19 Ağu
       ↳ Kenar çubuğunda kaydırıcılar var; gerçek veriyle test et
       ↳ Jüri "en avantajlıyı nasıl belirliyorsunuz?" diye **kesin soracak** —
         cevap: "kullanıcı ağırlıkları belirliyor, formül dokümantasyonda"
 
-### Sprint 3 (22–23 Ağustos)
+- [ ] **ES-08** **Yan yana karşılaştırma + toplam maliyet** · 📅 20 Ağu
+      ↳ Bitti sayılır: İki (veya üç) kampanya seçilip yan yana konabiliyor,
+        her biri için toplam maliyet hesaplanıp tabloda gösteriliyor
+      ↳ Motor hazır: `src/comparison/karsilastirma.py::toplam_maliyet`
+      ↳ Şartname madde 11'in örnek çıktı tablosu tam olarak bu — jüri bunu görmek istiyor
 
-- [ ] **ES-06** 🔴 Demo senaryosu provası — hangi tıklama, hangi sırayla · 📅 **22 Ağu**
-      ↳ Bitti sayılır: Adım adım yazılı senaryo var, 3 kez prova edildi, süre tutuldu
+- [ ] **ES-09** **Dışa aktarma: CSV / Excel indir** · 📅 21 Ağu
+      ↳ Bitti sayılır: Karşılaştırma tablosu tek tıkla indiriliyor, indirilen
+        dosyada kaynak URL ve çekim tarihi de var
+      ↳ Banka çalışanı raporu Excel'e alıp toplantıya götürür — gerçek ihtiyaç.
+        Ayrıca "kurum sistemlerine entegre edilebilirlik" iddiasını destekler.
 
-- [ ] **ES-07** Sunum slaytları v1 — **PDF + PPTX** · 📅 23 Ağu
+- [ ] **ES-10** Chatbot örnek soru seti + **kullanıcı testi** · 📅 21 Ağu
+      ↳ Bitti sayılır: Arayüzde hazır örnek sorular var; **projeyi hiç bilmeyen
+        birine kullandırıp** takıldığı yerleri not ettin
+      ↳ Samet'in 30 soruluk test setiyle (S-08) karıştırma: o doğruluk ölçer,
+        bu kullanılabilirlik ölçer
+
+### Sprint 3 — cila ve hazırlık (22–23 Ağustos)
+
+- [ ] **ES-11** Dar ekran / projeksiyon kontrolü · 📅 22 Ağu
+      ↳ Bitti sayılır: 1280×720 çözünürlükte tablolar taşmıyor, yazılar okunuyor
+      ↳ Finalde projeksiyona bağlanacaksın; kendi 27" ekranında iyi görünmesi
+        hiçbir şey ifade etmiyor
+
+- [ ] **ES-12** 🔴 Demo senaryosu — yaz, prova et, süre tut · 📅 **22 Ağu**
+      ↳ Bitti sayılır: `sunum/DEMO_SENARYOSU.md` — hangi ekran, hangi tıklama,
+        hangi sırayla, hangi saniyede. 3 kez prova edildi.
+      ↳ Canlı demo doğaçlama yapılmaz; tek bir yanlış tıklama 4 dakikayı yakar
+
+- [ ] **ES-13** 🔴 Sunum slaytları — **PDF + PPTX** · 📅 **23 Ağu**
       ↳ Şartname madde 6 **her iki formatı da** zorunlu tutuyor
       ↳ Her konuşmacının slaydının köşesinde adı ve rolü dursun (madde 8:
         tüm üyelerin görev tanımları sunumda olmalı) — ayrı slayt yapma
+      ↳ Metrikleri `docs/SONUCLAR.md`'den kopyala, elle yazma
 
-### Sprint 4 (24–26 Ağustos)
+### Sprint 4 — teslim (24–26 Ağustos)
 
-- [ ] **ES-08** 🔴 **DEMO VİDEOSU — maks. 5 dakika** · 📅 **25 Ağu**
+- [ ] **ES-14** Ekran görüntüleri — README ve dokümantasyon için · 📅 24 Ağu
+      ↳ Bitti sayılır: `docs/gorseller/` altında 3 ekranın görüntüsü var,
+        README'de gömülü
+      ↳ Jürinin ilk 30 saniyesi README'de geçiyor; ekran görüntüsü olmayan bir
+        README "çalışıyor mu acaba" sorusu bıraktırır
+
+- [ ] **ES-15** Model çıktı örnekleri (doküman başlığı 9) · 📅 24 Ağu
+      ↳ Bitti sayılır: `docs/CIKTI_ORNEKLERI.md` — girdi metni → yapısal çıktı
+        eşleşmeleri, kanıt zinciriyle (alıntı + güven + yöntem)
+      ↳ En az 5 örnek: biri temiz, biri eksik bilgili, biri dolaylı ifadeli
+
+- [ ] **ES-16** Kullanım kılavuzu (banka çalışanı için) · 📅 24 Ağu
+      ↳ Bitti sayılır: `docs/KULLANIM_KILAVUZU.md` — üç ekranın ne işe yaradığı,
+        ekran görüntüleriyle. Teknik değil, kullanıcı dilinde.
+
+- [ ] **ES-17** 🔴 **DEMO VİDEOSU — maks. 5 dakika** · 📅 **25 Ağu**
       ↳ Şartname madde 6 zorunlu. **Altı unsur da görünmeli:** kullanıcı arayüzü,
         dashboard, chatbot, metin girdisi, yapılandırılmış çıktı, karşılaştırma sonuçları
       ↳ 2 saat: OBS ile ekran kaydı, tek çekimde, sesli anlatımla. **Kurgu yapma.**
@@ -382,12 +572,9 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         dashboard karşılaştırma (60sn) → chatbot (50sn) → **hava boşluğu kanıtı
         (30sn)** → metrikler (30sn) → kapanış (15sn)
 
-- [ ] **ES-09** 🔴 **1 dakikalık kısa video** (sunum için) · 📅 **25 Ağu**
+- [ ] **ES-18** 🔴 **1 dakikalık kısa video** (sunum için) · 📅 **25 Ağu**
       ↳ 30 dk: en iyi 60 saniyeyi kes. Şartname madde 10 zorunlu tutuyor.
-
-- [ ] **ES-10** Model çıktı örnekleri (doküman başlığı 9) · 📅 24 Ağu
-      ↳ Bitti sayılır: `docs/CIKTI_ORNEKLERI.md` — girdi metni → yapısal çıktı
-        eşleşmeleri, kanıt zinciriyle
+      ↳ Videoyu laptopta **yerel dosya** olarak da bulundur — YouTube'a güvenme
 
 ### ✅ Esra — bitenler (Sprint 0)
 
@@ -395,6 +582,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 - [x] Genel Bakış: metrikler, tür dağılımı, banka×tür ısı haritası *(9 Ağu)*
 - [x] Karşılaştırma: 5 kriter butonu, ağırlık kaydırıcıları, kanıt paneli *(9 Ağu)*
 - [x] Chatbot paneli: niyet etiketi, doğrulama rozeti, kaynak kartları *(9 Ağu)*
+- [x] Banka kayıt defteri ekranı + veri metodolojisi açılır paneli *(9 Ağu)*
 
 ---
 
