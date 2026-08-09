@@ -67,3 +67,10 @@ temiz:  ## türetilmiş dosyaları sil (ham veri KORUNUR)
 	rm -f data/katilim.db
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	@echo "✅ Temizlendi. data/raw/ dokunulmadı."
+
+# --- görev panosu ---
+gorev:  ## görev durumu (ad=Esra ile kişiye özel)
+	@$(PYTHON) tools/gorevler.py $(ad)
+
+gorev-dogrula:  ## görev panosunun bağımlılıklarını denetle
+	@$(PYTHON) tools/gorevler.py --dogrula
