@@ -183,7 +183,7 @@ Ayrıntı: [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md)
 
 ---
 
-## Takım
+## Takım ve görev dağılımı
 
 | Kişi | Rol |
 |---|---|
@@ -191,6 +191,10 @@ Ayrıntı: [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md)
 | Samet | Çıkarım motoru · LLM · değerlendirme |
 | Görkem | Veri toplama · veri kalitesi · terim sözlüğü |
 | Esra | Arayüz · dashboard · chatbot paneli |
+
+> 📋 **Görevini öğrenmek için → [`GOREVLER.md`](GOREVLER.md)**
+> Herkesin görevi kendi bölümünde, tikli listede. Bitirince `[ ]` → `[x]` yap
+> ve sıradakine geç; kimseye sormana gerek yok.
 
 ## Lisans
 

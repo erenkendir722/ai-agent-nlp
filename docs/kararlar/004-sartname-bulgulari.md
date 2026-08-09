@@ -1,11 +1,21 @@
 # ADR 004 — Şartname okumasından çıkan düzeltmeler ve açık sorular
 
 **Tarih:** 9 Ağustos 2026
-**Durum:** Kabul edildi · ⚠️ bir madde organizasyona sorulmalı
+**Durum:** Kabul edildi · tüm maddeler kapalı
 **Sahip:** Eren
 **Kaynak:** `2026_TYDA_SARTNAME_Ikinci_Senaryo_TR_1_1IAJb.pdf` (23 sayfa)
 
-## 1. ⚠️ TESLİM TARİHİ ÇELİŞKİSİ — acil netleştirilmeli
+## 1. ✅ TESLİM TARİHİ ÇELİŞKİSİ — KAPANDI, ÖNEMİ YOK
+
+> **KARAR (Eren, 9 Ağustos 2026): Bu maddenin önemi yok, kapatıldı.**
+> Şartname madde 9'daki 12.07.2026 tarihi eski/hatalı metindir. İşleyen takvim
+> Tablo 1'deki **27 Temmuz – 26 Ağustos** aralığıdır. Konu takıma sorulmayacak,
+> plan 26 Ağustos'a göre yürüyecek, hedef teslim 25 Ağustos 20:00 olarak kalıyor.
+> Önümüze bakıyoruz.
+
+Aşağıdaki bölüm kayıt amaçlı bırakılmıştır.
+
+### (Kayıt) Tespit edilen tutarsızlık
 
 Şartname kendi içinde tutarsız:
 
