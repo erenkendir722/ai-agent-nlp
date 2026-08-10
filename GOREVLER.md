@@ -11,6 +11,32 @@
 **Bu dosya tek doğruluk kaynağıdır. Kimseye "ben ne yapacağım?" diye sorma —
 buraya bak.**
 
+### 🔴 HER OTURUMDA — önce PULL, sonra PUSH
+
+```bash
+# ÇALIŞMAYA BAŞLARKEN — ilk iş
+git pull --rebase origin main
+
+# ... çalış, GOREVLER.md'de bitirdiğin göreve [x] at ...
+
+# BIRAKMADAN ÖNCE — son iş
+git add -A && git commit -m "..." && git push origin main
+```
+
+Dört kişi aynı depoda çalışıyor. **Pull etmeden düzenleme yapma** — çakışma
+çıkar, kötü ihtimalde arkadaşının işini ezersin. **Pushlamadan bırakma** — işin
+kimseye ulaşmaz, seni bekleyen arkadaşın boşuna bekler.
+
+Bu iki adımı unutmayasın diye otomatik hatırlatma kurulu: oturum açıldığında
+GitHub kontrol edilip geride kalınmışsa uyarı çıkar, oturum bitince
+pushlanmamış iş varsa uyarı çıkar. Yapay zekâ ile çalışıyorsan o da sorar.
+Elle kontrol için:
+
+```bash
+python3 tools/git_kontrol.py baslangic   # geride miyim?
+python3 tools/git_kontrol.py bitis       # pushlanmamış işim var mı?
+```
+
 1. **Kendi bölümünü bul** (aşağıda adın var), sırayla yukarıdan aşağı çalış.
    Görevler öncelik sırasına dizildi; en üstteki senin bir sonraki işin.
 2. **`⛔ Önce bitmeli:` satırı varsa bak.** Orada yazan görevler bitmeden bu işe

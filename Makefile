@@ -74,3 +74,6 @@ gorev:  ## görev durumu (ad=Esra ile kişiye özel)
 
 gorev-dogrula:  ## görev panosunun bağımlılıklarını denetle
 	@$(PYTHON) tools/gorevler.py --dogrula
+
+git-kontrol:  ## GitHub ile senkron mu (pull/push gerekiyor mu)
+	@python3 tools/git_kontrol.py baslangic | $(PYTHON) -c "import json,sys; d=json.load(sys.stdin); print(d.get('systemMessage','✅ Temiz'))"
