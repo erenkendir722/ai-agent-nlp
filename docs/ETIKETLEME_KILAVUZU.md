@@ -188,6 +188,24 @@ yazdığın cümledeki her sayı metinde geçmeli.
 
 ## 5. Kalite: uyum ölçümü (H-02'nin "bitti" şartı)
 
+### 🔒 Uyum bloğu MÜHÜRLÜ çalışılır
+
+> **Dolu uyum dosyanı, dördünüz bitirmeden depoya PUSHLAMA.**
+>
+> 12 Ağustos'ta bu kural yoktu ve şu oldu: tamamlanmış bir uyum dosyası depoya
+> girdi, sonraki kişi `git pull` yapınca cevap anahtarını gördü. Ölçülen
+> "%98 uzlaşma" gerçekte iki dosyanın aynı olmasıydı — 28 serbest metin
+> alanının 27'si harfi harfine aynıydı. Bağımsız çalışan iki insan 16 özgün
+> cümleyi aynı yazamaz.
+>
+> **Nasıl olmalı:** herkes kendi dosyasını doldurur ve **doğrudan kaptana
+> gönderir** (WhatsApp). Kaptan dördünü birden depoya koyar, sonra
+> `make altin-uyum` çalışır. Böylece kimse kimsenin cevabını görmeden etiketler.
+>
+> `make altin-uyum` artık bunu otomatik denetliyor: iki kişinin serbest metin
+> alanları %90'dan fazla birebir aynıysa **kopya şüphesi** verir ve oranı
+> geçersiz sayar.
+
 Etiketlemeye dağılmadan önce **ilk 10 örneği dördünüz de ayrı ayrı**
 etiketleyin — aynı 10 satırı. Sonra karşılaştırın:
 

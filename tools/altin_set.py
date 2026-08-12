@@ -41,6 +41,7 @@ from src.depolama import kampanyalari_oku  # noqa: E402
 from src.preprocessing.normalizasyon import sayi_ayristir, tarih_ayristir  # noqa: E402
 from src.schema import (  # noqa: E402
     ALAN_ADLARI,
+    METINSEL_ALANLAR,
     SAYISAL_ALANLAR,
     HedefKitle,
     Kampanya,
@@ -398,6 +399,50 @@ def uyum_hesapla(kisiler: tuple[str, ...] = KISILER) -> dict[str, Any]:
     }
 
 
+KOPYA_ESIGI = 0.90
+KOPYA_ASGARI_ORNEK = 5
+
+
+def kopya_suphesi(kisiler: tuple[str, ...] = KISILER) -> list[str]:
+    """İki etiketleyicinin serbest metin alanları fazla mı benziyor?
+
+    Uyum oranı ancak etiketleme BAĞIMSIZ yapıldıysa anlam taşır. Serbest metin
+    alanları bunun turnusol kâğıdıdır: iki kişi bir kampanyayı kendi cümleleriyle
+    özetlediğinde sonuç asla harfi harfine aynı olmaz. %90'ın üstünde birebir
+    eşleşme, uyumun değil kopyanın işaretidir.
+
+    12 Ağustos'ta tam olarak bu yaşandı: tamamlanmış bir uyum dosyası diğerleri
+    etiketlemeden önce depoya pushlandı ve cevap anahtarı herkesin eline geçti.
+    Ölçülen %98, gerçekte iki dosyanın aynı olmasıydı.
+    """
+    dosyalar = uyum_dosyalari(kisiler)
+    tablolar = {
+        kisi: {kimlik: etiketler for _, kimlik, etiketler, _d in satirlar}
+        for kisi, satirlar in dosyalar.items()
+        if satirlar
+    }
+
+    uyarilar: list[str] = []
+    adlar = sorted(tablolar)
+    for i in range(len(adlar)):
+        for j in range(i + 1, len(adlar)):
+            sol, sag = adlar[i], adlar[j]
+            ayni = toplam = 0
+            for kimlik, alanlar in tablolar[sol].items():
+                diger = tablolar[sag].get(kimlik, {})
+                for alan in METINSEL_ALANLAR:
+                    a, b = alanlar.get(alan), diger.get(alan)
+                    if isinstance(a, str) and isinstance(b, str) and a.strip() and b.strip():
+                        toplam += 1
+                        ayni += a.strip() == b.strip()
+            if toplam >= KOPYA_ASGARI_ORNEK and ayni / toplam >= KOPYA_ESIGI:
+                uyarilar.append(
+                    f"{sol} ↔ {sag}: {ayni}/{toplam} serbest metin alanı BİREBİR aynı "
+                    f"(%{ayni / toplam * 100:.0f}) — bağımsız etiketlemede beklenmez"
+                )
+    return uyarilar
+
+
 def uyum_uzlasisi(kisiler: tuple[str, ...] = KISILER) -> tuple[list[dict[str, Any]], list[str]]:
     """Uyum bloğunu çoğunluk oyuyla tek kayda indirger.
 
@@ -683,6 +728,18 @@ def komut_uyum() -> int:
             print(f"   ⌛ Bekleyenler: {', '.join(bekleyen)}")
         return 1
 
+    kopya = kopya_suphesi()
+    if kopya:
+        print("\n🚨 KOPYA ŞÜPHESİ — uyum oranı bu haliyle GEÇERSİZ\n")
+        for satir in kopya:
+            print(f"   {satir}")
+        print(
+            "\n   Uyum ancak bağımsız etiketlemede anlam taşır. Tamamlanmış bir\n"
+            "   dosya depoya girdiyse sonrakiler cevabı görmüş olur.\n"
+            "   Çözüm: yeni bir uyum bloğu çekin; dosyalar HERKES bitirmeden\n"
+            "   pushlanmasın (doğrudan kaptana gönderilip tek seferde işlensin).\n"
+        )
+
     oran = sonuc["uyum"]
     print(f"\n  Etiketleyici sayısı: {sonuc['kisi_sayisi']} · Örnek: {sonuc['ornek_sayisi']}")
     print(f"  Karşılaştırılan alan çifti: {sonuc['karsilastirilan']} (dolu)")
@@ -700,6 +757,11 @@ def komut_uyum() -> int:
         print(f"\n  Ayrışan {len(sonuc['ayrisma'])} karar (ilk 15):")
         for satir in sonuc["ayrisma"][:15]:
             print(f"    {satir}")
+
+    if kopya:
+        print("\n❌ Bu oran SUNUMDA KULLANILAMAZ — yukarıdaki kopya şüphesi giderilmeden")
+        print("   «etiketleme uzlaşmamız %X» cümlesi kurulmamalı.")
+        return 1
 
     if oran >= 0.85:
         print("\n✅ Uyum yeterli. Kişisel paylara dağılabilirsiniz.")

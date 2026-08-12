@@ -507,3 +507,48 @@ def test_uyum_tek_etiketleyiciyi_dogru_raporlar(gold_dizini):
     assert sonuc["uyum"] is None
     assert sonuc["etiketleyenler"] == ["Eren"]
     assert sorted(sonuc["bekleyenler"]) == ["Esra", "Görkem", "Samet"]
+
+
+# ---------------------------------------------------------------------------
+# Kopya tespiti — uyum oranı ancak bağımsız etiketlemede anlamlıdır
+# ---------------------------------------------------------------------------
+
+
+def test_kopya_suphesi_ayni_serbest_metni_yakalar(gold_dizini):
+    """Tamamlanmış bir dosya depoya girip kopyalanırsa uyum oranı sahte olur."""
+    _hazirla(gold_dizini, adet=18)
+    cumleler = [
+        {"kampanya_turu": "kart", "kampanya_avantaji": f"Kampanya {i} avantajı",
+         "kampanya_kosullari": f"Kampanya {i} koşulu"}
+        for i in range(8)
+    ]
+    for kisi in ("eren", "samet"):
+        _csv_doldur(gold_dizini / f"etiketleme_uyum_{kisi}.csv", cumleler)
+
+    uyarilar = altin_set.kopya_suphesi()
+    assert any("Eren" in u and "Samet" in u for u in uyarilar)
+    assert "BİREBİR" in uyarilar[0]
+
+
+def test_kopya_suphesi_farkli_ifadelerde_sessiz(gold_dizini):
+    _hazirla(gold_dizini, adet=18)
+    _csv_doldur(
+        gold_dizini / "etiketleme_uyum_eren.csv",
+        [{"kampanya_turu": "kart", "kampanya_avantaji": f"Eren cümlesi {i}"} for i in range(8)],
+    )
+    _csv_doldur(
+        gold_dizini / "etiketleme_uyum_samet.csv",
+        [{"kampanya_turu": "kart", "kampanya_avantaji": f"Samet cümlesi {i}"} for i in range(8)],
+    )
+    assert altin_set.kopya_suphesi() == []
+
+
+def test_kopya_suphesi_az_ornekte_alarm_vermez(gold_dizini):
+    """Tek tük eşleşme kopya değildir; eşik altında sessiz kalmalı."""
+    _hazirla(gold_dizini, adet=18)
+    for kisi in ("eren", "samet"):
+        _csv_doldur(
+            gold_dizini / f"etiketleme_uyum_{kisi}.csv",
+            [{"kampanya_turu": "kart", "kampanya_avantaji": "aynı cümle"}],
+        )
+    assert altin_set.kopya_suphesi() == []
