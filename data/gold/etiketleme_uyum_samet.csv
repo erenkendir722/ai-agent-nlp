@@ -1,5 +1,5 @@
 ﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,urun_turu,hedef_kitle,kar_payi_orani,finansman_tutari_max,vade_ay_max,taksit_sayisi,tahsis_ucreti,masraf_bilgisi,masrafsiz_mi,odul_miktari,indirim_orani,alisveris_puani,kampanya_avantaji,kampanya_bitis,kampanya_kosullari,metin
-0206-61006b35204e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/konut-finansmani/Sayfalar/konut-finansmani.aspx,,,,,,,,,,,,,,,,,"Konut Finansmanı (Konut Kredisi)*
+0206-61006b35204e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/konut-finansmani/Sayfalar/konut-finansmani.aspx,diger,Konut Finansmanı,,"2,95",,120,,500,"500 TL tahsis ücreti, 3.000 TL ipotek tesis ücreti ve 16.500 TL ekspertiz ücreti alınmaktadır.",hayir,,,,Avantajlı kâr payı oranları ile konut finansmanı imkanı,,"Nüfus cüzdanı, gelir belgesi ve konut tapusu beyanı gerekmektedir.","Konut Finansmanı (Konut Kredisi)*
 Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay!
 Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay! Türkiye Finans Konut Finansmanı (bankacılık kanununa göre konut kredisi), uygun koşullarda ev sahibi olmanız için sunulan finansman desteğidir.
 Satın almak istediğiniz gayrimenkul katılım bankacılığı prensiplerine uygun olarak Türkiye Finans tarafından satın alınır ve size istediğiniz vade üzerinden satılır.
@@ -121,7 +121,7 @@ Satıcı, cayma hakkı konusunda tüketicinin bilgilendirildiğini ispat etmekle
 Ekspertiz ve ipotek tesis ücreti, değerlemeyi yapan ekspertiz firması ile ipoteği tesis eden firmanın Bankamız'a faturalandırdığı tutar kadardır.
 İpotek fek masrafı alınmamaktadır.
 Sıkça Sorulan Sorular"
-0212-cb6a4dc1dc98,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/arkadasini-getir-avantajli-hesap-ac-nakit-odul-kazan,,,,,,,,,,,,,,,,,"Arkadaşını Davet Et, Avantajlı Hesapla Kazanmaya Başla!
+0212-cb6a4dc1dc98,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/arkadasini-getir-avantajli-hesap-ac-nakit-odul-kazan,yeni_musteri,Hayat Avantajlı Katılma Hesabı,yeni_musteri,,,,,,,,2000,20,,"Arkadaşını Hayat Finans'a davet edenlere kişi başı 2.000 TL, yeni müşterilere harcamada %20 nakit ödül.",2026-08-16,"Davet kodu ile müşteri olmak, ilk Avantajlı Hesabı açıp en az 7 gün açık tutmak gerekmektedir.","Arkadaşını Davet Et, Avantajlı Hesapla Kazanmaya Başla!
 Arkadaşlarınızı Hayat Finans'a davet edin. Davet ettiğiniz arkadaşlarınız ilk Avantajlı Hesaplarını açtığında nakit ödül kazanın, arkadaşlarınız ise Hayat Finans Banka Kartı ile gerçekleştirecekleri harcamalarda nakit ödül avantajından yararlansın!
 ✅ Avantajlı Hesap Nedir?
 Avantajlı Hesap, katılım finans ilkelerine uygun olarak yönetilen, her yatırımcıya eşit ve sürdürülebilir avantaj sunan özel bir katılma hesabıdır. Detaylar için tıklayınız.
@@ -152,8 +152,8 @@ Avantajlı Hesap, katılım finans ilkelerine uygun olarak yönetilen, her yatı
 - Hayat Finans kampanya koşullarında herhangi bir bildirimde bulunulmaksızın değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
 - Hayat Finans tarafından tespit edilen usulsüzlük durumlarında kazanılan ödül iptali ve/veya geri alma hakkı saklıdır.
 - Kampanya özelinde 1.000 kişi faydalanabilir."
-0209-181fcb40fc04,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/finansman-urunleri/konut-gayrimenkul-finansmani,,,,,,,,,,,,,,,,,"Yalnızca ticari faaliyeti olmayan gerçek kişilere (kamu ve özel sektör çalışanları, emekliler vb.) hazır/bitmiş işyeri (ofis, büro, dükkân, muayenehane vb. nitelikteki işyerleri) alımının finansmanına yönelik olarak kullandırılan taksitli bireysel finansman ürünüdür."
-0211-4b3897c08177,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani,,,,,,,,,,,,,,,,,"İhtiyaç Finansmanı
+0209-181fcb40fc04,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/finansman-urunleri/konut-gayrimenkul-finansmani,finansman,İşyeri Finansmanı,segment,,,,,,,,,,,hazır/bitmiş işyeri alımına yönelik taksitli bireysel finansman imkanı,,Ticari faaliyeti olmayan gerçek kişi olunması gerekmektedir.,"Yalnızca ticari faaliyeti olmayan gerçek kişilere (kamu ve özel sektör çalışanları, emekliler vb.) hazır/bitmiş işyeri (ofis, büro, dükkân, muayenehane vb. nitelikteki işyerleri) alımının finansmanına yönelik olarak kullandırılan taksitli bireysel finansman ürünüdür."
+0211-4b3897c08177,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani,diger,İhtiyaç Finansmanı,,"1,69",,12,,"157,50","30.000 TL için 157,50 TL tahsis ücreti alınmaktadır.",hayir,,,,"Eğitim, teknoloji, sağlık ve konut ihtiyaçlarına yönelik tüketici finansmanı imkanı.",,Fatura veya proforma fatura beyanı gerekmektedir.,"İhtiyaç Finansmanı
 Emlak Katılım İhtiyaç Finansmanlarıyla Yanınızda
 - İhtiyaç Finansmanı Katılım Bankacılığı esaslarına uygun olarak bireysel ihtiyaçlarınız için gereken finansman desteğini sağlar.
 - Beyaz eşyadan mobilyaya, teknoloji ihtiyacınızdan eğitim ihtiyacınıza, hacdan umreye birçok konuda size özel çözümler getiren finansman modellerimiz hizmetinizdedir
@@ -214,18 +214,18 @@ Finansman Tutarı | Vade | Kar Oranı | Taksit Tutarı | Finansman Tahsis Ücret
 ---|---|---|---|---|
 30.000,00 ₺ | 12 Ay | 1,69% | 2,841.66 ₺ | 157.50 ₺ |
 * İhtiyaç Finansmanı başvurusu için şubelerimizi ziyaret edebilirsiniz. |"
-0205-9f9ed7696f23,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti,,,,,,,,,,,,,,,,,"Sağlam Kart Kampüs
+0205-9f9ed7696f23,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti,diger,Sağlam Kart,,,,,6,,,evet,,,,Yıllık kart ücreti olmadan eğitim ve sağlık harcamalarına taksit ve mil kazanma imkanı,,,"Sağlam Kart Kampüs
 Sağlam Kart Kampüs'te kart ücreti yok, sürprizler ve avantajlar çok!
 Sağlam Kart
 Sağlam Kart ile yıllık kart ücreti olmadan tüm eğitim ve sağlık harcamalarınızı vade farksız taksitlendirebilir, ekstra ödüller kazanabilirsiniz!
 Miles&Smiles Kuveyt Türk Kart
 Alışverişlerde vade farksız 6 taksit ve mil biriktirme avantajlarından Miles&Smiles Kredi Kartı ile yararlanın."
-0203-cfc1e9a26a6c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani,,,,,,,,,,,,,,,,,"Hayalinizdeki eve kira öder gibi sahip olun!
+0203-cfc1e9a26a6c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani,diger,Konut Finansmanı,,,,36,,,,,,,,"Konut, alışveriş ve BES teminatlı finansman çözümleri ile 36 aya varan vade imkanı.",,,"Hayalinizdeki eve kira öder gibi sahip olun!
 Uzun vade ve size özel ödeme seçenekleri ile Albaraka Türk Konut Finansmanı tam size göre!
 Albaraka Türk’ten ihtiyaçlarınızı alışveriş anında karşılayan finansman fırsatı. Alışverişlerinizde Bayide Finansman’ı tercih edin, 36 aya varan vadelerle ödeyin. Üstelik elektronikten ev tekstiline kadar birçok sektörde geçerli.
 İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
 Findeks Kredi Notu ve Risk Raporu ile finansal geçmişimizi hızla öğrenip kredi değerlendirmenizi yapabilirsiniz. Bu sayede gelecekteki finansal kararlarınızı güvenli şekilde planlayabilirsiniz."
-0210-5174ebf9b2b6,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/muhikuda-20-indirim,,,,,,,,,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+0210-5174ebf9b2b6,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/muhikuda-20-indirim,diger,Muhiku İndirim Kampanyası,,,,,,,,,,20,,Vakıf Katılımlılara Muhiku'da 1.000 TL ve üzeri alışverişlerde %20 indirim.,2026-12-31,"Mobil Şube'den indirim kodu alınmalı, sepet tutarı 1.000 TL üzeri olmalıdır.","SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -239,7 +239,7 @@ Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek �
 • Deneyim & aktivite hediyeleri, taze çiçek, söz & nişan hediyelikleri kategorileri indirim kampanyasına dâhil değildir.
 • Kampanya 31.12.2026 tarihine kadar geçerlidir.
 • Vakıf Katılım Bankası AŞ ve Muhiku, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0205-9e2afc07063a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari,,,,,,,,,,,,,,,,,"Araç Finansmanı
+0205-9e2afc07063a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari,diger,Araç Finansmanı,,,,48,,,,,,,,"Otomobil, motosiklet ve TOGG alımlarında 48 aya varan vade ve dijitale özel finansman imkanı.",,,"Araç Finansmanı
 Araç Finansmanı ile hayalinizdeki otomobile 48 aya varan vade seçenekleri ile sahip olabilirsiniz.
 Dijital Araç Finansmanı
 Türkiye’de bir ilk! Hayallerinizi süsleyen araca sahip olmak için Kuveyt Türk Mobil'den Dijital Araç Finansmanı'na başvurabilir ve dijitale özel cazip oranlarla bütçenizi zorlamadan istediğiniz araca sahip olabilirsiniz.
@@ -249,7 +249,7 @@ Motosiklet Finansmanı
 48 aya varan vade seçenekleri ile beğendiğiniz motosikleti Motosiklet Finansmanı'na başvurarak kolayca satın alabilirsiniz.
 TOGG Finansmanı
 Ülkemizin yerli ve milli otomobili TOGG’a, Kuveyt Türk desteğiyle hemen sahip olabilirsiniz!"
-0214-58cf4ca75ced,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/fiziki-altin,,,,,,,,,,,,,,,,,"⏰ Kampanya Süresi Dolmuştur!
+0214-58cf4ca75ced,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/fiziki-altin,yeni_musteri,Fiziki Altın,yeni_musteri,,,,,,,,,,,"Yeni müşterilere fiziki altın siparişlerine ek olarak 0,25 grama varan hediye altın.",2026-03-31,01 Ocak 2026 sonrasında müşteri olmak ve Mobil veya İnternet Şube üzerinden fiziki altın siparişi vermek gerekmektedir.,"⏰ Kampanya Süresi Dolmuştur!
 ✨ Yeni Kampanyalarımız İçin Bizi Takip Etmeyi Unutmayın!
 Dünya Katılım’dan Yeni Müşterilere Altın Değerinde Fırsat!
 Dünya Katılım, yeni müşterilerine özel yepyeni bir kampanya ile karşınızda!
@@ -295,7 +295,7 @@ Hemen Dünya Katılım Mobil Şube’sini indirerek avantajlı hizmetlerimizden 
 👉 Dijitalden Fiziki Altın İşlemleri
 Bu kampanya ile hem altın yatırımınıza hemen başlayabilir hem de yatırımlarınızı daha kazançlı hale getirebilirsiniz. Dünya Katılım ailesine katılın, altın değerindeki avantajları kaçırmayın!
 🔸 Dünya Katılım Bankası, kampanya süresi boyunca şartları değiştirme ve sonlandırma hakkını saklı tutar."
-0206-6673dd6a5a23,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx,,,,,,,,,,,,,,,,,"-
+0206-6673dd6a5a23,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx,diger,Blog,,,,,,,,,,,,"Finansal okuryazarlık, bankacılık ve genel bilgilendirme blog yazıları.",,,"-
 Bireysel
 - KOBİ
 - Ticari
