@@ -22,7 +22,14 @@ COPY src/ ./src/
 COPY app/ ./app/
 COPY data/banks.yaml ./data/banks.yaml
 COPY eval/ ./eval/
-COPY Makefile ./
+
+# Makefile BİLEREK kopyalanmıyor: `python:3.12-slim` içinde `make` ikilisi yok
+# ve Makefile'ın varsayılanı `.venv/bin/python` — imajda sanal ortam da yok.
+# Kopyalamak, çalışmayan bir arayüzü varmış gibi göstermek olurdu. Konteyner
+# içinde boru hattı doğrudan çağrılır (bkz. docs/KURULUM.md):
+#     docker compose exec uygulama python -m src.boru_hatti crawl
+# Bankacılık ortamına giden imajda `make` kurup paket sayısını artırmaktansa
+# tek bir çağrı biçimi belgelemek tercih edildi.
 
 # Kök olmayan kullanıcı — bankacılık ortamının standart beklentisi.
 RUN useradd --create-home --uid 10001 uygulamaci \

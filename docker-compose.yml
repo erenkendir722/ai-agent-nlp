@@ -35,7 +35,6 @@ services:
         condition: service_healthy
     ports:
       - "8501:8501"   # Streamlit
-      - "8000:8000"   # REST API
     volumes:
       - ./data:/uygulama/data
       - ./docs:/uygulama/docs
@@ -49,6 +48,45 @@ services:
       TRANSFORMERS_OFFLINE: "1"
       ANONYMIZED_TELEMETRY: "False"
       DO_NOT_TRACK: "1"
+    restart: unless-stopped
+
+  # REST API ayrı servis. Aynı imaj, farklı komut.
+  # Tek konteynerde iki süreç çalıştırmak yerine ayırmak, kurum içi dağıtımda
+  # arayüzü ve API'yi bağımsız ölçeklemeye izin verir; ayrıca biri çökerse
+  # diğeri ayakta kalır. (Önceki sürümde 8000 portu yayınlanıyordu ama onu
+  # dinleyen bir süreç yoktu — /docs boş dönüyordu.)
+  api:
+    build: .
+    container_name: katilim-api
+    depends_on:
+      ollama:
+        condition: service_healthy
+    command:
+      - uvicorn
+      - src.api.sunucu:uygulama
+      - --host=0.0.0.0
+      - --port=8000
+    ports:
+      - "8000:8000"   # REST API
+    volumes:
+      - ./data:/uygulama/data
+    networks:
+      - ic-ag
+    environment:
+      OLLAMA_HOST: "http://ollama:11434"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:4b-q4_K_M}"
+      VERITABANI_URL: "sqlite:///data/katilim.db"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      ANONYMIZED_TELEMETRY: "False"
+      DO_NOT_TRACK: "1"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import httpx;httpx.get('http://127.0.0.1:8000/docs',timeout=4).raise_for_status()"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
     restart: unless-stopped
 
 networks:
