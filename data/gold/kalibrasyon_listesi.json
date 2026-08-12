@@ -1,0 +1,27 @@
+{
+  "olusturma": "2026-08-12T22:16:09",
+  "tohum": 20260813,
+  "amac": "etiketleyiciler arası uyum ölçümü (H-02)",
+  "not": "Altın set örnekleminin dışından seçildi; altın sete girmez.",
+  "kampanyalar": [
+    "0202-2469fe9ba71f",
+    "0200-f13b0d528271",
+    "0201-8aff94483737",
+    "0203-84f01db39181",
+    "0202-26cbf965f2db",
+    "0200-0f0ca5ebad66",
+    "0203-603fc36a2675",
+    "0201-621bdf5b2cd2",
+    "0202-10a3d80e7d59",
+    "0203-d766a797a086"
+  ],
+  "dagilim_tur": {
+    "finansman": 10
+  },
+  "dagilim_banka": {
+    "Banka 0202": 3,
+    "Banka 0200": 2,
+    "Banka 0201": 2,
+    "Banka 0203": 3
+  }
+}

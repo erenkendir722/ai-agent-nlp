@@ -552,3 +552,63 @@ def test_kopya_suphesi_az_ornekte_alarm_vermez(gold_dizini):
             [{"kampanya_turu": "kart", "kampanya_avantaji": "aynı cümle"}],
         )
     assert altin_set.kopya_suphesi() == []
+
+
+# ---------------------------------------------------------------------------
+# Kalibrasyon bloğu — uyum ölçümü için ayrı örnek kümesi
+# ---------------------------------------------------------------------------
+
+
+def test_kalibrasyon_altin_set_ornekleminin_disindan_secer(gold_dizini, monkeypatch):
+    """Kalibrasyon altın sete dokunmamalı; aksi hâlde etiketlenmiş örnek
+    hem cevap anahtarında hem uyum ölçümünde olur."""
+    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
+    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
+
+    secilen = altin_set.katmanli_ornekle(kampanyalar, 20)
+    altin_set.calisma_sayfalari_yaz(secilen, altin_set.KISILER)
+    assert altin_set.komut_kalibrasyon(10) == 0
+
+    orneklemde = altin_set.altin_set_orneklemi()
+    kalibrasyonda = {
+        kimlik
+        for _, kimlik, _, _ in altin_set._csv_oku(
+            gold_dizini / f"{altin_set.KALIBRASYON_ONEK}eren.csv"
+        )
+    }
+    assert kalibrasyonda, "kalibrasyon bloğu boş"
+    assert not (kalibrasyonda & orneklemde), "kalibrasyon altın set örneklemiyle çakışıyor"
+
+
+def test_kalibrasyon_herkeste_ayni_ornekler(gold_dizini, monkeypatch):
+    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
+    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
+    altin_set.calisma_sayfalari_yaz(altin_set.katmanli_ornekle(kampanyalar, 20), altin_set.KISILER)
+    altin_set.komut_kalibrasyon(10)
+
+    listeler = [
+        [k for _, k, _, _ in altin_set._csv_oku(gold_dizini / f"{altin_set.KALIBRASYON_ONEK}{p.lower()}.csv")]
+        for p in altin_set.KISILER
+    ]
+    assert all(liste == listeler[0] for liste in listeler)
+
+
+def test_kalibrasyon_dolu_dosyayi_ezmez(gold_dizini, monkeypatch):
+    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
+    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
+    altin_set.calisma_sayfalari_yaz(altin_set.katmanli_ornekle(kampanyalar, 20), altin_set.KISILER)
+    altin_set.komut_kalibrasyon(10)
+    _csv_doldur(gold_dizini / f"{altin_set.KALIBRASYON_ONEK}eren.csv", [{"kampanya_turu": "kart"}])
+
+    assert altin_set.komut_kalibrasyon(10) == 1
+
+
+def test_uyum_kalibrasyon_varsa_onu_kullanir(gold_dizini, monkeypatch):
+    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
+    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
+    altin_set.calisma_sayfalari_yaz(altin_set.katmanli_ornekle(kampanyalar, 20), altin_set.KISILER)
+    altin_set.komut_kalibrasyon(10)
+
+    assert altin_set.aktif_uyum_kaynagi()[0] == altin_set.UYUM_ONEK
+    _csv_doldur(gold_dizini / f"{altin_set.KALIBRASYON_ONEK}eren.csv", [{"kampanya_turu": "kart"}])
+    assert altin_set.aktif_uyum_kaynagi()[0] == altin_set.KALIBRASYON_ONEK

@@ -86,6 +86,20 @@ EMIN_DEGIL = "?"
 """Hücreye '?' yazan kişi o alanı atlamış olur — alan JSONL'e hiç girmez ve
 metriğe katılmaz. Tahmin edilmiş etiket, eksik etiketten daha zararlıdır."""
 
+UYUM_ONEK = "etiketleme_uyum_"
+KALIBRASYON_ONEK = "kalibrasyon_"
+KALIBRASYON_KAYDI = GOLD / "kalibrasyon_listesi.json"
+"""Kalibrasyon bloğu — uyum oranını ölçmek için AYRI bir örnek kümesi.
+
+Neden ayrı: uyum bloğunun ilk turu kirlendi (tamamlanmış bir dosya depoya
+girip kopyalandı). O 10 örneğin etiketleri altın set için hâlâ geçerli —
+sahibinin kendi işi — ama uyum ölçümü için kullanılamaz, çünkü iki kişi de
+aynı cevapları görmüş durumda; tekrar ölçmek uyumu değil hafızayı ölçer.
+
+Kalibrasyon bloğu, 60'lık altın set örnekleminin DIŞINDAN çekilir. Böylece
+altın sete dokunulmaz ve kimsenin görmediği örnekler üzerinde gerçek bir
+uyum oranı elde edilir."""
+
 UYUM_ADET = 10
 """Örneklemin ilk 10'unu DÖRDÜ BİRDEN etiketler (H-02).
 
@@ -305,16 +319,27 @@ def _anahtar(deger: Any) -> str:
 
 
 def uyum_dosyalari(
-    kisiler: tuple[str, ...],
+    kisiler: tuple[str, ...], onek: str = UYUM_ONEK
 ) -> dict[str, list[tuple[int, str, dict[str, Any], bool]]]:
     return {
         kisi: [s for s in _csv_oku(yol) if s[3]]
         for kisi in kisiler
-        if (yol := GOLD / f"etiketleme_uyum_{kisi.lower()}.csv").exists()
+        if (yol := GOLD / f"{onek}{kisi.lower()}.csv").exists()
     }
 
 
-def uyum_hesapla(kisiler: tuple[str, ...] = KISILER) -> dict[str, Any]:
+def aktif_uyum_kaynagi(kisiler: tuple[str, ...] = KISILER) -> tuple[str, str]:
+    """Uyum hangi blok üzerinden ölçülecek?
+
+    Kalibrasyon bloğunda etiket varsa o kullanılır — ilk uyum bloğu kirlendiği
+    için oradan çıkan oran geçerli değil.
+    """
+    if any(s for s in uyum_dosyalari(kisiler, KALIBRASYON_ONEK).values()):
+        return KALIBRASYON_ONEK, "kalibrasyon bloğu"
+    return UYUM_ONEK, "uyum bloğu"
+
+
+def uyum_hesapla(kisiler: tuple[str, ...] = KISILER, onek: str = UYUM_ONEK) -> dict[str, Any]:
     """Etiketleyiciler arası uyum — ikili eşleşme oranı (H-02'nin çıktısı).
 
     İKİ ORAN HESAPLANIR, çünkü tek oran yanıltıcıdır:
@@ -328,7 +353,7 @@ def uyum_hesapla(kisiler: tuple[str, ...] = KISILER) -> dict[str, Any]:
 
     '?' yazan kişi o alanda oylamaya hiç girmez.
     """
-    dosyalar = uyum_dosyalari(kisiler)
+    dosyalar = uyum_dosyalari(kisiler, onek)
     etiketleyenler = sorted(k for k, s in dosyalar.items() if s)
     bekleyenler = sorted(k for k in kisiler if k not in etiketleyenler)
     bos = {
@@ -403,7 +428,7 @@ KOPYA_ESIGI = 0.90
 KOPYA_ASGARI_ORNEK = 5
 
 
-def kopya_suphesi(kisiler: tuple[str, ...] = KISILER) -> list[str]:
+def kopya_suphesi(kisiler: tuple[str, ...] = KISILER, onek: str = UYUM_ONEK) -> list[str]:
     """İki etiketleyicinin serbest metin alanları fazla mı benziyor?
 
     Uyum oranı ancak etiketleme BAĞIMSIZ yapıldıysa anlam taşır. Serbest metin
@@ -415,7 +440,7 @@ def kopya_suphesi(kisiler: tuple[str, ...] = KISILER) -> list[str]:
     etiketlemeden önce depoya pushlandı ve cevap anahtarı herkesin eline geçti.
     Ölçülen %98, gerçekte iki dosyanın aynı olmasıydı.
     """
-    dosyalar = uyum_dosyalari(kisiler)
+    dosyalar = uyum_dosyalari(kisiler, onek)
     tablolar = {
         kisi: {kimlik: etiketler for _, kimlik, etiketler, _d in satirlar}
         for kisi, satirlar in dosyalar.items()
@@ -712,8 +737,87 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
     return 0
 
 
+def altin_set_orneklemi() -> set[str]:
+    """60'lık altın set örnekleminin kimlikleri (uyum bloğu + kişisel paylar)."""
+    if not ORNEK_KAYDI.exists():
+        return set()
+    kayit = json.loads(ORNEK_KAYDI.read_text(encoding="utf-8"))
+    kimlikler = set(kayit.get("uyum_blogu", []))
+    for pay in kayit.get("atama", {}).values():
+        kimlikler.update(pay)
+    return kimlikler
+
+
+def komut_kalibrasyon(adet: int, zorla: bool = False) -> int:
+    """Uyum ölçümü için, altın set örnekleminin DIŞINDAN taze blok."""
+    kampanyalar = _kampanyalari_al()
+    kullanilmis = altin_set_orneklemi()
+    disarida = [k for k in kampanyalar if k.kampanya_id not in kullanilmis]
+
+    if len(disarida) < adet:
+        print(f"❌ Örneklem dışında yalnız {len(disarida)} kampanya var, {adet} istendi.")
+        return 1
+
+    dolu = [
+        f"{KALIBRASYON_ONEK}{k.lower()}.csv"
+        for k in KISILER
+        if _etiketli_mi(GOLD / f"{KALIBRASYON_ONEK}{k.lower()}.csv")
+    ]
+    if dolu and not zorla:
+        print("❌ Doldurulmuş kalibrasyon dosyaları var, üstlerine yazılmadı:")
+        for ad in dolu:
+            print(f"   {ad}")
+        print("   Sıfırlamak için: python tools/altin_set.py kalibrasyon --zorla")
+        return 1
+
+    # Tohum farklı: aynı tohum, aynı sıralamayla örtüşen blok üretirdi.
+    blok = katmanli_ornekle(disarida, adet, tohum=TOHUM + 1)
+    GOLD.mkdir(parents=True, exist_ok=True)
+    METINLER.mkdir(parents=True, exist_ok=True)
+
+    for kisi in KISILER:
+        _csv_yaz(GOLD / f"{KALIBRASYON_ONEK}{kisi.lower()}.csv", blok)
+    for kampanya in blok:
+        (METINLER / f"{kampanya.kampanya_id}.txt").write_text(
+            kampanya.ham_metin, encoding="utf-8"
+        )
+
+    KALIBRASYON_KAYDI.write_text(
+        json.dumps(
+            {
+                "olusturma": datetime.now().isoformat(timespec="seconds"),
+                "tohum": TOHUM + 1,
+                "amac": "etiketleyiciler arası uyum ölçümü (H-02)",
+                "not": "Altın set örnekleminin dışından seçildi; altın sete girmez.",
+                "kampanyalar": [k.kampanya_id for k in blok],
+                "dagilim_tur": dict(Counter(_tur(k) for k in blok)),
+                "dagilim_banka": dict(Counter(k.banka_adi for k in blok)),
+            },
+            ensure_ascii=False,
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    print(f"✅ Kalibrasyon bloğu: {len(blok)} örnek (altın set örnekleminin dışından)\n")
+    for kisi in KISILER:
+        print(f"   data/gold/{KALIBRASYON_ONEK}{kisi.lower()}.csv")
+    print("\n   Tür dağılımı:")
+    for tur, sayi in Counter(_tur(k) for k in blok).most_common():
+        print(f"     {tur}: {sayi}")
+    print(
+        "\n🔒 MÜHÜRLÜ ÇALIŞIN — dolu dosyayı PUSHLAMAYIN.\n"
+        "   Herkes kendi dosyasını doldurup doğrudan kaptana gönderir;\n"
+        "   kaptan dördünü birden koyar, sonra `make altin-uyum` çalışır.\n"
+        "   Aksi hâlde depoyu çeken kişi cevapları görür ve oran anlamsızlaşır."
+    )
+    return 0
+
+
 def komut_uyum() -> int:
-    sonuc = uyum_hesapla()
+    onek, aciklama = aktif_uyum_kaynagi()
+    print(f"\n  Kaynak: {aciklama} ({onek}<ad>.csv)")
+    sonuc = uyum_hesapla(KISILER, onek)
     if sonuc["uyum"] is None:
         etiketleyen = sonuc.get("etiketleyenler") or []
         bekleyen = sonuc.get("bekleyenler") or []
@@ -728,7 +832,7 @@ def komut_uyum() -> int:
             print(f"   ⌛ Bekleyenler: {', '.join(bekleyen)}")
         return 1
 
-    kopya = kopya_suphesi()
+    kopya = kopya_suphesi(KISILER, onek)
     if kopya:
         print("\n🚨 KOPYA ŞÜPHESİ — uyum oranı bu haliyle GEÇERSİZ\n")
         for satir in kopya:
@@ -843,6 +947,10 @@ def main() -> int:
         "--zorla", action="store_true", help="doldurulmuş sayfaların üstüne yaz"
     )
 
+    p_kal = alt.add_parser("kalibrasyon", help="uyum ölçümü için taze blok (H-02)")
+    p_kal.add_argument("--adet", type=int, default=10, help="örnek sayısı (varsayılan 10)")
+    p_kal.add_argument("--zorla", action="store_true", help="dolu kalibrasyon dosyalarını sıfırla")
+
     alt.add_parser("uyum", help="etiketleyiciler arası uyum oranı (H-02)")
     alt.add_parser("derle", help="CSV'leri altin_set.jsonl'e derle")
     alt.add_parser("dogrula", help="mevcut altın seti denetle")
@@ -850,6 +958,8 @@ def main() -> int:
     args = ap.parse_args()
     if args.komut == "ornekle":
         return komut_ornekle(args.adet, args.zorla)
+    if args.komut == "kalibrasyon":
+        return komut_kalibrasyon(args.adet, args.zorla)
     if args.komut == "uyum":
         return komut_uyum()
     if args.komut == "derle":
