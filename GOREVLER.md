@@ -353,12 +353,26 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır: Bir arkadaşın senin dokümanınla kurdu, süre tutuldu
       ↳ **Kendi makinende çalışması sayılmaz.** 20 dakikayı geçiyorsa doküman eksik.
 
-- [ ] **E-12** Şartname uyum takibi — madde madde · 📅 22 Ağu
-      ↳ Bitti sayılır: `docs/SARTNAME_UYUM.md` — şartnamedeki **her maddeyi tek
-        tek satır** olarak gir (~60 satır): madde no · gereklilik · sorumlu ·
-        durum · kanıt linki
-      ↳ Jüri şartnameye göre puanlıyor. Madde madde takip, unutulan bir
-        gereklilik yüzünden puan kaybetmenin **tek panzehiri**.
+- [x] **E-12** Şartname uyum takibi — madde madde · 📅 22 Ağu *(bitti: 12 Ağu)*
+      ↳ [`docs/SARTNAME_UYUM.md`](docs/SARTNAME_UYUM.md) — 20 sayfanın tamamı
+        tarandı, ~80 gereklilik satırı çıkarıldı
+      ↳ 🚨 **Çıkan 3 yeni bulgu:**
+        (a) Madde 9'da teslim tarihi **12.07.2026** yazıyor, madde 3'teki takvim
+            **26 Ağustos** diyor — şartname kendiyle çelişiyor, resmî kanaldan
+            sorulmalı (bkz. E-20)
+        (b) Madde 5.1 veri setinin BDDK listesindeki bankaların **tümünü**
+            içermesini şart koşuyor — T.O.M. ve Adil'de 0 kampanya var
+        (c) Madde 10 sunumun **GitHub'a da yüklenmesini** istiyor
+      ↳ Denetim günlüğü dosyanın sonunda; her taramada satır eklenecek
+
+- [ ] **E-20** 🔴 Teslim tarihi çelişkisini resmî kanaldan sor · 📅 **12 Ağu (bugün)**
+      ↳ Şartname madde 9: *"Yarışmamız 12.07.2026 tarihinde sona erecektir"*
+        Şartname madde 3: *"Yarışma Çevrimiçi Süreci: 27 Temmuz – 26 Ağustos"*
+      ↳ Bitti sayılır: `iletisim@teknofest.org`'a **yazılı** soruldu ve yarışma
+        e-posta grubuna soruldu; cevap `docs/SARTNAME_UYUM.md`'ye işlendi
+      ↳ Okumamız 26 Ağustos (12 Temmuz başvuru tarihinden kopyalanmış görünüyor)
+        ama **teslim tarihi üzerine varsayım yapılmaz**. Plan 25 Ağustos hedefiyle
+        devam ediyor; erken bitirmek her iki okumada da güvenli.
 
 - [ ] **E-13** Fiziki final hazırlığı — çanta listesi · 📅 23 Ağu
       ⛔ **Önce bitmeli:** E-08 (Eren) · ES-13 (Esra) · ES-17 (Esra)
@@ -900,5 +914,6 @@ make altin-dogrula   # altın seti denetle
 | Güncel metrikler | [`docs/SONUCLAR.md`](docs/SONUCLAR.md) |
 | Neden şu karar alındı | [`docs/kararlar/`](docs/kararlar/) |
 | Şartname bulguları | [`docs/kararlar/004-sartname-bulgulari.md`](docs/kararlar/004-sartname-bulgulari.md) |
+| **Şartname uyum takibi** | [`docs/SARTNAME_UYUM.md`](docs/SARTNAME_UYUM.md) |
 | **Nasıl etiketlenir** | [`docs/ETIKETLEME_KILAVUZU.md`](docs/ETIKETLEME_KILAVUZU.md) |
 | Veri şeması (DEĞİŞTİRME) | [`src/schema.py`](src/schema.py) |
