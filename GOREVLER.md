@@ -1,8 +1,12 @@
 # 📋 GÖREV PANOSU — Takım SVARTAL
 
-**Son güncelleme:** 9 Ağustos 2026
+**Son güncelleme:** 12 Ağustos 2026 — *durum denetimi yapıldı, bkz. ⏰ GECİKMİŞ*
 **Teslim:** 26 Ağustos 2026 23:59 · **Hedefimiz: 25 Ağustos 20:00**
 **Özellik dondurma:** 🔒 **21 Ağustos Cuma 23:59 — istisnasız**
+
+> ⏳ **Kalan süre: geliştirmeye 9 gün, teslime 13 gün.** Dondurmadan sonra kod
+> yazılmaz — sadece ölçüm, doküman ve video. Takvimi 26 Ağustos'a göre değil,
+> **21 Ağustos'a göre** kur.
 
 ---
 
@@ -157,17 +161,59 @@ Bağımlılıkları elle takip etme, komutu çalıştır: `make gorev ad=<adın>
 
 ---
 
+## ⏰ GECİKMİŞ — 12 Ağustos denetimi
+
+**Denetim yöntemi:** Bu liste tahmin değil. 12 Ağustos'ta depo tek tek kontrol
+edildi — commit geçmişi, dosya varlığı, `banks.yaml` içeriği, git etiketleri,
+GitHub API. Bulgu: **9 Ağustos'tan sonra ürün tarafında hiçbir değişiklik yok.**
+Tek commit var (10 Ağu) ve yalnızca pano/hook dosyalarına dokunuyor. `main`
+origin ile birebir eşit, başka dal ve stash yok — yani pushlanmamış gizli iş
+de yok. **Panoda tik olmamasının sebebi tiklemeyi unutmak değil; iş yapılmadı.**
+
+| Görev | Kim | Son tarih | Gecikme | Doğrulanan durum |
+|---|---|---|---|---|
+| **E-01** | Eren | 10 Ağu | 2 gün | ❌ Depo **PRIVATE**, açıklama ve topic yok |
+| **H-02** | Herkes | 10 Ağu | 2 gün | ❌ `docs/ETIKETLEME_KILAVUZU.md` yok |
+| **E-03** | Eren | 10 Ağu | 2 gün | ❌ Depoda hiç git etiketi yok |
+| **S-01** | Samet | 10 Ağu | 2 gün | ❌ `.env` yok, 3090 bağlantısı yapılandırılmamış |
+| **G-01** | Görkem | 11 Ağu | 1 gün | ❌ 4 banka hâlâ `kod_dogrulandi: false` |
+| **G-02** | Görkem | 11 Ağu | 1 gün | ❌ `docs/kanit/` klasörü bile yok |
+| **ES-01** | Esra | 11 Ağu | 1 gün | ❌ `app/` 9 Ağu'dan beri değişmemiş |
+| **G-03** | Görkem | 12 Ağu | bugün | ❌ `banks.yaml`'da hâlâ 9 Ağu "bulunamadı" notu |
+| **E-02** | Eren | 12 Ağu | bugün | ❌ Yapılmadı — **4 görevi tıkıyor** |
+| **ES-02** | Esra | 12 Ağu | bugün | ❌ `app/` 9 Ağu'dan beri değişmemiş |
+
+### Bugün bu sırayla
+
+1. **E-01 — depo herkese açık yapılsın. 5 dakika.** Şartname herkese açık depo
+   istiyor; depo şu an private. Bu haliyle **değerlendirmeye alınmama riski
+   somut** ve diğer her şeyin üstünde. Aynı işlemde topic'leri ve açıklamayı da
+   gir, `v0.1` etiketini at (E-03 de kapanır).
+2. **E-02 — Docker testi.** Arkasında 4 görev bekliyor (E-07, E-08, E-09, E-11)
+   ve on-prem puanının (%20) tamamı buna dayanıyor.
+3. **H-02 — etiketleme kılavuzu.** Kritik yolun başı; aşağıdaki uyarıya bak.
+
+> 🚨 **Kritik yol alarmı.** `H-02 → H-01 (16 Ağu) → S-12 → S-13 → ES-13`
+> projenin en uzun zinciri. H-02 iki gün gecikti ve **hiç başlamadı**;
+> H-01'e 4 gün kaldı, `data/gold/` boş. Bu zincir kayarsa puanın %30'u
+> ölçülemez ve Esra'nın slaytları 23 Ağustos'ta hazır olamaz.
+> **Karar bugün verilmeli** — bkz. H-01.
+
+---
+
 ## 📊 DURUM
 
 | Sprint | Tarih | Durum |
 |---|---|---|
 | **S0** — Dikey dilim | 7–9 Ağu | ✅ **BİTTİ** — sistem uçtan uca çalışıyor |
-| **S1** — Veri + çıkarım | 10–16 Ağu | 🔵 Sırada |
+| **S1** — Veri + çıkarım | 10–16 Ağu | 🟠 **Sürüyor — 3 gün gecikmeli** |
 | **S2** — Zekâ katmanı | 17–21 Ağu | ⚪ |
 | **S3** — Ölçüm + on-prem | 22–23 Ağu | ⚪ |
 | **S4** — Teslim | 24–26 Ağu | ⚪ |
 
-**Bugünkü durum:** 96 kampanya · 8 banka · halüsinasyon %0,25 · 100 test geçiyor
+**Bugünkü durum:** 96 kampanya (hedef 300+) · 8 banka · halüsinasyon %0,25 ·
+106 test geçiyor · `data/gold/` **boş** · planlanan 13 dokümandan **0**'ı yazıldı
+*(sayılar 9 Ağustos'tan beri değişmedi — 12 Ağustos denetiminde teyit edildi)*
 Ayrıntı: [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
 
 ### Yük dağılımı
@@ -185,11 +231,13 @@ sprintlerde yoğunlaşıyor. **Esra'nın işi Sprint 2 ve 4'te ağırlaşıyor**
 (yan yana karşılaştırma, dışa aktarma, video, sunum), **Samet'inki Sprint 3'te**
 (ölçüm ve ablasyon), **Görkem'inki Sprint 1'de** (300+ kampanya).
 
-### 🚨 En kritik 3 şey
+### 🚨 En kritik 4 şey
 
-1. **Altın veri seti — 16 Ağustos.** Bu olmadan puanın %30'u ölçülemez. Herkes 25 örnek.
-2. **Docker testi.** On-prem iddiası (%20) test edilmemiş bir Dockerfile'a dayanıyor.
-3. **21 Ağustos özellik dondurma.** Sonrasında sadece ölçüm, doküman, video.
+1. **DEPO PRIVATE — bugün açılmalı.** Şartname herkese açık depo istiyor.
+   5 dakikalık iş, karşılığı yarışmada kalmak. (E-01)
+2. **Altın veri seti — 16 Ağustos.** Bu olmadan puanın %30'u ölçülemez. Herkes 25 örnek.
+3. **Docker testi.** On-prem iddiası (%20) test edilmemiş bir Dockerfile'a dayanıyor.
+4. **21 Ağustos özellik dondurma.** Sonrasında sadece ölçüm, doküman, video.
 
 ---
 
@@ -197,17 +245,27 @@ sprintlerde yoğunlaşıyor. **Esra'nın işi Sprint 2 ve 4'te ağırlaşıyor**
 
 Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
-- [ ] **H-01** 🔴 **ALTIN VERİ SETİ — kişi başı 25 örnek** · 📅 **16 Ağu (kesin)**
+- [ ] **H-01** 🔴 **ALTIN VERİ SETİ — kişi başı ~23 örnek** · 📅 **16 Ağu (kesin)**
       ⛔ **Önce bitmeli:** H-02 (Herkes)
-      ↳ Bitti sayılır: `data/gold/altin_set.jsonl` içinde 100 etiketli örnek var,
+      ↳ Bitti sayılır: `data/gold/altin_set.jsonl` içinde **60** etiketli örnek var,
         `make eval` doğruluk metriklerini hesaplıyor (artık "beklemede" demiyor)
-      ↳ Nasıl: Excel/Sheets'te etiketle, sonra JSONL'e çevir. Özel araç yazma.
-      ↳ Katmanlama: her faal bankadan orantılı, her kampanya türünden en az 8 örnek
-      ↳ **Gecikirse 100 → 60 örneğe düş, ama mutlaka yap.**
+      ↳ ✅ **12 Ağu: altyapı hazır.** Örneklem çıkarıldı, çalışma sayfaları üretildi,
+        derleyici ve denetçi yazıldı. **Kalan iş yalnız etiketleme.**
+      ↳ Senin dosyan: **`data/gold/etiketleme_<adın>.csv`** (12–13 örnek)
+        Excel/Sheets'te aç, doldur, kaydet. Metin sütunu içinde hazır.
+      ↳ 📖 **Önce `docs/ETIKETLEME_KILAVUZU.md` oku** — boş hücre ile `?` farklı
+        şeyler demek ve bu fark doğrudan metriğe giriyor.
+      ↳ **12 Ağu kararı: 100 değil 60 örnek.** Panodaki kaçış bugün kullanıldı;
+        16 Ağustos'ta "yetişmedi" demek S-12 → S-13 → ES-13 zincirini kaydırırdı.
+      ↳ ⚠️ Katmanlama modele değil metne göre kontrol edilmeli: örneklem sistemin
+        kendi tür tahminine göre dengelendi (bkz. kılavuz bölüm 8).
 
-- [ ] **H-02** İlk 10 örneği DÖRDÜNÜZ BİRLİKTE etiketleyin, uyuşmazlıkları tartışın
-      · 📅 **10 Ağu** (H-01'den önce, yoksa herkes farklı etiketler)
-      ↳ Bitti sayılır: `docs/ETIKETLEME_KILAVUZU.md` yazıldı + uyum oranı hesaplandı
+- [ ] **H-02** İlk 10 örneği DÖRDÜNÜZ BİRLİKTE etiketleyin · 📅 **10 Ağu ⏰ GECİKMİŞ (2 gün)**
+      ↳ ✅ `docs/ETIKETLEME_KILAVUZU.md` yazıldı (12 Ağu) — kalan iş uyum ölçümü
+      ↳ Dosyan: **`data/gold/etiketleme_uyum_<adın>.csv`** — dördünüzde de **aynı 10 örnek**
+      ↳ Bitti sayılır: dördü de doldurdu, `make altin-uyum` ≥ %85 gösteriyor
+      ↳ Uyum düşükse ayrışan alanları konuşun, kararı kılavuzun **6. bölümüne** yazın
+      ↳ Bu 10 örnek çoğunluk oyuyla uzlaştırılıp altın sete girer — boşa etiketleme değil
       ↳ Sunumda "etiketleme uzlaşmamız %X" cümlesi akademik jüriyi etkiler
 
 - [ ] **H-03** Günlük yazılı stand-up · her gün 21:00 · WhatsApp
@@ -224,22 +282,31 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **E-01** 🔴 GitHub deposu ayarları · 📅 **10 Ağu**
-      ↳ Bitti sayılır: Repo topic'lerinde **`BilisimVadisi2026`** var,
-        **"Türkiye Açık Kaynak Platformu"** etiketlenmiş, **takım adı** repo
-        açıklamasında ve README'de, LICENSE = Apache 2.0, depo herkese açık
-      ↳ ⚠️ `BilisimVadisi2026` etiketi eksikse **değerlendirmeye alınmama riski var**
+- [ ] **E-01** 🔴 **DEPO PRIVATE — ÖNCE BUNU AÇ** · 📅 **10 Ağu ⏰ GECİKMİŞ (2 gün)**
+      ↳ ⚠️ **12 Ağu denetimi:** `api.github.com/repos/erenkendir722/ai-agent-nlp`
+        **404** dönüyor, depo herkese açık depolar arasında yok → **private**.
+        Ayrıca **açıklama boş, hiç topic yok, hiç git etiketi yok.**
+      ↳ Bitti sayılır: Depo **herkese açık**, topic'lerinde **`BilisimVadisi2026`**
+        ve **"Türkiye Açık Kaynak Platformu"** var, **takım adı** repo
+        açıklamasında ve README'de, LICENSE = Apache 2.0
+      ↳ ✅ Zaten tamam: LICENSE Apache 2.0, README'de "Takım SVARTAL" yazıyor
+      ↳ ⚠️ Private depo + eksik `BilisimVadisi2026` etiketi =
+        **değerlendirmeye alınmama riski.** Toplam 5 dakikalık iş.
 
-- [ ] **E-02** 🔴 Docker'ı gerçekten test et · 📅 **12 Ağu**
+- [ ] **E-02** 🔴 Docker'ı gerçekten test et · 📅 **12 Ağu ⏰ bugün son gün**
       ↳ Bitti sayılır: `docker compose up -d` çalışıyor, Streamlit :8501'de açılıyor,
         API :8000/docs'ta açılıyor, `docker compose exec` ile crawl+extract koşuyor
-      ↳ ⚠️ `Dockerfile` ve `docker-compose.yml` YAZILDI ama **hiç çalıştırılmadı**
-        (geliştirme makinesinde Docker kurulu değil). On-prem puanının merkezi bu.
+      ↳ ⚠️ `Dockerfile` ve `docker-compose.yml` YAZILDI ama **hiç çalıştırılmadı**.
+        On-prem puanının merkezi bu ve **arkasında 4 görev bekliyor**.
+      ↳ ✅ **12 Ağu düzeltmesi:** Eski not "makinede Docker kurulu değil" diyordu,
+        bu artık doğru değil — Docker **kurulu** (`/usr/local/bin/docker`),
+        yalnızca daemon kapalı. **Docker Desktop'ı başlat, mazeret kalmadı.**
       ↳ Hata çıkarsa düzelt, `docs/KURULUM.md`'yi gerçek çıktıya göre güncelle
 
-- [ ] **E-03** Haftalık GitHub güncellemesi + sürüm etiketi · 📅 **10, 16, 23 Ağu**
+- [ ] **E-03** Haftalık GitHub güncellemesi + sürüm etiketi · 📅 **10, 16, 23 Ağu ⏰ ilki GECİKTİ**
       ⛔ **Önce bitmeli:** E-01 (Eren)
       ↳ Bitti sayılır: `v0.1`, `v0.2`, `v0.9` etiketleri atıldı
+      ↳ ⚠️ 12 Ağu denetimi: depoda **hiç git etiketi yok**, `v0.1` atılmamış
       ↳ Şartname madde 9 zorunlu tutuyor, commit geçmişi kanıt
 
 - [ ] **E-04** Boru hattını tüm faal bankalar için sağlamlaştır · 📅 14 Ağu
@@ -354,7 +421,8 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **S-01** 🔴 3090'a erişimi kur ve doğrula · 📅 **10 Ağu**
+- [ ] **S-01** 🔴 3090'a erişimi kur ve doğrula · 📅 **10 Ağu ⏰ GECİKMİŞ (2 gün)**
+      ↳ ⚠️ 12 Ağu denetimi: `.env` dosyası yok, bağlantı yapılandırılmamış
       ↳ Bitti sayılır: 3090'da `ollama serve` çalışıyor, `qwen3.5:9b-q4_K_M` indi,
         `.env`'de `OLLAMA_HOST` ile bağlanılabiliyor
       ↳ Neden önemli: 8 GB laptopta 300 kampanya ~65 dk; 3090'da çok daha hızlı
@@ -489,18 +557,20 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **G-01** 🔴 EFT/BDDK kodlarını doğrula · 📅 **11 Ağu**
-      ↳ `data/banks.yaml`'da `kod_dogrulandi: false` olan **3 banka**:
-        Albaraka Türk, Hayat Finans, T.O.M., Dünya Katılım
+- [ ] **G-01** 🔴 EFT/BDDK kodlarını doğrula · 📅 **11 Ağu ⏰ GECİKMİŞ (1 gün)**
+      ↳ `data/banks.yaml`'da `kod_dogrulandi: false` olan **4 faal banka**
+        *(12 Ağu denetiminde sayıldı — eski notta "3" yazıyordu, yanlıştı)*:
+        Albaraka Türk, Hayat Finans, T.O.M. Katılım, Dünya Katılım
       ↳ Bitti sayılır: hepsi BDDK/TBB kaynağından teyit, `kod_dogrulandi: true`
       ↳ Yanlış kod çıkarımı bozmaz ama yayınlanan veri setinde hata olur
 
-- [ ] **G-02** 🔴 BDDK listesini resmî kaynaktan tamamla + ekran görüntüsü · 📅 **11 Ağu**
+- [ ] **G-02** 🔴 BDDK listesini resmî kaynaktan tamamla + ekran görüntüsü · 📅 **11 Ağu ⏰ GECİKTİ**
+      ↳ ⚠️ 12 Ağu denetimi: `docs/kanit/` klasörü henüz oluşturulmadı
       ↳ Bitti sayılır: `docs/kanit/bddk-liste.png` var, `banks.yaml` BDDK ile birebir
       ↳ BDDK robots.txt otomatik erişimi engelliyor → **elle al** (şartname izin veriyor)
       ↳ Faaliyete geçmemiş bankaları da listede tut, `durum` ile işaretle
 
-- [ ] **G-03** T.O.M. Katılım kampanya sayfasını bul · 📅 12 Ağu
+- [ ] **G-03** T.O.M. Katılım kampanya sayfasını bul · 📅 12 Ağu ⏰ bugün son gün
       ↳ 9 Ağu sondajında ana sayfada kampanya bağlantısı bulunamadı (JS render olabilir)
       ↳ Bitti sayılır: `seed_urls` dolduruldu VEYA "kampanya yayınlamıyor" notu düşüldü
       ↳ Bulunamazsa manuel toplama yedeği kullan
@@ -614,12 +684,12 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **ES-01** Genel Bakış ekranını gerçek veriyle cilala · 📅 11 Ağu
+- [ ] **ES-01** Genel Bakış ekranını gerçek veriyle cilala · 📅 11 Ağu ⏰ GECİKTİ
       ↳ Bitti sayılır: 96+ kayıtla grafikler okunaklı, ısı haritası taşmıyor,
         uzun banka adları kırpılıyor
       ↳ `app/Genel_Bakis.py` çalışıyor; tür dağılımı ve banka×tür ısı haritası var
 
-- [ ] **ES-02** Karşılaştırma ekranı — açılır kanıt panelini gözden geçir · 📅 12 Ağu
+- [ ] **ES-02** Karşılaştırma ekranı — açılır kanıt panelini gözden geçir · 📅 12 Ağu ⏰ bugün son gün
       ↳ Bitti sayılır: Her satır açıldığında tüm alanlar + güven skoru +
         **kaynak alıntısı ve URL** görünüyor
       ↳ Bankacılıkta izlenebilirlik olmadan hiçbir sistem kabul edilmez — bu panel
@@ -806,6 +876,12 @@ make run          # Streamlit arayüzü
 make test         # testler (şu an 100 test)
 make eval         # metrikler → docs/SONUCLAR.md
 make lisanslar    # lisans raporu
+
+# --- altın set (H-01 / H-02) ---
+make altin-ornekle   # örneklem + kişi başı etiketleme sayfası (bir kez çalıştırıldı)
+make altin-uyum      # etiketleyiciler arası uyum oranı
+make altin-derle     # doldurulmuş CSV'ler → data/gold/altin_set.jsonl
+make altin-dogrula   # altın seti denetle
 ```
 
 > ⚠️ **`make extract` çalışırken `make run`'ı kapat.** 8 GB makinede aynı anda
@@ -824,4 +900,5 @@ make lisanslar    # lisans raporu
 | Güncel metrikler | [`docs/SONUCLAR.md`](docs/SONUCLAR.md) |
 | Neden şu karar alındı | [`docs/kararlar/`](docs/kararlar/) |
 | Şartname bulguları | [`docs/kararlar/004-sartname-bulgulari.md`](docs/kararlar/004-sartname-bulgulari.md) |
+| **Nasıl etiketlenir** | [`docs/ETIKETLEME_KILAVUZU.md`](docs/ETIKETLEME_KILAVUZU.md) |
 | Veri şeması (DEĞİŞTİRME) | [`src/schema.py`](src/schema.py) |

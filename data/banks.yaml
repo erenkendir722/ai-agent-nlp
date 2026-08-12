@@ -122,9 +122,14 @@
   ad: "Adil Katılım Bankası A.Ş."
   kisa_ad: "Adil Katılım"
   site: "https://www.adilkatilim.com.tr"
-  durum: "faaliyete_gecmedi"
+  durum: "faal"
   kod_dogrulandi: false
-  not: "Eylül 2025 kuruluş izni. Faaliyet durumu 9 Ağustos 2026 itibarıyla teyit edilmeli."
+  not: >-
+    Eylül 2025 kuruluş izni. 12 Ağustos 2026'da BDDK'nın faal katılım bankaları
+    listesinde DİJİTAL BANKA olarak görüldü — durum "faaliyete_gecmedi"den
+    "faal"e çekildi. EFT kodu hâlâ doğrulanmadı (G-01), kod bulunana kadar
+    yer tutucu kullanılıyor; henüz kampanya toplanmadığı için kimlik çakışması
+    riski yok. Kampanya sayfası aranmalı (G-04).
   seed_urls: []
   url_desenleri: []
   robots_kontrol: true
@@ -137,8 +142,9 @@
   kod_dogrulandi: false
   not: >-
     26 Şubat 2026'da BDDK faaliyet izni aldı (Duyuru 11424), 2026 ikinci
-    yarısında faaliyete geçmesi planlanıyordu. 9 Ağustos 2026 itibarıyla
-    faaliyet durumu kontrol edilmeli — geçtiyse durum "faal" yapılır.
+    yarısında faaliyete geçmesi planlanıyordu. 12 Ağustos 2026'da BDDK'nın
+    faal katılım bankaları listesinde YOK — henüz faaliyete geçmemiş,
+    "faaliyete_gecmedi" doğru.
   seed_urls: []
   url_desenleri: []
   robots_kontrol: true

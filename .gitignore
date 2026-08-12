@@ -18,3 +18,7 @@ data/embeddings.npy
 .ruff_cache/
 *.egg-info/
 data/raw/**/*.html
+
+# Elle alınmış paylaşım kopyaları — data/gold/ zaten depoda,
+# zip bayatlar ve iki ayrı gerçeklik doğar
+data/*.zip

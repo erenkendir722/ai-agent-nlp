@@ -1,4 +1,5 @@
-.PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down
+.PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
+        altin-ornekle altin-uyum altin-derle altin-dogrula gorev gorev-dogrula git-kontrol
 
 PYTHON ?= .venv/bin/python
 STREAMLIT ?= .venv/bin/streamlit
@@ -67,6 +68,19 @@ temiz:  ## türetilmiş dosyaları sil (ham veri KORUNUR)
 	rm -f data/katilim.db
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	@echo "✅ Temizlendi. data/raw/ dokunulmadı."
+
+# --- altın set (H-01 / H-02) ---
+altin-ornekle:  ## katmanlı örneklem -> kişi başı etiketleme CSV'si
+	@$(PYTHON) tools/altin_set.py ornekle --adet $(or $(adet),60)
+
+altin-uyum:  ## etiketleyiciler arası uyum oranı (uyum bloğundan)
+	@$(PYTHON) tools/altin_set.py uyum
+
+altin-derle:  ## doldurulmuş CSV'ler -> data/gold/altin_set.jsonl
+	@$(PYTHON) tools/altin_set.py derle
+
+altin-dogrula:  ## mevcut altın seti denetle
+	@$(PYTHON) tools/altin_set.py dogrula
 
 # --- görev panosu ---
 gorev:  ## görev durumu (ad=Esra ile kişiye özel)
