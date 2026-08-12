@@ -58,12 +58,28 @@ TOHUM = 20260812
 """Sabit tohum — örneklem yeniden üretilebilir olmalı. Jüri 'bu 60 örneği nasıl
 seçtiniz?' diye sorduğunda cevap 'rastgele' değil, 'şu tohumla katmanlı' olmalı."""
 
-CSV_UST_BILGI = ("kampanya_id", "banka_adi", "kaynak_url", "metin")
+CSV_UST_BILGI = ("kampanya_id", "banka_adi", "kaynak_url")
+CSV_SON_BILGI = ("metin",)
+"""`metin` bilerek EN SONA konur.
+
+İlk sürümde 4. sütundaydı ve etiket sütunlarını sağa itiyordu: 2.500 karakterlik
+bir hücrenin ötesine kaydırınca hangi sütunda olduğunu takip etmek imkânsız
+hâle geliyor ve değerler komşu sütunlara düşüyor. 12 Ağustos'ta tam olarak bu
+oldu — bir etiketleme turunun 15 alanı yanlış sütuna yazıldı. Etiket sütunları
+artık kimlik sütunlarının hemen yanında, dar ve yan yana."""
 BOOL_ALANLAR = ("masrafsiz_mi",)
 TARIH_ALANLAR = ("kampanya_bitis",)
 METIN_KIRPMA = 15_000
 """Excel hücre sınırı 32.767 karakter. 96 kaydın yalnız 2'si bu eşiğin üstünde;
 tam metin her hâlükârda `data/gold/metinler/` altına da yazılır."""
+
+def _kisa_yol(yol: Path) -> str:
+    """Depo köküne göre yol; kök dışındaysa (testlerde geçici dizin) tam yol."""
+    try:
+        return str(yol.relative_to(KOK))
+    except ValueError:
+        return str(yol)
+
 
 EMIN_DEGIL = "?"
 """Hücreye '?' yazan kişi o alanı atlamış olur — alan JSONL'e hiç girmez ve
@@ -137,29 +153,41 @@ def _kirp(metin: str) -> str:
     )
 
 
+def csv_basliklari() -> list[str]:
+    return [*CSV_UST_BILGI, *ALAN_ADLARI, *CSV_SON_BILGI]
+
+
 def _csv_yaz(yol: Path, kampanyalar: list[Kampanya]) -> None:
     # utf-8-sig: Excel, BOM'suz UTF-8'i Türkçe karakterlerde bozuk gösteriyor
     with yol.open("w", encoding="utf-8-sig", newline="") as dosya:
         yazici = csv.writer(dosya)
-        yazici.writerow([*CSV_UST_BILGI, *ALAN_ADLARI])
+        yazici.writerow(csv_basliklari())
         for kampanya in kampanyalar:
             yazici.writerow(
                 [
                     kampanya.kampanya_id,
                     kampanya.banka_adi,
                     kampanya.kaynak_url,
-                    _kirp(kampanya.ham_metin),
                     *([""] * len(ALAN_ADLARI)),
+                    _kirp(kampanya.ham_metin),
                 ]
             )
 
 
+def _etiketli_mi(yol: Path) -> bool:
+    return yol.exists() and any(dokunuldu for _, _, _, dokunuldu in _csv_oku(yol))
+
+
 def calisma_sayfalari_yaz(
-    secilen: list[Kampanya], kisiler: tuple[str, ...]
-) -> tuple[list[Kampanya], dict[str, int]]:
+    secilen: list[Kampanya], kisiler: tuple[str, ...], zorla: bool = False
+) -> tuple[list[Kampanya], dict[str, int], list[str]]:
     """Örneklemi uyum bloğu + kişisel paylara ayırır ve CSV'leri yazar.
 
-    (uyum_blogu, kisi -> kişisel örnek sayısı) döner.
+    Etiket içeren sayfalar KORUNUR (`zorla` verilmedikçe) — biri çalışırken
+    başkasının yeniden örnekleme yapması, saatlerce emeği silmemeli. Örneklem
+    sabit tohumlu olduğu için korunan sayfa yeni örneklemle tutarlı kalır.
+
+    (uyum_blogu, kisi -> kişisel örnek sayısı, korunan dosyalar) döner.
     """
     GOLD.mkdir(parents=True, exist_ok=True)
     METINLER.mkdir(parents=True, exist_ok=True)
@@ -172,9 +200,16 @@ def calisma_sayfalari_yaz(
         paylar[kisiler[sira % len(kisiler)]].append(kampanya)
 
     sayilar: dict[str, int] = {}
+    korunan: list[str] = []
     for kisi, pay in paylar.items():
-        _csv_yaz(GOLD / f"etiketleme_{kisi.lower()}.csv", pay)
-        _csv_yaz(GOLD / f"etiketleme_uyum_{kisi.lower()}.csv", uyum_blogu)
+        for yol, icerik in (
+            (GOLD / f"etiketleme_{kisi.lower()}.csv", pay),
+            (GOLD / f"etiketleme_uyum_{kisi.lower()}.csv", uyum_blogu),
+        ):
+            if not zorla and _etiketli_mi(yol):
+                korunan.append(yol.name)
+                continue
+            _csv_yaz(yol, icerik)
         sayilar[kisi] = len(pay)
 
     for kampanya in secilen:
@@ -198,7 +233,7 @@ def calisma_sayfalari_yaz(
         ),
         encoding="utf-8",
     )
-    return uyum_blogu, sayilar
+    return uyum_blogu, sayilar, korunan
 
 
 # ---------------------------------------------------------------------------
@@ -293,8 +328,12 @@ def uyum_hesapla(kisiler: tuple[str, ...] = KISILER) -> dict[str, Any]:
     '?' yazan kişi o alanda oylamaya hiç girmez.
     """
     dosyalar = uyum_dosyalari(kisiler)
+    etiketleyenler = sorted(k for k, s in dosyalar.items() if s)
+    bekleyenler = sorted(k for k in kisiler if k not in etiketleyenler)
     bos = {
         "kisi_sayisi": len(dosyalar),
+        "etiketleyenler": etiketleyenler,
+        "bekleyenler": bekleyenler,
         "ornek_sayisi": 0,
         "karsilastirilan": 0,
         "uyum": None,
@@ -302,7 +341,7 @@ def uyum_hesapla(kisiler: tuple[str, ...] = KISILER) -> dict[str, Any]:
         "alan_bazli": {},
         "ayrisma": [],
     }
-    if len(dosyalar) < 2:
+    if len(etiketleyenler) < 2:
         return bos
 
     # kampanya_id -> alan -> {kisi: deger}
@@ -345,6 +384,8 @@ def uyum_hesapla(kisiler: tuple[str, ...] = KISILER) -> dict[str, Any]:
 
     return {
         "kisi_sayisi": len(dosyalar),
+        "etiketleyenler": etiketleyenler,
+        "bekleyenler": bekleyenler,
         "ornek_sayisi": len(tablo),
         "karsilastirilan": toplam_dolu,
         "karsilastirilan_ham": toplam,
@@ -587,26 +628,24 @@ def doldurulmus_sayfalar(kisiler: tuple[str, ...] = KISILER) -> list[str]:
 
 
 def komut_ornekle(adet: int, zorla: bool = False) -> int:
-    dolu = doldurulmus_sayfalar()
-    if dolu and not zorla:
-        print("❌ Yeniden örnekleme iptal edildi — doldurulmuş sayfaların üstüne yazardı:\n")
-        for satir in dolu:
-            print(f"   {satir}")
-        print(
-            "\n   Etiketlenmiş sayfalar saatlerce emek demektir; sessizce silinemez.\n"
-            "   Gerçekten baştan başlamak istiyorsan: "
-            "`python tools/altin_set.py ornekle --zorla`\n"
-            "   Önce mevcut etiketleri `make altin-derle` ile kaydetmiş ol."
-        )
-        return 1
-
     kampanyalar = _kampanyalari_al()
     if adet > len(kampanyalar):
         print(f"⚠️  Sadece {len(kampanyalar)} kampanya var, örneklem buna düşürüldü.")
         adet = len(kampanyalar)
 
+    if zorla and (dolu := doldurulmus_sayfalar()):
+        print("⚠️  --zorla verildi, aşağıdaki etiketler SİLİNİYOR:")
+        for satir in dolu:
+            print(f"     {satir}")
+
     secilen = katmanli_ornekle(kampanyalar, adet)
-    uyum_blogu, sayilar = calisma_sayfalari_yaz(secilen, KISILER)
+    uyum_blogu, sayilar, korunan = calisma_sayfalari_yaz(secilen, KISILER, zorla)
+
+    if korunan:
+        print("🛡️  Etiket içerdiği için KORUNAN sayfalar (yeniden yazılmadı):")
+        for ad in korunan:
+            print(f"     {ad}")
+        print()
 
     print(f"✅ {len(secilen)} örnek seçildi (tohum {TOHUM}, katmanlı)\n")
     print(f"  1️⃣  UYUM BLOĞU — {len(uyum_blogu)} örnek, DÖRDÜ DE etiketler (H-02)")
@@ -619,7 +658,7 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
     toplam_kisi = len(uyum_blogu) + max(sayilar.values(), default=0)
     print(f"\n   Kişi başı toplam yük: ~{toplam_kisi} örnek")
     print(f"   Tam metinler: data/gold/metinler/ ({len(secilen)} dosya)")
-    print(f"   Örneklem kaydı: {ORNEK_KAYDI.relative_to(KOK)}")
+    print(f"   Örneklem kaydı: {_kisa_yol(ORNEK_KAYDI)}")
     print("\n   Tür dağılımı:")
     for tur, sayi in Counter(_tur(k) for k in secilen).most_common():
         print(f"     {tur}: {sayi}")
@@ -631,12 +670,17 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
 def komut_uyum() -> int:
     sonuc = uyum_hesapla()
     if sonuc["uyum"] is None:
-        if sonuc["kisi_sayisi"] < 2:
+        etiketleyen = sonuc.get("etiketleyenler") or []
+        bekleyen = sonuc.get("bekleyenler") or []
+        if not sonuc["kisi_sayisi"]:
             print("❌ Uyum dosyası bulunamadı. Önce `make altin-ornekle` çalıştırın.")
-        else:
-            print(f"❌ {sonuc['kisi_sayisi']} uyum dosyası var ama hiçbirinde etiket yok.")
-            print("   Uyum oranı için en az iki kişinin aynı 10 örneği etiketlemesi gerekiyor.")
+        elif not etiketleyen:
+            print("❌ Uyum dosyalarının hiçbiri doldurulmamış.")
             print("   Dosyalar: data/gold/etiketleme_uyum_<ad>.csv")
+        else:
+            print(f"⏳ Uyum oranı için en az iki kişi gerekiyor — şu an {len(etiketleyen)} kişi.")
+            print(f"   ✅ Bitirenler : {', '.join(etiketleyen)}")
+            print(f"   ⌛ Bekleyenler: {', '.join(bekleyen)}")
         return 1
 
     oran = sonuc["uyum"]
@@ -681,7 +725,7 @@ def komut_derle() -> int:
     kanit = kanit_uyarilari(kayitlar, kampanyalar)
     jsonl_yaz(kayitlar)
 
-    print(f"\n✅ {ALTIN_SET.relative_to(KOK)} yazıldı — {len(kayitlar)} örnek\n")
+    print(f"\n✅ {_kisa_yol(ALTIN_SET)} yazıldı — {len(kayitlar)} örnek\n")
     print(kapsam_raporu(kayitlar, kampanyalar))
 
     if kanit:
@@ -703,7 +747,7 @@ def komut_derle() -> int:
 
 def komut_dogrula() -> int:
     if not ALTIN_SET.exists():
-        print(f"❌ {ALTIN_SET.relative_to(KOK)} yok. Önce `make altin-derle`.")
+        print(f"❌ {_kisa_yol(ALTIN_SET)} yok. Önce `make altin-derle`.")
         return 1
 
     kayitlar = [

@@ -12,7 +12,7 @@ from datetime import datetime
 
 import pytest
 
-from src.schema import ALAN_ADLARI, Alan, Kampanya
+from src.schema import Alan, Kampanya
 from tools import altin_set
 
 
@@ -51,7 +51,7 @@ def _csv_doldur(yol, satirlar: list[dict[str, str]]) -> None:
     with yol.open(encoding="utf-8-sig", newline="") as dosya:
         mevcut = list(csv.DictReader(dosya))
     with yol.open("w", encoding="utf-8-sig", newline="") as dosya:
-        yazici = csv.DictWriter(dosya, fieldnames=[*altin_set.CSV_UST_BILGI, *ALAN_ADLARI])
+        yazici = csv.DictWriter(dosya, fieldnames=altin_set.csv_basliklari())
         yazici.writeheader()
         for satir, degerler in zip(mevcut, satirlar, strict=False):
             satir.update(degerler)
@@ -157,7 +157,7 @@ def test_ornekleme_istenenden_fazla_secmez():
 def test_calisma_sayfalari_uyum_blogu_ve_kisisel_pay_uretir(gold_dizini):
     kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(6)]
     secilen = altin_set.katmanli_ornekle(kampanyalar, 18)
-    uyum_blogu, sayilar = altin_set.calisma_sayfalari_yaz(secilen, altin_set.KISILER)
+    uyum_blogu, sayilar, _ = altin_set.calisma_sayfalari_yaz(secilen, altin_set.KISILER)
 
     assert len(uyum_blogu) == altin_set.UYUM_ADET
     assert sum(sayilar.values()) == 18 - altin_set.UYUM_ADET
@@ -432,15 +432,30 @@ def test_doldurulmus_sayfa_tespit_edilir(gold_dizini):
     assert "etiketleme_eren.csv" in dolu[0]
 
 
-def test_yeniden_ornekleme_dolu_sayfayi_ezmez(gold_dizini, capsys):
-    """Dört kişinin saatlerce emeği tek komutla silinmemeli."""
+def test_yeniden_ornekleme_dolu_sayfayi_korur(gold_dizini, capsys):
+    """Dört kişinin emeği tek komutla silinmemeli; boş sayfalar yenilenebilir."""
     _hazirla(gold_dizini)
     _csv_doldur(gold_dizini / "etiketleme_eren.csv", [{"kampanya_turu": "kart"}])
     onceki = (gold_dizini / "etiketleme_eren.csv").read_text(encoding="utf-8-sig")
 
-    assert altin_set.komut_ornekle(60) == 1
-    assert "iptal edildi" in capsys.readouterr().out
+    assert altin_set.komut_ornekle(18) == 0
+    assert "KORUNAN" in capsys.readouterr().out
     assert (gold_dizini / "etiketleme_eren.csv").read_text(encoding="utf-8-sig") == onceki
+
+
+def test_zorla_dolu_sayfayi_da_yeniler(gold_dizini):
+    _hazirla(gold_dizini)
+    _csv_doldur(gold_dizini / "etiketleme_eren.csv", [{"kampanya_turu": "kart"}])
+
+    assert altin_set.komut_ornekle(18, zorla=True) == 0
+    assert altin_set.doldurulmus_sayfalar() == []
+
+
+def test_metin_sutunu_en_sonda(gold_dizini):
+    """Etiket sütunları kimlik sütunlarının yanında kalmalı — kayma tuzağı."""
+    basliklar = altin_set.csv_basliklari()
+    assert basliklar[-1] == "metin"
+    assert basliklar.index("kampanya_turu") < basliklar.index("metin")
 
 
 # ---------------------------------------------------------------------------
@@ -481,3 +496,14 @@ def test_kanit_denetimi_bos_alani_sikayet_etmez():
     kampanyalar = [_kampanya("0203", 1, metin="avantajlı fırsat")]
     kayit = {"kampanya_id": kampanyalar[0].kampanya_id, "kar_payi_orani": None}
     assert altin_set.kanit_uyarilari([kayit], kampanyalar) == []
+
+
+def test_uyum_tek_etiketleyiciyi_dogru_raporlar(gold_dizini):
+    """Bir kişi bitirdiğinde 'hiç etiket yok' denmemeli — emeği yok saymış olur."""
+    _hazirla(gold_dizini)
+    _csv_doldur(gold_dizini / "etiketleme_uyum_eren.csv", [{"kampanya_turu": "kart"}])
+
+    sonuc = altin_set.uyum_hesapla()
+    assert sonuc["uyum"] is None
+    assert sonuc["etiketleyenler"] == ["Eren"]
+    assert sorted(sonuc["bekleyenler"]) == ["Esra", "Görkem", "Samet"]
