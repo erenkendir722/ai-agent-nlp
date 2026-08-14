@@ -1,10 +1,10 @@
 ﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,urun_turu,hedef_kitle,kar_payi_orani,finansman_tutari_max,vade_ay_max,taksit_sayisi,tahsis_ucreti,masraf_bilgisi,masrafsiz_mi,odul_miktari,indirim_orani,alisveris_puani,kampanya_avantaji,kampanya_bitis,kampanya_kosullari,metin
-0212-273063a66570,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kartlar-tuzel,,,,,,,,,,,,,,,,,"Tüzel Kartlar
+0212-273063a66570,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kartlar-tuzel,diger,Tüzel Kartlar,,,,,,,,,,,,,,,"Tüzel Kartlar
 Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Çerezleri Yönet
 Size en iyi deneyimi sağlamak ve hizmetlerin tercihlerinize göre kişiselleştirilmiş içerikler olarak sunulabilmesi için web sitemizde çerezler ve benzeri takip teknolojileri kullanılmaktadır. Daha fazla bilgi için Çerez Aydınlatma Metni’ni inceleyebilirsiniz."
-0209-ca6752bb1e0d,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/aninda-gunluk-hesap,,,,,,,,,,,,,,,,,"Anında Günlük Hesap Nedir?
+0209-ca6752bb1e0d,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/aninda-gunluk-hesap,yatirim_urunu,Anında Günlük Hesap,,3,,,,,,,,,,"Günlük bankacılık işlemlerinizi yaparken bakiyenizin bir kısmıyla Kira Sertifikaları üzerinden günlük getiri sağlama imkânı.",,"Yatırım hesabı açıp uygunluk testini yapmak ve hesabın kâra konu edilebilmesi için saat 16:00'a kadar en az 10.000 TL aktarmak gerekmektedir.","Anında Günlük Hesap Nedir?
 Özel cari hesap özelliği ile Müşterilerimizin gün içerisinde günlük ihtiyaçları için tüm Bankacılık işlemlerini yapmasına imkân vermekte, aynı zamanda müşterilerimizin hiç bir işlem yapmasına gerek kalmadan otomatik olarak bakiyesinin bir bölümünün saat 16:00’da günlük olarak vaat ürününde değerlendirilmesi ile getiri almasını sağlamaktadır.
 Özellikleri:
 - Anında Günlük Hesap; Şubelerimiz, İnternet Şubemiz ve Katılım Mobil kanallarımız üzerinden yalnızca Türk Lirası (TL) para birimi ile açılabilmektedir.
@@ -40,12 +40,12 @@ Saat 16:00’da Anında Günlük Hesapta bulunan bakiye, belirlenen bakiye skala
 Hesapta bulunan bakiye ile gün içinde para çekme, hesaba para yatırma gibi tüm bankacılık işlemlerini istediğiniz sıklıkta gerçekleştirebilirsiniz.
 Anında Günlük Hesap, açma/kapama işlemleri Şubelerimiz,Katılım Mobil ve İnternet Şube üzerinden yapılabilmektedir.
 Bakiyenin saat 16:00’da Kira Sertifikalarının Geri Alım Vaadi ile Satımı işlemlerine transferinden ertesi iş günü bakiyenin aktarılacağı saat 07:00’ a kadar a Kira Sertifikalarının Geri Alım Vaadi ile Satımı işlemlerindeki bakiyeden para çekme ve kapama yapılamamaktadır"
-0212-d12608b3c384,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kartlar,,,,,,,,,,,,,,,,,"Kartlar
+0212-d12608b3c384,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kartlar,diger,Hayat Finans Banka Kartları,,,,,,,,,,,,,,,"Kartlar
 Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Çerezleri Yönet
 Size en iyi deneyimi sağlamak ve hizmetlerin tercihlerinize göre kişiselleştirilmiş içerikler olarak sunulabilmesi için web sitemizde çerezler ve benzeri takip teknolojileri kullanılmaktadır. Daha fazla bilgi için Çerez Aydınlatma Metni’ni inceleyebilirsiniz."
-0206-7965278e4024,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/yedek-hesap.aspx,,,,,,,,,,,,,,,,,"Yedek Hesap
+0206-7965278e4024,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/yedek-hesap.aspx,diger,Yedek Hesap,,,,,,,,,,,,,,,"Yedek Hesap
 Yedek Hesap Nedir?
 Yedek Hesap; acil ihtiyaçlarınızı finanse edebilmeniz için hesabınızda yeterli tutar olmaması durumunda kullanılabileceğiniz Karz-ı Hasen'li Cari Hesap ürünüdür. Limitiniz dahilinde; fatura, kredi kartı ve finansman taksit ödemelerinizi yapmanızı, yurt içi tüm ATM’lerden nakit desteği almanızı, EFT/Havale ve FAST işlemlerinizi gerçekleştirmenizi, POS üzerinden işlem yapmanızı sağlar.
 Yedek Hesap Nasıl Çalışır?
@@ -73,7 +73,7 @@ Yedek Hesap Başvurusu Nasıl Yapılır?
 Yedek Hesap Başvuru ve Kullanım Koşulları
 - Banka, Yedek Hesap başvurularını serbestçe değerlendirme, kefil ve ek belge isteme, uygun görmediği başvuruları onaylamama hakkına sahiptir.
 NOT: Karz-ı Hasen Akdi, müşterilerin faizsiz bankacılık ilke ve standartlarına uygun ihtiyaçları için tüketim ödüncü yöntemiyle fon kullanımıdır. Banka, tüketim ödüncünün verildiği tarihten ödeme gününe kadar geçen süre zarfında gerçekleşen “enflasyon farkını” talep edilebilir. Enflasyon farkı tahsilatı reel bir getiri ya da banka kârı değil paranın alım gücünün korunması işlemidir."
-0203-6ff69597d9db,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/konut-finansmani,,,,,,,,,,,,,,,,,"Albaraka Türk konut finansmanı sayesinde kira öder gibi ev sahibi olmak artık çok kolay. Uygun, avantajlı ve esnek ödeme planlarımızı inceleyin, hayalini kurduğunuz evin sahibi olun. Müşterilerimize özel fırsatlar ve ev finansmanı çözümlerimizi hemen keşfedin.
+0203-6ff69597d9db,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/konut-finansmani,konut_finansmani,Konut Finansmanı,,,,120,,,"Ücretler Toplamı 28.076,27 TL",hayır,,,,"Katılım bankacılığı prensiplerine uygun konut finansmanı, 120 aya kadar vade ve şartlara bağlı olarak KKDF ile BSMV muafiyeti imkânı.",,"18 yaşını tamamlamış olmak ve başvuru durumuna göre kimlik, gelir belgeleri ile satın alınacak konutun tapu belgesinin ibraz edilmesi gerekmektedir.","Albaraka Türk konut finansmanı sayesinde kira öder gibi ev sahibi olmak artık çok kolay. Uygun, avantajlı ve esnek ödeme planlarımızı inceleyin, hayalini kurduğunuz evin sahibi olun. Müşterilerimize özel fırsatlar ve ev finansmanı çözümlerimizi hemen keşfedin.
 Konut finansmanı, ev sahibi olmak isteyen kişilere faizsiz finansman çözümleri sunan bir üründür. Albaraka Türk Katılım Bankası olarak, konut finansmanı aracılığıyla müşterilerimize esnek seçenekler sunarak, ev sahibi olma sürecini kolaylaştırıyoruz.
 Konut finansmanı hesaplama, finansman tutarı, vade süresi ve kar payı oranı bilgileri girilerek yapılır. Konut kredisi hesaplama aracımız ile bu bilgileri kullanarak aylık ödemelerinizi ve toplam geri ödeme tutarınızı anında öğrenebilirsiniz.
 - Dilediğiniz ev, katılım bankacılığı prensiplerine uygun olarak 120 aya kadar taksitlendirebilirsiniz.
@@ -137,9 +137,9 @@ Finansman talepleriniz için müşterimiz olmanız gerekmeden; web sitemiz üzer
 Finansman talepleriniz için müşterimiz olmanız gerekmeden; Albaraka Mobil üzerinden hemen başvurup jet hızında sonuç alabilirsiniz.
 Finansman talepleriniz için müşterimiz olmanız gerekmeden; 4462’ye SMS atarak hemen başvurup jet hızında sonuç alabilirsiniz.
 Finansman talepleriniz için müşterimiz olmanız gerekmeden Şubelerimizden hemen başvurup jet hızında sonuç alabilirsiniz."
-0210-23a5ee5a3344,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar,,,,,,,,,,,,,,,,,"Müşterilerimizin nakdi ve gayrinakdi olarak kullanabilecekleri finansman ürünlerimize bu sayfadan ulaşabilir, detaylı bilgi alabilirsiniz.
+0210-23a5ee5a3344,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar,diger,Finansman Ürünleri,,,,,,,,,,,,,,,"Müşterilerimizin nakdi ve gayrinakdi olarak kullanabilecekleri finansman ürünlerimize bu sayfadan ulaşabilir, detaylı bilgi alabilirsiniz.
 Mobil Şubeyi indirip görüntülü görüşmeyle müşterimiz olun; havale, EFT ve FAST işlemlerinize para ödemekten kurtulun."
-0205-735109071c75,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati,,,,,,,,,,,,,,,,,"Kampanya Tarihleri
+0205-735109071c75,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati,kart,Sağlam Kart,,,,,5,,,evet,,,,"Sağlam Kart ile 1.000 TL ve üzeri eğitim, sağlık, kitap ve kırtasiye harcamalarını vade farksız 5 taksite kadar bölebilme imkânı.",2027-12-31,"İşlemden önce kart üzerindeki taksit sayısının 0 olması, harcamanın ticari amaçlı olmaması (bireysel olması) ve 1.000 TL üzeri işlemlerin harcama sonrası Kuveyt Türk Mobil üzerinden taksitlendirilmesi gerekmektedir.","Kampanya Tarihleri
 21.06.2024 - 31.12.2027
 Kampanyayı Paylaş
 - Sağlam Kart ile istediğiniz iki adet eğitim ve sağlık harcamanızı işlem sonrasında Kuveyt Türk Mobil üzerinden vade farksız bir şekilde 2 ila 5 taksite bölebilirsiniz.
@@ -155,7 +155,7 @@ Kampanyayı Paylaş
 - Kampanya yalnızca bireysel harcamalar içindir. Ticari amaç ile yapılan harcamalar (Örn. Ecza Depoları üzerinden yapılan harcamalar) kampanya kapsamında değildir.
 - Sonradan taksitlendirilmiş işlemin Kuveyt Türk Müşteri İletişim Merkezi üzerinden erken kapaması yapılabilmektedir.
 - Kuveyt Türk önceden haber vermeden kampanya koşullarında değişiklik yapabilir ya da kampanyayı sonlandırabilir."
-0210-f044a4c8a626,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kartlar,,,,,,,,,,,,,,,,,"Kolay ve Hızlı para transferi FAST Vakıf Katılım'da ücretsiz!
+0210-f044a4c8a626,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kartlar,diger,VKart,,,,,,,,,,,,,,,"Kolay ve Hızlı para transferi FAST Vakıf Katılım'da ücretsiz!
 VKart Business ile harcamalarınız kontrolü sizde!
 VKart dünyasında masraf yok!
 Bağlı hesaplarınızdan alışverişin keyfini çıkarın!
@@ -166,7 +166,7 @@ VKart, Vakıf Katılım'ın kredi kartı markasıdır.
 İnternet ve Mobil Şubelerimizde yer alan kart ayarları alanından kart şifrenizi değiştirebilirsiniz.
 İnternet ve Mobil Şubelerimizde yer alan kart ayarları alanından kartınızın istediğiniz kadarını internet alışverişine açabilirsiniz.
 Mobil Şubeyi indirip görüntülü görüşmeyle müşterimiz olun; havale, EFT ve FAST işlemlerinize para ödemekten kurtulun."
-0211-fe0d36df1542,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/yatirim-urunleri,,,,,,,,,,,,,,,,,"Yatırım Ürünleri
+0211-fe0d36df1542,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/yatirim-urunleri,diger,Yatırım Ürünleri,,,,,,,,,,,,,,,"Yatırım Ürünleri
 Hazine ve Yatırım Ürünleri
 Bireysel hazine ürünlerimiz ve detaylarına bu sayfadan ulaşabilirsiniz.
 Döviz Alım Satım
@@ -196,7 +196,7 @@ Ortaklığa Dayalı Kira Sertifikası
 Tasarruflarınızı; Emlak Katılım’ın, katılım finans prensiplerine uygun olarak profesyonelce yönettiği Özel Fon Hesabı Havuzlarında değerlendirebilirsiniz.
 Borsa İstanbul A.Ş.
 Borsa İstanbul'un katılım finansa dair detaylı bilgiler sunduğu sayfaya ulaşmak için tıklayınız."
-0212-a17b8a9fb71e,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/hayatfx-ile-gumus-islemleri,,,,,,,,,,,,,,,,,"Gümüş İşlemleri Hayat FX'te!
+0212-a17b8a9fb71e,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/hayatfx-ile-gumus-islemleri,yatirim_urunu,Hayat FX,,,,,,,,,,,,"Hayat FX üzerinden gerçekleştirilecek gümüş alım ve satım işlemlerinde dar makas avantajından yararlanma imkânı.",2026-08-31,"İşlemlerin yatırım menüsündeki Hayat FX üzerinden gerçekleştirilmesi ve müşterinin risk seviyesine göre belirlenen işlem limitleri dahilinde olması gerekmektedir.","Gümüş İşlemleri Hayat FX'te!
 Gümüş İşlemlerinde Dar Makas Avantajı Hayat FX’de!
 Gümüş yatırımlarınızı daha avantajlı koşullarla gerçekleştirin. Hayat FX üzerinden yapacağınız gümüş alım ve satım işlemlerinde, dar makas uygulaması sayesinde işlemlerinizi daha rekabetçi fiyatlarla gerçekleştirebilir, yatırım fırsatlarını daha verimli değerlendirebilirsiniz.
 1 Haziran 2026 – 31 Ağustos 2026 tarihleri arasında geçerli kampanya kapsamında, Hayat FX platformunda gümüş işlemi yapan bireysel müşteriler dar makas avantajından yararlanabilecektir. Yatırım işlemlerinizi günün her saatinde Hayat Finans Mobil üzerinden kolayca gerçekleştirebilir, piyasa hareketlerini anlık takip ederek yatırım kararlarınızı hızlı şekilde uygulayabilirsiniz.
@@ -210,7 +210,7 @@ Kampanya Koşulları
 - Kampanya yalnızca gümüş alım ve satım işlemlerini kapsamaktadır.
 - Hayat Finans, kampanya koşullarında değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
 Hayat FX ile yatırım işlemlerinizi avantajlı fiyatlarla gerçekleştirin, gümüş piyasasındaki fırsatları dar makas avantajıyla değerlendirin."
-0210-6b1029c52e14,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan,,,,,,,,,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+0210-6b1029c52e14,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan,diger,Tamamla Kazan,,,,,,,,,,,,"Vakıf Katılım Mobil üzerinden 6 kriteri tamamlayanlara TL Katılma Hesabında 98/2 kâr paylaşım oranı, avantajlı kurlar, Espressolab’den 2 kahve veya 1 aylık tabii Premium üyelik seçeneklerinden birinden faydalanma imkânı.",2029-12-31,"Vakıf Katılım Mobil uygulamasındaki Tamamla Kazan menüsünde sunulan kriterlerden bir ay içerisinde en az 6 tanesinin bireysel müşteriler tarafından tamamlanması gerekmektedir.","SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -231,7 +231,7 @@ tabii platformunda 1 aylık Premium hediye üyelik kodunu kullanabilirsiniz.
 • Her avantajın kullanım süresi farklılık gösterir. Vakıf Katılım Mobil Şube’de yer alan “avantaj görselleri”nin üzerinde süreyle ilgili bilgi bulunur.
 • Tamamla Kazan kapsamında hak kazanılan ödüller kriterlerin tamamlandığı ayı takip eden ayın ilk haftasında müşterilere gönderilecektir.
 •Müşteri, mevcut bir avantajdan yararlanırken ilgili kriterleri yeniden sağlarsa, aynı avantajı tercih etmesi durumunda, mevcut avantajının kullanım süresi uzatılır. Farklı bir avantaj seçmesi hâlindeyse mevcut avantajı geçerliliğini korur, ayrıca yeni seçtiği avantajdan da faydalanır."
-0209-fa6ca7d275c0,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/sosyal-medya-icerik-ureticisi-hesabi,,,,,,,,,,,,,,,,,"Sosyal medya üzerinden elde etmiş olduğunuz kazançları herhangi bir beyanname bulunmadan otomatik olarak vergilendirilerek tahsilatlarının yapıldığı özel cari hesap türüdür.
+0209-fa6ca7d275c0,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/sosyal-medya-icerik-ureticisi-hesabi,diger,Sosyal Medya İçerik Üreticisi Hesabı,,,,,,,,,,,,,,,"Sosyal medya üzerinden elde etmiş olduğunuz kazançları herhangi bir beyanname bulunmadan otomatik olarak vergilendirilerek tahsilatlarının yapıldığı özel cari hesap türüdür.
 - İnternet ve benzeri elektronik ortamlar üzerinden metin, görüntü, ses, video gibi içerikler paylaşan sosyal içerik üreticilerinin bu faaliyetlerinden elde ettikleri kazançlar ve bu ortamlar üzerinden verilen bireysel kurs, eğitim, veri işleme ve geliştirme, ürün tanıtımı gibi hizmetlerden sağlanan kazançlar ile akıllı telefon veya tablet gibi mobil cihazlar için uygulama geliştirenlerin elektronik uygulama paylaşım ve satış platformları üzerinden elde ettikleri kazançlar bu vergi avantajından faydalanabilecektir.
 - Sosyal Medya İçerik Üreticisi Hesabı; sadece yurtiçi gerçek müşterilerimize açılabilen vadesiz özel cari hesaptır.
 - Hesap açılışları TL, USD ve EUR para cinsleri ile açılmaktadır.
