@@ -252,3 +252,38 @@ def test_iz_eleme_gerekcesini_yazar(ajan):
 def test_sonuc_tipi_beklendigi_gibi(ajan):
     sonuclar, _ = ajan.calistir((PROFIL, [_kampanya()]))
     assert all(isinstance(s, UygunlukSonucu) for s in sonuclar)
+
+
+# ---------------------------------------------------------------------------
+# Makul olmayan orandan hesap yapılmaz
+# ---------------------------------------------------------------------------
+#
+# 14 Ağustos: veritabanında kar_payi_orani 0 ile 84,93 arasında değerler
+# taşıyor. Üst uçtakiler "%80'e varan indirim" gibi ifadelerden yanlış
+# çıkarılmış; 0 ise ham ifadesi '0%' olan bir kayıttan geliyor. İkisi de
+# hesaplanırsa sonuç listenin uçlarına yerleşir ve kendinden emin biçimde
+# sunulur — "Belirtilmemiş" demek her zaman daha dürüst.
+
+
+@pytest.mark.parametrize("oran", [0.0, 15.0, 42.0, 84.93])
+def test_makul_olmayan_orandan_maliyet_hesaplanmaz(ajan, oran):
+    sonuc = ajan.degerlendir(PROFIL, _kampanya(oran=oran))
+    assert sonuc.maliyet is None
+
+
+@pytest.mark.parametrize("oran", [0.5, 1.89, 2.05, 14.9])
+def test_makul_oranlardan_maliyet_hesaplanir(ajan, oran):
+    """Karşı kontrol: sınır, geçerli oranları elemiyor."""
+    sonuc = ajan.degerlendir(PROFIL, _kampanya(oran=oran))
+    assert sonuc.maliyet is not None
+
+
+def test_sifir_oranli_kayit_listenin_tepesine_cikmaz(ajan):
+    """'800.000 TL alıp 800.000 TL geri ödüyorsunuz' bankacı jüri önünde
+    sistemin güvenilirliğini tek satırda bitirirdi."""
+    kampanyalar = [
+        _kampanya("SifirOran", oran=0.0, uygunluk=UygunlukKosullari(max_vade_ay=120)),
+        _kampanya("Gercek", oran=1.89, uygunluk=UygunlukKosullari(max_vade_ay=120)),
+    ]
+    sonuclar, _ = ajan.calistir((PROFIL, kampanyalar))
+    assert sonuclar[0].banka_adi == "Gercek"

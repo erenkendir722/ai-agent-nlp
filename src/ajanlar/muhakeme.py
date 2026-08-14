@@ -35,7 +35,7 @@ from dataclasses import dataclass, field
 
 from src.ajanlar.temel import AjanIzi, iz_tut
 from src.comparison.karsilastirma import toplam_maliyet
-from src.schema import HedefKitle, Kampanya
+from src.schema import AYLIK_KAR_PAYI_UST_SINIRI, HedefKitle, Kampanya
 
 
 @dataclass(frozen=True)
@@ -203,13 +203,28 @@ class MuhakemeAjani:
 
     @staticmethod
     def _maliyet_hesapla(profil: MusteriProfili, kampanya: Kampanya) -> dict[str, float] | None:
-        """Toplam geri ödemeyi hesaplar. Oran yoksa hesap YAPILMAZ — uydurulmaz."""
+        """Toplam geri ödemeyi hesaplar. Oran yoksa ya da MAKUL DEĞİLSE hesap yapılmaz.
+
+        Makullük kontrolü şart: veritabanında `kar_payi_orani` 0 ile 84,93
+        arasında değerler taşıyor — üst uçtakiler "%80'e varan indirim" gibi
+        ifadelerden yanlış çıkarılmış. Böyle bir orandan taksit hesaplayıp
+        sonucu tabloda göstermek, saçma bir sayıyı kendinden emin biçimde
+        sunmak olur. "Belirtilmemiş" demek her zaman daha dürüsttür.
+        """
         oran_alani = kampanya.kar_payi_orani
         if not oran_alani.var_mi:
             return None
         try:
             oran = float(oran_alani.deger)  # type: ignore[arg-type]
         except (TypeError, ValueError):
+            return None
+        # Sıfır de makul değil: aylık %0 kâr payı, müşterinin anaparayı birebir
+        # geri ödemesi demek olurdu — kampanyalı bir katılım finansmanında
+        # böyle bir ürün yok. Veritabanındaki tek 0 değeri ham ifadesi '0%'
+        # olan bir kayıttan geliyor ve büyük olasılıkla "0 masraf" benzeri bir
+        # ifadeden yanlış çıkarılmış. Hesaplanırsa listenin EN TEPESİNE çıkar.
+        # Altın set denetleyicisi de aynı aralığı kullanıyor (0 < oran < 15).
+        if not 0 < oran < AYLIK_KAR_PAYI_UST_SINIRI:
             return None
 
         tahsis = 0.0

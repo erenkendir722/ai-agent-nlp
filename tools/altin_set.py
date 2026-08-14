@@ -47,6 +47,7 @@ from src.preprocessing.normalizasyon import (  # noqa: E402
 )
 from src.schema import (  # noqa: E402
     ALAN_ADLARI,
+    AYLIK_KAR_PAYI_UST_SINIRI,
     METINSEL_ALANLAR,
     SAYISAL_ALANLAR,
     HedefKitle,
@@ -586,7 +587,7 @@ def denetle(kayitlar: list[dict[str, Any]], kampanyalar: list[Kampanya]) -> list
                 hatalar.append(f"{kimlik}: {alan} sayıya çevrilemedi -> {deger!r}")
 
         oran = kayit.get("kar_payi_orani")
-        if isinstance(oran, int | float) and not 0 < oran < 15:
+        if isinstance(oran, int | float) and not 0 < oran < AYLIK_KAR_PAYI_UST_SINIRI:
             hatalar.append(f"{kimlik}: kar_payi_orani %{oran} — aylık oran için şüpheli")
 
         vade = kayit.get("vade_ay_max")
@@ -1079,7 +1080,7 @@ def dosya_denetle(yol: Path) -> tuple[list[str], int, int]:
                     sayi = sayi_ayristir(ham)
                     if sayi is None:
                         hatalar.append(f"{yer}  {alan}={ham!r} sayıya çevrilemedi")
-                    elif alan == "kar_payi_orani" and not 0 < sayi < 15:
+                    elif alan == "kar_payi_orani" and not 0 < sayi < AYLIK_KAR_PAYI_UST_SINIRI:
                         hatalar.append(
                             f"{yer}  kar_payi_orani=%{sayi} — AYLIK oran bekleniyor, şüpheli"
                         )

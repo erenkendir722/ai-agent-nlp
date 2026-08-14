@@ -460,6 +460,19 @@ onlar enum etiketidir, metinde geçmeleri beklenmez. `masrafsiz_mi` de dışarı
 çünkü "masraf alınmaz" cümlesinden çıkarılan bir bool'dur.
 """
 
+AYLIK_KAR_PAYI_UST_SINIRI = 15.0
+"""Aylık kâr payı oranı için makul üst sınır (yüzde).
+
+Katılım bankacılığında aylık kâr payı tek haneli yüzdelerde seyreder; %15'in
+üstü aylık oran DEĞİLDİR. Çıkarımda "%80'e varan indirim" gibi ifadelerin
+`kar_payi_orani` alanına düşmesi gerçek bir hata biçimi — 14 Ağustos'ta
+veritabanında 84,93'e kadar değerler ölçüldü.
+
+Sınırın işi değeri düzeltmek değil, ondan HESAP YAPILMASINI engellemek:
+saçma bir orandan üretilen taksit tutarı, kendinden emin biçimde sunulduğunda
+"Belirtilmemiş" demekten çok daha zararlıdır. Aynı sınır altın set
+denetleyicisinde de kullanılır (`tools/altin_set.py`)."""
+
 _SAYI_DESENI_DENETIM = re.compile(r"\d[\d.,]*\d|\d")
 
 
@@ -514,6 +527,7 @@ def ollama_json_semasi() -> dict[str, Any]:
 
 
 __all__ = [
+    "AYLIK_KAR_PAYI_UST_SINIRI",
     "SEMA_SURUMU",
     "ALAN_ADLARI",
     "SAYISAL_ALANLAR",
