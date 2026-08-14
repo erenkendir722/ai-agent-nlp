@@ -101,10 +101,18 @@ def _cikar_ve_kaydet(kayitlar: list[HamKayit], args: argparse.Namespace) -> int:
     semayi_kur()
     llm_cikarici = None
     if not args.yalniz_kural:
+        from src.ajanlar.elestirmen import ElestirmenAjani
         from src.extraction.llm import LLMCikarici
 
-        llm_cikarici = LLMCikarici(model=args.model)
+        elestirmen = ElestirmenAjani(etkin=not args.elestirmen_yok)
+        llm_cikarici = LLMCikarici(model=args.model, elestirmen=elestirmen)
         log.info("LLM katmanı: %s", args.model)
+        if args.elestirmen_yok:
+            log.warning(
+                "⚠️  ELEŞTİRMEN AJANI KAPALI — çıkarılan değerler ham metinde "
+                "doğrulanmayacak. Bu yalnız ablasyon ölçümü içindir; üretim "
+                "koşusu değildir."
+            )
 
     toplam_rapor = UzlastirmaRaporu()
     kampanyalar: list = []
@@ -213,6 +221,11 @@ def ayristirici_kur() -> argparse.ArgumentParser:
         p.add_argument("--model", default=None, help="Ollama model etiketi")
         p.add_argument("--yalniz-kural", action="store_true", help="ablasyon: LLM kapalı")
         p.add_argument("--yalniz-llm", action="store_true", help="ablasyon: kural kapalı")
+        p.add_argument(
+            "--elestirmen-yok",
+            action="store_true",
+            help="ablasyon: kanıt doğrulaması kapalı (üretimde KULLANMA)",
+        )
         p.set_defaults(islev=islev)
 
     p_durum = altlar.add_parser("durum", help="veritabanı özeti")

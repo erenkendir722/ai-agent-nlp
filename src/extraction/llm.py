@@ -24,8 +24,8 @@ from typing import Any
 
 import ollama
 
+from src.ajanlar.elestirmen import ElestirmenAjani
 from src.preprocessing.normalizasyon import (
-    arama_anahtari,
     masrafsiz_mi,
     oran_ayristir,
     para_ayristir,
@@ -123,19 +123,27 @@ _AYRISTIRICILAR = {
     "masrafsiz_mi": masrafsiz_mi,
 }
 
-# Metinde birebir doğrulaması ZORUNLU olan alanlar. Metinsel/özet alanlar hariç
-# tutulur, çünkü onlarda modelin yeniden ifade etmesi meşrudur.
-_KANIT_ZORUNLU = frozenset(_AYRISTIRICILAR) - {"masrafsiz_mi"}
-
 _SERBEST_METIN = ("urun_turu", "masraf_bilgisi", "kampanya_avantaji", "kampanya_kosullari")
 
 
 class LLMCikarici:
-    """Ollama üzerinden şema kısıtlı çıkarım yapar."""
+    """Ollama üzerinden şema kısıtlı çıkarım yapar.
 
-    def __init__(self, model: str = VARSAYILAN_MODEL, sunucu: str = OLLAMA_SUNUCU) -> None:
+    Kanıt doğrulaması bu sınıfta DEĞİL, `ajanlar.elestirmen.ElestirmenAjani`
+    içindedir. Ayrılmasının sebebi ablasyon: "ajan var, eleştirmen yok"
+    yapılandırması ancak doğrulama kapatılabilir olduğunda ölçülebilir.
+    """
+
+    def __init__(
+        self,
+        model: str = VARSAYILAN_MODEL,
+        sunucu: str = OLLAMA_SUNUCU,
+        *,
+        elestirmen: ElestirmenAjani | None = None,
+    ) -> None:
         self.model = model
         self.istemci = ollama.Client(host=sunucu)
+        self.elestirmen = elestirmen or ElestirmenAjani()
 
     def ham_cikar(self, metin: str) -> dict[str, Any]:
         """Modelden şemaya uygun ham JSON alır. Normalizasyon YAPMAZ.
@@ -227,12 +235,9 @@ class LLMCikarici:
         if ayristirici is None:
             return None
 
-        konum = self._metinde_bul(metin, ham_ifade)
-        if alan_adi in _KANIT_ZORUNLU and konum is None:
-            log.warning(
-                "HALÜSİNASYON REDDİ | %s = %r metinde bulunamadı (%s)",
-                alan_adi, ham_ifade, url,
-            )
+        # ELEŞTİRMEN AJANI — değer kaynakta gerçekten geçiyor mu?
+        kabul, konum = self.elestirmen.dogrula(alan_adi, ham_ifade, metin, url=url)
+        if not kabul:
             return None
 
         try:
@@ -249,7 +254,7 @@ class LLMCikarici:
             kaynak=Kaynak(
                 url=url,
                 cekim_tarihi=cekim_tarihi,
-                alinti=self._alinti(metin, baslangic, bitis),
+                alinti=self.elestirmen.alinti(metin, baslangic, bitis),
                 karakter_baslangic=baslangic,
                 karakter_bitis=bitis,
             ),
@@ -278,35 +283,6 @@ class LLMCikarici:
             guven=0.80,
             yontem="llm",
         )
-
-    @staticmethod
-    def _metinde_bul(metin: str, ifade: str) -> tuple[int, int] | None:
-        """İfadeyi metinde arar — önce birebir, sonra normalize edilmiş biçimde.
-
-        Normalize aramaya izin veriyoruz çünkü modelin "%1,89" yerine "% 1,89"
-        yazması halüsinasyon değil, biçim farkıdır. Ama SAYININ KENDİSİ metinde
-        olmak zorundadır.
-        """
-        if not ifade:
-            return None
-        konum = metin.find(ifade)
-        if konum != -1:
-            return konum, konum + len(ifade)
-
-        anahtar = arama_anahtari(ifade)
-        metin_anahtari = arama_anahtari(metin)
-        konum = metin_anahtari.find(anahtar)
-        if konum != -1 and len(anahtar) >= 2:
-            # Anahtar metinde uzunluk kayması olabilir; yaklaşık konum yeterli
-            yaklasik = min(konum, max(0, len(metin) - len(ifade)))
-            return yaklasik, min(len(metin), yaklasik + len(ifade))
-        return None
-
-    @staticmethod
-    def _alinti(metin: str, baslangic: int, bitis: int, pencere: int = 160) -> str:
-        sol = max(0, baslangic - pencere)
-        sag = min(len(metin), bitis + pencere)
-        return metin[sol:sag].strip()
 
 
 __all__ = ["LLMCikarici", "SISTEM_ISTEMI", "TERIMLER", "VARSAYILAN_MODEL"]
