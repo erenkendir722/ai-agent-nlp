@@ -26,7 +26,7 @@ from src.preprocessing.normalizasyon import (
     tarih_ayristir,
     vade_ayristir,
 )
-from src.schema import Alan, Kaynak
+from src.schema import AYLIK_KAR_PAYI_UST_SINIRI, Alan, Kaynak
 
 # ---------------------------------------------------------------------------
 # Değer desenleri — "metinde şuna benzeyen bir şey var mı?"
@@ -76,6 +76,22 @@ class KuralTanimi:
     """True ise bağlam sözcüğü değerle AYNI CÜMLEDE olmak zorunda."""
     olumsuzlama_reddet: bool = False
     """True ise "alınmaz / yok / ücretsiz" içeren bağlamdan sayı çıkarılmaz."""
+    gecerli_aralik: tuple[float, float] | None = None
+    """(alt, üst) — değer bu ARALIĞIN DIŞINDAYSA aday hiç üretilmez (dışlayıcı sınırlar).
+
+    Bağlam kontrolü "bu sayı doğru şeyin yanında mı?" diye sorar; bu alan
+    "bu sayı bu alan için MÜMKÜN mü?" diye sorar. İkisi farklı hatalar yakalar.
+
+    14 Ağustos ölçümü: `kar_payi_orani` dolu 27 kaydın 13'ü (%48) makul aralık
+    dışındaydı ve hepsi kural katmanından geliyordu. Örnek — bir hesaplama
+    aracının çıktısı:
+
+        Yıllık Maliyet Oranı
+        % 82,44
+
+    Burada bağlam kontrolü kuralı KURTARMAZ: "oran" sözcüğü sayıya
+    "maliyet"ten daha yakın, dolayısıyla dışlayıcı sözcük tetiklenmez.
+    Aylık kâr payının %82 olamayacağını bilen tek şey alan bilgisidir."""
 
 
 KURALLAR: tuple[KuralTanimi, ...] = (
@@ -83,10 +99,28 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         alan="kar_payi_orani",
         deger_deseni=D_ORAN,
         ayristirici=oran_ayristir,
+        # Çıplak "oran" bilinçli olarak KALIYOR. 14 Ağustos'ta önce o suçlandı
+        # ("Yıllık Maliyet Oranı" onunla eşleşiyor) ve çıkarıldı; 96 kayıt
+        # üzerinde ölçülünce zararlı olduğu görüldü:
+        #
+        #   yapılandırma        dolu  çöp  temiz
+        #   özgün                 27   13     14
+        #   yalnız aralık         15    0     15   ← seçilen
+        #   yalnız sözcük         11    3      8
+        #   aralık + sözcük        9    0      9
+        #
+        # Aralık sınırı çöpü tek başına sıfırlıyor; sözcük kısıtı üstüne hiçbir
+        # şey katmadan 6 DOĞRU değeri eliyor. Bağlam sözcüğünü daraltmak
+        # sezgisel olarak doğru görünüyordu, ölçüm aksini söyledi.
         baglam_sozcukleri=("kar payi", "kar orani", "kar payi orani", "oran", "aylik kar"),
         dislayici_sozcukler=("indirim", "iade", "nakit iade", "kdv"),
         secim="en_dusuk",  # "%1,89'dan başlayan" — vitrin oranı en düşüğüdür
         taban_guven=0.93,
+        # Aylık kâr payı tek haneli yüzdelerde seyreder; %15 üstü aylık oran
+        # değildir (bkz. schema.AYLIK_KAR_PAYI_UST_SINIRI). Sınır ayrıca
+        # SEÇİMİ de düzeltiyor: makul olmayan adaylar elenince `en_dusuk`
+        # seçimi gerçek orana ulaşabiliyor — temiz sayısı 14'ten 15'e çıkıyor.
+        gecerli_aralik=(0.0, AYLIK_KAR_PAYI_UST_SINIRI),
     ),
     KuralTanimi(
         alan="finansman_tutari_max",
@@ -106,6 +140,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         baglam_sozcukleri=("vade", "geri odeme", "odeme plani", "taksit"),
         secim="en_yuksek",
         taban_guven=0.92,
+        gecerli_aralik=(0.0, 361.0),  # 30 yıl üstü vade katılım finansmanında yok
     ),
     KuralTanimi(
         alan="taksit_sayisi",
@@ -114,6 +149,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         baglam_sozcukleri=("taksit", "pesin fiyatina"),
         secim="en_yuksek",
         taban_guven=0.90,
+        gecerli_aralik=(0.0, 361.0),
     ),
     KuralTanimi(
         alan="tahsis_ucreti",
@@ -150,6 +186,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         dislayici_sozcukler=("kar payi",),
         secim="en_yuksek",
         taban_guven=0.88,
+        gecerli_aralik=(0.0, 100.1),  # yüzde; %100'den fazla indirim olmaz
     ),
     KuralTanimi(
         alan="alisveris_puani",
@@ -308,6 +345,11 @@ def _adaylari_bul(metin: str, kural: KuralTanimi) -> list[Aday]:
             continue
         if deger is None:
             continue
+
+        if kural.gecerli_aralik is not None and isinstance(deger, int | float):
+            alt, ust = kural.gecerli_aralik
+            if not alt < float(deger) < ust:
+                continue
 
         guven = _baglam_skoru(metin, kural, eslesme.start(), eslesme.end())
         if guven is None:

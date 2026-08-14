@@ -201,3 +201,75 @@ class TestDayaniklilikBozmalari:
     def test_tamami_buyuk_harf(self) -> None:
         assert oran_ayristir("AYLIK %2,05 KÂR PAYI") == pytest.approx(2.05)
         assert vade_ayristir("120 AY VADE") == 120
+
+
+# ---------------------------------------------------------------------------
+# Kural katmanı — makullük aralığı (14 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# Ölçüm: `kar_payi_orani` dolu 27 kaydın 13'ü (%48) makul aralık dışındaydı ve
+# hepsi kural katmanından geliyordu. Tipik kaynak, bir hesaplama aracının
+# çıktısı:
+#
+#     Yıllık Maliyet Oranı
+#     % 82,44
+#     Ücretler Toplamı
+#
+# Bağlam kontrolü burada KURTARMIYOR: "oran" sözcüğü sayıya "maliyet"ten daha
+# yakın olduğu için dışlayıcı sözcük tetiklenmiyor. Aylık kâr payının %82
+# olamayacağını bilen tek şey alan bilgisidir.
+
+from datetime import datetime  # noqa: E402
+
+from src.extraction.kural import kurallarla_cikar  # noqa: E402
+from src.schema import AYLIK_KAR_PAYI_UST_SINIRI  # noqa: E402
+
+_HESAPLAMA_ARACI = (
+    "Konut finansmanı seçenekleri sunuyoruz.\n%\nOranı kendim gireceğim.\n"
+    "Aylık Taksit Tutarı\n9.169,06 TL\nGeri Ödenecek Toplam Tutar\n210.888,82 TL\n"
+    "Yıllık Maliyet Oranı\n% 82,44\nÜcretler Toplamı\n28.076,27\n"
+)
+
+
+def _oran(metin: str):
+    alanlar = kurallarla_cikar(metin, "https://ornek.test", datetime(2026, 8, 14))
+    alan = alanlar.get("kar_payi_orani")
+    return float(alan.deger) if alan and alan.var_mi else None
+
+
+def test_yillik_maliyet_orani_kar_payi_sanilmaz():
+    """Bu tek hata 13 kaydı birden bozuyordu."""
+    assert _oran(_HESAPLAMA_ARACI) is None
+
+
+def test_gercek_kar_payi_orani_hala_yakalanir():
+    """Karşı kontrol: sınır doğru olanı elemiyor. Bir kısıtı sıkarken yalnız
+    'reddediyor mu' diye bakmak yetmez (bkz. SPRINT0_RAPORU 5.3)."""
+    assert _oran("Konut finansmanında aylık kâr payı oranı %1,89'dan başlıyor.") == 1.89
+
+
+def test_yuzde_seksen_indirim_kar_payina_dusmez():
+    assert _oran("Kampanya kapsamında %80 indirim uygulanır. Kâr payı oranı avantajlı.") is None
+
+
+def test_sinir_degerleri():
+    """Üst sınır dışlayıcıdır: %15 aylık oran değildir, %14,9 olabilir."""
+    assert _oran(f"Aylık kâr payı oranı %{AYLIK_KAR_PAYI_UST_SINIRI:g} olarak uygulanır.") is None
+    assert _oran("Aylık kâr payı oranı %14,9 olarak uygulanır.") == 14.9
+
+
+def test_sifir_oran_uretilmez():
+    """'0%' bir aylık kâr payı değil; müşterinin anaparayı birebir ödemesi
+    demek olurdu. Hesaplanırsa maliyet listesinin en tepesine çıkar."""
+    assert _oran("Kâr payı oranı 0% olarak görünmektedir.") is None
+
+
+def test_vade_ustu_sinir():
+    """360 ay üstü vade katılım finansmanında yok; '2026 ay' gibi bir çıkarım
+    tarih kalıntısıdır."""
+    alanlar = kurallarla_cikar(
+        "Vade seçenekleri 2026 ay olarak listelenmiştir.",
+        "https://ornek.test", datetime(2026, 8, 14),
+    )
+    alan = alanlar.get("vade_ay_max")
+    assert alan is None or not alan.var_mi
