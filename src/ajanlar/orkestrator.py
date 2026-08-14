@@ -1,0 +1,325 @@
+"""Orkestratör — isteği çözümler, hangi ajanın çalışacağına karar verir.
+
+NEDEN LLM DEĞİL, KURAL TABANLI:
+    Yönlendirme beş sınıflı bir karar ve kelime örüntüsüyle güvenilir biçimde
+    çözülüyor. LLM'e sormanın üç maliyeti var: her istekte ~2 sn gecikme,
+    demo sırasında öngörülemez sıralama, ve ablasyonda kontrol edilemezlik.
+    Kazancı ise yok — model "bu bir karşılaştırma sorusu" demekten fazlasını
+    söylemiyor.
+
+    Bu, "ajan sayısı için ajan eklemeyin" ilkesinin uygulaması: orkestratör
+    var çünkü işi var, ama işini yapmak için LLM gerekmiyor.
+
+PROFİL SORGUSU — yeni yetenek:
+    "Maaş müşterisi, 800.000 TL konut, 10 yıl vade" gibi bir istek muhakeme
+    ajanına yönlenir. Eksik bilgi varsa ORKESTRATÖR TAHMİN ETMEZ, sorar:
+    tutar veya vade uydurmak, sistemin bütün maliyet hesabını sessizce
+    yanlışlar.
+"""
+
+from __future__ import annotations
+
+from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili, UygunlukSonucu
+from src.ajanlar.temel import AjanIzi, IzDefteri, iz_tut
+from src.preprocessing.normalizasyon import arama_anahtari, para_ayristir, vade_ayristir
+from src.rag.chatbot import Cevap, Kaynakca, Niyet, niyet_belirle
+from src.rag.chatbot import sor as chatbot_sor
+from src.schema import HedefKitle, Kampanya
+
+PROFIL_SORGUSU = "profil_sorgusu"
+"""`Niyet` bir StrEnum ve `chatbot.py` içinde donmuş durumda; yeni değeri
+oraya eklemek yerine orkestratör düzeyinde tutuyoruz. Chatbot'un dört niyeti
+ve sayısal doğrulama kalkanı olduğu gibi çalışmaya devam ediyor."""
+
+
+# ---------------------------------------------------------------------------
+# Profil ayrıştırma
+# ---------------------------------------------------------------------------
+
+_MUSTERI_TIPI_IPUCLARI: tuple[tuple[str, HedefKitle], ...] = (
+    ("maas musterisi", HedefKitle.MAAS_MUSTERISI),
+    ("maasli", HedefKitle.MAAS_MUSTERISI),
+    ("maas alan", HedefKitle.MAAS_MUSTERISI),
+    ("yeni musteri", HedefKitle.YENI_MUSTERI),
+    ("mevcut musteri", HedefKitle.MEVCUT_MUSTERI),
+    ("musterimiz", HedefKitle.MEVCUT_MUSTERI),
+)
+
+_SEGMENT_IPUCLARI: tuple[str, ...] = ("emekli", "ogrenci", "kobi", "esnaf", "ciftci")
+
+
+def profil_ayristir(soru: str) -> tuple[MusteriProfili | None, list[str]]:
+    """Serbest metinden müşteri profili çıkarır.
+
+    Dönen: (profil, eksik_alanlar). Profil ancak üç bilgi de varsa kurulur.
+
+    EKSİK BİLGİ TAHMİN EDİLMEZ. "Ne kadar?" sorusuna varsayılan bir tutar
+    koymak, taksitten toplam maliyete kadar her sayıyı sessizce yanlışlardı
+    ve kullanıcı bunu fark edemezdi.
+    """
+    anahtar = arama_anahtari(soru)
+    eksikler: list[str] = []
+
+    tutar = para_ayristir(soru, birim_zorunlu=True)
+    if tutar is None or tutar <= 0:
+        eksikler.append("tutar (örn. 800.000 TL)")
+
+    vade = vade_ayristir(soru)
+    if vade is None or vade <= 0:
+        eksikler.append("vade (örn. 120 ay veya 10 yıl)")
+
+    tip: HedefKitle | None = None
+    segment: str | None = None
+    for ipucu, deger in _MUSTERI_TIPI_IPUCLARI:
+        if ipucu in anahtar:
+            tip = deger
+            break
+    if tip is None:
+        for ad in _SEGMENT_IPUCLARI:
+            if ad in anahtar:
+                tip, segment = HedefKitle.SEGMENT, ad
+                break
+    if tip is None:
+        eksikler.append("müşteri tipi (yeni / mevcut / maaş / emekli)")
+
+    if eksikler:
+        return None, eksikler
+
+    assert tutar is not None and vade is not None and tip is not None
+    return (
+        MusteriProfili(musteri_tipi=tip, tutar=tutar, vade_ay=vade, segment=segment),
+        [],
+    )
+
+
+_PROFIL_IPUCLARI: tuple[str, ...] = (
+    "musteri", "musterim", "profil", "onerebilir", "uygun mu", "hangisini",
+    "karsimda", "istiyor", "talep ediyor",
+)
+
+
+def profil_sorgusu_mu(soru: str) -> bool:
+    """Bu istek muhakeme ajanına mı gitmeli?
+
+    İki tetikleyici var ve ikincisi kritik:
+
+    1. Tutar VE vade birlikte geçiyorsa — güçlü, deterministik sinyal.
+    2. İkisinden BİRİ + bir müşteri ipucu ("müşterim 500.000 TL istiyor").
+       Bu olmadan eksik bilgili profil sorguları hiç muhakemeye ulaşmaz,
+       koşul sorgusu sanılıp kalkana takılır ve kullanıcı "cevabı
+       doğrulayamadım" mesajı alır — oysa yapılması gereken eksik olan
+       vadeyi SORMAKTIR.
+    """
+    tutar_var = para_ayristir(soru, birim_zorunlu=True) is not None
+    vade_var = vade_ayristir(soru) is not None
+    if tutar_var and vade_var:
+        return True
+
+    anahtar = arama_anahtari(soru)
+    return (tutar_var or vade_var) and any(i in anahtar for i in _PROFIL_IPUCLARI)
+
+
+# ---------------------------------------------------------------------------
+# Cevap üretimi
+# ---------------------------------------------------------------------------
+
+
+def _profil_cevabi(
+    profil: MusteriProfili, sonuclar: list[UygunlukSonucu]
+) -> Cevap:
+    """Uygunluk sonuçlarını gerekçeli metne çevirir.
+
+    Kalkan ayrımı `_karsilastirma_cevabi` ile aynı mantıkta: kampanyadan
+    ALINTILANAN oran bir veri iddiasıdır ve denetlenir; taksit ve toplam geri
+    ödeme BİZİM HESABIMIZDIR, veriden gelmez, dolayısıyla denetlenecek metnin
+    dışında tutulur. Aksi halde kalkan kendi aritmetiğimizi halüsinasyon sanıp
+    geçerli bir cevabı bloke ederdi.
+    """
+    uygunlar = [s for s in sonuclar if s.uygun_mu]
+    elenenler = [s for s in sonuclar if not s.uygun_mu]
+
+    if not uygunlar:
+        satirlar = [
+            f"**{profil.ozet()}** profiline uygun kampanya bulunamadı.",
+            "",
+            "**Neden uygun değiller:**",
+        ]
+        for s in elenenler[:5]:
+            for g in s.engelleyenler():
+                satirlar.append(f"- **{s.banka_adi}**: {g.aciklama}")
+        return Cevap(
+            metin="\n".join(satirlar),
+            dogrulanacak_metin="",  # burada veri iddiası yok, yalnız kısıt açıklaması
+            niyet=Niyet.KOSUL_SORGUSU,
+        )
+
+    # DÜRÜSTLÜK KAPISI: `uygunluk` koşulları henüz çıkarılmamış kayıtlar
+    # elenmedikleri için "uygun" görünür. Hepsi böyleyse hiçbir kısıt
+    # doğrulanmamış demektir; bunu satır başlarına gömüp geçmek, sistemin
+    # yapmadığı bir filtrelemeyi yapmış gibi sunmak olurdu.
+    dogrulanmamis = sum(1 for s in uygunlar if s.veri_eksik)
+    veri_satirlari = [
+        f"**{profil.ozet()}** profiline **{len(uygunlar)} kampanya** uygun.",
+        "",
+    ]
+    if dogrulanmamis == len(uygunlar):
+        veri_satirlari.insert(
+            1,
+            "\n> ⚠️ **Bu kampanyaların hiçbirinde uygunluk koşulu çıkarılamadı.**\n"
+            "> Liste profile göre SÜZÜLMEMİŞTİR; yalnız maliyete göre sıralanmıştır.\n",
+        )
+    elif dogrulanmamis:
+        veri_satirlari.insert(
+            1,
+            f"\n> ⚠️ {dogrulanmamis} kampanyanın uygunluk koşulu çıkarılamadı; "
+            "onlar için kısıtlar doğrulanmadı.\n",
+        )
+
+    hesap_satirlari: list[str] = ["**Toplam maliyete göre sıralı:**", ""]
+
+    for sira, s in enumerate(uygunlar[:5], 1):
+        hesap_satirlari.append(f"{sira}. **{s.banka_adi}**")
+        if s.maliyet:
+            aylik = f"{s.maliyet['aylik_taksit']:,.0f}".replace(",", ".")
+            toplam = f"{s.maliyet['toplam_geri_odeme']:,.0f}".replace(",", ".")
+            hesap_satirlari.append(f"   - Aylık taksit: {aylik} TL")
+            hesap_satirlari.append(f"   - Toplam geri ödeme: {toplam} TL")
+        else:
+            hesap_satirlari.append("   - Kâr payı oranı **Belirtilmemiş**, maliyet hesaplanamadı.")
+        if s.veri_eksik:
+            hesap_satirlari.append(
+                "   - ⚠️ Uygunluk koşulları metinden çıkarılamadı; kısıtlar doğrulanmadı."
+            )
+
+    if elenenler:
+        hesap_satirlari += ["", "**Uygun olmayanlar ve sebepleri:**"]
+        for s in elenenler[:5]:
+            for g in s.engelleyenler():
+                hesap_satirlari.append(f"- **{s.banka_adi}**: {g.aciklama}")
+
+    veri_bolumu = "\n".join(veri_satirlari)
+    return Cevap(
+        metin=veri_bolumu + "\n".join(hesap_satirlari),
+        dogrulanacak_metin=veri_bolumu,
+        niyet=Niyet.KOSUL_SORGUSU,
+        kaynaklar=[
+            Kaynakca(banka_adi=s.banka_adi, url="", cekim_tarihi="")
+            for s in uygunlar[:5]
+        ],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Orkestratör
+# ---------------------------------------------------------------------------
+
+
+class Orkestrator:
+    """İsteği çözümler, ajanları sıralar, izleri toplar."""
+
+    ad = "orkestrator"
+    llm_kullanir = False
+
+    def __init__(self, muhakeme: MuhakemeAjani | None = None) -> None:
+        self.muhakeme = muhakeme or MuhakemeAjani()
+
+    def niyet_coz(self, soru: str) -> str:
+        """Beş sınıf: dört mevcut niyet + profil sorgusu."""
+        if profil_sorgusu_mu(soru):
+            return PROFIL_SORGUSU
+        return niyet_belirle(soru).value
+
+    def calistir(
+        self, soru: str, kampanyalar: list[Kampanya] | None = None
+    ) -> tuple[Cevap, IzDefteri]:
+        """Tek giriş noktası. `(cevap, iz_defteri)` döner."""
+        defter = IzDefteri()
+
+        with iz_tut(self.ad, llm=False, girdi=soru[:80]) as iz:
+            niyet = self.niyet_coz(soru)
+            iz.cikti_ozeti = niyet
+            iz.karar_gerekcesi = self._yonlendirme_gerekcesi(soru, niyet)
+        defter.ekle(iz)
+
+        if niyet != PROFIL_SORGUSU:
+            cevap, chatbot_izi = self._chatbot_yolu(soru)
+            defter.ekle(chatbot_izi)
+            return cevap, defter
+
+        profil, eksikler = self._profil_izi(soru, defter)
+        if profil is None:
+            return (
+                Cevap(
+                    metin=(
+                        "Uygunluk değerlendirmesi için şu bilgiler eksik: "
+                        + ", ".join(eksikler)
+                        + ".\n\nÖrnek: *\"Maaş müşterisi, 800.000 TL konut "
+                        "finansmanı, 10 yıl vade\"*"
+                    ),
+                    niyet=Niyet.KOSUL_SORGUSU,
+                ),
+                defter,
+            )
+
+        if kampanyalar is None:
+            from src.depolama import kampanyalari_oku
+
+            kampanyalar = list(kampanyalari_oku())
+
+        sonuclar, muhakeme_izi = self.muhakeme.calistir((profil, kampanyalar))
+        defter.ekle(muhakeme_izi)
+
+        with iz_tut("cevap", llm=False, girdi=f"{len(sonuclar)} sonuç") as iz:
+            cevap = _profil_cevabi(profil, sonuclar)
+            uygun = sum(1 for s in sonuclar if s.uygun_mu)
+            iz.cikti_ozeti = f"{uygun} uygun kampanya sunuldu"
+            iz.karar_gerekcesi = "Gerekçeler ve maliyetler kaynaklarıyla yazıldı"
+        defter.ekle(iz)
+
+        return cevap, defter
+
+    # -- iç ---------------------------------------------------------------
+
+    @staticmethod
+    def _yonlendirme_gerekcesi(soru: str, niyet: str) -> str:
+        """Hangi kuralın tetiklendiğini DOĞRU söyler.
+
+        İz kaydı jüriye gösterilen kanıt; "tutar + vade birlikte geçiyor"
+        yazarken aslında anahtar sözcük yolunun çalışmış olması, mekanizmanın
+        kendisini şüpheli hâle getirir.
+        """
+        if niyet != PROFIL_SORGUSU:
+            return f"kelime örüntüsü → {niyet}"
+        tutar_var = para_ayristir(soru, birim_zorunlu=True) is not None
+        vade_var = vade_ayristir(soru) is not None
+        if tutar_var and vade_var:
+            return "tutar + vade birlikte geçiyor → muhakeme ajanı"
+        bulunan = "tutar" if tutar_var else "vade"
+        return f"{bulunan} + müşteri ipucu → muhakeme ajanı (eksik bilgi sorulacak)"
+
+    @staticmethod
+    def _chatbot_yolu(soru: str) -> tuple[Cevap, AjanIzi]:
+        with iz_tut("cevap", llm=False, girdi=soru[:80]) as iz:
+            cevap = chatbot_sor(soru)
+            iz.cikti_ozeti = cevap.niyet.value
+            iz.karar_gerekcesi = (
+                f"Sayısal doğrulama kalkanı: "
+                f"{'geçti' if cevap.dogrulama_gecti else 'REDDETTİ'}"
+            )
+        return cevap, iz
+
+    @staticmethod
+    def _profil_izi(soru: str, defter: IzDefteri) -> tuple[MusteriProfili | None, list[str]]:
+        with iz_tut("profil_ayristirma", llm=False, girdi=soru[:80]) as iz:
+            profil, eksikler = profil_ayristir(soru)
+            if profil is None:
+                iz.cikti_ozeti = "eksik bilgi"
+                iz.karar_gerekcesi = f"Tahmin edilmedi, soruldu: {', '.join(eksikler)}"
+            else:
+                iz.cikti_ozeti = profil.ozet()
+                iz.karar_gerekcesi = "Tutar, vade ve müşteri tipi metinden okundu"
+        defter.ekle(iz)
+        return profil, eksikler
+
+
+__all__ = ["PROFIL_SORGUSU", "Orkestrator", "profil_ayristir", "profil_sorgusu_mu"]
