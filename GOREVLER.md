@@ -211,10 +211,49 @@ de yok. **Panoda tik olmamasının sebebi tiklemeyi unutmak değil; iş yapılma
 | **S3** — Ölçüm + on-prem | 22–23 Ağu | ⚪ |
 | **S4** — Teslim | 24–26 Ağu | ⚪ |
 
-**Bugünkü durum:** 96 kampanya (hedef 300+) · 8 banka · halüsinasyon %0,25 ·
-106 test geçiyor · `data/gold/` **boş** · planlanan 13 dokümandan **0**'ı yazıldı
-*(sayılar 9 Ağustos'tan beri değişmedi — 12 Ağustos denetiminde teyit edildi)*
+**Bugünkü durum (14 Ağustos):** 96 kampanya (hedef 300+) · 8 banka ·
+halüsinasyon %0,25 · **253 test geçiyor** · depo **PUBLIC** ✅ ·
+şema **v1.1.0** · `src/ajanlar/` kuruldu
 Ayrıntı: [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
+
+### 🔴 ALTIN SET — 14 Ağustos denetimi: sanılandan çok geride
+
+Denetim yöntemi: `make altin-denetle` ile dört kişinin dosyaları tek tek
+tarandı. Bulgu, "etiketleme bitti" izleniminin aksine:
+
+| Kişi | Kişisel pay | Uyum bloğu | Kalibrasyon |
+|---|---|---|---|
+| Eren | **0/13** | 10/10 ✅ | 0/10 |
+| Samet | **0/13** | 10/10 ✅ | 0/10 |
+| Görkem | **0/12** | 10/10 ✅ | 0/10 |
+| Esra | **0/12** | 10/10 ⚠️ 21 ihlal | 0/10 |
+
+**Kişisel etiketleme dosyalarının dördü de baştan sona boş** (0 dolu hücre).
+Etiketlenmiş olan tek şey 10 örneklik ortak uyum bloğu — yani altın set
+60 değil **10 örnek**. Ayrıca:
+
+- **Uyum oranı %34,9** (hedef ≥%85) ve **kopya şüphesiyle geçersiz**:
+  Eren ↔ Samet'in 28 serbest metin alanının 27'si birebir aynı.
+- Esra'nın etiketleri sözleşmeye uymuyor (`konut` yerine `konut_finansmani`,
+  `16 ağustos` yerine `2026-08-16`).
+
+**İyi haber:** etiketler modelin kendi çıktısından kopyalanmamış (veritabanında
+o alanlar `None`) — altın set kendini ölçmüyor, emek kurtarılabilir.
+
+**Bu akşam yapılacak — kişi başı ~1,5 saat:**
+
+1. `data/gold/etiketleme_<adın>.csv` → 12-13 satır, **yalnız çekirdek 8 alan**,
+   kalanlara `?`
+2. `data/gold/kalibrasyon_<adın>.csv` → 10 satır, aynı 8 alan
+3. `make altin-denetle ad=<adın>` → ✅ çıkana kadar düzelt
+4. Sonra push
+
+> **Çekirdek 8:** `kampanya_turu` · `kar_payi_orani` · `vade_ay_max` ·
+> `finansman_tutari_max` · `tahsis_ucreti` · `masrafsiz_mi` · `odul_miktari` ·
+> `kampanya_bitis`
+>
+> ⚠️ **Kalibrasyon dosyasını kimseyle karşılaştırma, bitmeden pushlama.**
+> Uyum oranını o blok ölçüyor; erken push tam da bu yüzden %96 kopya üretti.
 
 ### Yük dağılımı
 
@@ -233,11 +272,63 @@ sprintlerde yoğunlaşıyor. **Esra'nın işi Sprint 2 ve 4'te ağırlaşıyor**
 
 ### 🚨 En kritik 4 şey
 
-1. **DEPO PRIVATE — bugün açılmalı.** Şartname herkese açık depo istiyor.
-   5 dakikalık iş, karşılığı yarışmada kalmak. (E-01)
-2. **Altın veri seti — 16 Ağustos.** Bu olmadan puanın %30'u ölçülemez. Herkes 25 örnek.
-3. **Docker testi.** On-prem iddiası (%20) test edilmemiş bir Dockerfile'a dayanıyor.
+1. ✅ ~~DEPO PRIVATE~~ — **14 Ağustos'ta public yapıldı.** (E-01 kapandı)
+2. 🔴 **Altın veri seti — 16 Ağustos.** Gerçek durum 10/60. Bu olmadan puanın
+   %30'u ölçülemez. Bu akşam kapanmalı — yukarıdaki denetim tablosuna bak.
+3. ✅ ~~Docker testi~~ — 12 Ağustos'ta çalıştırıldı, üç kırık nokta düzeltildi.
 4. **21 Ağustos özellik dondurma.** Sonrasında sadece ölçüm, doküman, video.
+
+---
+
+## 🤖 AJAN MİMARİSİ — 14 Ağustos'ta eklendi
+
+Mentör görüşmesi sonrası ([`Plan_Guncellemeleri_v3.md`](Plan_Guncellemeleri_v3.md)).
+Gerekçe [ADR 005](docs/kararlar/005-ajan-mimarisi.md); şema değişikliği
+[ADR 006](docs/kararlar/006-sema-v1-1-uygunluk.md).
+
+**Bitenler (Eren, 14 Ağu):**
+
+- [x] **A-01** Şema v1.1.0 — `UygunlukKosullari` eklendi, donmuş 16 alan korundu
+- [x] **A-02** `src/ajanlar/temel.py` — Ajan protokolü + `AjanIzi`
+- [x] **A-03** `src/ajanlar/elestirmen.py` — kanıt doğrulaması `llm.py`'den çıkarıldı
+- [x] **A-04** `--elestirmen-yok` bayrağı — yeni ablasyon tablosunun kilidi
+- [x] **A-05** `src/ajanlar/muhakeme.py` — kısıt çözücü
+- [x] **A-06** `src/ajanlar/orkestrator.py` — profil sorgusu yönlendirmesi
+- [x] **A-07** `app/pages/0_Musteri_Profili.py` — ana ekran + ajan izleri
+
+**Açık:**
+
+- [ ] **A-08** `uygunluk` alanlarının ÇIKARIMI — *Samet* · 📅 19 Ağu
+      ⛔ Önce bitmeli: A-01
+      ↳ Bitti sayılır: `make extract` sonrası kayıtların ≥%60'ında `uygunluk` dolu
+      → Çoğu alan mevcut alanlardan türetilir (`max_tutar` ← `finansman_tutari_max`,
+      `max_vade_ay` ← `vade_ay_max`, `ek_sartlar` ← `kampanya_kosullari`).
+      Yalnız `min_tutar`, `min_vade_ay`, `zorunlu_urun` yeni çıkarım ister.
+      **Bu bitmeden müşteri profili ekranı süzme yapmıyor** — şu an tüm kayıtlar
+      "uygunluk çıkarılamadı" uyarısıyla listeleniyor.
+- [ ] **A-09** Yeni ablasyon tablosu — *Samet* · 📅 22 Ağu
+      ⛔ Önce bitmeli: A-04, H-01
+      ↳ Üç yapılandırma: `--yalniz-llm --elestirmen-yok` / `--elestirmen-yok` / varsayılan
+      → Eski tablo (kural/llm/hibrit) da korunacak; ikisi iki ayrı soruyu cevaplıyor
+- [ ] **A-10** Toplayıcı ajanı — LLM link seçimi — *Görkem* · 📅 20 Ağu
+      ↳ Bitti sayılır: T.O.M. ve Adil Katılım'dan ≥1 kampanya sayfası geliyor
+      → Mevcut desen yolu KORUNUR; desen az sayfa getirdiğinde devreye girer
+
+### ⚠️ Sunum düzeltmesi — Esra, slayt yazmadan önce oku
+
+v3'teki "manşet oran tuzağı" örneği **sayısal olarak yanlış**:
+
+> ~~"%1,87 / 96 ay / 5.000 TL masraflı ürün, %1,89 / 120 ay / masrafsızdan pahalı olabilir"~~
+
+800.000 TL'de 96 ay toplam **1.739.844 TL**, 120 ay **2.028.925 TL** — kısa vade
+toplamda daha ucuz. Belge toplam geri ödemeyi aylık taksitle karıştırmış.
+
+**Doğru kurulum (aynı vadede):** 800.000 TL / 120 ay için %1,87 ile %1,89
+arasındaki oran avantajı **15.796 TL** değerinde. Masraf bunu aşarsa manşet oran
+yanıltır: %1,87 + 20.000 TL = 2.033.129 TL > %1,89 masrafsız = 2.028.925 TL.
+
+Eşik `tests/test_muhakeme.py` içinde sabitlendi — slayttaki cümle ile sistemin
+davranışı ayrışamaz.
 
 ---
 
