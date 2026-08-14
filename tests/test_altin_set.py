@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
@@ -36,13 +37,37 @@ def _kampanya(kod: str, sira: int, tur: str = "finansman", metin: str = "kampany
 
 @pytest.fixture
 def gold_dizini(tmp_path, monkeypatch):
-    """Araç modülünü geçici bir data/gold dizinine yönlendirir."""
+    """Araç modülünü geçici bir data/gold dizinine yönlendirir.
+
+    Modüldeki yol sabitleri içe aktarma anında `GOLD`'dan türetiliyor; yalnız
+    `GOLD`'u yamalamak yetmez, ondan türeyen HER sabit ayrı ayrı yamalanmalıdır.
+    `KALIBRASYON_KAYDI` bir süre listede yoktu ve `make test` her koşuşta gerçek
+    `data/gold/kalibrasyon_listesi.json` dosyasını yeniden yazıyordu. O dosya
+    kalibrasyon bloğunun köken kaydıdır (tohum + oluşturma zamanı); jüriye
+    "bu 10 örneği nasıl seçtiniz?" sorusunun cevabı odur. Test koşusunun onu
+    ezmesi, ölçümün kanıtını sessizce yok eder.
+    """
+    gercek_gold = altin_set.GOLD
     gold = tmp_path / "gold"
     gold.mkdir()
     monkeypatch.setattr(altin_set, "GOLD", gold)
     monkeypatch.setattr(altin_set, "METINLER", gold / "metinler")
     monkeypatch.setattr(altin_set, "ALTIN_SET", gold / "altin_set.jsonl")
     monkeypatch.setattr(altin_set, "ORNEK_KAYDI", gold / "ornek_listesi.json")
+    monkeypatch.setattr(altin_set, "KALIBRASYON_KAYDI", gold / "kalibrasyon_listesi.json")
+
+    # Bekçi: yamalamayı unutulan bir sabit kalırsa test gerçek veriye yazar.
+    # Tek tek hatırlamak yerine burada kontrol ediyoruz — bundan sonra
+    # eklenecek her yeni yol sabiti de kendiliğinden yakalanır.
+    kacaklar = [
+        ad
+        for ad, deger in vars(altin_set).items()
+        if isinstance(deger, Path) and deger.is_relative_to(gercek_gold)
+    ]
+    assert not kacaklar, (
+        f"Bu yol sabitleri gerçek data/gold'u gösteriyor: {kacaklar}. "
+        "gold_dizini fixture'ında yamalayın, yoksa testler gerçek veriyi ezer."
+    )
     return gold
 
 
@@ -612,3 +637,88 @@ def test_uyum_kalibrasyon_varsa_onu_kullanir(gold_dizini, monkeypatch):
     assert altin_set.aktif_uyum_kaynagi()[0] == altin_set.UYUM_ONEK
     _csv_doldur(gold_dizini / f"{altin_set.KALIBRASYON_ONEK}eren.csv", [{"kampanya_turu": "kart"}])
     assert altin_set.aktif_uyum_kaynagi()[0] == altin_set.KALIBRASYON_ONEK
+
+
+# ---------------------------------------------------------------------------
+# Sözleşme denetleyicisi (make altin-denetle)
+# ---------------------------------------------------------------------------
+#
+# Bu komut, 14 Ağustos'ta ortaya çıkan iki gerçek hatanın panzehiridir:
+# kişisel CSV'lerin baştan sona boş kalması (kimse fark etmedi, altın set
+# 60 yerine 10 örnek oldu) ve enum yerine serbest metin yazılması
+# ('konut' / 'taşıt' / '16 ağustos'). İkisi de derleme anında değil,
+# etiketleyenin masasında yakalanmalı.
+
+
+def test_oneri_turkce_harfi_normalize_eder():
+    """'taşıt' -> 'tasit_finansmani'. Normalizasyon olmadan difflib harf
+    örtüşmesine bakıp 'kart' öneriyordu — yanlış öneri, önerisizlikten kötü."""
+    assert altin_set._yakin_oneri("taşıt", altin_set.GECERLI_TURLER) == "tasit_finansmani"
+    assert altin_set._yakin_oneri("ihtiyaç", altin_set.GECERLI_TURLER) == "ihtiyac_finansmani"
+    assert altin_set._yakin_oneri("konut", altin_set.GECERLI_TURLER) == "konut_finansmani"
+
+
+def test_oneri_kilavuz_esanlamlisini_kullanir():
+    assert altin_set._yakin_oneri("kredi kartı", altin_set.GECERLI_TURLER) == "kart"
+    assert altin_set._yakin_oneri("katılma", altin_set.GECERLI_TURLER) == "yatirim_urunu"
+    assert altin_set._yakin_oneri("herkes", altin_set.GECERLI_KITLELER) == "tum_musteriler"
+
+
+def test_oneri_emin_olmadiginda_tahmin_etmez():
+    """Karşılığı bilinmeyen değerde tüm geçerli değerler basılır; uydurma
+    öneri, son tarihe yetişmeye çalışan etiketleyici tarafından sorgusuz
+    kabul edilirdi."""
+    oneri = altin_set._yakin_oneri("zurna", altin_set.GECERLI_TURLER)
+    assert oneri.startswith("geçerliler:")
+
+
+def test_denetleyici_bos_kampanya_turunu_yakalar(gold_dizini):
+    """En pahalı sessiz hata: kampanya_turu boşsa satırın TAMAMI derlemede
+    atlanır. 14 Ağustos'ta dört kişinin kişisel dosyası bu yüzden 0 satır
+    saydı ve kimse fark etmedi."""
+    _hazirla(gold_dizini)
+    hatalar, etiketlenen, toplam = altin_set.dosya_denetle(
+        gold_dizini / "etiketleme_eren.csv"
+    )
+    assert etiketlenen == 0
+    assert toplam > 0
+    assert all("kampanya_turu BOŞ" in h for h in hatalar)
+
+
+def test_denetleyici_gecersiz_enum_ve_tarihi_yakalar(gold_dizini):
+    _hazirla(gold_dizini)
+    _csv_doldur(
+        gold_dizini / "etiketleme_eren.csv",
+        [{"kampanya_turu": "konut", "hedef_kitle": "yeni", "kampanya_bitis": "16 ağustos"}],
+    )
+    hatalar, _, _ = altin_set.dosya_denetle(gold_dizini / "etiketleme_eren.csv")
+    birlesik = " ".join(hatalar)
+    assert "konut_finansmani" in birlesik
+    assert "yeni_musteri" in birlesik
+    assert "YYYY-AA-GG" in birlesik
+
+
+def test_denetleyici_bos_ve_soru_isaretini_hata_saymaz(gold_dizini):
+    """Boş = 'metinde yok', '?' = 'emin değilim'. İkisi de geçerli beyandır;
+    denetleyici bunları ihlal sayarsa etiketleyiciyi değer uydurmaya iter."""
+    _hazirla(gold_dizini)
+    _csv_doldur(
+        gold_dizini / "etiketleme_eren.csv",
+        [{"kampanya_turu": "diger", "kar_payi_orani": "", "vade_ay_max": "?"}],
+    )
+    hatalar, etiketlenen, _ = altin_set.dosya_denetle(gold_dizini / "etiketleme_eren.csv")
+    assert etiketlenen == 1
+    assert hatalar == []
+
+
+def test_denetleyici_supheli_arama_yakalar(gold_dizini):
+    """Yıllık oran aylık sanılırsa tüm maliyet hesabı kayar."""
+    _hazirla(gold_dizini)
+    _csv_doldur(
+        gold_dizini / "etiketleme_eren.csv",
+        [{"kampanya_turu": "finansman", "kar_payi_orani": "48", "vade_ay_max": "900"}],
+    )
+    hatalar, _, _ = altin_set.dosya_denetle(gold_dizini / "etiketleme_eren.csv")
+    birlesik = " ".join(hatalar)
+    assert "AYLIK" in birlesik
+    assert "şüpheli" in birlesik

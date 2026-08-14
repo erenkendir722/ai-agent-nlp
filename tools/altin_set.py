@@ -4,6 +4,7 @@ Altın set İNSAN işidir. Bu araç etiket üretmez; yalnız etiketlemenin etraf
 mekanik işi yapar:
 
     python tools/altin_set.py ornekle    # katmanlı örneklem -> kişi başı CSV
+    python tools/altin_set.py denetle    # KENDİ dosyanı pushlamadan önce kontrol
     python tools/altin_set.py derle      # doldurulmuş CSV'ler -> altin_set.jsonl
     python tools/altin_set.py dogrula    # üretilen seti denetle
 
@@ -27,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import difflib
 import json
 import random
 import sys
@@ -38,7 +40,11 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.depolama import kampanyalari_oku  # noqa: E402
-from src.preprocessing.normalizasyon import sayi_ayristir, tarih_ayristir  # noqa: E402
+from src.preprocessing.normalizasyon import (  # noqa: E402
+    arama_anahtari,
+    sayi_ayristir,
+    tarih_ayristir,
+)
 from src.schema import (  # noqa: E402
     ALAN_ADLARI,
     METINSEL_ALANLAR,
@@ -937,6 +943,209 @@ def komut_dogrula() -> int:
     return 0
 
 
+CEKIRDEK_ALANLAR: tuple[str, ...] = (
+    "kampanya_turu",
+    "kar_payi_orani",
+    "vade_ay_max",
+    "finansman_tutari_max",
+    "tahsis_ucreti",
+    "masrafsiz_mi",
+    "odul_miktari",
+    "kampanya_bitis",
+)
+"""Metriği taşıyan sekiz alan — etiketleme önceliği bunlardır.
+
+Kalan alanlar bilinçli olarak ikinci sırada: `urun_turu` (%0 doluluk),
+`alisveris_puani` ve `masraf_bilgisi` (%1), `hedef_kitle` (%4) ölçümde neredeyse
+hiç örnek üretmiyor; serbest metin alanları ise etiketleyiciler arası uyumun en
+düşük olduğu yer. Sekiz alanı çok örnekte etiketlemek, on altı alanı az örnekte
+etiketlemekten hem ucuz hem istatistiksel olarak daha sağlamdır."""
+
+_TUR_ESANLAMLI: dict[str, str] = {
+    # docs/ETIKETLEME_KILAVUZU.md §4.1 karar sırasında AÇIKÇA yazanlar
+    "arac": "tasit_finansmani", "araba": "tasit_finansmani", "otomobil": "tasit_finansmani",
+    "kredi karti": "kart", "kart aidati": "kart", "taksit": "kart",
+    "puan": "alisveris_puani", "mil": "alisveris_puani", "chip para": "alisveris_puani",
+    "katilma": "yatirim_urunu", "katilma hesabi": "yatirim_urunu",
+    "altin": "yatirim_urunu", "fon": "yatirim_urunu", "sukuk": "yatirim_urunu",
+    "ev": "konut_finansmani", "mortgage": "konut_finansmani",
+    # Uyum bloğunda diğer ÜÇ etiketleyicinin hemfikir olduğu karşılıklar
+    "davet": "yeni_musteri",   # "arkadaşını davet et" — üçü de yeni_musteri dedi
+    "isyeri": "finansman",     # ürün türü belirsiz finansman — üçü de finansman dedi
+}
+"""Etiketleyenin doğal yazımı -> enum. Kaynağı iki tanedir ve ikisi de bizim
+görüşümüz değildir: kılavuzun kendi karar listesi, ya da uyum bloğunda diğer üç
+kişinin aynı satırda vardığı ortak karar. Bu sözlüğe 'bize mantıklı geldi' diye
+madde eklenmez — altın set, tahminlerimizin değil metnin cevap anahtarıdır."""
+
+_KITLE_ESANLAMLI: dict[str, str] = {
+    "genel": "tum_musteriler", "herkes": "tum_musteriler", "tumu": "tum_musteriler",
+    "mevcut": "mevcut_musteri", "maas": "maas_musterisi",
+    # schema.py: SEGMENT = öğrenci, emekli, KOBİ, kadın girişimci vb.
+    "emekli": "segment", "ogrenci": "segment", "kobi": "segment",
+}
+
+_DOGRU_SOZCUKLER = frozenset({"evet", "true", "1", "var", "e"})
+_YANLIS_SOZCUKLER = frozenset({"hayir", "hayır", "false", "0", "yok", "h", "hayır."})
+
+
+def _yakin_oneri(deger: str, gecerliler: set[str]) -> str:
+    """Yanlış yazılmış bir enum için en olası geçerli karşılığı önerir.
+
+    İki tasarım kararı:
+
+    1. Önce `arama_anahtari` ile Türkçe harfler ASCII'ye indirilir. Enum
+       değerleri şapkasızdır (`tasit_finansmani`); etiketleyen ise doğal olarak
+       "taşıt" yazar. Normalizasyon olmadan 'ş' ≠ 's' yüzünden alt dize eşleşmesi
+       kaçar ve difflib harf örtüşmesine bakıp "taşıt → kart" gibi saçma bir
+       öneri üretir.
+    2. difflib eşiği bilinçli olarak YÜKSEK. Yanlış öneri, önerisizlikten
+       kötüdür: son tarihe yetişmeye çalışan bir etiketleyici öneriyi sorgusuz
+       kabul eder. Emin olamadığımızda geçerli değerlerin tamamını basıp kararı
+       insana bırakıyoruz.
+    """
+    anahtar = arama_anahtari(deger)
+
+    esanlamli = _TUR_ESANLAMLI if gecerliler == GECERLI_TURLER else _KITLE_ESANLAMLI
+    if anahtar in esanlamli:
+        return esanlamli[anahtar]
+
+    for gecerli in sorted(gecerliler):
+        if gecerli.startswith(anahtar) or anahtar in gecerli:
+            return gecerli
+    yakin = difflib.get_close_matches(anahtar, sorted(gecerliler), n=1, cutoff=0.75)
+    if yakin:
+        return yakin[0]
+    return "geçerliler: " + ", ".join(sorted(gecerliler))
+
+
+def dosya_denetle(yol: Path) -> tuple[list[str], int, int]:
+    """Tek bir etiketleme CSV'sini satır satır denetler.
+
+    `_csv_oku` yerine HAM hücreleri okur. `_hucre_cozumle` bilinçli olarak
+    bağışlayıcıdır — çözemediği tarihi ve sayıyı sessizce metin olarak geçirir,
+    çünkü derleme sırasında tek bir hücre yüzünden koşuyu düşürmek istemeyiz.
+    Ama etiketleyene geri bildirim verirken o bağışlayıcılık tam tersine
+    dönmeli: çözülemeyen her hücre burada görünür.
+
+    Dönen: (hatalar, etiketlenen_satir, toplam_satir)
+    """
+    hatalar: list[str] = []
+    toplam = etiketlenen = 0
+
+    with yol.open(encoding="utf-8-sig", newline="") as dosya:
+        for satir_no, satir in enumerate(csv.DictReader(dosya), start=2):
+            toplam += 1
+            yer = f"satır {satir_no}"
+
+            # `kampanya_turu` satırın 'bakıldı' işareti (bkz. DOKUNMA_ALANI).
+            # Boşsa satırın TAMAMI derlemede atlanır — en pahalı sessiz hata bu.
+            tur_ham = (satir.get(DOKUNMA_ALANI) or "").strip()
+            if not tur_ham:
+                hatalar.append(
+                    f"{yer}  {DOKUNMA_ALANI} BOŞ → bu satırın tamamı altın sete "
+                    f"girmez. Hiçbir tür uymuyorsa 'diger' yaz."
+                )
+                continue
+            etiketlenen += 1
+
+            for alan in ALAN_ADLARI:
+                ham = (satir.get(alan) or "").strip()
+                if not ham or ham == EMIN_DEGIL:
+                    continue  # boş = 'metinde yok', '?' = metrik dışı; ikisi de geçerli
+
+                if alan == "kampanya_turu" and ham not in GECERLI_TURLER:
+                    hatalar.append(
+                        f"{yer}  kampanya_turu={ham!r} geçersiz → {_yakin_oneri(ham, GECERLI_TURLER)}"
+                    )
+                elif alan == "hedef_kitle" and ham not in GECERLI_KITLELER:
+                    hatalar.append(
+                        f"{yer}  hedef_kitle={ham!r} geçersiz → {_yakin_oneri(ham, GECERLI_KITLELER)}"
+                    )
+                elif alan in TARIH_ALANLAR:
+                    try:
+                        date.fromisoformat(ham)
+                    except ValueError:
+                        if tarih_ayristir(ham) is None:
+                            hatalar.append(
+                                f"{yer}  {alan}={ham!r} tarihe çevrilemedi → YYYY-AA-GG yaz (2026-09-30)"
+                            )
+                elif alan in BOOL_ALANLAR:
+                    if ham.lower() not in _DOGRU_SOZCUKLER | _YANLIS_SOZCUKLER:
+                        hatalar.append(
+                            f"{yer}  {alan}={ham!r} anlaşılmadı → 'evet' veya 'hayır' yaz"
+                        )
+                elif alan in SAYISAL_ALANLAR:
+                    sayi = sayi_ayristir(ham)
+                    if sayi is None:
+                        hatalar.append(f"{yer}  {alan}={ham!r} sayıya çevrilemedi")
+                    elif alan == "kar_payi_orani" and not 0 < sayi < 15:
+                        hatalar.append(
+                            f"{yer}  kar_payi_orani=%{sayi} — AYLIK oran bekleniyor, şüpheli"
+                        )
+                    elif alan == "vade_ay_max" and not 0 < sayi <= 360:
+                        hatalar.append(f"{yer}  vade_ay_max={sayi} ay — şüpheli")
+
+    return hatalar, etiketlenen, toplam
+
+
+def _cekirdek_ilerleme(yol: Path) -> tuple[int, int]:
+    """Çekirdek sekiz alanda kaç hücre dolduruldu / doldurulmalı."""
+    dolu = gereken = 0
+    with yol.open(encoding="utf-8-sig", newline="") as dosya:
+        for satir in csv.DictReader(dosya):
+            for alan in CEKIRDEK_ALANLAR:
+                gereken += 1
+                if (satir.get(alan) or "").strip():
+                    dolu += 1
+    return dolu, gereken
+
+
+def komut_denetle(ad: str | None) -> int:
+    """Kişi CSV'sini pushlamadan önce denetler — H-01'in kalite kapısı."""
+    kisiler = (ad,) if ad else KISILER
+    onekler = ("etiketleme_", UYUM_ONEK, KALIBRASYON_ONEK)
+
+    bulunan = 0
+    toplam_hata = 0
+    for kisi in kisiler:
+        for onek in onekler:
+            yol = GOLD / f"{onek}{kisi.lower()}.csv"
+            if not yol.exists():
+                continue
+            bulunan += 1
+            hatalar, etiketlenen, toplam = dosya_denetle(yol)
+            dolu, gereken = _cekirdek_ilerleme(yol)
+
+            yuzde = f" (%{dolu / gereken * 100:.0f})" if gereken else ""
+            print(f"\n📄 {_kisa_yol(yol)}")
+            print(
+                f"   Etiketlenen satır: {etiketlenen}/{toplam}   ·   "
+                f"Çekirdek 8 alan: {dolu}/{gereken} hücre{yuzde}"
+            )
+            if hatalar:
+                toplam_hata += len(hatalar)
+                for hata in hatalar[:25]:
+                    print(f"   ❌ {hata}")
+                if len(hatalar) > 25:
+                    print(f"   … {len(hatalar) - 25} hata daha")
+            else:
+                print("   ✅ Sözleşme ihlali yok")
+
+    if not bulunan:
+        hedef = ad or "hiç kimse"
+        print(f"❌ {hedef} için etiketleme dosyası bulunamadı. Önce `make altin-ornekle`.")
+        return 1
+
+    if toplam_hata:
+        print(f"\n❌ Toplam {toplam_hata} ihlal — DÜZELTMEDEN PUSHLAMA.")
+        print("   Kılavuz: docs/ETIKETLEME_KILAVUZU.md")
+        return 1
+
+    print("\n✅ Dosyalar sözleşmeye uygun. Pushlayabilirsin.")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Altın set araçları (H-01)")
     alt = ap.add_subparsers(dest="komut", required=True)
@@ -951,6 +1160,9 @@ def main() -> int:
     p_kal.add_argument("--adet", type=int, default=10, help="örnek sayısı (varsayılan 10)")
     p_kal.add_argument("--zorla", action="store_true", help="dolu kalibrasyon dosyalarını sıfırla")
 
+    p_den = alt.add_parser("denetle", help="kendi CSV'ni pushlamadan önce kontrol et")
+    p_den.add_argument("--ad", default=None, help="yalnız bu kişinin dosyaları")
+
     alt.add_parser("uyum", help="etiketleyiciler arası uyum oranı (H-02)")
     alt.add_parser("derle", help="CSV'leri altin_set.jsonl'e derle")
     alt.add_parser("dogrula", help="mevcut altın seti denetle")
@@ -960,6 +1172,8 @@ def main() -> int:
         return komut_ornekle(args.adet, args.zorla)
     if args.komut == "kalibrasyon":
         return komut_kalibrasyon(args.adet, args.zorla)
+    if args.komut == "denetle":
+        return komut_denetle(args.ad)
     if args.komut == "uyum":
         return komut_uyum()
     if args.komut == "derle":

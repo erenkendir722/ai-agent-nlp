@@ -1,5 +1,6 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
-        altin-ornekle altin-kalibrasyon altin-uyum altin-derle altin-dogrula gorev gorev-dogrula git-kontrol
+        altin-ornekle altin-kalibrasyon altin-denetle altin-uyum altin-derle altin-dogrula \
+        gorev gorev-dogrula git-kontrol
 
 PYTHON ?= .venv/bin/python
 STREAMLIT ?= .venv/bin/streamlit
@@ -75,6 +76,9 @@ altin-ornekle:  ## katmanlı örneklem -> kişi başı etiketleme CSV'si
 
 altin-kalibrasyon:  ## uyum ölçümü için taze blok çek (altın set dışından)
 	@$(PYTHON) tools/altin_set.py kalibrasyon --adet $(or $(adet),10)
+
+altin-denetle:  ## KENDİ etiketlerini pushlamadan önce kontrol et (ad=Esra)
+	@$(PYTHON) tools/altin_set.py denetle $(if $(ad),--ad $(ad))
 
 altin-uyum:  ## etiketleyiciler arası uyum oranı
 	@$(PYTHON) tools/altin_set.py uyum

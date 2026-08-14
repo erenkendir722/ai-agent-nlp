@@ -47,17 +47,50 @@ Sana ait dosya: **`data/gold/etiketleme_<adın>.csv`**
 4. Her satır bir kampanya. `metin`, **sistemin gördüğü ham metindir** —
    etiketini buna göre ver, canlı siteye bakma.
 5. `kampanya_id`, `banka_adi`, `kaynak_url`, `metin` sütunlarına **dokunma.**
-6. Kalan 16 sütunu doldur. **`kampanya_turu` her satırda dolu olmalı** —
-   araç "bu satıra bakıldı mı" sorusunu bu sütundan anlıyor, boş kalırsa satır
-   sete hiç girmez.
+6. **Önce aşağıdaki çekirdek 8 sütunu doldur.** **`kampanya_turu` her satırda
+   dolu olmalı** — araç "bu satıra bakıldı mı" sorusunu bu sütundan anlıyor,
+   boş kalırsa satır sete hiç girmez.
 7. CSV olarak kaydet (Sheets: **Dosya → İndir → Virgülle ayrılmış değerler**),
    inen dosyayı **aynı adla** `data/gold/` içine koy.
 
 ```bash
+make altin-denetle ad=<adın>           # ⬅️ ÖNCE BU — pushlamadan hataları gör
 make altin-derle                       # CSV'leri altin_set.jsonl'e çevirir + denetler
 make eval                              # metrikler -> docs/SONUCLAR.md
 git add data/gold && git commit -m "Altın set: <adın> payı etiketlendi" && git push
 ```
+
+### ⭐ Çekirdek 8 alan — önce bunlar
+
+Vaktin kısıtlıysa **şu sekiz alanı bütün satırlarda doldur**, kalanlara `?` yaz:
+
+`kampanya_turu` · `kar_payi_orani` · `vade_ay_max` · `finansman_tutari_max` ·
+`tahsis_ucreti` · `masrafsiz_mi` · `odul_miktari` · `kampanya_bitis`
+
+Sebebi ölçüm: `urun_turu` kampanyaların %0'ında, `alisveris_puani` ve
+`masraf_bilgisi` %1'inde, `hedef_kitle` %4'ünde geçiyor. Bu alanlara harcanan
+emek metrikte neredeyse hiç örnek üretmiyor. **Sekiz alanı çok örnekte
+etiketlemek, on altı alanı az örnekte etiketlemekten hem ucuz hem
+istatistiksel olarak daha sağlam** — `kar_payi_orani` kampanyaların yalnız
+%28'inde geçtiği için 30 örnekte ~8 kez görünür, o doğruluk sayısı sunumda
+savunulamayacak kadar geniş bir güven aralığı taşır.
+
+### 🔎 `make altin-denetle` — pushlamadan önceki kalite kapısı
+
+Dosyanı pushlamadan **mutlaka** çalıştır. Enum yerine serbest metin, bozuk
+tarih, sayıya çevrilemeyen hücre ve boş `kampanya_turu` satırlarını satır
+numarasıyla gösterir:
+
+```
+❌ satır 5  kampanya_turu='taşıt' geçersiz → tasit_finansmani
+❌ satır 3  kampanya_bitis='16 ağustos' tarihe çevrilemedi → YYYY-AA-GG yaz
+❌ satır 9  kampanya_turu BOŞ → bu satırın tamamı altın sete girmez.
+```
+
+> Bu komut 14 Ağustos'ta iki gerçek hatadan sonra eklendi: dört kişinin
+> kişisel dosyası baştan sona boş kaldı ve kimse fark etmedi (altın set 60
+> yerine 10 örnek oldu), ayrıca bir tur etiket enum yerine serbest metinle
+> dolduruldu. İkisi de derleme anında değil, **senin masanda** yakalanmalı.
 
 > ⚠️ **Canlı siteye bakma.** Sayfa 9 Ağustos'tan beri değişmiş olabilir. Canlı
 > sayfaya göre etiketlersen, çıkarım hatası ile sayfa değişikliğini birbirine
