@@ -22,7 +22,12 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-SEMA_SURUMU = "1.0.0"
+SEMA_SURUMU = "1.1.0"
+"""1.0.0 (9 Ağu) -> 1.1.0 (14 Ağu): `Kampanya.uygunluk` eklendi.
+
+Toplama değişikliği — alan opsiyonel ve `Alan` tipinde olmadığı için mevcut
+metrikler, altın set ve depolama etkilenmez. Gerekçe:
+`docs/kararlar/006-sema-v1-1-uygunluk.md`"""
 
 
 # ---------------------------------------------------------------------------
@@ -163,6 +168,76 @@ class Alan(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Uygunluk koşulları (v1.1.0) — muhakeme ajanının girdisi
+# ---------------------------------------------------------------------------
+
+
+class UygunlukKosullari(BaseModel):
+    """Bir kampanyanın KİME ve HANGİ KOŞULLARDA uygulanabileceği.
+
+    Muhakeme ajanı, müşteri profilini bu yapıya karşı çözer. Serbest metin
+    `kampanya_kosullari` ile eşleştirme yapılamaz — "yeni müşteri VE 500.000 TL
+    üstü VE 60 ay altı" gibi kesişen kısıtlar yapısal alan ister.
+
+    HEDEF KİTLE İÇİN NEDEN YENİ BİR SÖZLÜK YOK:
+        `musteri_tipi` mevcut `HedefKitle` enum'unu yeniden kullanır. Aynı kavram
+        için ikinci bir sözcük dağarcığı ("yeni"/"mevcut"/"maas") tanımlamak,
+        iki listenin zamanla ayrışmasını garanti ederdi; çıkarım bir tarafı,
+        muhakeme diğerini doldurur ve eşleşme sessizce bozulurdu.
+
+        `HedefKitle.SEGMENT` bilinçli olarak geniştir (öğrenci, emekli, KOBİ).
+        Emekliye açık bir kampanyayı öğrenciye önermemek için segment ADI
+        `segment_detayi` içinde ayrıca tutulur; kısıt çözücü önce enum'a,
+        SEGMENT ise ada bakar.
+
+    PARA ALANLARI NEDEN `float`:
+        Bu değerler `Alan.deger`'den türetilir ve orada zaten `float`turlar
+        (`finansman_tutari_max` vb.); karşılaştırma motoru da `float` ile
+        çalışır. `Decimal`e çevirmek, kaynağı `float` olan bir sayıya olmayan
+        bir kesinlik atfetmek ve her sınırda dönüşüm borcu yaratmak olurdu.
+    """
+
+    musteri_tipi: list[HedefKitle] = Field(default_factory=list)
+    segment_detayi: list[str] = Field(default_factory=list)  # "emekli", "öğrenci", "KOBİ"
+
+    min_tutar: float | None = None
+    max_tutar: float | None = None
+    min_vade_ay: int | None = None
+    max_vade_ay: int | None = None
+
+    zorunlu_urun: list[str] = Field(default_factory=list)  # "maaş hesabı", "kredi kartı"
+    ek_sartlar: list[str] = Field(default_factory=list)  # yapısallaştırılamayan kalan
+
+    kaynak: Kaynak | None = None
+
+    @model_validator(mode="after")
+    def _aralik_tutarli(self) -> UygunlukKosullari:
+        """Ters aralık sessizce her kampanyayı elerdi — erken patlaması iyidir."""
+        if self.min_tutar is not None and self.max_tutar is not None:
+            if self.min_tutar > self.max_tutar:
+                raise ValueError(f"min_tutar ({self.min_tutar}) > max_tutar ({self.max_tutar})")
+        if self.min_vade_ay is not None and self.max_vade_ay is not None:
+            if self.min_vade_ay > self.max_vade_ay:
+                raise ValueError(
+                    f"min_vade_ay ({self.min_vade_ay}) > max_vade_ay ({self.max_vade_ay})"
+                )
+        return self
+
+    def kisit_var_mi(self) -> bool:
+        """Hiç kısıt yoksa kampanya herkese açıktır — muhakeme bunu ayırt etmeli."""
+        return any(
+            (
+                self.musteri_tipi,
+                self.min_tutar is not None,
+                self.max_tutar is not None,
+                self.min_vade_ay is not None,
+                self.max_vade_ay is not None,
+                self.zorunlu_urun,
+            )
+        )
+
+
+# ---------------------------------------------------------------------------
 # Ana kayıt
 # ---------------------------------------------------------------------------
 
@@ -207,6 +282,22 @@ class Kampanya(BaseModel):
     kampanya_avantaji: Alan = Field(default_factory=Alan.yok)  # serbest metin
     kampanya_bitis: Alan = Field(default_factory=Alan.yok)  # date
     kampanya_kosullari: Alan = Field(default_factory=Alan.yok)  # serbest metin
+
+    # --- Uygunluk (v1.1.0) — muhakeme ajanının girdisi ---
+    uygunluk: UygunlukKosullari | None = None
+    """Yapısal uygunluk koşulları. `None` = henüz çıkarılmadı (eski kayıtlar).
+
+    DONMUŞ SÖZLEŞMEYİ NEDEN BOZMUYOR — bu alan bilinçle `Alan` DEĞİL:
+        `ALAN_ADLARI` yalnız `annotation is Alan` olanları toplar, `cikarilan_
+        alanlar()` da `isinstance(deger, Alan)` filtreler. Farklı tipte
+        opsiyonel bir alan eklemek bu iki türetmeyi de değiştirmez; dolayısıyla
+        `doluluk_orani()`, `ortalama_guven()`, `kanit_denetimi()` ve altın set
+        CSV başlıkları (`tools/altin_set.py: csv_basliklari()`) aynen kalır.
+        Etiketlenmiş altın set yeniden etiketlenmez.
+
+        Bu, sürümün 2.0.0 değil 1.1.0 olmasının sebebidir: toplama değişikliği,
+        kırıcı değil.
+    """
 
     # --- Köken metni ---
     ham_metin: str = ""
@@ -435,6 +526,7 @@ __all__ = [
     "Kampanya",
     "KampanyaTuru",
     "Kaynak",
+    "UygunlukKosullari",
     "Yontem",
     "ollama_json_semasi",
 ]
