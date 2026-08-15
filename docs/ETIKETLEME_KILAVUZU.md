@@ -17,12 +17,26 @@ Başarısı»** kriterinin sayıları buradan çıkar.
 
 İki kural pazarlık dışıdır:
 
-1. **Etiketi modele sorma.** Arayüzü açıp sistemin ne bulduğuna bakma, `make run`
-   çıktısından kopyalama. Sistemin çıktısıyla doldurulan bir altın set, sistemi
-   kendisiyle ölçer; doğruluk yapay olarak yükselir ve jüri bunu ilk soruda
-   yakalar. CSV'de model tahmini bilerek **yok**.
+1. **Etiketi HİÇBİR modele sorma** — ne bizimkine, ne dışarıdakine.
+   - *Kendi sistemimiz:* arayüzü açıp ne bulduğuna bakma, `make run` çıktısından
+     kopyalama. Sistemin çıktısıyla doldurulan altın set, sistemi kendisiyle
+     ölçer; doğruluk yapay olarak yükselir. CSV'de model tahmini bilerek **yok**.
+   - *Dış modeller (ChatGPT, Gemini, Claude…):* metni yapıştırıp "alanları çıkar"
+     demek de aynı hatadır, hatta daha sinsisi. İki dil modeli aynı metni okurken
+     **aynı yerlerde yanılır** — ücret tarifesi tablosunda ikisi de tökezler.
+     Doğruluk yüksek çıkar, gerçek hata görünmez kalır ve ablasyon tablosu da
+     aynı sapmayı taşır.
+   - Model **okuma yardımı** olarak kullanılabilir ("bu sayfada vade nerede
+     geçiyor?"). Etiketi, kaynak metne bakarak **insan** yazar.
 2. **Metne sadık kal.** Sayfada yazmayan bir şeyi "herhalde böyledir" diye yazma.
    Bilmiyorsan boş bırak (`Belirtilmemiş`), emin değilsen `?` koy.
+
+> **Boş hücre ile `?` aynı şey değildir.** Boş = "baktım, metinde yok" — cevap
+> anahtarına böyle girer ve sistem "Belirtilmemiş" derse **doğru** sayılır.
+> `?` = "bakmadım / emin değilim" — o hücre metriğin tamamen dışında kalır.
+> Bakmadan boş bırakmak, sisteme yanlışlıkla hata yazdırır.
+> `make altin-denetle` boş bıraktığın ama sistemin değer bulduğu hücreleri
+> ⚠ ile listeler; o listeyi bir kez gözden geçir.
 
 ---
 
@@ -219,25 +233,81 @@ yazdığın cümledeki her sayı metinde geçmeli.
 
 ---
 
+## 4.9. Doğrulama turu — hazır bir bloğu kontrol etmek
+
+Elinde **zaten doldurulmuş** bir blok varsa (başkası doldurmuş, eski bir turdan
+kalmış ya da bir modelle taslak çıkarılmış), onu sıfırdan etiketlemek yerine
+**doğrulamak** yeterlidir. Sıfırdan etiketlemek kayıt başına ~4 dakika,
+doğrulamak ~1 dakika.
+
+```bash
+make altin-dogrulama ad=Esra
+```
+
+Bu, her çekirdek alan için **mevcut etiketi** ve o alanla ilgili **kaynak metin
+alıntılarını** yan yana koyan bir sayfa üretir:
+`data/gold/dogrulama_etiketleme_<ad>.md`
+
+```
+**vade_ay_max** — şu an: `120`
+> - Vade : TL cinsinden 120 aya kadar; USD veya EUR cinsinden ise azami 60 ay…
+```
+
+Sayfa **sistemin ne bulduğunu göstermez** — bilerek. Gösterseydi cevap anahtarı
+sistemin kopyasına dönerdi. Dayanağın yalnızca banka metnidir.
+
+Alıntılar yol göstericidir, karar metnin tamamına aittir; şüphedeysen
+`data/gold/metinler/<kampanya_id>.txt` dosyasını aç.
+
+Düzeltmeleri **CSV'ye** yaz (sayfa salt okunur, `.gitignore`'da — CSV
+değiştikçe yeniden üret). Bitince `make altin-denetle ad=<Ad>`.
+
+Doğrulama turunda **kaç hücreyi düzelttiğini not et.** "Ön etiketlerin %X'i
+insan doğrulamasında düzeltildi" cümlesi sunumda metodoloji ciddiyeti gösterir
+— saklanacak değil, anlatılacak bir sayıdır.
+
+---
+
 ## 5. Kalite: uyum ölçümü (H-02'nin "bitti" şartı)
 
-### 🔒 Uyum bloğu MÜHÜRLÜ çalışılır
+### 🔒 Uyum bloğunun üç kuralı
 
-> **Dolu uyum dosyanı, dördünüz bitirmeden depoya PUSHLAMA.**
+Uyum oranı takıma verilen bir not **değildir** — bu kılavuzun sınavıdır. Dört
+kişi aynı metni okuyup farklı etiketliyorsa kusur insanlarda değil, buradaki
+bir maddenin belirsizliğindedir. Aşağıdaki üç kural o sınavı ölçülebilir tutar;
+biri delinirse çıkan sayı hiçbir şey ifade etmez.
+
+> **1 — Dosyanı, dördünüz bitirmeden depoya PUSHLAMA.**
+> Herkes kendi dosyasını doldurur ve doğrudan kaptana gönderir. Kaptan dördünü
+> birden koyar. Böylece kimse kimsenin cevabını görmeden etiketler.
 >
-> 12 Ağustos'ta bu kural yoktu ve şu oldu: tamamlanmış bir uyum dosyası depoya
-> girdi, sonraki kişi `git pull` yapınca cevap anahtarını gördü. Ölçülen
-> "%98 uzlaşma" gerçekte iki dosyanın aynı olmasıydı — 28 serbest metin
-> alanının 27'si harfi harfine aynıydı. Bağımsız çalışan iki insan 16 özgün
-> cümleyi aynı yazamaz.
+> **2 — Her dosyayı, adı yazan kişi doldurur.**
+> Bir arkadaşının vakti yoksa onun bloğu BOŞ KALIR; başkası dolduramaz. İki
+> dosyayı tek kişi doldurduğunda uyum oranı o kişinin kendisiyle uyumunu ölçer
+> ve her zaman yüksek çıkar — yani ölçüm çalıştığını sanırsınız, oysa hiçbir
+> şey ölçmemişsinizdir.
 >
-> **Nasıl olmalı:** herkes kendi dosyasını doldurur ve **doğrudan kaptana
-> gönderir** (WhatsApp). Kaptan dördünü birden depoya koyar, sonra
-> `make altin-uyum` çalışır. Böylece kimse kimsenin cevabını görmeden etiketler.
->
-> `make altin-uyum` artık bunu otomatik denetliyor: iki kişinin serbest metin
+> **3 — Etiketler dil modeliyle üretilmez.**
+> Altın set, sistemi kendisine karşı ölçtüğümüz cevap anahtarıdır. Etiketler bir
+> modelden gelirse ölçtüğümüz şey doğruluk değil, iki modelin birbirine
+> benzerliği olur. Üstelik iki model aynı metni okuduğu için **aynı hatalara**
+> düşer: gerçek doğruluğunuz ölçtüğünüzden düşük çıkar ve fark görünmez.
+> Model bir okuma yardımı olarak kullanılabilir; **etiketi insan, kaynak metne
+> bakarak** yazar.
+
+**Ne oldu (12–15 Ağustos).** İlk uyum bloğunda 28 serbest metin alanının 27'si
+iki dosyada harfi harfine aynıydı. İlk teşhis "dolu dosya pushlandı, sonraki
+gördü" idi ve 1. kural buna karşı yazıldı. 15 Ağustos'ta gerçek sebep ortaya
+çıktı: **iki dosyayı da aynı kişi doldurmuştu ve etiketler bir dil modelinden
+geliyordu.** 1. kural bunu engellemezdi; 2. ve 3. kurallar bu yüzden eklendi.
+
+O bloktan çıkan uyum oranı geçersiz sayıldı. Ölçüm taze bir kalibrasyon bloğuyla
+tekrarlanır (`make altin-kalibrasyon`); `aktif_uyum_kaynagi` kalibrasyon bloğunda
+etiket varsa otomatik olarak onu kullanır.
+
+> `make altin-uyum` 1. kuralı otomatik denetler: iki kişinin serbest metin
 > alanları %90'dan fazla birebir aynıysa **kopya şüphesi** verir ve oranı
-> geçersiz sayar.
+> geçersiz sayar. 2. ve 3. kuralı araç denetleyemez — onlar söze bağlıdır.
 
 Etiketlemeye dağılmadan önce **ilk 10 örneği dördünüz de ayrı ayrı**
 etiketleyin — aynı 10 satırı. Sonra karşılaştırın:

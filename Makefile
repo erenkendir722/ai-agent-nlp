@@ -1,5 +1,6 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
         altin-ornekle altin-kalibrasyon altin-denetle altin-uyum altin-derle altin-dogrula \
+        altin-dogrulama \
         gorev gorev-dogrula git-kontrol
 
 PYTHON ?= .venv/bin/python
@@ -79,6 +80,9 @@ altin-kalibrasyon:  ## uyum ölçümü için taze blok çek (altın set dışın
 
 altin-denetle:  ## KENDİ etiketlerini pushlamadan önce kontrol et (ad=Esra)
 	@$(PYTHON) tools/altin_set.py denetle $(if $(ad),--ad $(ad))
+
+altin-dogrulama:  ## etiketleri kaynak metinle yan yana koyan sayfa (ad=Esra)
+	@$(PYTHON) tools/altin_set.py dogrulama $(if $(ad),--ad $(ad))
 
 altin-uyum:  ## etiketleyiciler arası uyum oranı
 	@$(PYTHON) tools/altin_set.py uyum

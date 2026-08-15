@@ -22,3 +22,8 @@ data/raw/**/*.html
 # Elle alınmış paylaşım kopyaları — data/gold/ zaten depoda,
 # zip bayatlar ve iki ayrı gerçeklik doğar
 data/*.zip
+
+# Doğrulama sayfaları CSV'den türetilir (`make altin-dogrulama`), veritabanı
+# gerektirmez. Depoda tutulursa CSV düzeltildikçe bayatlar ve etiketleyen
+# yanlış sayfaya bakar — aynı "iki ayrı gerçeklik" tuzağı.
+data/gold/dogrulama_*.md

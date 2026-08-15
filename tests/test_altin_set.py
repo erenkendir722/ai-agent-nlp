@@ -722,3 +722,112 @@ def test_denetleyici_supheli_arama_yakalar(gold_dizini):
     birlesik = " ".join(hatalar)
     assert "AYLIK" in birlesik
     assert "şüpheli" in birlesik
+
+
+# ---------------------------------------------------------------------------
+# Atlanma uyarısı — "baktım, yok" ile "bakmadım" ayrımı
+# ---------------------------------------------------------------------------
+
+
+class TestAtlanmaUyarilari:
+    """Boş hücre 'metinde yok' demektir; bakmadan boş bırakmak sessiz hatadır.
+
+    Sözleşmede kapatılamayan tek delik buydu: hücre düzeyinde "bakıldı" işareti
+    yok. Uyarı, sistemin değer bulduğu boş hücreleri etiketleyene bir kez
+    sorar — kararı yine insan verir.
+    """
+
+    def _hazirla(self, gold_dizini, hucreler: dict[str, str]):
+        kampanya = _kampanya("0203", 1, metin="Aylık kâr payı %1,89 ile 120 aya kadar.")
+        kampanya.kar_payi_orani = Alan(
+            deger=1.89, ham_ifade="%1,89", guven=0.9, yontem="kural"
+        )
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+        _csv_doldur(yol, [{"kampanya_turu": "finansman", **hucreler}])
+        return yol, [kampanya]
+
+    def test_bos_hucrede_sistem_deger_bulduysa_uyarir(self, gold_dizini) -> None:
+        yol, kampanyalar = self._hazirla(gold_dizini, {})
+        uyarilar = altin_set.atlanma_uyarilari(yol, kampanyalar)
+        assert len(uyarilar) == 1
+        assert "kar_payi_orani" in uyarilar[0]
+
+    def test_etiketlenmis_hucre_uyari_uretmez(self, gold_dizini) -> None:
+        yol, kampanyalar = self._hazirla(gold_dizini, {"kar_payi_orani": "1,89"})
+        assert altin_set.atlanma_uyarilari(yol, kampanyalar) == []
+
+    def test_soru_isareti_uyari_uretmez(self, gold_dizini) -> None:
+        """'?' zaten 'bakmadım' demek — uyarının amacı bunu söyletmek."""
+        yol, kampanyalar = self._hazirla(gold_dizini, {"kar_payi_orani": "?"})
+        assert altin_set.atlanma_uyarilari(yol, kampanyalar) == []
+
+    def test_dokunulmamis_satir_atlanir(self, gold_dizini) -> None:
+        """kampanya_turu boşsa satıra hiç bakılmamıştır; zaten hata raporlanıyor.
+
+        Bu satır için ayrıca atlanma uyarısı üretmek, aynı sorunu iki kez
+        söylemek olurdu — etiketleyen hangisine bakacağını şaşırır.
+        """
+        kampanya = _kampanya("0203", 1, metin="Aylık kâr payı %1,89 ile.")
+        kampanya.kar_payi_orani = Alan(
+            deger=1.89, ham_ifade="%1,89", guven=0.9, yontem="kural"
+        )
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])  # hiç doldurulmadı: tüm hücreler boş
+        assert altin_set.atlanma_uyarilari(yol, [kampanya]) == []
+
+
+class TestSifirKarPayi:
+    """'Vade farksız' kampanyada kâr payı gerçekten sıfırdır, bilinmiyor değil."""
+
+    def test_sifir_kabul_edilir(self, gold_dizini) -> None:
+        kampanya = _kampanya("0203", 1)
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+        _csv_doldur(yol, [{"kampanya_turu": "finansman", "kar_payi_orani": "0"}])
+        hatalar, _, _ = altin_set.dosya_denetle(yol)
+        assert not [h for h in hatalar if "kar_payi_orani" in h]
+
+    def test_makul_olmayan_oran_hala_yakalanir(self, gold_dizini) -> None:
+        kampanya = _kampanya("0203", 1)
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+        _csv_doldur(yol, [{"kampanya_turu": "finansman", "kar_payi_orani": "84"}])
+        hatalar, _, _ = altin_set.dosya_denetle(yol)
+        assert [h for h in hatalar if "kar_payi_orani" in h]
+
+
+class TestDogrulamaSayfasi:
+    """Doğrulama sayfası mevcut etiketi ve kaynak metni yan yana koyar."""
+
+    def test_etiket_ve_alinti_birlikte_gosterilir(self, gold_dizini) -> None:
+        kampanya = _kampanya(
+            "0203", 1,
+            metin="Konut finansmanında 120 aya kadar vade imkânı sunulmaktadır.",
+        )
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+        _csv_doldur(yol, [{"kampanya_turu": "konut_finansmani", "vade_ay_max": "120"}])
+
+        sayfa = altin_set.dogrulama_sayfasi(yol)
+        assert "**vade_ay_max** — şu an: `120`" in sayfa
+        assert "120 aya kadar vade" in sayfa
+
+    def test_sistemin_cikarimi_sayfada_YER_ALMAZ(self, gold_dizini) -> None:
+        """Sayfa sistemin tahminini gösterseydi cevap anahtarı kopyasına dönerdi."""
+        kampanya = _kampanya("0203", 1, metin="Aylık kâr payı %1,89.")
+        kampanya.kar_payi_orani = Alan(
+            deger=1.89, ham_ifade="SISTEM_TAHMINI", guven=0.9, yontem="kural"
+        )
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+        _csv_doldur(yol, [{"kampanya_turu": "finansman"}])
+        assert "SISTEM_TAHMINI" not in altin_set.dogrulama_sayfasi(yol)
+
+    def test_bos_hucre_anlami_yazili(self, gold_dizini) -> None:
+        kampanya = _kampanya("0203", 1)
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+        _csv_doldur(yol, [{"kampanya_turu": "finansman"}])
+        sayfa = altin_set.dogrulama_sayfasi(yol)
+        assert 'metinde yok' in sayfa and '`?`' in sayfa

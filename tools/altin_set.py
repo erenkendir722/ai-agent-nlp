@@ -31,6 +31,7 @@ import csv
 import difflib
 import json
 import random
+import re
 import sys
 from collections import Counter, defaultdict
 from datetime import date, datetime
@@ -1080,7 +1081,11 @@ def dosya_denetle(yol: Path) -> tuple[list[str], int, int]:
                     sayi = sayi_ayristir(ham)
                     if sayi is None:
                         hatalar.append(f"{yer}  {alan}={ham!r} sayıya çevrilemedi")
-                    elif alan == "kar_payi_orani" and not 0 < sayi < AYLIK_KAR_PAYI_UST_SINIRI:
+                    elif alan == "kar_payi_orani" and not 0 <= sayi < AYLIK_KAR_PAYI_UST_SINIRI:
+                        # SIFIR GEÇERLİDİR ve boş hücreden farklıdır: "vade farksız"
+                        # kampanyada kâr payı gerçekten sıfırdır, bilinmiyor değil.
+                        # 15 Ağustos'ta bu ayrım yokken gerçek bir etiket
+                        # ("Pratik Finansman Kart", vade farksız) şüpheli sayılıyordu.
                         hatalar.append(
                             f"{yer}  kar_payi_orani=%{sayi} — AYLIK oran bekleniyor, şüpheli"
                         )
@@ -1088,6 +1093,52 @@ def dosya_denetle(yol: Path) -> tuple[list[str], int, int]:
                         hatalar.append(f"{yer}  vade_ay_max={sayi} ay — şüpheli")
 
     return hatalar, etiketlenen, toplam
+
+
+def atlanma_uyarilari(yol: Path, kampanyalar: list[Kampanya]) -> list[str]:
+    """Boş bırakılan hücrelerde sistem bir DEĞER bulmuş mu?
+
+    NEDEN GEREKLİ — sözleşmede kapatılamayan tek delik buydu:
+        Boş hücre "bu alan metinde yok" demektir ve metriğe böyle girer. Doğru
+        bir tasarım, ama bir maliyeti var: hiç bakılmadan boş bırakılan hücre
+        ile bakılıp "yok" denen hücre BİREBİR aynı görünür. `kampanya_turu`
+        satır düzeyinde "bakıldı" işareti verir, hücre düzeyinde karşılığı yok.
+
+        15 Ağustos ölçümü: çekirdek alanların yalnız %20-43'ü doluydu ve 10
+        ortak kayıtta karşılaştırılabilir sadece 16-20 hücre kalıyordu. Uyum
+        oranı bu yüzden hesaplanamıyordu — anlaşmazlıktan değil, seyreklikten.
+
+    NEDEN HATA DEĞİL, UYARI:
+        Sistemin değer bulduğu yerde insanın "yok" demesi MEŞRU olabilir ve
+        tam da metriğin yakalaması gereken şeydir (sistem yanlış pozitifi).
+        Bu yüzden push'u engellemez; etiketleyeni "bunu bilerek mi boş
+        bıraktın?" diye bir kez durdurur. Kararı insan verir, araç sormakla
+        yetinir.
+    """
+    kimlik_kampanya = {k.kampanya_id: k for k in kampanyalar}
+    uyarilar: list[str] = []
+
+    with yol.open(encoding="utf-8-sig", newline="") as dosya:
+        for satir_no, satir in enumerate(csv.DictReader(dosya), start=2):
+            if not (satir.get(DOKUNMA_ALANI) or "").strip():
+                continue  # satıra hiç bakılmamış; zaten hata olarak raporlanıyor
+            kampanya = kimlik_kampanya.get((satir.get("kampanya_id") or "").strip())
+            if kampanya is None:
+                continue
+
+            bos_ama_dolu = [
+                alan
+                for alan in CEKIRDEK_ALANLAR
+                if not (satir.get(alan) or "").strip()
+                and getattr(kampanya, alan, None) is not None
+                and getattr(kampanya, alan).var_mi
+            ]
+            if bos_ama_dolu:
+                uyarilar.append(
+                    f"satır {satir_no}  boş bıraktın ama sistem değer buldu: "
+                    f"{', '.join(bos_ama_dolu)}"
+                )
+    return uyarilar
 
 
 def _cekirdek_ilerleme(yol: Path) -> tuple[int, int]:
@@ -1102,10 +1153,137 @@ def _cekirdek_ilerleme(yol: Path) -> tuple[int, int]:
     return dolu, gereken
 
 
+DOGRULAMA_ONEK = "dogrulama_"
+_ALAN_IPUCLARI: dict[str, tuple[str, ...]] = {
+    "kampanya_turu": ("finansman", "kampanya", "kart", "hesap"),
+    "kar_payi_orani": ("kâr payı", "kar payı", "kâr oranı", "oran"),
+    "vade_ay_max": ("vade", "taksit", "aya kadar", "ay vade"),
+    "finansman_tutari_max": ("finansman", "limit", "tutar"),
+    "tahsis_ucreti": ("tahsis", "dosya masraf", "komisyon", "ücret"),
+    "masrafsiz_mi": ("masraf", "ücret", "komisyon", "tahsis"),
+    "odul_miktari": ("ödül", "hediye", "kazan", "iade", "puan"),
+    "kampanya_bitis": ("geçerlidir", "geçerli", "son başvuru", "tarihine"),
+}
+
+_SAYI_GEREKTIREN = frozenset(SAYISAL_ALANLAR) | {"kampanya_bitis"}
+"""Bu alanlarda RAKAM içermeyen cümle gösterilmez.
+
+İlk sürüm "kadar" ve "tl" gibi her yerde geçen ipuçları kullanıyordu ve
+`kampanya_bitis` altına finansman cümleleri düşüyordu. Sayısal bir alanın
+kanıtı sayı içermek zorundadır; bu tek kısıt isabeti belirgin biçimde
+artırıyor."""
+
+_RAKAM = re.compile(r"\d")
+"""Alan başına metinde aranacak ipuçları — okuma yardımı içindir, ÇIKARIM DEĞİL.
+
+Bilinçli olarak `kural.py`'deki `baglam_sozcukleri`nden ayrı tutuldu: orası
+neyin kabul edileceğine karar verir, burası insanın nereye bakacağını söyler.
+İkisini birleştirmek, etiketleyeni kuralın gördüğü yere hapsederdi — kuralın
+kaçırdığı değer de tam olarak orada bulunur."""
+
+
+def _ilgili_cumleler(metin: str, alan: str, azami: int = 3) -> list[str]:
+    """Bir alanla ilgili olabilecek cümleleri metinden seçer."""
+    ipuclari = _ALAN_IPUCLARI.get(alan, ())
+    sayi_sart = alan in _SAYI_GEREKTIREN
+    bulunan: list[str] = []
+    for parca in re.split(r"(?<=[.!?\n])\s+", metin):
+        temiz = " ".join(parca.split())
+        if not (30 <= len(temiz) <= 260):
+            continue
+        if sayi_sart and not _RAKAM.search(temiz):
+            continue
+        kucuk = temiz.lower()
+        if any(ipucu in kucuk for ipucu in ipuclari) and temiz not in bulunan:
+            bulunan.append(temiz)
+        if len(bulunan) >= azami:
+            break
+    return bulunan
+
+
+def dogrulama_sayfasi(yol: Path) -> str:
+    """Etiketleri kaynak metinle yan yana koyan okuma yardımı üretir.
+
+    NEDEN ÜRETMEK DEĞİL DOĞRULAMAK:
+        Sıfırdan etiketlemek kayıt başına ~4 dakika, mevcut bir etiketi kaynağa
+        karşı doğrulamak ~1 dakika. 48 satırlık bir bloğu yeniden etiketletmek
+        gerçekçi değil; doğrulatmak tek oturumluk iş.
+
+    NEDEN SİSTEMİN ÇIKTISI GÖSTERİLMEZ:
+        Sayfa yalnız MEVCUT ETİKETİ ve KAYNAK METNİ gösterir. Sistemin kendi
+        çıkarımını buraya koymak, cevap anahtarını sistemin kopyasına çevirirdi
+        — doğruluk %100 çıkar ve hiçbir şey ölçmemiş oluruz. Etiketleyenin
+        dayanağı yalnızca banka metnidir.
+    """
+    satirlar = [
+        f"# Doğrulama sayfası — {yol.stem}",
+        "",
+        "Her hücre için: **kaynak metne bak**, etiket doğruysa dokunma, yanlışsa "
+        f"`{yol.name}` dosyasında düzelt.",
+        "",
+        "- Boş hücre **\"metinde yok\"** demektir ve cevap anahtarına öyle girer.",
+        "- Bakmadan geçiyorsan **`?`** yaz — o hücre metrikten çıkar.",
+        "- Aşağıdaki alıntılar yalnız yol göstericidir; **karar metnin tamamına aittir**.",
+        "",
+        "---",
+        "",
+    ]
+
+    with yol.open(encoding="utf-8-sig", newline="") as dosya:
+        for satir_no, satir in enumerate(csv.DictReader(dosya), start=2):
+            if not (satir.get(DOKUNMA_ALANI) or "").strip():
+                continue
+            metin = satir.get("metin") or ""
+            satirlar += [
+                f"## satır {satir_no} — {satir.get('banka_adi', '')}",
+                f"<{satir.get('kaynak_url', '')}>",
+                "",
+            ]
+            for alan in CEKIRDEK_ALANLAR:
+                ham = (satir.get(alan) or "").strip()
+                etiket = f"`{ham}`" if ham else "_(boş → \"metinde yok\")_"
+                satirlar.append(f"**{alan}** — şu an: {etiket}")
+                for cumle in _ilgili_cumleler(metin, alan):
+                    satirlar.append(f"> {cumle}")
+                satirlar.append("")
+            satirlar += ["---", ""]
+
+    return "\n".join(satirlar)
+
+
+def komut_dogrulama(ad: str | None) -> int:
+    """Doğrulama sayfalarını üretir (H-01 kalite turu)."""
+    kisiler = (ad,) if ad else KISILER
+    uretilen = 0
+    for kisi in kisiler:
+        for onek in ("etiketleme_", UYUM_ONEK, KALIBRASYON_ONEK):
+            yol = GOLD / f"{onek}{kisi.lower()}.csv"
+            if not yol.exists() or not _etiketli_mi(yol):
+                continue
+            hedef = GOLD / f"{DOGRULAMA_ONEK}{onek}{kisi.lower()}.md"
+            hedef.write_text(dogrulama_sayfasi(yol), encoding="utf-8")
+            print(f"✅ {_kisa_yol(hedef)}")
+            uretilen += 1
+
+    if not uretilen:
+        print("❌ Doğrulanacak etiketli dosya yok.")
+        return 1
+    print(f"\n{uretilen} sayfa üretildi. Sayfayı okuyup düzeltmeleri CSV'ye yaz,")
+    print("sonra `make altin-denetle ad=<Ad>` ile kontrol et.")
+    return 0
+
+
 def komut_denetle(ad: str | None) -> int:
     """Kişi CSV'sini pushlamadan önce denetler — H-01'in kalite kapısı."""
     kisiler = (ad,) if ad else KISILER
     onekler = ("etiketleme_", UYUM_ONEK, KALIBRASYON_ONEK)
+
+    # Atlanma uyarısı sistemin çıkarımıyla karşılaştırma gerektiriyor; veritabanı
+    # yoksa denetimin geri kalanı yine de çalışmalı (kılavuz koşusu, CI vb.).
+    try:
+        kampanyalar = _kampanyalari_al()
+    except Exception:  # noqa: BLE001 — veritabanı yoksa uyarıdan vazgeçilir
+        kampanyalar = []
 
     bulunan = 0
     toplam_hata = 0
@@ -1132,6 +1310,19 @@ def komut_denetle(ad: str | None) -> int:
                     print(f"   … {len(hatalar) - 25} hata daha")
             else:
                 print("   ✅ Sözleşme ihlali yok")
+
+            if kampanyalar:
+                atlananlar = atlanma_uyarilari(yol, kampanyalar)
+                for uyari in atlananlar[:10]:
+                    print(f"   ⚠  {uyari}")
+                if len(atlananlar) > 10:
+                    print(f"   … {len(atlananlar) - 10} satır daha")
+                if atlananlar:
+                    print(
+                        "   ⚠  Boş hücre 'metinde YOK' demektir ve cevap anahtarına "
+                        "öyle girer.\n      Bakmadan bıraktıysan '?' yaz — o hücre "
+                        "metrik dışı kalır."
+                    )
 
     if not bulunan:
         hedef = ad or "hiç kimse"
@@ -1164,6 +1355,9 @@ def main() -> int:
     p_den = alt.add_parser("denetle", help="kendi CSV'ni pushlamadan önce kontrol et")
     p_den.add_argument("--ad", default=None, help="yalnız bu kişinin dosyaları")
 
+    p_dog = alt.add_parser("dogrulama", help="etiketleri kaynak metinle yan yana koyan sayfa")
+    p_dog.add_argument("--ad", default=None, help="yalnız bu kişinin dosyaları")
+
     alt.add_parser("uyum", help="etiketleyiciler arası uyum oranı (H-02)")
     alt.add_parser("derle", help="CSV'leri altin_set.jsonl'e derle")
     alt.add_parser("dogrula", help="mevcut altın seti denetle")
@@ -1175,6 +1369,8 @@ def main() -> int:
         return komut_kalibrasyon(args.adet, args.zorla)
     if args.komut == "denetle":
         return komut_denetle(args.ad)
+    if args.komut == "dogrulama":
+        return komut_dogrulama(args.ad)
     if args.komut == "uyum":
         return komut_uyum()
     if args.komut == "derle":
