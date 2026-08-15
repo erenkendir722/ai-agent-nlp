@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 from datetime import datetime
 from typing import Any
 
@@ -26,8 +27,6 @@ import ollama
 
 from src.ajanlar.elestirmen import ElestirmenAjani
 from src.preprocessing.normalizasyon import (
-    MASRAF_SOZCUKLERI,
-    arama_anahtari,
     masrafsiz_mi,
     oran_ayristir,
     para_ayristir,
@@ -176,6 +175,22 @@ _AYRISTIRICILAR = {
 
 _SERBEST_METIN = ("urun_turu", "masraf_bilgisi", "kampanya_avantaji", "kampanya_kosullari")
 
+_CUMLE_SINIRI = re.compile(r"(?<=[.!?\n])\s+")
+
+
+def _masraf_kaniti(metin: str, karar: bool) -> str | None:
+    """Modelin `masrafsiz_mi` kararını destekleyen cümleyi bulur.
+
+    Kural katmanıyla AYNI ölçüt (`kural._masrafsizlik`): bir bool'un kanıtı,
+    o kararı veren bir cümledir. Model kararı doğruysa cümle zaten metindedir;
+    bulunamıyorsa ortada çıkarım değil varsayım vardır.
+    """
+    for parca in _CUMLE_SINIRI.split(metin):
+        cumle = " ".join(parca.split())
+        if cumle and masrafsiz_mi(cumle) is karar:
+            return cumle[:120]
+    return None
+
 
 class LLMCikarici:
     """Ollama üzerinden şema kısıtlı çıkarım yapar.
@@ -285,21 +300,27 @@ class LLMCikarici:
         # 3) Sayısal / tarihsel alanlar — KANIT ZORUNLU
         if alan_adi == "masrafsiz_mi":
             # `masrafsiz_mi` bir bool olduğu için `KANIT_ZORUNLU_ALANLAR`
-            # dışındadır: metinde birebir aranacak bir "ham ifade"si yoktur.
-            # Bu, kanıt zincirinde bir delik bırakıyordu — model, masraftan hiç
-            # söz etmeyen bir metinden `true` üretebiliyordu (şartname madde 11,
-            # C Bankası metni tam olarak buydu).
+            # dışındadır: modelin döndürdüğü "true"/"false" metinde birebir
+            # aranamaz. Kanıt zincirindeki bu deliği kapatmanın yolu, kararı
+            # DESTEKLEYEN bir cümle istemektir.
             #
-            # Kanıtın bu alandaki karşılığı şudur: metin masrafın KONUSUNU
-            # ediyor olmalı. Etmiyorsa çıkarılacak bir masraf beyanı da yoktur.
-            metin_anahtari = arama_anahtari(metin)
-            if not any(sozcuk in metin_anahtari for sozcuk in MASRAF_SOZCUKLERI):
-                log.info("masrafsiz_mi reddedildi: metinde masraf sözcüğü yok (%s)", url)
-                return None
+            # Önceki sürüm belge düzeyinde bakıyordu: metinde "ücret" geçiyorsa
+            # modelin bool'u kabul ediliyordu. Bu fazla gevşekti — 15 Ağustos
+            # altın set ölçümünde `masrafsiz_mi`'nin 15 uyuşmazlığından 8'i,
+            # modelin `ham_ifade='False'` ile ürettiği ve metinde hiçbir masraf
+            # beyanı bulunmayan kayıtlardı. Model "masraf var mı?" sorusuna
+            # varsayılan olarak "hayır" diyordu; bu bir çıkarım değil.
+            #
+            # Artık kural katmanıyla aynı ölçüt: metinde, modelin verdiği
+            # kararın AYNISINI veren bir cümle olmalı. Yoksa değer düşer.
             deger = ham_deger if isinstance(ham_deger, bool) else masrafsiz_mi(ham_ifade)
             if deger is None:
                 return None
-            return Alan(deger=deger, ham_ifade=ham_ifade, kaynak=None, guven=0.65, yontem="llm")
+            kanit = _masraf_kaniti(metin, deger)
+            if kanit is None:
+                log.info("masrafsiz_mi reddedildi: kararı destekleyen cümle yok (%s)", url)
+                return None
+            return Alan(deger=deger, ham_ifade=kanit, kaynak=None, guven=0.65, yontem="llm")
 
         ayristirici = _AYRISTIRICILAR.get(alan_adi)
         if ayristirici is None:

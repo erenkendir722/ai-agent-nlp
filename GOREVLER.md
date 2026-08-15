@@ -351,33 +351,23 @@ davranışı ayrışamaz.
 
 Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
-- [ ] **H-01** 🔴 **ALTIN VERİ SETİ — kişi başı 13-14 satır × 8 alan (~20 dk)** · 📅 **16 Ağu (kesin)**
-      ⛔ **Önce bitmeli:** H-02 (Herkes)
-      ↳ Bitti sayılır: `data/gold/altin_set.jsonl` içinde **60** etiketli örnek var,
-        `make eval` doğruluk metriklerini hesaplıyor (artık "beklemede" demiyor)
-      ↳ ✅ **15 Ağu: altyapı sıfırdan kuruldu.** Boş CSV'ler ve okuma kâğıtları
-        hazır, kılavuz tek sayfaya indi. **Kalan iş yalnız etiketleme.**
-      ↳ Senin dosyan: **`data/gold/etiketleme_<adın>.csv`** (13-14 satır, 8 sütun)
-        Yanında **`data/gold/okuma_<adın>.md`** — aday cümleler önden çıkarılmış.
-      ↳ 📖 **Önce `docs/ETIKETLEME_KILAVUZU.md` oku** (tek sayfa) — boş hücre ile
-        `?` farklı şeyler demek ve bu fark doğrudan metriğe giriyor.
-      ↳ 🤖 **Etiketi yapay zekâya sordurma** — 15 Ağustos'ta altın setin sıfırdan
-        kurulmasının sebebi buydu. Model okuma yardımı olarak serbest.
-      ↳ **12 Ağu kararı: 100 değil 60 örnek.** Panodaki kaçış kullanıldı;
-        16 Ağustos'ta "yetişmedi" demek S-12 → S-13 → ES-13 zincirini kaydırırdı.
+- [x] **H-01** ✅ **ALTIN VERİ SETİ — 60 örnek, 15 Ağu'da bitti** (hedef 16 Ağu)
+      ↳ `data/gold/altin_set.jsonl` · 8 banka (7-8'er), 7 tür · `make eval` çalışıyor
+      ↳ İlk ölçüm: **sayısal alan doğruluğu 0,850** (hedef 0,90)
+      ↳ Elle denetimde 5 kayıtta eksik `kar_payi_orani` bulundu ve dolduruldu
       ↳ ⚠️ Katmanlama sistemin kendi tür tahminine göre yapıldı; bu sınır
         `docs/SONUCLAR.md` ve sunumda açıkça söylenir.
+      ↳ 🔓 **S-12, S-13, E-05, S-07 artık açık** — kritik yolun başı geçildi.
 
-- [ ] **H-02** Ortak 5 örneği DÖRDÜNÜZ BİRLİKTE etiketleyin · 📅 **16 Ağu**
-      ↳ ✅ `docs/ETIKETLEME_KILAVUZU.md` v2.0 yazıldı (15 Ağu) — kalan iş uyum ölçümü
-      ↳ Dosyan: **`data/gold/etiketleme_uyum_<adın>.csv`** — dördünüzde de **aynı 5 örnek**
-      ↳ 🔒 **Bitmeden pushlama.** Doldur, doğrudan Eren'e gönder; o dördünü birden
-        koyar. Erken push, kalan üç kişiye cevap anahtarını gösterir.
-      ↳ Bitti sayılır: dördü de doldurdu, `make altin-uyum` ≥ %85 gösteriyor
-      ↳ Uyum düşükse ayrışan alanları konuşun, kararı kılavuzun **kararlar
-        defteri** tablosuna yazın
-      ↳ Bu 5 örnek çoğunluk oyuyla uzlaştırılıp altın sete girer — boşa etiketleme değil
-      ↳ Sunumda "etiketleme uzlaşmamız %X" cümlesi akademik jüriyi etkiler
+- [x] **H-02** ✅ **Uyum turu tamamlandı — %80,8** (hedef %85)
+      ↳ `docs/ETIKETLEME_KILAVUZU.md` v2.0 yazıldı, kararlar defteri 15 madde
+      ↳ **Kopya şüphesi YOK** — detektör sessiz, etiketleme bağımsız yapıldı
+      ↳ %85 tutmadı ama beş ayrışmanın hepsi tanımlı kural boşluğuydu; hepsi
+        kaynak metne dönülüp karara bağlandı ve kılavuza yazıldı
+      ↳ ⚠️ **Sunumda %80,8 denir, 5 örnek üzerinde olduğu da söylenir.**
+        Güven aralığı %68–87; bu sayıyı "yüksek/düşük" diye yorumlamak yanlış olur
+      ↳ Uyum metriğinin göremediği bir oybirliği hatası elle yakalandı
+        (dördü de başka ürünün vadesini yazmıştı) — sunumda anlatılacak
 
 - [ ] **H-03** Günlük yazılı stand-up · her gün 21:00 · WhatsApp
       ↳ Üç satır: dün ne yaptım / bugün ne yapacağım / neyde takıldım

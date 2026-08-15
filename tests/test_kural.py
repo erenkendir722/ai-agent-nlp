@@ -237,3 +237,69 @@ class TestKismiJsonKurtarma:
         assert _kismi_json_kurtar("merhaba dünya") == {}
         assert _kismi_json_kurtar("") == {}
         assert _kismi_json_kurtar("[1, 2, 3") == {}
+
+
+class TestTabloKolonAyrimi:
+    """Tabloda anlamı uzaklık değil KOLON belirler.
+
+    Banka oran tabloları düz metne serilince `Kâr Payı Oranı` ve
+    `Tahsis Ücreti` kolonları yan yana düşüyor; karakter penceresine bakan
+    bağlam kontrolü ikisini ayırt edemiyordu. 15 Ağustos altın set ölçümünde
+    `kar_payi_orani`'nin 12 uyuşmazlığından 5'i tam olarak buydu — sistem
+    tahsis ücretini (%0,50) kâr payı sanıyordu.
+    """
+
+    TABLO = (
+        "Sigortalı İhtiyaç Finansmanı Kâr Payı Oranları ve Maliyet Tablosu "
+        "Vade | Kâr Payı Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | "
+        "Yıllık Toplam Maliyet | "
+        "3 | 4,20% | 0,50% | 5,77% | 96,05% | "
+        "12 | 4,15% | 0,50% | 5,50% | 90,09% | "
+        "36 | 3,80% | 0,50% | 4,98% | 79,27% |"
+    )
+
+    def test_tahsis_kolonu_kar_payi_sayilmaz(self) -> None:
+        assert cikar(self.TABLO).get("kar_payi_orani") != pytest.approx(0.50)
+
+    def test_kar_payi_kolonundan_en_dusuk_alinir(self) -> None:
+        """Kılavuz: kademeli tabloda müşteri lehine uç yazılır."""
+        assert cikar(self.TABLO).get("kar_payi_orani") == pytest.approx(3.80)
+
+    def test_maliyet_kolonlari_kar_payi_sayilmaz(self) -> None:
+        """`Aylık/Yıllık Toplam Maliyet` de oran kolonudur ama kâr payı değildir."""
+        deger = cikar(self.TABLO).get("kar_payi_orani")
+        for maliyet in (5.77, 4.98):
+            assert deger != pytest.approx(maliyet)
+
+    def test_tablo_disi_metin_eski_yoldan_cikarilir(self) -> None:
+        """Kolon mantığı yalnız tabloda devreye girer; düz cümle bozulmamalı."""
+        assert cikar(A_BANKASI)["kar_payi_orani"] == pytest.approx(1.89)
+
+
+class TestFinansmanDisiUcret:
+    """`masrafsiz_mi` finansmanın masrafını anlatır, her ücreti değil.
+
+    Kılavuzdaki "kart ücreti yok" tablosunun koddaki karşılığı. Altın sette
+    üç kayıt bu yüzden yanlış çıkıyordu.
+    """
+
+    def test_kart_aidati_masrafsizlik_sayilmaz(self) -> None:
+        metin = "Sağlam Kart ile yıllık kart ücreti olmadan harcama yapın."
+        assert "masrafsiz_mi" not in cikar(metin)
+
+    def test_transfer_ucreti_masrafsizlik_sayilmaz(self) -> None:
+        metin = "Kolay ve Hızlı para transferi FAST ile ücretsiz."
+        assert "masrafsiz_mi" not in cikar(metin)
+
+    def test_hisse_komisyonu_masrafli_sayilmaz(self) -> None:
+        metin = "Hisse senedi alım-satım işlemlerinde standart komisyon uygulanır."
+        assert "masrafsiz_mi" not in cikar(metin)
+
+    def test_finansman_masrafi_hala_yakalanir(self) -> None:
+        """Daraltma gerçek beyanı elememeli."""
+        metin = "Konut finansmanında dosya masrafı alınmaz."
+        assert cikar(metin)["masrafsiz_mi"] is True
+
+    def test_kart_ve_dosya_masrafi_birlikte_gecerse_yakalanir(self) -> None:
+        metin = "Kart aidatı ve dosya masrafı alınmaz."
+        assert cikar(metin)["masrafsiz_mi"] is True

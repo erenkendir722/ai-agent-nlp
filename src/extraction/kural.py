@@ -20,6 +20,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from src.preprocessing.normalizasyon import (
+    arama_anahtari,
     masrafsiz_mi,
     olumsuzlanmis_mi,
     oran_ayristir,
@@ -320,6 +321,79 @@ def _olumsuz_cumle_mi(cumle: str) -> bool:
     return olumsuzlanmis_mi(cumle)
 
 
+_HUCRE = re.compile(r"\|")
+_RAKAMSAL_HUCRE = re.compile(r"^[\s\d.,%₺]*$")
+TABLO_ASGARI_KOLON = 3
+"""Bu kadar başlık hücresi görülmeden bir metin parçası tablo sayılmaz."""
+
+TABLO_GUVEN_CARPANI = 0.78
+"""Tablo hücresi, düz beyandan DAHA ZAYIF bir kanıttır.
+
+Mesafe skorunun tabanı `0.80 * taban_guven` (bkz. `_baglam_skoru` sonundaki
+`yakinlik` formülü), dolayısıyla 0,78 her düz beyanın altında kalır. Sonuç:
+`en_yakin` seçen alanlarda cümle içindeki beyan tabloyu her zaman yener.
+
+Neden gerekli: "Alınacak ücretler: 60 ay vadede 500 TL tahsis ücreti" cümlesi
+bankanın doğrudan beyanıdır; tablodaki %0,50 aynı bilginin oransal biçimidir.
+Etiketleyenler prose beyanı yazdı ve haklılar. Tablo hücrelerine düz
+`taban_guven` verildiğinde `tahsis_ucreti` 0,967'den 0,933'e düşmüştü.
+
+Sabit (mesafeye duyarsız) olması bilinçli: tablonun 18. satırı 1. satırından
+daha az geçerli değildir. Mesafe kapısı burada uygulansaydı derin satırlar
+elenir ve `en_dusuk` seçimi tablonun en düşük oranına ulaşamazdı."""
+
+
+def _kolon_basligi(metin: str, baslangic: int) -> str | None:
+    """Değer bir tablonun hangi kolonunda? O kolonun başlığını döndürür.
+
+    NEDEN GEREKLİ:
+        Banka sayfalarındaki oran tabloları düz metne serilince şuna dönüşüyor:
+
+            Vade | Kâr Payı Oranı | Tahsis Ücreti | Aylık Maliyet | ...
+             3   |     4,20%      |    0,50%      |    5,77%      | ...
+
+        Karakter penceresine bakan bağlam kontrolü burada çaresiz: "oran"
+        sözcüğü `0,50%`'e de `4,20%`'e de aynı uzaklıkta. `kar_payi_orani`
+        kuralı `en_dusuk` seçtiği için TAHSİS ÜCRETİ kolonunu kâr payı sanıyordu
+        — 15 Ağustos altın set ölçümünde 12 uyuşmazlığın 5'i tam olarak buydu.
+
+        Tabloda anlamı belirleyen şey uzaklık değil, KOLONDUR.
+
+    NASIL:
+        Başlıklar ardışık bir "harf içeren hücreler" dizisidir; sayısı kolon
+        sayısını verir. Sonraki veri hücreleri o sayıya göre modüler sayılır.
+        Satır sonu bilgisi yok — tablo tek satıra serilmiş olabilir.
+
+        Tablo değilse (boru yoksa ya da başlık bulunamazsa) None döner ve
+        çağıran taraf eski karakter penceresi mantığına düşer.
+    """
+    parca = metin[:baslangic]
+    hucreler = _HUCRE.split(parca)
+    if len(hucreler) < TABLO_ASGARI_KOLON:
+        return None
+
+    # Değerden geriye doğru: önce veri hücreleri, sonra başlık koşusu.
+    # `hucreler`in SONUNCUSU, değerin kendi hücresinin sol parçasıdır ("… | ")
+    # — bir önceki hücre değil. Bu yüzden sayım 1 fazla başlar ve aşağıda
+    # `veri - 1` kullanılır; ilk sürümde bu kayma her değeri komşu kolona
+    # yazıyordu (kâr payı → tahsis ücreti).
+    veri = 0
+    i = len(hucreler) - 1
+    while i >= 0 and _RAKAMSAL_HUCRE.match(hucreler[i]):
+        veri += 1
+        i -= 1
+
+    basliklar: list[str] = []
+    while i >= 0 and not _RAKAMSAL_HUCRE.match(hucreler[i]):
+        basliklar.append(hucreler[i].strip())
+        i -= 1
+    basliklar.reverse()
+
+    if len(basliklar) < TABLO_ASGARI_KOLON or veri == 0:
+        return None
+    return basliklar[(veri - 1) % len(basliklar)]
+
+
 def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) -> float | None:
     """Bağlam sözcüğü yakınlığına göre güven çarpanı. Sözcük yoksa None (=reddet).
 
@@ -350,6 +424,25 @@ def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) ->
     ham_pencere = metin[sol:sag]
     pencere = _konum_koruyan_anahtar(ham_pencere)
     hedef = baslangic - sol
+
+    # Değer bir tablo hücresindeyse KOLON BAŞLIĞI bir KAPIDIR: yanlış kolonun
+    # değeri elenir. Ama puanlamayı devralmaz — eleme sonrası aday yine normal
+    # mesafe skorundan geçer.
+    #
+    # İlk sürüm burada `taban_guven` döndürüp mesafe hesabını atlıyordu ve
+    # `en_yakin` seçimi çalışamaz hâle geliyordu: "Alınacak ücretler: 60 ay
+    # vadede 500 TL tahsis ücreti" gibi DÜZ BEYAN, tablodaki %0,50 hücresine
+    # yeniliyordu. `tahsis_ucreti` doğruluğu 0,967'den 0,933'e düştü.
+    # Kolon bilgisi neyin elenmesi gerektiğini söyler, hangisinin seçileceğini
+    # değil.
+    baslik = _kolon_basligi(metin, baslangic)
+    if baslik is not None:
+        baslik_anahtari = arama_anahtari(baslik)
+        if any(s in baslik_anahtari for s in kural.dislayici_sozcukler):
+            return None
+        if not any(s in baslik_anahtari for s in kural.baglam_sozcukleri):
+            return None  # başka bir kolonun değeri
+        return kural.taban_guven * TABLO_GUVEN_CARPANI
 
     kapsayici = _en_yakin_uzaklik(pencere, kural.baglam_sozcukleri, hedef)
     if kapsayici is None:

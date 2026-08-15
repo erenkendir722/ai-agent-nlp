@@ -361,6 +361,29 @@ MASRAF_SOZCUKLERI = ("masraf", "ucret", "komisyon", "tahsis", "dosya parasi")
 masrafsızlık beyanı DEĞİLDİR — 14 Ağustos'ta LLM, masraf sözcüğü hiç geçmeyen
 bir metinden `masrafsiz_mi=True` uydurdu (şartname madde 11, C Bankası)."""
 
+FINANSMAN_MASRAFI = ("masraf", "tahsis", "dosya parasi", "ekspertiz")
+"""`masrafsiz_mi` ALANININ konusu: finansmanın maliyeti.
+
+`MASRAF_SOZCUKLERI` çıplak "ucret"i de içeriyor ve o fazla geniş: banka
+sayfalarında "kart aidatı yok", "FAST ile ücretsiz transfer", "hesap işletim
+ücreti alınmaz" cümleleri boldur. Bunlar doğru cümlelerdir ama BAŞKA bir
+ürünün ücretinden söz ederler; finansmanın masrafsız olduğunu söylemezler.
+
+15 Ağustos altın set ölçümü: `masrafsiz_mi` 15 uyuşmazlığın üçü tam olarak
+buydu — "Kolay ve Hızlı para transferi FAST'ta ücretsiz" cümlesinden
+`masrafsiz_mi=True`, "hisse senedi alım-satım komisyonu" cümlesinden `False`
+üretiliyordu. Kılavuz insana bu ayrımı açıkça yaptırıyor
+(docs/ETIKETLEME_KILAVUZU.md, "kart ücreti yok" tablosu); sistem de aynı
+ayrımı yapmalı."""
+
+FINANSMAN_DISI_UCRET = (
+    "kart aidat", "aidat", "kart ucreti", "kart yillik",
+    "havale", "eft", "fast", "para transfer", "transfer ucret",
+    "hesap isletim", "uyelik", "hisse senedi", "alim-satim", "alim satim",
+    "ekstre", "sigorta primi",
+)
+"""Ücretin finansmana DEĞİL başka bir hizmete ait olduğunu gösteren imler."""
+
 # TUZAK 6 — Türkçe olumsuzlama EK ile yapılır, sözcükle değil.
 #
 # Önceki sürüm kalıp listesi tutuyordu ("masraf alinmaz", "masraf yok", ...).
@@ -433,10 +456,28 @@ def masrafsiz_mi(parca: str) -> bool | None:
     True
     >>> masrafsiz_mi("Ekspertiz ücreti banka tarafından karşılanmaktadır.")
     True
+    >>> masrafsiz_mi("Sağlam Kart'ta yıllık kart ücreti yok!") is None
+    True
+    >>> masrafsiz_mi("FAST ile para transferi ücretsiz.") is None
+    True
+    >>> masrafsiz_mi("Hisse senedi alım-satım işlemlerinde komisyon alınır.") is None
+    True
     """
     if not parca:
         return None
     anahtar = arama_anahtari(parca)
+
+    # Cümle BAŞKA bir hizmetin ücretinden söz ediyorsa, finansmanın masrafı
+    # hakkında hiçbir şey söylemiyor demektir — meğer ki finansman masrafını
+    # da ayrıca anıyor olsun ("kart aidatı ve dosya masrafı alınmaz").
+    #
+    # `komisyon` bilerek `FINANSMAN_MASRAFI` DIŞINDA: hem finansman komisyonunu
+    # hem hisse senedi alım-satım komisyonunu anlatabiliyor, dolayısıyla tek
+    # başına "bu cümle finansman masrafından söz ediyor" demeye yetmez.
+    if any(im in anahtar for im in FINANSMAN_DISI_UCRET) and not any(
+        sozcuk in anahtar for sozcuk in FINANSMAN_MASRAFI
+    ):
+        return None
 
     # Sıfat biçimi ("masrafsız") kendi başına yeter, yüklem aramaya gerek yok.
     if _MASRAFSIZ_SIFAT.search(anahtar) or any(k in anahtar for k in _MASRAFSIZ_KALIPLAR):
