@@ -1,6 +1,6 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 15.08.2026 15:35 · `make eval`_
+_Otomatik üretildi: 15.08.2026 16:38 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
@@ -54,7 +54,32 @@ _Otomatik üretildi: 15.08.2026 15:35 · `make eval`_
 
 ## Altın set metrikleri
 
-> ⏳ **Beklemede.** `data/gold/altin_set.jsonl` henüz yok.
-> Altın set olmadan alan bazlı doğruluk, F1 ve makro-F1 hesaplanamaz.
-> Bunlar şartnamenin %30'luk «Model Başarısı» kriterinin temelidir.
-> **Son tarih: 16 Ağustos 2026.**
+- Altın set boyutu: **5** örnek (eşleşen: 5)
+
+| Metrik | Değer | Hedef | Durum |
+|---|---|---|---|
+| Sayısal alan doğruluğu | 0.760 | ≥ 0,90 | ❌ |
+| Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
+
+> Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
+
+### Alan bazlı doğruluk
+
+| Alan | Doğruluk |
+|---|---|
+| `kampanya_turu` | 1.000 |
+| `urun_turu` | — |
+| `hedef_kitle` | — |
+| `kar_payi_orani` | 0.800 |
+| `finansman_tutari_max` | 0.600 |
+| `vade_ay_max` | 0.600 |
+| `taksit_sayisi` | — |
+| `tahsis_ucreti` | 1.000 |
+| `masraf_bilgisi` | — |
+| `masrafsiz_mi` | 0.800 |
+| `odul_miktari` | 0.800 |
+| `indirim_orani` | — |
+| `alisveris_puani` | — |
+| `kampanya_avantaji` | — |
+| `kampanya_bitis` | 1.000 |
+| `kampanya_kosullari` | — |

@@ -87,6 +87,18 @@ Bir ürünün oranını sayfanın tamamına mal etme.
 
 `kampanya_turu` da bu ürüne göre yazılır — çok ürünlü diye `diger` deme.
 
+> ⚠️ **Bu kural sayılara da uygulanır, sadece türe değil.** 15 Ağustos uyum
+> turunda dördümüz birden şu hatayı yaptık: URL `gayrimenkul-finansmani`
+> (konut) iken, sayfanın alt kısmındaki *"Alışverişlerinizde Bayide
+> Finansman'ı tercih edin, 36 aya varan vadelerle"* cümlesinden
+> `vade_ay_max = 36` yazdık. O 36 ay **Bayide Finansman'a** ait; konut kısmında
+> sayı yok, sadece "uzun vade" yazıyor.
+>
+> Türü doğru seçip sayıyı başka üründen almak en kolay tuzak — üstelik
+> **uyum oranı bunu yakalayamaz**, dördü birden yanılınca %100 görünür.
+> Bir sayıyı yazmadan önce: *bu cümle URL'nin ürününden mi söz ediyor?*
+> Değilse alan **boş** kalır.
+
 ---
 
 ## Sekiz alan
@@ -140,9 +152,38 @@ Müşterinin lehine olan ucu al → `1,89`. Tutarda ise en yükseği
 ("50.000 – 500.000 TL" → `500000`), çünkü alan adı `_max`.
 
 **Kademeli tablo var (vade arttıkça oran değişiyor)?**
-`vade_ay_max` = tablodaki **en büyük** vade. `finansman_tutari_max` =
-finansmana konu **en yüksek** tutar. Alan adları `_max`; en küçüğü yazarsan
-alan adı yalan söyler ve her satır hata sayılır.
+`vade_ay_max` = tablodaki **en büyük** vade. Alan adları `_max`; en küçüğü
+yazarsan alan adı yalan söyler ve her satır hata sayılır.
+
+**`finansman_tutari_max` = bankanın verdiği para, malın değeri değil.**
+Taşıt tablolarında sık karışıyor. "Aracın kasko değeri 2.000.000 TL, taşıt
+değerine oranı %20" ise banka **400.000 TL** veriyor — `finansman_tutari_max`
+= `400000`, `2000000` değil. Kademeli tabloda her satır için değer × oran
+hesapla, **en büyüğünü** yaz.
+
+| Aracın değeri | Oran | Finansman |
+|---|---|---|
+| 400.000 | %70 | 280.000 |
+| 800.000 | %50 | 400.000 |
+| 1.200.000 | %30 | 360.000 |
+| 2.000.000 | %20 | **400.000** ← en yükseği |
+
+Çarpım yapmak zorunda kaldığın yerde emin değilsen `?` yaz.
+
+**Ödül hem kişi başı hem toplam veriliyor?**
+`odul_miktari` = **kişi başı / işlem başı** tutar. "Kişi başı maksimum 2.000 TL,
+toplamda 5 kişi için 10.000 TL" → `2000`. Toplam, kampanyanın tavanıdır;
+müşterinin bir işlemden kazandığı değil.
+
+**Sayfada örnek ödeme planı / hesaplama tablosu var?**
+Oradaki oranı **yazma** — kampanyanın **ilan ettiği** oranı yaz. "Kâr Oranı
+%1.00 · Toplam Geri Ödenen 66.066,24 TL" bir simülasyon çıktısıdır; sayfa
+"0.99% oran avantajları" diyorsa hücreye `0.99` girer.
+
+**"Arkadaşını davet et" / referans kampanyası?**
+`kampanya_turu` = `yeni_musteri`. Kampanyanın konusu müşteri kazanımıdır; ödülün
+yatırıldığı hesap (katılma hesabı, vadesiz vb.) **araçtır, konu değildir** —
+`yatirim_urunu` yazma.
 
 **"…'a varan", "…'dan başlayan"?** O sayıyı yaz.
 
@@ -237,6 +278,11 @@ Tartışıp karara bağladığımız her kenar durum buraya, tarihiyle yazılır
 | 15 Ağu | "Taşıt değerine oranı", "peşinat oranı" kâr payı mı? | **Hayır.** Kapsam oranı, maliyet oranı değil. `kar_payi_orani`'ye yazılmaz |
 | 15 Ağu | "Kart ücreti yok" masrafsız mı? | **Hayır** — `masrafsiz_mi` finansman masrafını anlatır, kart aidatını değil. Boş bırakılır |
 | 15 Ağu | Ondalık ayırıcı nokta mı virgül mü? | İkisi de serbest; ayrıştırıcı ikisini de aynı sayıya çeviriyor |
+| 15 Ağu | URL kuralı sayılara da uygulanır mı? | **Evet.** Türü doğru seçip sayıyı başka üründen almak en sık hata; uyum turunda dördümüz birden yaptık |
+| 15 Ağu | `finansman_tutari_max` malın değeri mi? | **Hayır**, bankanın verdiği tutar. Kademeli tabloda değer × oran, en büyüğü |
+| 15 Ağu | Ödül kişi başı mı toplam mı? | **Kişi başı / işlem başı.** Toplam, kampanya tavanıdır |
+| 15 Ağu | Örnek hesaplama tablosundaki oran? | Yazılmaz — kampanyanın **ilan ettiği** oran yazılır |
+| 15 Ağu | "Arkadaşını davet et" kampanyası? | `yeni_musteri` — ödülün yatırıldığı hesap araçtır, konu değil |
 
 ---
 
