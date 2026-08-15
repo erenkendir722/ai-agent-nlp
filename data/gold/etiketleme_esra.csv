@@ -1,5 +1,5 @@
 ﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0209-7201b97fc48c,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari,,,,,,,,,"Son Gün 07.09.2026
+0209-7201b97fc48c,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari,kart,,,,,,,2026-09-07,"Son Gün 07.09.2026
 Son Gün 07.09.2026
 Son Gün 07.09.2026
 Son Gün 07.09.2026
@@ -188,7 +188,7 @@ Son Gün 31.08.2026
 Son Gün 31.08.2026
 Son Gün 31.08.2026
 Son Gün 31.08.2026"
-0203-6ff69597d9db,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/konut-finansmani,,,,,,,,,"Albaraka Türk konut finansmanı sayesinde kira öder gibi ev sahibi olmak artık çok kolay. Uygun, avantajlı ve esnek ödeme planlarımızı inceleyin, hayalini kurduğunuz evin sahibi olun. Müşterilerimize özel fırsatlar ve ev finansmanı çözümlerimizi hemen keşfedin.
+0203-6ff69597d9db,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/konut-finansmani,konut_finansmani,,120,,,,,,"Albaraka Türk konut finansmanı sayesinde kira öder gibi ev sahibi olmak artık çok kolay. Uygun, avantajlı ve esnek ödeme planlarımızı inceleyin, hayalini kurduğunuz evin sahibi olun. Müşterilerimize özel fırsatlar ve ev finansmanı çözümlerimizi hemen keşfedin.
 Konut finansmanı, ev sahibi olmak isteyen kişilere faizsiz finansman çözümleri sunan bir üründür. Albaraka Türk Katılım Bankası olarak, konut finansmanı aracılığıyla müşterilerimize esnek seçenekler sunarak, ev sahibi olma sürecini kolaylaştırıyoruz.
 Konut finansmanı hesaplama, finansman tutarı, vade süresi ve kar payı oranı bilgileri girilerek yapılır. Konut kredisi hesaplama aracımız ile bu bilgileri kullanarak aylık ödemelerinizi ve toplam geri ödeme tutarınızı anında öğrenebilirsiniz.
 - Dilediğiniz ev, katılım bankacılığı prensiplerine uygun olarak 120 aya kadar taksitlendirebilirsiniz.
@@ -252,7 +252,7 @@ Finansman talepleriniz için müşterimiz olmanız gerekmeden; web sitemiz üzer
 Finansman talepleriniz için müşterimiz olmanız gerekmeden; Albaraka Mobil üzerinden hemen başvurup jet hızında sonuç alabilirsiniz.
 Finansman talepleriniz için müşterimiz olmanız gerekmeden; 4462’ye SMS atarak hemen başvurup jet hızında sonuç alabilirsiniz.
 Finansman talepleriniz için müşterimiz olmanız gerekmeden Şubelerimizden hemen başvurup jet hızında sonuç alabilirsiniz."
-0205-22df955e1dda,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar,,,,,,,,,"Konut Finansmanları
+0205-22df955e1dda,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar,konut_finansmani,,,,,,,,"Konut Finansmanları
 Kuveyt Türk’ün Konut Finansmanı ile siz de hayal ettiğiniz eve kolayca sahip olabilirsiniz!
 Araç Finansmanları
 Hemen araç sahibi olabilmek için yapmanız gereken tek şey, Kuveyt Türk'e başvurmak!
@@ -262,7 +262,7 @@ Kuveyt Türk Alışveriş Finansmanı ihtiyacınız olduğu an yanınızda!
 Seyahatten eğitime, hac ve umreden evlilik harcamalarınıza kadar tüm ihtiyaçlarınız için Kuveyt Türk yanınızda!
 Sürdürülebilir Finansmanlar
 Kuveyt Türk Sürdürülebilir Finansmanlar ihtiyacınız olduğu an yanınızda!"
-0211-805c18fc26f9,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/konut-finansmani,,,,,,,,,"Konut Finansmanı
+0211-805c18fc26f9,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/konut-finansmani,konut_finansmani,,120,,,,,,"Konut Finansmanı
 Hayalinizdeki eve, uzun vade ve size özel ödeme seçenekleriyle sahip olabilirsiniz. Satın almak istediğiniz konut, katılım bankacılığı prensiplerine uygun olarak Bankamız tarafından satın alınır ve size istediğiniz vade üzerinden satılır.
 - Esnek Ödeme : Finansman geri ödemeleriniz için size uygun vadeler sunulmaktadır. Geri ödemelerinizi bütçenize uygun şartlarda belirleyebilir ve rahatça ödeyebilirsiniz.
 - Finansman Oranı : Satın almak istediğiniz konutun ekspertiz* değerinin %80'ine kadar finansman kullanabilirsiniz.
@@ -310,7 +310,7 @@ DEĞER <= 5 MİLYON TL | DEĞER x 90% | DEĞER x 0% | DEĞER x 70% |
 20 MİLYON TL < DEĞER |
 DEĞER x 40% | DEĞER x 30% |
 DEĞER x 20% |"
-0214-b8f297f72f42,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/cevre-dostu-arac-finansmani,,,,,,,,,"Dünya Katılım Çevre Dostu Araç Finansmanı Nedir?
+0214-b8f297f72f42,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/cevre-dostu-arac-finansmani,tasit_finansmani,,,,,,,,"Dünya Katılım Çevre Dostu Araç Finansmanı Nedir?
 Gelecek nesillere daha yaşanabilir bir dünya bırakma hedefiyle geliştirdiğimiz Çevre Dostu Araç Finansmanı, çevresel sürdürülebilirliği desteklemek isteyen müşterilerimize özel avantajlar sunar. Elektrikli veya hibrit (benzinli–elektrikli) araç alımlarınızı teşvik eden bu ürünümüz, düşük karbon salınımını artırma hedefi doğrultusunda hazırlanmıştır. Günün ekonomik koşulları dikkate alınarak, diğer taşıt finansmanlarımıza kıyasla daha avantajlı kâr oranları, esnek ödeme seçenekleri ve güvenli bir finansman deneyimi sunar. Böylece hem çevreyi koruyan bir tercih yapabilir hem de bütçenizi rahatlatan bir çözüme kolayca ulaşabilirsiniz.
 Hesaplama Aracı
 Çevre Dostu Araç Finansmanının Özellikleri Nelerdir?
@@ -350,7 +350,7 @@ Hayır. Finansman, aracın satın alınacağı satıcıya veya bayiye doğrudan 
 Evet. Başvuru yapacak kişinin 18 yaşını doldurmuş olması gerekir.
 Hayır, ancak banka gerekli görürse ek güvence talep edebilir. Bu teminat, kefil, araç rehni veya gayrimenkul olabilir.
 Evet, düşük kredi notu ile de başvuru yapılabilir; ancak onay ve finansman oranı kredi notuna göre şekillenir. Kredi notunuzu öğrenmek için Kredi Kayıt Bürosu (KKB) raporunu kullanabilirsiniz."
-0205-54bc08fa0088,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari,,,,,,,,,"Konut Finansmanı
+0205-54bc08fa0088,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari,konut_finansmani,,,,,,,,"Konut Finansmanı
 Avantajlı kar oranlarına ve farklı vade seçeneklerine sahip Konut Finansmanı'na başvurunuzu Kuveyt Türk Mobil üzerinden yapabilirsiniz.
 İlk Evim Konut Finansmanı
 İlk evini almak isteyenler için ilk evim konut finansmanı, hayallerini gerçeğe dönüştürmek için avantajlı bir seçenek sunuyor.
@@ -362,7 +362,7 @@ Gurbetten Sılaya Gayrimenkul Finansmanı
 Yurt dışında elde ettiğiniz kazançla memleketinizden ev almaya niyetliyseniz Gurbetten Sılaya Gayrimenkul Finansmanı'ndan faydalanmayı düşünebilirsiniz.
 İş Yeri Finansmanı
 İşinizi büyütürken güçlü finansman desteği ile Kuveyt Türk yanınızda!"
-0212-35aa6e0c7c00,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/hayatfinansla-islem-yaptikca-kazan,,,,,,,,,"Hayat Finans’la İşlem Yaptıkça Kazan!
+0212-35aa6e0c7c00,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/hayatfinansla-islem-yaptikca-kazan,diger,,,,,,,2026-12-31,"Hayat Finans’la İşlem Yaptıkça Kazan!
 Masraf yok, kazanç var: Hayat’la Kazan
 Bankacılık işlemlerinizi kazanca dönüştürün.
 Günlük bankacılık işlemlerinizi Hayat Finans'tan gerçekleştirin, yaptığınız işlemlerden nakit ödül kazanın.
@@ -462,7 +462,7 @@ Sadece geçerli sektörlerde yapılan Hayat Finans Banka Kartı ve QR harcamalar
 - Kampanya süresince müşteri ilişiğini sonlandırıp yeniden müşteri olan bireyler kampanyadan yararlanamaz.
 Hayat Pay’e Nasıl Üye Olunur?
 Hayat Finans Mobil uygulaması ana sayfasında yer alan Hayat Pay yönlendirmesine tıklayarak veya App Store / Google Play üzerinden Hayat Pay uygulamasını indirerek üyeliğinizi kolayca oluşturabilirsiniz."
-0205-735109071c75,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati,,,,,,,,,"Kampanya Tarihleri
+0205-735109071c75,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati,kart,0,5,,,evet,,2027-12-31,"Kampanya Tarihleri
 21.06.2024 - 31.12.2027
 Kampanyayı Paylaş
 - Sağlam Kart ile istediğiniz iki adet eğitim ve sağlık harcamanızı işlem sonrasında Kuveyt Türk Mobil üzerinden vade farksız bir şekilde 2 ila 5 taksite bölebilirsiniz.
@@ -478,12 +478,12 @@ Kampanyayı Paylaş
 - Kampanya yalnızca bireysel harcamalar içindir. Ticari amaç ile yapılan harcamalar (Örn. Ecza Depoları üzerinden yapılan harcamalar) kampanya kapsamında değildir.
 - Sonradan taksitlendirilmiş işlemin Kuveyt Türk Müşteri İletişim Merkezi üzerinden erken kapaması yapılabilmektedir.
 - Kuveyt Türk önceden haber vermeden kampanya koşullarında değişiklik yapabilir ya da kampanyayı sonlandırabilir."
-0212-273063a66570,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kartlar-tuzel,,,,,,,,,"Tüzel Kartlar
+0212-273063a66570,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kartlar-tuzel,kart,,,,,,,,"Tüzel Kartlar
 Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Çerezleri Yönet
 Size en iyi deneyimi sağlamak ve hizmetlerin tercihlerinize göre kişiselleştirilmiş içerikler olarak sunulabilmesi için web sitemizde çerezler ve benzeri takip teknolojileri kullanılmaktadır. Daha fazla bilgi için Çerez Aydınlatma Metni’ni inceleyebilirsiniz."
-0206-016254a2c9b8,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/isyeri-finansmani.aspx,,,,,,,,,"İş yeri Finansmanı (İş yeri Kredisi)*
+0206-016254a2c9b8,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/isyeri-finansmani.aspx,finansman,3.59,84,,500,hayir,,,"İş yeri Finansmanı (İş yeri Kredisi)*
 Yatırım amaçlı iş yeri satın almak isteyen bireysel kişiler için sağlanan finansman (bankacılık kanununa göre kredi) desteğidir.
 Katılım bankacılığı prensipleri çerçevesinde satın almak istediğiniz gayrimenkul Türkiye Finans tarafından satın alınır, istenilen vadeye göre üzerine kâr payı ilave edilerek tarafınıza satışı yapılır.
 EN YAKIN ŞUBEHESAPLAMA ARAÇLARI- Nüfus cüzdanı veya ehliyet,
@@ -517,7 +517,7 @@ Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Ma
 84 | 4,05% | 0,50% | 6,66% | 116,78% |
 100.000 TL. baz alınarak oluşturulan İş yeri Finansmanı (İş yeri Kredisi)* örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Maliyet tablosu hesaplamasında yer alan kar oranları; Finansman Ferdi Kaza Sigortası ürünlerinin tamamının finansman başvurusu ile birlikte alınması şartıyla uygulanmaktadır. Finansmanın maksimum vadesi 84 aydır. Yıllık maliyete kar oranı, tahsis ücreti, ekspertiz ücreti, ipotek tesis ücreti dahil edilmiştir. Alınacak ücretler: 60 ay vadede 500 TL tahsis ücreti, 3.000 TL ipotek tesis ücreti, 16.500 TL Ekspertiz(Değerleme) ücretidir. Ekspertiz ücreti minimum maliyetler üzerinden hesaplanmış olup Ekspertiz ücreti Resmi Kurumlara ödenen harç miktarına, taşınmazın alanına, mevcut durumuna ve bulunduğu lokasyona göre değişebilmektedir.Gayrimenkulün bulunduğu lokasyona bağlı olarak ekspertiz firmasına ödenen meblağ arttığında, müşteriden tahsil edilecek ekspertiz ücreti de artacaktır. Ekspertiz maliyet tutarının 1.5 katı kadar hesabınıza bloke tesis edilmektedir. İşlem tamamlandıktan sonra oluşan gerçek maliyet tahsil edilerek, kalan bakiye için hesabınızdaki bloke çözülecektir. Finansman güvence sigortası müşterinin cinsiyeti, yaşı vb. kriterlere göre değişiklik göstermekte olup; yıllık maliyet hesaplamalarına dahil edilmemektedir. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir.Yukarıda yazılı ürünlere sahip olmaksızın kullanılacak finansmana uygulanan genel ücret ve masraflara ilişkin bilgiyi Ürün ve Hizmet Ücretleri sayfamızdan ulaşabilirsiniz. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz.
 *Katılım bankacılığı kuruluş esas ve faaliyetleri doğrultusunda İş yeri Finansmanı sağlamaktadır. Ancak bankacılık kanuna göre resmi olarak İş yeri Kredisi olarak da nitelendirilmektedir."
-0203-fcb188f0e696,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani,,,,,,,,,"Hayalinizdeki aracı satın alabilmek için ihtiyacınız olan taşıt finansmanı Albaraka Türk’te! İster sıfır (0) araç ister ikinci el (2.el) araç satın alımlarında başvuru işlemlerini hızlıca gerçekleştirin, hayalinizdeki araca hemen kavuşun!
+0203-fcb188f0e696,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani,tasit_finansmani,,36,,,,,,"Hayalinizdeki aracı satın alabilmek için ihtiyacınız olan taşıt finansmanı Albaraka Türk’te! İster sıfır (0) araç ister ikinci el (2.el) araç satın alımlarında başvuru işlemlerini hızlıca gerçekleştirin, hayalinizdeki araca hemen kavuşun!
 Taşıt finansmanı, araç alımlarında kullanabileceğiniz, belirli bir vade ve kâr oranıyla sunulan finansman türüdür. Albaraka taşıt finansmanı ile sıfır veya 2. el araçlarınızı kolayca alabilirsiniz.
 Ayrıca Taşıt Finansmanı Hesaplama Aracı üzerinden, kullanacağınız finansman tutarının aylık taksit miktarını, tahmini ücretler toplamı ve geri ödeme planını anında öğrenebilir, dilerseniz hemen başvuru gerçekleştirebilirsiniz.
 Not: Araç finansmanı işlemlerinde finansman tutarının taşıt tutarına oranı ve azami vadeler aşağıdaki gibidir:
@@ -570,7 +570,7 @@ Finansman talepleriniz için müşterimiz olmanız gerekmeden; web sitemiz üzer
 Finansman talepleriniz için müşterimiz olmanız gerekmeden; Albaraka Mobil üzerinden hemen başvurup jet hızında sonuç alabilirsiniz.
 Finansman talepleriniz için müşterimiz olmanız gerekmeden; 4462’ye SMS atarak hemen başvurup jet hızında sonuç alabilirsiniz.
 Finansman talepleriniz için müşterimiz olmanız gerekmeden Şubelerimizden hemen başvurup jet hızında sonuç alabilirsiniz."
-0205-9e2afc07063a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari,,,,,,,,,"Araç Finansmanı
+0205-9e2afc07063a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari,tasit_finansmani,,48,,,,,,"Araç Finansmanı
 Araç Finansmanı ile hayalinizdeki otomobile 48 aya varan vade seçenekleri ile sahip olabilirsiniz.
 Dijital Araç Finansmanı
 Türkiye’de bir ilk! Hayallerinizi süsleyen araca sahip olmak için Kuveyt Türk Mobil'den Dijital Araç Finansmanı'na başvurabilir ve dijitale özel cazip oranlarla bütçenizi zorlamadan istediğiniz araca sahip olabilirsiniz.
@@ -580,7 +580,7 @@ Motosiklet Finansmanı
 48 aya varan vade seçenekleri ile beğendiğiniz motosikleti Motosiklet Finansmanı'na başvurarak kolayca satın alabilirsiniz.
 TOGG Finansmanı
 Ülkemizin yerli ve milli otomobili TOGG’a, Kuveyt Türk desteğiyle hemen sahip olabilirsiniz!"
-0206-61006b35204e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/konut-finansmani/Sayfalar/konut-finansmani.aspx,,,,,,,,,"Konut Finansmanı (Konut Kredisi)*
+0206-61006b35204e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/konut-finansmani/Sayfalar/konut-finansmani.aspx,konut_finansmani,2.95,120,,500,hayir,,,"Konut Finansmanı (Konut Kredisi)*
 Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay!
 Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay! Türkiye Finans Konut Finansmanı (bankacılık kanununa göre konut kredisi), uygun koşullarda ev sahibi olmanız için sunulan finansman desteğidir.
 Satın almak istediğiniz gayrimenkul katılım bankacılığı prensiplerine uygun olarak Türkiye Finans tarafından satın alınır ve size istediğiniz vade üzerinden satılır.

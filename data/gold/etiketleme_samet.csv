@@ -1,5 +1,5 @@
 ﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0214-58cf4ca75ced,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/fiziki-altin,,,,,,,,,"⏰ Kampanya Süresi Dolmuştur!
+0214-58cf4ca75ced,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/fiziki-altin,yatirim_urunu,,,,,,,2026-03-31,"⏰ Kampanya Süresi Dolmuştur!
 ✨ Yeni Kampanyalarımız İçin Bizi Takip Etmeyi Unutmayın!
 Dünya Katılım’dan Yeni Müşterilere Altın Değerinde Fırsat!
 Dünya Katılım, yeni müşterilerine özel yepyeni bir kampanya ile karşınızda!
@@ -45,7 +45,7 @@ Hemen Dünya Katılım Mobil Şube’sini indirerek avantajlı hizmetlerimizden 
 👉 Dijitalden Fiziki Altın İşlemleri
 Bu kampanya ile hem altın yatırımınıza hemen başlayabilir hem de yatırımlarınızı daha kazançlı hale getirebilirsiniz. Dünya Katılım ailesine katılın, altın değerindeki avantajları kaçırmayın!
 🔸 Dünya Katılım Bankası, kampanya süresi boyunca şartları değiştirme ve sonlandırma hakkını saklı tutar."
-0211-4b3897c08177,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani,,,,,,,,,"İhtiyaç Finansmanı
+0211-4b3897c08177,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani,ihtiyac_finansmani,1.69,12,,,,,,"İhtiyaç Finansmanı
 Emlak Katılım İhtiyaç Finansmanlarıyla Yanınızda
 - İhtiyaç Finansmanı Katılım Bankacılığı esaslarına uygun olarak bireysel ihtiyaçlarınız için gereken finansman desteğini sağlar.
 - Beyaz eşyadan mobilyaya, teknoloji ihtiyacınızdan eğitim ihtiyacınıza, hacdan umreye birçok konuda size özel çözümler getiren finansman modellerimiz hizmetinizdedir
@@ -106,7 +106,7 @@ Finansman Tutarı | Vade | Kar Oranı | Taksit Tutarı | Finansman Tahsis Ücret
 ---|---|---|---|---|
 30.000,00 ₺ | 12 Ay | 1,69% | 2,841.66 ₺ | 157.50 ₺ |
 * İhtiyaç Finansmanı başvurusu için şubelerimizi ziyaret edebilirsiniz. |"
-0210-ae68b0cabf44,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/dijitalden-musteri-ol-hisse-senedi-islemlerinde-75-komisyon-indirimi-kazan,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+0210-ae68b0cabf44,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/dijitalden-musteri-ol-hisse-senedi-islemlerinde-75-komisyon-indirimi-kazan,yatirim_urunu,,,,,,,2027-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -117,7 +117,7 @@ SİZE ÖZEL ÇÖZÜMLER
 - Kampanyaya yalnızca görüntülü görüşme ile müşteri olan ve dijital kanallardan yatırım hesabı açan müşteriler katılabilir.
 - Kampanya, bireysel müşteriler için geçerlidir. Ticari ve tüzel müşteriler kampanyaya dahil değildir.
 - Vakıf Katılım Bankası AŞ önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0203-3c707bd12c98,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/birikimlerinizi-koruyan-bes-teminatli-finansman-albarakada,,,,,,,,,"İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
+0203-3c707bd12c98,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/birikimlerinizi-koruyan-bes-teminatli-finansman-albarakada,ihtiyac_finansmani,,,,,,,,"İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
 Beyaz eşyadan eğitim ve sağlık harcamalarına, ev eşyalarına kadar birçok ihtiyacınız için BES Teminatlı İhtiyaç Finansmanınız Albaraka’da!
 Sizde birikimlerimi bozmak istemiyorum ama bu eşyalar nasıl yenilenecek diyorsanız, Türkiye’nin ilk BES birikimlerinizi bozmayan taksitli finansmanı BES Teminatlı Finansman ile tanışın. Hem kafanız hem geleceğiniz rahat olsun!
 Müşterimiz değilseniz Albaraka Mobil’de yer alan “Müşteri Olmak İstiyorum” butonuna tıklayarak görüntülü görüşme ile hemen müşterimiz olun, BES Teminatlı Finansman ve daha birçok ayrıcalıktan yararlanın!
@@ -144,7 +144,7 @@ BES Teminatlı Finansman işlemlerinizi yalnızca şubelerimizden gerçekleştir
 Şu anda sadece İhtiyaç Finansmanı ürünümüz için faydalanabilirsiniz.
 Evet. Ayrı bir fona aktarılacak ve o fonda BES birikiminiz değerlenmeye devam edecektir.
 BES Blokesi, finansman vadesi sona erdiğinde veya borcun tamamı mahsup edildiğinde sonlanacaktır."
-0209-ca6752bb1e0d,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/aninda-gunluk-hesap,,,,,,,,,"Anında Günlük Hesap Nedir?
+0209-ca6752bb1e0d,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/aninda-gunluk-hesap,yatirim_urunu,,,,,,,,"Anında Günlük Hesap Nedir?
 Özel cari hesap özelliği ile Müşterilerimizin gün içerisinde günlük ihtiyaçları için tüm Bankacılık işlemlerini yapmasına imkân vermekte, aynı zamanda müşterilerimizin hiç bir işlem yapmasına gerek kalmadan otomatik olarak bakiyesinin bir bölümünün saat 16:00’da günlük olarak vaat ürününde değerlendirilmesi ile getiri almasını sağlamaktadır.
 Özellikleri:
 - Anında Günlük Hesap; Şubelerimiz, İnternet Şubemiz ve Katılım Mobil kanallarımız üzerinden yalnızca Türk Lirası (TL) para birimi ile açılabilmektedir.
@@ -180,7 +180,7 @@ Saat 16:00’da Anında Günlük Hesapta bulunan bakiye, belirlenen bakiye skala
 Hesapta bulunan bakiye ile gün içinde para çekme, hesaba para yatırma gibi tüm bankacılık işlemlerini istediğiniz sıklıkta gerçekleştirebilirsiniz.
 Anında Günlük Hesap, açma/kapama işlemleri Şubelerimiz,Katılım Mobil ve İnternet Şube üzerinden yapılabilmektedir.
 Bakiyenin saat 16:00’da Kira Sertifikalarının Geri Alım Vaadi ile Satımı işlemlerine transferinden ertesi iş günü bakiyenin aktarılacağı saat 07:00’ a kadar a Kira Sertifikalarının Geri Alım Vaadi ile Satımı işlemlerindeki bakiyeden para çekme ve kapama yapılamamaktadır"
-0211-6c7bd2bc7373,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/isyeri-finansmani,,,,,,,,,"İşyeri Finansmanı
+0211-6c7bd2bc7373,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/isyeri-finansmani,finansman,,60,,,,,,"İşyeri Finansmanı
 ×
 Satın almak istediğiniz büro, dükkan, mağaza, depo gibi gayrimenkuller için finansal ihtiyaçlarınızı “Emlak Katılım İşyeri Finansmanı” ile karşılayabilirsiniz.
 - Finansman geri ödemeleriniz için 60 aya kadar vade imkanı sunulmaktadır.
@@ -194,7 +194,7 @@ Gerekli Belgeler
 - Alınacak işyerine ait tapu fotokopisi
 - Gerekirse azami iki ay öncesine ait müşteri adına kayıtlı sabit telefon, elektrik, su veya doğalgaz faturalarından herhangi birinin fotokopisi
 - Gerekli görülmesi hâlinde kefil ve kefile ilişkin belgeler"
-0210-6b1029c52e14,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+0210-6b1029c52e14,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan,diger,,,,,,,2029-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -215,7 +215,7 @@ tabii platformunda 1 aylık Premium hediye üyelik kodunu kullanabilirsiniz.
 • Her avantajın kullanım süresi farklılık gösterir. Vakıf Katılım Mobil Şube’de yer alan “avantaj görselleri”nin üzerinde süreyle ilgili bilgi bulunur.
 • Tamamla Kazan kapsamında hak kazanılan ödüller kriterlerin tamamlandığı ayı takip eden ayın ilk haftasında müşterilere gönderilecektir.
 •Müşteri, mevcut bir avantajdan yararlanırken ilgili kriterleri yeniden sağlarsa, aynı avantajı tercih etmesi durumunda, mevcut avantajının kullanım süresi uzatılır. Farklı bir avantaj seçmesi hâlindeyse mevcut avantajı geçerliliğini korur, ayrıca yeni seçtiği avantajdan da faydalanır."
-0210-f044a4c8a626,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kartlar,,,,,,,,,"Kolay ve Hızlı para transferi FAST Vakıf Katılım'da ücretsiz!
+0210-f044a4c8a626,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kartlar,kart,,,,,,,,"Kolay ve Hızlı para transferi FAST Vakıf Katılım'da ücretsiz!
 VKart Business ile harcamalarınız kontrolü sizde!
 VKart dünyasında masraf yok!
 Bağlı hesaplarınızdan alışverişin keyfini çıkarın!
@@ -226,7 +226,7 @@ VKart, Vakıf Katılım'ın kredi kartı markasıdır.
 İnternet ve Mobil Şubelerimizde yer alan kart ayarları alanından kart şifrenizi değiştirebilirsiniz.
 İnternet ve Mobil Şubelerimizde yer alan kart ayarları alanından kartınızın istediğiniz kadarını internet alışverişine açabilirsiniz.
 Mobil Şubeyi indirip görüntülü görüşmeyle müşterimiz olun; havale, EFT ve FAST işlemlerinize para ödemekten kurtulun."
-0205-6ffd7be261ce,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar,,,,,,,,,"Yeşil Konut Finansmanı
+0205-6ffd7be261ce,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar,konut_finansmani,,,,,,,,"Yeşil Konut Finansmanı
 Kuveyt Türk Yeşil Konut Finansmanı ile çevre dostu ve enerji verimli bir yuvaya gönül rahatlığıyla sahip olun!
 Sürdürülebilir Araç Finansmanı
 Sürdürülebilir Araç Finansmanı ile çevre dostu ve enerji verimli araçlara, 48 aya varan vade seçeneklerinden faydalanarak sahip olun!
@@ -238,7 +238,7 @@ Bisiklet Finansmanı
 Sürdürülebilir yaşam, sürdürülebilir gelecek!
 Çatı GES Finansmanı
 Çatı GES Finansmanı ile doğa dostu enerji çözümlerini kullanmanın avantajlarından faydalanın!"
-0210-1556b5645fe5,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vclub-dunyasi-artik-vakif-katilim-mobilde,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+0210-1556b5645fe5,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vclub-dunyasi-artik-vakif-katilim-mobilde,diger,,,,,,,2026-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -257,7 +257,7 @@ VClub, Vakıf Katılım Bankası müşterilerine özel sunulan; restoran ve kafe
 - VClub müşteriye özel sadakat programı sunması sebebiyle, her müşteri için sunulan ayrıcalıklar değişiklik gösterebilmektedir. VClub kapsamında yararlanabileceğiniz indirim oranları; uygulamada yer alan kayıtlı süpermarket, seyahat, giyim, teknoloji markaları, kafe ve restoranlarda değişiklik gösterebilmektedir.
 - VClub kapsamında bankamıza iletilen kredi kartı talepleri bankamız kredi ve tahsis politikaları çerçevesinde; müşterinin aylık gelir bilgileri, kredi skoru gibi kriterler göz önünde bulundurularak müşteri özelinde değerlendirilecektir. Bankamız uygun görmediği başvuruları reddetme, kampanya koşullarını değiştirme, gerekli görmesi hâlinde ek bilgi ve belge talebinde bulunma ve kampanyayı durdurma hakkını saklı tutar.
 - VClub, Vakıf Katılım ile GastroClub iş birliğiyle oluşturulmuş bir sadakat programıdır. Vakıf Katılım ve GastroClub, kampanyayı dilediği zaman durdurma ve/veya kampanya koşullarını değiştirme yetkisine sahiptir."
-0212-e62736ec77eb,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari,,,,,,,,,"Bana Bunu Al İş Ortağım ile Troy Mağazalarında Finansman Fırsatı!
+0212-e62736ec77eb,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari,ihtiyac_finansmani,,3,80000,,,,2026-08-31,"Bana Bunu Al İş Ortağım ile Troy Mağazalarında Finansman Fırsatı!
 Hayat Finanslılara özel Troy mağazalarında 3 aya varan taksit fırsatı Bana Bunu Al İş Ortağımda!
 Kampanya Koşulları
 - Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir.
@@ -266,7 +266,7 @@ Kampanya Koşulları
 - Satın alınan ürünün sipariş, teslimat, iptal ve iade işlemlerinde yaşanabilecek sorunlardan Hayat Finans sorumlu değildir.
 - Banka uygun görmediği kredi başvurularını serbestçe değerlendirme, kefil ve ek belge isteme, uygun görmediği kredi başvurularını onaylamama hakkına sahiptir.
 - Hayat Finans kampanyayı dilediği zaman durdurma ve/veya kampanya koşullarını değiştirme yetkisine sahiptir."
-0210-5174ebf9b2b6,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/muhikuda-20-indirim,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+0210-5174ebf9b2b6,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/muhikuda-20-indirim,diger,,,,,,,2026-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -280,7 +280,7 @@ Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek �
 • Deneyim & aktivite hediyeleri, taze çiçek, söz & nişan hediyelikleri kategorileri indirim kampanyasına dâhil değildir.
 • Kampanya 31.12.2026 tarihine kadar geçerlidir.
 • Vakıf Katılım Bankası AŞ ve Muhiku, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0212-f618de03d508,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-yemek-harcamasi-nakit-iade-kampanyasi,,,,,,,,,"Biz Kart ile Yemek Harcamalarına 1.000 TL’ye Varan Nakit İade!
+0212-f618de03d508,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-yemek-harcamasi-nakit-iade-kampanyasi,kart,,,,,,1000,2026-08-31,"Biz Kart ile Yemek Harcamalarına 1.000 TL’ye Varan Nakit İade!
 Yakınlarınıza verdiğiniz Biz Kart ile yemek sektöründe yapılan harcamaların %10’una kadar nakit iade kazanın. Kampanya kapsamında günlük en fazla 100 TL, aylık toplamda ise 1.000 TL’ye kadar nakit iade alabilirsiniz.
 Kampanya Dönemi: 6 Şubat - 31 Ağustos 2026
 Kampanya Dönemi: 6 Şubat - 31 Ağustos 2026
@@ -303,5 +303,5 @@ Mobil Uygulama Tüm İşlemler> Kartlar> Biz Kart Başvurusu adımlarını takip
 - Hayat Finans kampanya koşullarında değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
 - Hayat Finans tarafından tespit edilen usulsüzlük durumlarında kazanılan ödül iptali ve/veya geri alma hakkı saklıdır.
 - Hayat Finansta yasal/idari takipte bulunan veya haciz süreci başlatılmış müşteriler kampanyadan yararlanamaz."
-0209-0e420abeb1da,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/altin-hesaplar,,,,,,,,,"Altın cari hesabı, birikimlerinizi altın olarak değerlendirmenize olanak sağlayan, dilediğiniz zaman gram bazında altın alım satımı yapabileceğiniz vadesiz bir hesap türüdür.
+0209-0e420abeb1da,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/altin-hesaplar,yatirim_urunu,,,,,,,,"Altın cari hesabı, birikimlerinizi altın olarak değerlendirmenize olanak sağlayan, dilediğiniz zaman gram bazında altın alım satımı yapabileceğiniz vadesiz bir hesap türüdür.
 Altın Katılma hesabı, altının değer kazanmasından ve belirlemiş olduğunuz vadelerde açmış olduğunuz katılım hesabınızdan kâr payı elde edebileceğiniz faizsiz getiri sağlayan hesap türüdür."

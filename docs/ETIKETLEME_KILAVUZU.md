@@ -175,10 +175,30 @@ hesapla, **en büyüğünü** yaz.
 toplamda 5 kişi için 10.000 TL" → `2000`. Toplam, kampanyanın tavanıdır;
 müşterinin bir işlemden kazandığı değil.
 
-**Sayfada örnek ödeme planı / hesaplama tablosu var?**
-Oradaki oranı **yazma** — kampanyanın **ilan ettiği** oranı yaz. "Kâr Oranı
-%1.00 · Toplam Geri Ödenen 66.066,24 TL" bir simülasyon çıktısıdır; sayfa
-"0.99% oran avantajları" diyorsa hücreye `0.99` girer.
+**Sayfada oran tablosu var — kullanılır mı?** İki tür tablo var, karıştırma:
+
+**a) Bankanın oran tablosu → KULLAN.** Başlığında `Kâr Payı Oranı` kolonu olan,
+vade kademelerine göre oran veren tablo. Bu, ilan edilen oranın kendisidir.
+
+```
+Vade | Kâr Payı Oranı | Tahsis Ücreti | Aylık Maliyet
+  3  |     4,20%      |    0,50%      |    5,77%
+ 36  |     3,80%      |    0,50%      |    4,98%     ← en düşük: 3.80
+```
+
+Kademe çoksa **en düşük kâr payı oranını** yaz (müşteri lehine uç — aralık
+kuralının aynısı). Sigortalı/sigortasız gibi varyantlar varsa yine en düşüğü.
+**`Tahsis Ücreti` kolonunu `kar_payi_orani`'ye yazma** — sistem tam bu hatayı
+yapıyor, altın setin yakalaması gereken şey bu.
+
+**b) Tek satırlık örnek ödeme planı → sayfa ayrıca oran ilan ediyorsa onu yaz.**
+"Kâr Oranı %1.00 · Toplam Geri Ödenen 66.066,24 TL" bir simülasyondur; sayfa
+"0.99% oran avantajları" diyorsa hücreye `0.99` girer. **Ama örnek tablo
+sayfadaki tek oran kaynağıysa onu yaz** — boş bırakmak "bu sayfada oran yok"
+demektir ve yanlış olur.
+
+Örnek plandaki **taksit tutarı ve toplam geri ödeme** hiçbir zaman
+`finansman_tutari_max` değildir.
 
 **"Arkadaşını davet et" / referans kampanyası?**
 `kampanya_turu` = `yeni_musteri`. Kampanyanın konusu müşteri kazanımıdır; ödülün
@@ -281,7 +301,8 @@ Tartışıp karara bağladığımız her kenar durum buraya, tarihiyle yazılır
 | 15 Ağu | URL kuralı sayılara da uygulanır mı? | **Evet.** Türü doğru seçip sayıyı başka üründen almak en sık hata; uyum turunda dördümüz birden yaptık |
 | 15 Ağu | `finansman_tutari_max` malın değeri mi? | **Hayır**, bankanın verdiği tutar. Kademeli tabloda değer × oran, en büyüğü |
 | 15 Ağu | Ödül kişi başı mı toplam mı? | **Kişi başı / işlem başı.** Toplam, kampanya tavanıdır |
-| 15 Ağu | Örnek hesaplama tablosundaki oran? | Yazılmaz — kampanyanın **ilan ettiği** oran yazılır |
+| 15 Ağu | Bankanın oran tablosu (`Vade \| Kâr Payı Oranı \| …`)? | **Kullanılır**, en düşük oran yazılır. `Tahsis Ücreti` kolonu karıştırılmaz |
+| 15 Ağu | Tek satırlık örnek ödeme planındaki oran? | Sayfa ayrıca oran ilan ediyorsa o yazılır; **örnek tek kaynaksa** o yazılır. Boş bırakmak "sayfada oran yok" demektir |
 | 15 Ağu | "Arkadaşını davet et" kampanyası? | `yeni_musteri` — ödülün yatırıldığı hesap araçtır, konu değil |
 
 ---

@@ -1,6 +1,6 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 15.08.2026 16:38 · `make eval`_
+_Otomatik üretildi: 15.08.2026 16:57 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
@@ -54,11 +54,11 @@ _Otomatik üretildi: 15.08.2026 16:38 · `make eval`_
 
 ## Altın set metrikleri
 
-- Altın set boyutu: **5** örnek (eşleşen: 5)
+- Altın set boyutu: **60** örnek (eşleşen: 60)
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Sayısal alan doğruluğu | 0.760 | ≥ 0,90 | ❌ |
+| Sayısal alan doğruluğu | 0.850 | ≥ 0,90 | ❌ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
@@ -67,19 +67,19 @@ _Otomatik üretildi: 15.08.2026 16:38 · `make eval`_
 
 | Alan | Doğruluk |
 |---|---|
-| `kampanya_turu` | 1.000 |
+| `kampanya_turu` | 0.617 |
 | `urun_turu` | — |
 | `hedef_kitle` | — |
 | `kar_payi_orani` | 0.800 |
-| `finansman_tutari_max` | 0.600 |
-| `vade_ay_max` | 0.600 |
+| `finansman_tutari_max` | 0.733 |
+| `vade_ay_max` | 0.833 |
 | `taksit_sayisi` | — |
-| `tahsis_ucreti` | 1.000 |
+| `tahsis_ucreti` | 0.967 |
 | `masraf_bilgisi` | — |
-| `masrafsiz_mi` | 0.800 |
-| `odul_miktari` | 0.800 |
+| `masrafsiz_mi` | 0.750 |
+| `odul_miktari` | 0.917 |
 | `indirim_orani` | — |
 | `alisveris_puani` | — |
 | `kampanya_avantaji` | — |
-| `kampanya_bitis` | 1.000 |
+| `kampanya_bitis` | 0.950 |
 | `kampanya_kosullari` | — |
