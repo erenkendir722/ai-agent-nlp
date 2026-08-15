@@ -23,7 +23,7 @@ data/raw/**/*.html
 # zip bayatlar ve iki ayrı gerçeklik doğar
 data/*.zip
 
-# Doğrulama sayfaları CSV'den türetilir (`make altin-dogrulama`), veritabanı
-# gerektirmez. Depoda tutulursa CSV düzeltildikçe bayatlar ve etiketleyen
-# yanlış sayfaya bakar — aynı "iki ayrı gerçeklik" tuzağı.
-data/gold/dogrulama_*.md
+# Okuma kâğıtları CSV'den türetilir (`make altin-ornekle` otomatik üretir).
+# Depoda tutulursa CSV düzeltildikçe bayatlar ve etiketleyen yanlış sayfaya
+# bakar — aynı "iki ayrı gerçeklik" tuzağı.
+data/gold/okuma_*.md

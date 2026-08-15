@@ -140,10 +140,18 @@ def altin_set_metrikleri(kampanyalar: list[Kampanya]) -> dict[str, Any] | None:
             if _degerler_esit(kayit[alan_adi], alan.deger):
                 dogru[alan_adi] += 1
 
-    def ortalama(alanlar: tuple[str, ...]) -> float:
+    def ortalama(alanlar: tuple[str, ...]) -> float | None:
+        """Karşılaştırılacak hücre yoksa None — sıfır DEĞİL.
+
+        Altın set yalnız sekiz çekirdek alanı taşıyor (bkz. ADR 008), yani
+        `METINSEL_ALANLAR` için hiç hücre yok. Sıfır döndürmek raporda
+        «0,000 ❌» yazdırırdı: sistem o alanlarda başarısız oldu demek olur,
+        oysa gerçek şu ki o alanlar hiç ölçülmedi. Ölçülmemişi başarısız
+        göstermek, ölçmemekten daha kötüdür.
+        """
         d = sum(dogru[a] for a in alanlar)
         t = sum(toplam[a] for a in alanlar)
-        return d / t if t else 0.0
+        return d / t if t else None
 
     return {
         "eslesen_ornek": sum(1 for k in altin if k.get("kampanya_id") in kimlik_kampanya),
@@ -166,7 +174,13 @@ HEDEFLER = {
 }
 
 
-def _durum(ad: str, deger: float) -> str:
+def _oran(deger: float | None) -> str:
+    return "ölçülmedi" if deger is None else f"{deger:.3f}"
+
+
+def _durum(ad: str, deger: float | None) -> str:
+    if deger is None:
+        return "—"  # ölçülmedi; başarısız değil
     hedef = HEDEFLER.get(ad)
     if hedef is None:
         return "—"
@@ -238,10 +252,13 @@ def rapor_yaz(temel: dict[str, Any], altin: dict[str, Any] | None, doluluk: dict
             "",
             "| Metrik | Değer | Hedef | Durum |",
             "|---|---|---|---|",
-            f"| Sayısal alan doğruluğu | {altin['sayisal_dogruluk']:.3f} | ≥ 0,90 | "
+            f"| Sayısal alan doğruluğu | {_oran(altin['sayisal_dogruluk'])} | ≥ 0,90 | "
             f"{_durum('sayisal_dogruluk', altin['sayisal_dogruluk'])} |",
-            f"| Metinsel alan doğruluğu | {altin['metinsel_dogruluk']:.3f} | ≥ 0,78 | "
+            f"| Metinsel alan doğruluğu | {_oran(altin['metinsel_dogruluk'])} | ≥ 0,78 | "
             f"{_durum('metinsel_dogruluk', altin['metinsel_dogruluk'])} |",
+            "",
+            "> Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM "
+            "katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.",
             "",
             "### Alan bazlı doğruluk",
             "",

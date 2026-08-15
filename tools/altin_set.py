@@ -3,10 +3,10 @@
 Altın set İNSAN işidir. Bu araç etiket üretmez; yalnız etiketlemenin etrafındaki
 mekanik işi yapar:
 
-    python tools/altin_set.py ornekle    # katmanlı örneklem -> kişi başı CSV
+    python tools/altin_set.py ornekle    # katmanlı örneklem -> kişi başı CSV + okuma kâğıdı
     python tools/altin_set.py denetle    # KENDİ dosyanı pushlamadan önce kontrol
+    python tools/altin_set.py uyum       # etiketleyiciler arası uyum oranı
     python tools/altin_set.py derle      # doldurulmuş CSV'ler -> altin_set.jsonl
-    python tools/altin_set.py dogrula    # üretilen seti denetle
 
 NEDEN ETİKETİ ARAÇ ÜRETMİYOR:
     Altın set, sistemi ölçmek için vardır. Sistemin kendi çıktısıyla doldurulursa
@@ -49,7 +49,6 @@ from src.preprocessing.normalizasyon import (  # noqa: E402
 from src.schema import (  # noqa: E402
     ALAN_ADLARI,
     AYLIK_KAR_PAYI_UST_SINIRI,
-    METINSEL_ALANLAR,
     SAYISAL_ALANLAR,
     HedefKitle,
     Kampanya,
@@ -95,26 +94,44 @@ EMIN_DEGIL = "?"
 metriğe katılmaz. Tahmin edilmiş etiket, eksik etiketten daha zararlıdır."""
 
 UYUM_ONEK = "etiketleme_uyum_"
-KALIBRASYON_ONEK = "kalibrasyon_"
-KALIBRASYON_KAYDI = GOLD / "kalibrasyon_listesi.json"
-"""Kalibrasyon bloğu — uyum oranını ölçmek için AYRI bir örnek kümesi.
 
-Neden ayrı: uyum bloğunun ilk turu kirlendi (tamamlanmış bir dosya depoya
-girip kopyalandı). O 10 örneğin etiketleri altın set için hâlâ geçerli —
-sahibinin kendi işi — ama uyum ölçümü için kullanılamaz, çünkü iki kişi de
-aynı cevapları görmüş durumda; tekrar ölçmek uyumu değil hafızayı ölçer.
-
-Kalibrasyon bloğu, 60'lık altın set örnekleminin DIŞINDAN çekilir. Böylece
-altın sete dokunulmaz ve kimsenin görmediği örnekler üzerinde gerçek bir
-uyum oranı elde edilir."""
-
-UYUM_ADET = 10
-"""Örneklemin ilk 10'unu DÖRDÜ BİRDEN etiketler (H-02).
+UYUM_ADET = 5
+"""Örneklemin ilk 5'ini DÖRDÜ BİRDEN etiketler (H-02).
 
 İki işi birden görür: etiketleyiciler arası uyum oranını ölçer (sunumda
-«etiketleme uzlaşmamız %X» cümlesi buradan çıkar) ve bu 10 örnek çoğunluk
+«etiketleme uzlaşmamız %X» cümlesi buradan çıkar) ve bu 5 örnek çoğunluk
 oyuyla uzlaştırılıp altın sete girer. Kalan örnekler tek etiketleyicilidir —
-dört kişinin her örneği ayrı ayrı etiketlemesi 4 kat maliyet demekti."""
+dört kişinin her örneği ayrı ayrı etiketlemesi 4 kat maliyet demekti.
+
+Neden 10 değil 5: ortak blok dört kişinin de aynı satırları etiketlemesi
+demek, yani tek satır dört kat emek. 5 satır × 8 alan, kişi başı ~8 dakikaya
+mal olup uyum oranını hesaplamaya yetecek kadar hücre üretir."""
+
+CEKIRDEK_ALANLAR: tuple[str, ...] = (
+    "kampanya_turu",
+    "kar_payi_orani",
+    "vade_ay_max",
+    "finansman_tutari_max",
+    "tahsis_ucreti",
+    "masrafsiz_mi",
+    "odul_miktari",
+    "kampanya_bitis",
+)
+"""CSV'de etiketlenen sekiz alan — şemanın 16 alanının tamamı DEĞİL.
+
+Kalan sekiz alan bilinçli olarak dışarıda:
+
+  * `urun_turu` (%0 doluluk), `alisveris_puani` ve `masraf_bilgisi` (%1),
+    `hedef_kitle` (%4) ölçümde neredeyse hiç örnek üretmiyor.
+  * Serbest metin alanları (`kampanya_avantaji`, `kampanya_kosullari`, …)
+    yalnız LLM katmanından geliyor ve `eval` bunları BİREBİR string
+    karşılaştırmasıyla ölçüyor. Elle yazılmış bir cümlenin modelin cümlesiyle
+    harfi harfine tutması pratikte imkânsız — yani en yorucu alanlar, aynı
+    zamanda skoru garanti sıfır olan alanlar.
+
+Sekiz alanı çok örnekte etiketlemek, on altı alanı az örnekte etiketlemekten
+hem ucuz hem istatistiksel olarak daha sağlamdır. Gerekçenin tamamı:
+docs/kararlar/008-altin-set-kapsami.md"""
 
 
 # ---------------------------------------------------------------------------
@@ -177,7 +194,7 @@ def _kirp(metin: str) -> str:
 
 
 def csv_basliklari() -> list[str]:
-    return [*CSV_UST_BILGI, *ALAN_ADLARI, *CSV_SON_BILGI]
+    return [*CSV_UST_BILGI, *CEKIRDEK_ALANLAR, *CSV_SON_BILGI]
 
 
 def _csv_yaz(yol: Path, kampanyalar: list[Kampanya]) -> None:
@@ -191,7 +208,7 @@ def _csv_yaz(yol: Path, kampanyalar: list[Kampanya]) -> None:
                     kampanya.kampanya_id,
                     kampanya.banka_adi,
                     kampanya.kaynak_url,
-                    *([""] * len(ALAN_ADLARI)),
+                    *([""] * len(CEKIRDEK_ALANLAR)),
                     _kirp(kampanya.ham_metin),
                 ]
             )
@@ -305,15 +322,32 @@ her zaman bir değer istiyor (hiçbiri uymuyorsa `diger`), dolayısıyla bu süt
 'bu satıra bakıldı' işareti olarak güvenilirdir."""
 
 
+def _etiket_sutunlari(okuyucu: csv.DictReader) -> list[str]:
+    """CSV'de GERÇEKTEN bulunan etiket sütunları.
+
+    `ALAN_ADLARI` üzerinde körlemesine dönmek olmaz: eksik bir sütun
+    `satir.get(alan) or ""` ile boş stringe düşer ve `_hucre_cozumle` bunu
+    'metinde YOK' (null) diye yazar. Yani CSV'de hiç sorulmamış bir alan,
+    cevap anahtarına «bu bilgi sayfada yoktu» iddiası olarak girerdi —
+    sistem doğru değeri bulduğunda haksız yere hata sayılırdı.
+
+    Sorulmayan alan metriğin dışında kalmalı; bu fonksiyon o sınırı çizer.
+    """
+    basliklar = set(okuyucu.fieldnames or ())
+    return [alan for alan in ALAN_ADLARI if alan in basliklar]
+
+
 def _csv_oku(yol: Path) -> list[tuple[int, str, dict[str, Any], bool]]:
     """(satir_no, kampanya_id, {alan: deger}, dokunuldu_mu)."""
     cikti: list[tuple[int, str, dict[str, Any], bool]] = []
     with yol.open(encoding="utf-8-sig", newline="") as dosya:
-        for satir_no, satir in enumerate(csv.DictReader(dosya), start=2):
+        okuyucu = csv.DictReader(dosya)
+        sutunlar = _etiket_sutunlari(okuyucu)
+        for satir_no, satir in enumerate(okuyucu, start=2):
             kimlik = (satir.get("kampanya_id") or "").strip()
             dokunuldu = bool((satir.get(DOKUNMA_ALANI) or "").strip())
             etiketler: dict[str, Any] = {}
-            for alan in ALAN_ADLARI:
+            for alan in sutunlar:
                 yazilsin, deger = _hucre_cozumle(alan, satir.get(alan) or "")
                 if yazilsin:
                     etiketler[alan] = deger
@@ -334,17 +368,6 @@ def uyum_dosyalari(
         for kisi in kisiler
         if (yol := GOLD / f"{onek}{kisi.lower()}.csv").exists()
     }
-
-
-def aktif_uyum_kaynagi(kisiler: tuple[str, ...] = KISILER) -> tuple[str, str]:
-    """Uyum hangi blok üzerinden ölçülecek?
-
-    Kalibrasyon bloğunda etiket varsa o kullanılır — ilk uyum bloğu kirlendiği
-    için oradan çıkan oran geçerli değil.
-    """
-    if any(s for s in uyum_dosyalari(kisiler, KALIBRASYON_ONEK).values()):
-        return KALIBRASYON_ONEK, "kalibrasyon bloğu"
-    return UYUM_ONEK, "uyum bloğu"
 
 
 def uyum_hesapla(kisiler: tuple[str, ...] = KISILER, onek: str = UYUM_ONEK) -> dict[str, Any]:
@@ -432,21 +455,30 @@ def uyum_hesapla(kisiler: tuple[str, ...] = KISILER, onek: str = UYUM_ONEK) -> d
     }
 
 
-KOPYA_ESIGI = 0.90
-KOPYA_ASGARI_ORNEK = 5
+KOPYA_ESIGI = 1.00
+KOPYA_ASGARI_HUCRE = 10
 
 
 def kopya_suphesi(kisiler: tuple[str, ...] = KISILER, onek: str = UYUM_ONEK) -> list[str]:
-    """İki etiketleyicinin serbest metin alanları fazla mı benziyor?
+    """İki etiketleyicinin ortak bloğu kusursuz mu örtüşüyor?
 
-    Uyum oranı ancak etiketleme BAĞIMSIZ yapıldıysa anlam taşır. Serbest metin
-    alanları bunun turnusol kâğıdıdır: iki kişi bir kampanyayı kendi cümleleriyle
-    özetlediğinde sonuç asla harfi harfine aynı olmaz. %90'ın üstünde birebir
-    eşleşme, uyumun değil kopyanın işaretidir.
+    Uyum oranı ancak etiketleme BAĞIMSIZ yapıldıysa anlam taşır. Tamamlanmış bir
+    dosya diğerleri etiketlemeden depoya girerse, ya da iki dosyayı aynı kişi
+    (veya aynı dil modeli) doldurursa, ölçülen şey uyum değil kopyadır.
 
-    12 Ağustos'ta tam olarak bu yaşandı: tamamlanmış bir uyum dosyası diğerleri
-    etiketlemeden önce depoya pushlandı ve cevap anahtarı herkesin eline geçti.
-    Ölçülen %98, gerçekte iki dosyanın aynı olmasıydı.
+    Eskiden bu kontrol serbest metin alanlarına bakıyordu: iki insan bir
+    kampanyayı kendi cümleleriyle özetlediğinde sonuç asla harfi harfine aynı
+    olmaz, dolayısıyla turnusol kâğıdı iyiydi. Serbest metin alanları CSV'den
+    çıkınca kontrol sessizce ölecekti; sekiz çekirdek alana yeniden hedeflendi.
+
+    Yapısal alanlarda birebir eşleşme MEŞRUDUR — doğru etiketleyen iki kişi
+    aynı sayıyı yazar. O yüzden eşik %90 değil %100: bağımsız iki insan 5 satır
+    × 8 alanda bir yerde mutlaka ayrışır (tarih biçimi, bir aralığın ucu, bir
+    türün sınırı). Kusursuz örtüşme, uyumun değil ortak kaynağın işaretidir.
+
+    Boş-boş mutabakatı sayılmaz: yalnız en az birinin DEĞER yazdığı hücreler
+    karşılaştırılır. Alanların çoğu zaten boş olduğu için, aksi hâlde her dosya
+    çifti %95 örtüşür ve kontrol hiçbir şey söylemez.
     """
     dosyalar = uyum_dosyalari(kisiler, onek)
     tablolar = {
@@ -462,15 +494,20 @@ def kopya_suphesi(kisiler: tuple[str, ...] = KISILER, onek: str = UYUM_ONEK) -> 
             sol, sag = adlar[i], adlar[j]
             ayni = toplam = 0
             for kimlik, alanlar in tablolar[sol].items():
-                diger = tablolar[sag].get(kimlik, {})
-                for alan in METINSEL_ALANLAR:
-                    a, b = alanlar.get(alan), diger.get(alan)
-                    if isinstance(a, str) and isinstance(b, str) and a.strip() and b.strip():
-                        toplam += 1
-                        ayni += a.strip() == b.strip()
-            if toplam >= KOPYA_ASGARI_ORNEK and ayni / toplam >= KOPYA_ESIGI:
+                diger = tablolar[sag].get(kimlik)
+                if diger is None:
+                    continue
+                for alan in CEKIRDEK_ALANLAR:
+                    if alan not in alanlar or alan not in diger:
+                        continue  # biri '?' demiş — oylamaya girmez
+                    a, b = alanlar[alan], diger[alan]
+                    if a is None and b is None:
+                        continue  # ortak 'burada bir şey yok' — bilgi taşımaz
+                    toplam += 1
+                    ayni += _anahtar(a) == _anahtar(b)
+            if toplam >= KOPYA_ASGARI_HUCRE and ayni / toplam >= KOPYA_ESIGI:
                 uyarilar.append(
-                    f"{sol} ↔ {sag}: {ayni}/{toplam} serbest metin alanı BİREBİR aynı "
+                    f"{sol} ↔ {sag}: dolu {toplam} hücrenin {ayni}'si BİREBİR aynı "
                     f"(%{ayni / toplam * 100:.0f}) — bağımsız etiketlemede beklenmez"
                 )
     return uyarilar
@@ -718,6 +755,7 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
 
     secilen = katmanli_ornekle(kampanyalar, adet)
     uyum_blogu, sayilar, korunan = calisma_sayfalari_yaz(secilen, KISILER, zorla)
+    okuma_kagitlari_yaz(KISILER)
 
     if korunan:
         print("🛡️  Etiket içerdiği için KORUNAN sayfalar (yeniden yazılmadı):")
@@ -734,97 +772,21 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
         print(f"       data/gold/etiketleme_{kisi.lower()}.csv → {kisi}: {sayi} örnek")
 
     toplam_kisi = len(uyum_blogu) + max(sayilar.values(), default=0)
-    print(f"\n   Kişi başı toplam yük: ~{toplam_kisi} örnek")
+    print(f"\n   Kişi başı toplam yük: ~{toplam_kisi} satır × {len(CEKIRDEK_ALANLAR)} alan")
+    print("   Okuma kâğıdı: data/gold/okuma_<ad>.md  (ilgili cümleler alan alan hazır)")
     print(f"   Tam metinler: data/gold/metinler/ ({len(secilen)} dosya)")
     print(f"   Örneklem kaydı: {_kisa_yol(ORNEK_KAYDI)}")
     print("\n   Tür dağılımı:")
     for tur, sayi in Counter(_tur(k) for k in secilen).most_common():
         print(f"     {tur}: {sayi}")
-    print("\n📖 Etiketlemeden önce docs/ETIKETLEME_KILAVUZU.md okunmalı.")
+    print("\n📖 Etiketlemeden önce docs/ETIKETLEME_KILAVUZU.md okunmalı (tek sayfa).")
     print("   Sıra: uyum bloğu → `make altin-uyum` → tartış → kişisel pay")
     return 0
 
 
-def altin_set_orneklemi() -> set[str]:
-    """60'lık altın set örnekleminin kimlikleri (uyum bloğu + kişisel paylar)."""
-    if not ORNEK_KAYDI.exists():
-        return set()
-    kayit = json.loads(ORNEK_KAYDI.read_text(encoding="utf-8"))
-    kimlikler = set(kayit.get("uyum_blogu", []))
-    for pay in kayit.get("atama", {}).values():
-        kimlikler.update(pay)
-    return kimlikler
-
-
-def komut_kalibrasyon(adet: int, zorla: bool = False) -> int:
-    """Uyum ölçümü için, altın set örnekleminin DIŞINDAN taze blok."""
-    kampanyalar = _kampanyalari_al()
-    kullanilmis = altin_set_orneklemi()
-    disarida = [k for k in kampanyalar if k.kampanya_id not in kullanilmis]
-
-    if len(disarida) < adet:
-        print(f"❌ Örneklem dışında yalnız {len(disarida)} kampanya var, {adet} istendi.")
-        return 1
-
-    dolu = [
-        f"{KALIBRASYON_ONEK}{k.lower()}.csv"
-        for k in KISILER
-        if _etiketli_mi(GOLD / f"{KALIBRASYON_ONEK}{k.lower()}.csv")
-    ]
-    if dolu and not zorla:
-        print("❌ Doldurulmuş kalibrasyon dosyaları var, üstlerine yazılmadı:")
-        for ad in dolu:
-            print(f"   {ad}")
-        print("   Sıfırlamak için: python tools/altin_set.py kalibrasyon --zorla")
-        return 1
-
-    # Tohum farklı: aynı tohum, aynı sıralamayla örtüşen blok üretirdi.
-    blok = katmanli_ornekle(disarida, adet, tohum=TOHUM + 1)
-    GOLD.mkdir(parents=True, exist_ok=True)
-    METINLER.mkdir(parents=True, exist_ok=True)
-
-    for kisi in KISILER:
-        _csv_yaz(GOLD / f"{KALIBRASYON_ONEK}{kisi.lower()}.csv", blok)
-    for kampanya in blok:
-        (METINLER / f"{kampanya.kampanya_id}.txt").write_text(
-            kampanya.ham_metin, encoding="utf-8"
-        )
-
-    KALIBRASYON_KAYDI.write_text(
-        json.dumps(
-            {
-                "olusturma": datetime.now().isoformat(timespec="seconds"),
-                "tohum": TOHUM + 1,
-                "amac": "etiketleyiciler arası uyum ölçümü (H-02)",
-                "not": "Altın set örnekleminin dışından seçildi; altın sete girmez.",
-                "kampanyalar": [k.kampanya_id for k in blok],
-                "dagilim_tur": dict(Counter(_tur(k) for k in blok)),
-                "dagilim_banka": dict(Counter(k.banka_adi for k in blok)),
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
-
-    print(f"✅ Kalibrasyon bloğu: {len(blok)} örnek (altın set örnekleminin dışından)\n")
-    for kisi in KISILER:
-        print(f"   data/gold/{KALIBRASYON_ONEK}{kisi.lower()}.csv")
-    print("\n   Tür dağılımı:")
-    for tur, sayi in Counter(_tur(k) for k in blok).most_common():
-        print(f"     {tur}: {sayi}")
-    print(
-        "\n🔒 MÜHÜRLÜ ÇALIŞIN — dolu dosyayı PUSHLAMAYIN.\n"
-        "   Herkes kendi dosyasını doldurup doğrudan kaptana gönderir;\n"
-        "   kaptan dördünü birden koyar, sonra `make altin-uyum` çalışır.\n"
-        "   Aksi hâlde depoyu çeken kişi cevapları görür ve oran anlamsızlaşır."
-    )
-    return 0
-
-
 def komut_uyum() -> int:
-    onek, aciklama = aktif_uyum_kaynagi()
-    print(f"\n  Kaynak: {aciklama} ({onek}<ad>.csv)")
+    onek = UYUM_ONEK
+    print(f"\n  Kaynak: uyum bloğu ({onek}<ad>.csv)")
     sonuc = uyum_hesapla(KISILER, onek)
     if sonuc["uyum"] is None:
         etiketleyen = sonuc.get("etiketleyenler") or []
@@ -880,7 +842,7 @@ def komut_uyum() -> int:
         print(f"   Sunum cümlesi: «etiketleme uzlaşmamız %{oran * 100:.0f}»")
         return 0
     print("\n⚠️  Uyum %85'in altında. Dağılmadan önce ayrışan alanları konuşun ve")
-    print("   kararı docs/ETIKETLEME_KILAVUZU.md bölüm 6'ya yazın.")
+    print("   kararı docs/ETIKETLEME_KILAVUZU.md «Kararlar defteri» tablosuna yazın.")
     return 0
 
 
@@ -918,50 +880,6 @@ def komut_derle() -> int:
     print("\n   Sonraki adım: `make eval`")
     return 0
 
-
-def komut_dogrula() -> int:
-    if not ALTIN_SET.exists():
-        print(f"❌ {_kisa_yol(ALTIN_SET)} yok. Önce `make altin-derle`.")
-        return 1
-
-    kayitlar = [
-        json.loads(s) for s in ALTIN_SET.read_text(encoding="utf-8").splitlines() if s.strip()
-    ]
-    kampanyalar = _kampanyalari_al()
-    hatalar = denetle(kayitlar, kampanyalar)
-    kanit = kanit_uyarilari(kayitlar, kampanyalar)
-
-    print(kapsam_raporu(kayitlar, kampanyalar))
-    if kanit:
-        print(f"\n🔎 {len(kanit)} değer ham metinde bulunamadı — gözden geçirin:")
-        for satir in kanit:
-            print(f"   {satir}")
-    if hatalar:
-        print(f"\n❌ {len(hatalar)} hata:")
-        for hata in hatalar:
-            print(f"   {hata}")
-        return 1
-    print("\n✅ Altın set tutarlı." + ("  (yukarıdaki kanıt uyarılarına bakın)" if kanit else ""))
-    return 0
-
-
-CEKIRDEK_ALANLAR: tuple[str, ...] = (
-    "kampanya_turu",
-    "kar_payi_orani",
-    "vade_ay_max",
-    "finansman_tutari_max",
-    "tahsis_ucreti",
-    "masrafsiz_mi",
-    "odul_miktari",
-    "kampanya_bitis",
-)
-"""Metriği taşıyan sekiz alan — etiketleme önceliği bunlardır.
-
-Kalan alanlar bilinçli olarak ikinci sırada: `urun_turu` (%0 doluluk),
-`alisveris_puani` ve `masraf_bilgisi` (%1), `hedef_kitle` (%4) ölçümde neredeyse
-hiç örnek üretmiyor; serbest metin alanları ise etiketleyiciler arası uyumun en
-düşük olduğu yer. Sekiz alanı çok örnekte etiketlemek, on altı alanı az örnekte
-etiketlemekten hem ucuz hem istatistiksel olarak daha sağlamdır."""
 
 _TUR_ESANLAMLI: dict[str, str] = {
     # docs/ETIKETLEME_KILAVUZU.md §4.1 karar sırasında AÇIKÇA yazanlar
@@ -1036,7 +954,9 @@ def dosya_denetle(yol: Path) -> tuple[list[str], int, int]:
     toplam = etiketlenen = 0
 
     with yol.open(encoding="utf-8-sig", newline="") as dosya:
-        for satir_no, satir in enumerate(csv.DictReader(dosya), start=2):
+        okuyucu = csv.DictReader(dosya)
+        sutunlar = _etiket_sutunlari(okuyucu)
+        for satir_no, satir in enumerate(okuyucu, start=2):
             toplam += 1
             yer = f"satır {satir_no}"
 
@@ -1051,7 +971,7 @@ def dosya_denetle(yol: Path) -> tuple[list[str], int, int]:
                 continue
             etiketlenen += 1
 
-            for alan in ALAN_ADLARI:
+            for alan in sutunlar:
                 ham = (satir.get(alan) or "").strip()
                 if not ham or ham == EMIN_DEGIL:
                     continue  # boş = 'metinde yok', '?' = metrik dışı; ikisi de geçerli
@@ -1153,7 +1073,7 @@ def _cekirdek_ilerleme(yol: Path) -> tuple[int, int]:
     return dolu, gereken
 
 
-DOGRULAMA_ONEK = "dogrulama_"
+OKUMA_ONEK = "okuma_"
 _ALAN_IPUCLARI: dict[str, tuple[str, ...]] = {
     "kampanya_turu": ("finansman", "kampanya", "kart", "hesap"),
     "kar_payi_orani": ("kâr payı", "kar payı", "kâr oranı", "oran"),
@@ -1201,82 +1121,94 @@ def _ilgili_cumleler(metin: str, alan: str, azami: int = 3) -> list[str]:
     return bulunan
 
 
-def dogrulama_sayfasi(yol: Path) -> str:
-    """Etiketleri kaynak metinle yan yana koyan okuma yardımı üretir.
+def okuma_kagidi(yollar: list[Path]) -> str:
+    """Etiketlemeyi kolaylaştıran okuma kâğıdı — her satır için ilgili cümleler.
 
-    NEDEN ÜRETMEK DEĞİL DOĞRULAMAK:
-        Sıfırdan etiketlemek kayıt başına ~4 dakika, mevcut bir etiketi kaynağa
-        karşı doğrulamak ~1 dakika. 48 satırlık bir bloğu yeniden etiketletmek
-        gerçekçi değil; doğrulatmak tek oturumluk iş.
+    NEDEN VAR:
+        Etiketlemenin pahalı kısmı karar vermek değil, ARAMAK: 2.500 karakterlik
+        bir banka sayfasında vadenin nerede geçtiğini bulmak. Bu kâğıt sekiz
+        alanın her biri için aday cümleleri önden çıkarır; etiketleyen CSV'nin
+        yanında açar ve doğrudan karara geçer.
 
     NEDEN SİSTEMİN ÇIKTISI GÖSTERİLMEZ:
-        Sayfa yalnız MEVCUT ETİKETİ ve KAYNAK METNİ gösterir. Sistemin kendi
-        çıkarımını buraya koymak, cevap anahtarını sistemin kopyasına çevirirdi
-        — doğruluk %100 çıkar ve hiçbir şey ölçmemiş oluruz. Etiketleyenin
-        dayanağı yalnızca banka metnidir.
+        Kâğıt yalnız BANKA METNİNİ gösterir. Sistemin kendi çıkarımını buraya
+        koymak cevap anahtarını sistemin kopyasına çevirirdi — doğruluk %100
+        çıkar ve hiçbir şey ölçmemiş oluruz. Etiketleyenin dayanağı yalnızca
+        banka metnidir.
+
+    NEDEN ALINTI, TAM METİN DEĞİL:
+        Alıntılar YOL GÖSTERİCİDİR, kanıt değil. İpucu listesi kaçırabilir; bir
+        alanın altı boşsa bu "metinde yok" demek değil, "aday bulunamadı"
+        demektir. Karar her zaman metnin tamamına aittir —
+        `data/gold/metinler/<kampanya_id>.txt`.
     """
     satirlar = [
-        f"# Doğrulama sayfası — {yol.stem}",
+        "# Okuma kâğıdı",
         "",
-        "Her hücre için: **kaynak metne bak**, etiket doğruysa dokunma, yanlışsa "
-        f"`{yol.name}` dosyasında düzelt.",
+        "Bu sayfa **karar vermez, arama yapar.** Her satır için sekiz alanın aday "
+        "cümlelerini önden çıkarır; sen okuyup CSV'ye yazarsın.",
         "",
         "- Boş hücre **\"metinde yok\"** demektir ve cevap anahtarına öyle girer.",
         "- Bakmadan geçiyorsan **`?`** yaz — o hücre metrikten çıkar.",
-        "- Aşağıdaki alıntılar yalnız yol göstericidir; **karar metnin tamamına aittir**.",
+        "- Bir alanın altında alıntı yoksa **metinde yok demek değildir**; "
+        "ipucu bulunamadı demektir. Şüphedeysen tam metne bak.",
+        "",
+        "Kurallar: `docs/ETIKETLEME_KILAVUZU.md`",
         "",
         "---",
         "",
     ]
 
-    with yol.open(encoding="utf-8-sig", newline="") as dosya:
-        for satir_no, satir in enumerate(csv.DictReader(dosya), start=2):
-            if not (satir.get(DOKUNMA_ALANI) or "").strip():
-                continue
-            metin = satir.get("metin") or ""
-            satirlar += [
-                f"## satır {satir_no} — {satir.get('banka_adi', '')}",
-                f"<{satir.get('kaynak_url', '')}>",
-                "",
-            ]
-            for alan in CEKIRDEK_ALANLAR:
-                ham = (satir.get(alan) or "").strip()
-                etiket = f"`{ham}`" if ham else "_(boş → \"metinde yok\")_"
-                satirlar.append(f"**{alan}** — şu an: {etiket}")
-                for cumle in _ilgili_cumleler(metin, alan):
-                    satirlar.append(f"> {cumle}")
-                satirlar.append("")
-            satirlar += ["---", ""]
+    for yol in yollar:
+        satirlar += [f"# {yol.name}", ""]
+        with yol.open(encoding="utf-8-sig", newline="") as dosya:
+            for satir_no, satir in enumerate(csv.DictReader(dosya), start=2):
+                metin = satir.get("metin") or ""
+                kimlik = (satir.get("kampanya_id") or "").strip()
+                satirlar += [
+                    f"## satır {satir_no} — {satir.get('banka_adi', '')}",
+                    f"<{satir.get('kaynak_url', '')}>",
+                    f"Tam metin: `data/gold/metinler/{kimlik}.txt`",
+                    "",
+                ]
+                for alan in CEKIRDEK_ALANLAR:
+                    satirlar.append(f"**{alan}**")
+                    cumleler = _ilgili_cumleler(metin, alan)
+                    satirlar += [f"> {c}" for c in cumleler] or [
+                        "> _(aday cümle bulunamadı — tam metne bak)_"
+                    ]
+                    satirlar.append("")
+                satirlar += ["---", ""]
 
     return "\n".join(satirlar)
 
 
-def komut_dogrulama(ad: str | None) -> int:
-    """Doğrulama sayfalarını üretir (H-01 kalite turu)."""
-    kisiler = (ad,) if ad else KISILER
-    uretilen = 0
-    for kisi in kisiler:
-        for onek in ("etiketleme_", UYUM_ONEK, KALIBRASYON_ONEK):
-            yol = GOLD / f"{onek}{kisi.lower()}.csv"
-            if not yol.exists() or not _etiketli_mi(yol):
-                continue
-            hedef = GOLD / f"{DOGRULAMA_ONEK}{onek}{kisi.lower()}.md"
-            hedef.write_text(dogrulama_sayfasi(yol), encoding="utf-8")
-            print(f"✅ {_kisa_yol(hedef)}")
-            uretilen += 1
+def okuma_kagitlari_yaz(kisiler: tuple[str, ...] = KISILER) -> list[Path]:
+    """Kişi başına tek okuma kâğıdı: uyum bloğu + kişisel pay bir arada.
 
-    if not uretilen:
-        print("❌ Doğrulanacak etiketli dosya yok.")
-        return 1
-    print(f"\n{uretilen} sayfa üretildi. Sayfayı okuyup düzeltmeleri CSV'ye yaz,")
-    print("sonra `make altin-denetle ad=<Ad>` ile kontrol et.")
-    return 0
+    `ornekle` içinden otomatik çağrılır. Ayrı bir komut olarak dursaydı kimse
+    çalıştırmazdı; etiketlemeyi ucuzlatan asıl şeyin ayrı bir adım olmaması
+    gerekiyor.
+    """
+    uretilen: list[Path] = []
+    for kisi in kisiler:
+        yollar = [
+            yol
+            for onek in (UYUM_ONEK, "etiketleme_")
+            if (yol := GOLD / f"{onek}{kisi.lower()}.csv").exists()
+        ]
+        if not yollar:
+            continue
+        hedef = GOLD / f"{OKUMA_ONEK}{kisi.lower()}.md"
+        hedef.write_text(okuma_kagidi(yollar), encoding="utf-8")
+        uretilen.append(hedef)
+    return uretilen
 
 
 def komut_denetle(ad: str | None) -> int:
     """Kişi CSV'sini pushlamadan önce denetler — H-01'in kalite kapısı."""
     kisiler = (ad,) if ad else KISILER
-    onekler = ("etiketleme_", UYUM_ONEK, KALIBRASYON_ONEK)
+    onekler = ("etiketleme_", UYUM_ONEK)
 
     # Atlanma uyarısı sistemin çıkarımıyla karşılaştırma gerektiriyor; veritabanı
     # yoksa denetimin geri kalanı yine de çalışmalı (kılavuz koşusu, CI vb.).
@@ -1348,34 +1280,20 @@ def main() -> int:
         "--zorla", action="store_true", help="doldurulmuş sayfaların üstüne yaz"
     )
 
-    p_kal = alt.add_parser("kalibrasyon", help="uyum ölçümü için taze blok (H-02)")
-    p_kal.add_argument("--adet", type=int, default=10, help="örnek sayısı (varsayılan 10)")
-    p_kal.add_argument("--zorla", action="store_true", help="dolu kalibrasyon dosyalarını sıfırla")
-
     p_den = alt.add_parser("denetle", help="kendi CSV'ni pushlamadan önce kontrol et")
     p_den.add_argument("--ad", default=None, help="yalnız bu kişinin dosyaları")
 
-    p_dog = alt.add_parser("dogrulama", help="etiketleri kaynak metinle yan yana koyan sayfa")
-    p_dog.add_argument("--ad", default=None, help="yalnız bu kişinin dosyaları")
-
     alt.add_parser("uyum", help="etiketleyiciler arası uyum oranı (H-02)")
-    alt.add_parser("derle", help="CSV'leri altin_set.jsonl'e derle")
-    alt.add_parser("dogrula", help="mevcut altın seti denetle")
+    alt.add_parser("derle", help="CSV'leri altin_set.jsonl'e derle + denetle")
 
     args = ap.parse_args()
     if args.komut == "ornekle":
         return komut_ornekle(args.adet, args.zorla)
-    if args.komut == "kalibrasyon":
-        return komut_kalibrasyon(args.adet, args.zorla)
     if args.komut == "denetle":
         return komut_denetle(args.ad)
-    if args.komut == "dogrulama":
-        return komut_dogrulama(args.ad)
     if args.komut == "uyum":
         return komut_uyum()
-    if args.komut == "derle":
-        return komut_derle()
-    return komut_dogrula()
+    return komut_derle()
 
 
 if __name__ == "__main__":

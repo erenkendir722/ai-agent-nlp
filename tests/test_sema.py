@@ -26,7 +26,7 @@ from src.schema import (
     Kampanya,
     UygunlukKosullari,
 )
-from tools.altin_set import csv_basliklari
+from tools.altin_set import CEKIRDEK_ALANLAR, csv_basliklari
 
 # v1.0.0'da dondurulan on altı alan. Bu demet DEĞİŞMEMELİ; değişmesi
 # gerekiyorsa docs/kararlar/ altına ADR yazılır ve altın set yeniden
@@ -72,10 +72,16 @@ def test_alan_adlari_donmus_listeyle_ayni():
     assert ALAN_ADLARI == DONMUS_ALANLAR
 
 
-def test_altin_set_basliklari_alan_adlarini_izler():
-    """Cevap anahtarı ile üretilen kayıt aynı hizada olmalı."""
+def test_altin_set_basliklari_semanin_alt_kumesi():
+    """Altın set sekiz alanı soruyor (ADR 008), on altısını değil.
+
+    Sorulan her sütun yine de ŞEMADA tanımlı bir alan olmalı — uydurma bir
+    sütun adı sessizce metriğin dışında kalır, hiçbir yere bağlanmaz.
+    """
     basliklar = csv_basliklari()
-    assert all(alan in basliklar for alan in ALAN_ADLARI)
+    etiket_sutunlari = set(basliklar) - {"kampanya_id", "banka_adi", "kaynak_url", "metin"}
+    assert etiket_sutunlari <= set(ALAN_ADLARI)
+    assert etiket_sutunlari == set(CEKIRDEK_ALANLAR)
 
 
 # ---------------------------------------------------------------------------

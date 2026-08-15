@@ -1,5 +1,18 @@
-kampanya_id,banka_adi,kaynak_url,kampanya_turu,urun_turu,hedef_kitle,kar_payi_orani,finansman_tutari_max,vade_ay_max,taksit_sayisi,tahsis_ucreti,masraf_bilgisi,masrafsiz_mi,odul_miktari,indirim_orani,alisveris_puani,kampanya_avantaji,kampanya_bitis,kampanya_kosullari,metin
-0214-ffb6cd0c6e56,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/arac-finansmani,finansman,Araç Finansmanı,,,,48,,,,,,,,Sıfır veya ikinci el araç alımlarında 48 aya varan vade ve esnek ödeme planı imkanı.,,"12 yaşa kadar olan araçlar için geçerlidir; kimlik, gelir belgesi ve araç faturası/ruhsatı gerekmektedir.","Dünya Katılım Araç Finansmanı Nedir?
+﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0210-bda0f693a1df,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/arzumda-15-indirim,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+ÜRÜN VE HİZMETLERİMİZ
+SİZE ÖZEL ÇÖZÜMLER
+ÜRÜN VE HİZMETLERİMİZ
+13 Mart 2026 - 31 Aralık 2026
+Vakıf Katılım müşterileri, Arzum'da yapacakları alışverişlerde %15 indirimden yararlanıyor!
+Mobil Şube “Kampanyalar” alanından Arzum kampanyasını görüntüleyebilir, “İndirim Kodu Oluştur” butonuna tıklayıp size özel indirim kodunuzu alarak www.arzum.com.tr adresinden yapacağınız alışverişlerde kullanabilirsiniz.
+Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek “Vakıf Katılımlı Ol” adımından ya da en yakın şubeye giderek müşteri olabilirsiniz.
+- Kampanya kodları sadece www.arzum.com.tr adresinde geçerlidir.
+- Kodlar, sepette en fazla 2 ürün için kullanılabilir.
+- Kampanyadan faydalanabilmek için www.arzum.com.tr web sitesine üye girişi yapılması gerekmektedir.
+- Farklı kampanyalarla birleştirilemez.
+- Vakıf Katılım Bankası AŞ ve Arzum, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
+0214-ffb6cd0c6e56,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/arac-finansmani,,,,,,,,,"Dünya Katılım Araç Finansmanı Nedir?
 Araç finansmanı, sıfır ya da ikinci el bir araca kolay ve güvenli şekilde sahip olabilmeniz için sunulan, katılım esaslarına uygun bir finansman desteğidir. Bu yöntem sayesinde bütçenize uygun ödeme planlarıyla aracınızı rahatça edinebilirsiniz. Süreç boyunca size sunulan esnek ödeme seçeneklerinden yararlanabilir, taksit tutarlarınızı ihtiyaçlarınıza göre şekillendirebilirsiniz.
 Araç Finansmanı Hesaplama Aracı’nı kullanarak tercih ettiğiniz finansman tutarına göre aylık ödemelerinizi, toplam geri ödeme miktarını ve detaylı ödeme planınızı anında görüntüleyebilirsiniz.
 👉 Mobil şube üzerinden nasıl müşteri olunur? Tıklayınız.
@@ -48,7 +61,111 @@ Nihai fatura bedeli (ikinci el için kasko değeri) 1.200.001 TL – 2.000.000 T
 Belirtilen tutarlar yalnızca vade süresinin belirlenmesine esas alınmaktadır.
 12 yaşa kadar olan otomobillerde ikinci el araç finansmanı sağlanmaktadır.
 Şubelerimizden ya da mobil şubemizden finansman ödemelerinizi gerçekleştirebilirsiniz."
-0210-a009d6e68e4b,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/lizaydan-yapacaginiz-taki-alisverislerinizde-50ye-varan-indirim,diger,Lizay Pırlanta İndirim Kampanyası,,,,50,,,,,,,,"Vakıf Katılım müşterilerine Lizay Pırlanta'da pırlantada %50, altın takıda %25, web sitesinde ek %5 indirim.",2026-12-01,"Mobil Şube'den indirim kodu alınmalı; ziynet, sarrafiye ve 22 ayar bileziklerde geçerli değildir.","SİZE ÖZEL ÇÖZÜMLER
+0205-51a65757c195,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari,,,,,,,,,"CebimPOS ile Alışveriş Finansmanı
+Alışveriş keyfinizi yetersiz limit bölmesin! Alışveriş Finansmanı ile kasada yüksek limit ve 36 aya varan taksit fırsatı sizi bekliyor!
+Taksitlio Alışveriş Finansmanı
+Taksitlio.com’un anlaşmalı olduğu mağazalarda kasada yüksek limit ve 36 aya varan taksit fırsatı sizi bekliyor!
+Hepsiburada Alışveriş Finansmanı
+Hepsiburada’dan yapacağınız alışverişlerde Hepsiburada Alışveriş Finansmanı sizinle!
+Trendyol Alışveriş Finansmanı
+Trendyol’dan oluşturduğunuz sepetinizi şubeye gitmeye gerek kalmadan Kuveyt Türk Alışveriş Finansmanı ile ödeyebilirsiniz.
+LC Waikiki Alışveriş Finansmanı
+LC Waikiki alışveriş uygulamasından ve web sitesinden yapacağınız alışverişlerde LC Waikiki Alışveriş Finansmanı sizinle!
+Teknosa Alışveriş Finansmanı
+Teknosa’dan yapacağınız alışverişlerde Teknosa Alışveriş Finansmanı sizinle!
+Alışveriş Finansmanı
+İlave bütçe ihtiyacınızı karşılamak için alışverişinizi yarıda kesmeyin. Hemen Yerinde Finansman'dan yararlanın!"
+0206-d7223804788b,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/tasit-finansmani/Sayfalar/tasit-Finansmani.aspx,,,,,,,,,"Taşıt Finansmanı (Taşıt Kredisi)*
+Araç / Taşıt Finansmanı (Taşıt Kredisi)* Nedir?
+Araç / Taşıt Finansmanı (bankacılık kanununa göre taşıt kredisi)* 0 km ya da 2. el araç alımı için katılım bankaları tarafından gerçek kişilere sağlanan finansman desteğidir.
+Araç / Taşıt Finansmanı (Taşıt Kredisi)* mevduat bankacılığında taşıt kredisi olarak geçmektedir. Katılım bankacılığında bahsi geçen araç finansmanı, araç kredisinden farklı olarak katılım bankacılığı prensiplerine göre tahsis edilir.
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)*
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* 0 km ve 2. el taşıt alımları için 48 aya kadar taksitlendirme yapmanızı sağlayan finansman desteğidir.
+Hayalinizdeki otomobilin sahibi olmak için beklemeyin. Sizin için en uygun 2. el ya da 0 km aracı seçin, Türkiye Finans’ın alternatif ödeme seçeneklerinden faydalanarak araç finansmanı kullanın. Üstelik Taşıt Finansmanı (Taşıt Kredisi)* başvurunuzu hemen yapın, ödemeye 3 ay sonra başlayın.
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* oranlarını öğrenmek ve sizin için en uygun ödeme seçeneğini belirlemek için araç / taşıt finansmanı (Taşıt Kredisi)* hesaplama tablosunu inceleyebilirsiniz.
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* Ürünleri Nelerdir?
+Türkiye Finans, otomobil satın almak için kullanabileceğiniz Araç / Taşıt Finansmanının (Taşıt Kredisi)* yanı sıra aşağıdaki farklı araç ihtiyaçları için de finansman desteği sağlamaktadır:
+-
+Motosiklet Finansmanı (Motosiklet Kredisi)
+- Taksitli Ticari Taşıt Finansmanı (Taksitli Ticari Taşıt Kredisi)
+- Ticari Hat / Ticari Plaka Finansmanı (Ticari Hat / Ticari Plaka Kredisi)
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* Özellikleri ve Avantajları
+Türkiye Finans Araç / Taşıt Finansmanından (Taşıt Kredisi)* avantajlı kâr oranları ve uygun ödeme seçenekleri ile yararlanabilirsiniz.
+0 km araçlarda fatura değeri, 2 el araçlarda kasko değeri baz alınacak şekilde;
+- 400.000 TL'ye kadar araçlar için maksimum vade süresi 48 ay,
+- 400.000 - 800.000 TL arası araçlar için maksimum vade süresi 36 ay,
+- 800.000 TL - 1.200.000 TL arası araçlar için maksimum vade süresi 24 ay,
+- 1.200.000 - 2.000.000 TL arasında araçlar için maksimum vade süresi 12 aydır.
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* Başvurusu Nasıl Yapılır?
+Türkiye Finans Taşıt Araç / Taşıt Finansmanı (Taşıt Kredisi)* başvurunuzu gerekli belgelerle birlikte size en yakın Türkiye Finans şubesinden yapabilirsiniz.
+EN YAKIN ŞUBE Şube ve atm listesi için tıklayın.HESAPLAMA ARAÇLARI İhtiyaç Finansmanı hesaplama aracına gitmek için tıklayın.HEMEN BAŞVUR Bu bağlantı yeni sekmede açılacak.Bu bağlantı yeni sekmede açılacak.Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* Hangi Teminatlarla Kullanılabilir?
+Araç / Taşıt Finansmanı (Taşıt Kredisi)* kullanmak için aşağıdaki teminatlardan birini kullanabilirsiniz:
+- Alınacak aracın rehini
+- Gayrimenkul ipoteği
+- Nakit bloke teminatı
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* için Gerekli Belgeler Nelerdir?
+- Kimlik Bilgisi (Gerek görülmesi durumunda gelir belgesi/maaş bordrosu talep edilebilir.)
+- 0 kilometre araçlarda, alınacak aracın proforma faturası
+- 2. el araçlar için alınacak aracın ruhsat fotokopisi
+Araç / Taşıt Finansmanı (Taşıt Kredisi)* Hesaplama Aracı
+Türkiye Finans Araç / Taşıt Finansmanı (Taşıt Kredisi)* ile dilediğiniz 0 araba ya da 2. el aracı alternatif ödeme seçeneklerinden faydalanarak avantajlı ve uygun koşullarla satın alabilirsiniz. Finansman Hesaplama Aracı üzerinden Taşıt Finansmanını (Taşıt Kredisi)* seçerek hesaplama işleminizi yapabilirsiniz.
+HESAPLAMA ARAÇLARI Dijital İhtiyaç Finansmanı hesaplama aracına gitmek için tıklayın.Sigortalı Taşıt Finansmanı (Taşıt Kredisi)* 0 km
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+---|---|---|---|---|
+3 | 3,67% | 0,50% | 5,07% | 81,11% |
+6 | 3,67% | 0,50% | 4,95% | 78,49% |
+12 | 3,63% | 0,50% | 4,81% | 75,81% |
+18 | 3,56% | 0,50% | 4,70% | 73,61% |
+24 | 3,52% | 0,50% | 4,64% | 72,24% |
+36 | 3,48% | 0,50% | 4,57% | 70,88% |
+48 | 3,42% | 0,50% | 4,48% | 69,16% |
+Sigortalı Taşıt Finansmanı (Taşıt Kredisi)* 2. El
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+---|---|---|---|---|
+3 | 3,67% | 0,50% | 5,07% | 81,11% |
+6 | 3,67% | 0,50% | 4,95% | 78,49% |
+12 | 3,63% | 0,50% | 4,81% | 75,81% |
+18 | 3,56% | 0,50% | 4,70% | 73,61% |
+24 | 3,52% | 0,50% | 4,64% | 72,24% |
+36 | 3,48% | 0,50% | 4,57% | 70,88% |
+48 | 3,42% | 0,50% | 4,48% | 69,16% |
+Sigortasız Taşıt Finansmanı (Taşıt Kredisi)* 0 km
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+---|---|---|---|---|
+3 | 4,27% | 0,50% | 5,86% | 97,99% |
+6 | 4,27% | 0,50% | 5,73% | 95,13% |
+12 | 4,23% | 0,50% | 5,60% | 92,21% |
+18 | 4,16% | 0,50% | 5,49% | 89,83% |
+24 | 4,12% | 0,50% | 5,42% | 88,35% |
+36 | 4,08% | 0,50% | 5,35% | 86,88% |
+48 | 4,02% | 0,50% | 5,26% | 85,01% |
+Sigortasız Taşıt Finansmanı (Taşıt Kredisi)* 2. El
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+---|---|---|---|---|
+3 | 4,27% | 0,50% | 5,86% | 97,99% |
+6 | 4,27% | 0,50% | 5,73% | 95,13% |
+12 | 4,23% | 0,50% | 5,60% | 92,21% |
+18 | 4,16% | 0,50% | 5,49% | 89,83% |
+24 | 4,12% | 0,50% | 5,42% | 88,35% |
+36 | 4,08% | 0,50% | 5,35% | 86,88% |
+48 | 4,02% | 0,50% | 5,26% | 85,01% |
+40.000 TL. baz alınarak oluşturulan örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Maliyet tablosu hesaplamasında yer alan kar oranları; Kasko, Finansman Güvence Sigortası ürünlerinin tamamının finansman başvurusu ile birlikte alınması şartıyla uygulanmaktadır. İlgili ürünlere halihazırda sahip olma veya ilgili ürünlerin finansman başvurusu ile birlikte alınmaması durumlarında kar oranları değişmektedir. 0 km araçlarda fatura değeri, 2 el araçlarda kasko değeri baz alınacak şekilde; 400.000 TL'ye kadar vade 48 ayı, 400.000-800.000 TL arası vade 36 ayı, 800.000 TL – 1.200.000 TL arası vade 24 ayı, 1.200.000-2.000.000 TL arasında bir vade ise 12 ayı geçemez. Taşıt teminatlı finansmanlarda ise maksimum vade 36 aydır . Tahsis ücreti finansman fiyatlamasının bir parçasıdır Tahsis ücreti vergiler hariç finansman tutarının binde 5'i oranındadır. Aylık ve yıllık maliyet oranlarına komisyon ve yasal vergiler dahil edilmiş olup, sigorta masrafları dahil edilmemiştir. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz.
+*Katılım bankacılığı kuruluş esas ve faaliyetleri doğrultusunda Taşıt Finansmanı sağlamaktadır. Ancak bankacılık kanuna göre resmi olarak Taşıt Kredisi olarak da nitelendirilmektedir.
+Araç / Taşıt Finansmanı (Taşıt Kredisi)* Hakkında Sıkça Sorulan Sorular
+Taşıt kredisi başvurunuz için aşağıdaki belgeleri ibraz etmeniz gerekmektedir.
+- Kimlik Bilgisi
+- 0 kilometre araçlarda, alınacak aracın proforma faturası
+- 2. el araçlar için alınacak aracın ruhsat fotokopisi
+Geri ödemelerinizi Türkiye Finans İnternet Şubesi, Mobil Şube, hesabınızdaki bakiyeyi kullanarak ATM’lerimizden ve Türkiye Finans şubelerinden yapabilirsiniz.
+Araç bedeli olarak; 0 km. taşıtlarda proforma fatura bedeli, 2. el taşıtlarda kasko değeri baz alınmaktadır.
+Taşıt alımlarında araç bedelinin;
+- 400.000 TL’ye kadar olan kısmının %70’i,
+- 400.000-800.000 TL arasında %50’si,
+- 800.000-1.200.000 TL arasında %30’u
+- 1.200.000-2.000.000 TL arasında %20’si
+- 2.000.000 TL üzerinde %0’ı kadar taşıt finansmanı (Taşıt Kredisi)* kullanabilirsiniz.
+Bankamız tarafından en fazla 7 yaşa (7 yaş dâhil) kadar araçlar için araç finansmanı desteği sunulmaktadır."
+0210-a009d6e68e4b,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/lizaydan-yapacaginiz-taki-alisverislerinizde-50ye-varan-indirim,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -66,86 +183,110 @@ Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek �
 - %50 ve %25 indirim kodları, diğer indirimler ile birleştirilemez.
 - Kampanya 01 Aralık 2026 tarihine kadar geçerlidir.
 - Vakıf Katılım Bankası AŞ ve Lizay Kuyumculuk Ticaret AŞ, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0211-872a8d2d7577,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/tasit-finansmani,finansman,Taşıt Finansmanı,,,,48,,,,,,,,Sıfır ve ikinci el binek araç alımlarında 48 aya varan vade; elektrikli ve hibrit araçlarda 2 puan kâr oranı indirimi ve fidan bağışı.,,"Kimlik kartı, gelir belgesi ve araç proforma faturası veya ruhsat fotokopisi gerekmektedir.","Taşıt Finansmanı
-Satın almak istediğiniz sıfır ve ikinci el binek araçlarda ihtiyacınız olan taşıt finansmanı Emlak Katılım’da!
-Tabloda belirtilen tutar ve marjlar ile ihtiyacınız olan araç finansmanına en yakın şubemiz aracılığı ile başvurabilirsiniz.
-Aracın Nihai Fatura Tutarı /Kasko Değeri | Taşıt Değerine Oranı | Vade |
----|---|---|
-0-400,000 TL | %70 | 48 |
-400,001 – 800,000 TL | %50 | 36 |
-800,001 – 1,200,000 TL | %30 | 24 |
-1,200,001 – 2,000,000 TL | %20 | 12 |
-2,500,000 ve üzeri | %0 | 0 |
-Gerekli Belgeler
-- T.C Kimlik Kartı
-- Kişinin çalışma durumuna göre gelir belgesi (Maaş Bordrosu, Hizmet Dökümü vb.)
-- Sıfır Araçlar İçin : Finansmana konu aracın proforma faturası
-- 2.El Araç İçin : Aracın ruhsat fotokopisi
-Çevreci Araç Finansmanı
-Çevreci Araç Finansmanı, doğa dostu olarak kabul edilen, içten yanmalı motorları olan geleneksel araçlara kıyasla düşük karbon emisyon seviyelerine sahip araçların finansmanında kullanılan finansman ürünüdür.
-Müşterilerimiz elektrikli ya da hibrit araçlara yönelik bankamızdan kullanacakları finansmanda, klasik taşıt finansmanı oranlarımızdan 2 puan indirimli olarak finansman kullanabilmektedirler.
-Ayrıca, finansman kullanan müşterilerimiz adına OGEM-VAK aracılığı ile özel fidan bağışı yapılmaktadır.
-Karbon salınımı düşük araçlar için düşük kâr payı oranlarıyla Çevreci Araç Finansmanı sizleri bekliyor! Güncel oranlarımızdan 2 puan düşük oranlarla Emlak Katılım’da!
-Doğa Dostu Finansman Olarak Çevreci Araç Finansmanının Önemi
-Çevreci Araç Finansmanı, yalnızca elektrikli ve hibrit araçların alımına yönelik finansman ürünümüzdür. Klasik taşıt finansmanlarımı kıyasla düşük oran sunarak araç almak isteyen müşterilerimizi çevre dostu seçeneklere yönlendiriyoruz. Bu sayede ‘’Gelecek nesiller için temiz bir Dünya’’ anlayışımızı sürdürmekteyiz.
-Özellikleri:
-- Çevreci Araç Finansmanı, elektrikli ya da hibrit araçların alımlarında kullanılmaktadır.
-- Çevreci Araç Finansmanı kullanan müşterilerimize mevcut tabela oranlarından 2 puan kâr oranı indirimi yapılmaktadır.
-- Çevreci Araç Finansmanı kullanan müşterilerimiz adına OGEM-VAK aracılığı ile özel fidan bağışı yapılmaktadır.
-- Çevreci Araç Finansmanı kapsamında kullandırılacak finansmanın vade ve tutar sınırlamaları BDDK’nın güncel kararları doğrultusunda belirlenmektedir.
-Kullandırım Aşaması:
-- Müşterilerimiz, şubelerimiz aracılığı ile Çevreci Araç Finansmanı başvurusunda bulunabilmektedir.
-- Başvuru için gerekli belgeler temin edildikten sonra bankamızca onay sürecinden geçmektedir.
-- Onay sonrası taşıt finansmanı kapsamında Çevreci Araç Finansmanı kullandırılır. Noter işlemlerinden sonra süreç tamamlanır ve araca Bankamızca rehin konulur.
-Detaylı bilgi ve başvuru için size en yakın şubemizi ziyaret edebilirsiniz.
-Şubelerimiz için tıklayınız."
-0210-1556b5645fe5,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vclub-dunyasi-artik-vakif-katilim-mobilde,diger,VClub Sadakat Programı,,,,,,,,,,,,"Restoran, kafe, giyim, market ve seyahat gibi birçok alanda her ay ayrıcalıklı indirim ve QR ödeme fırsatları.",2026-12-31,Vakıf Katılım Kredi veya Banka kartının aktif olması ve Mobil Şube VClub alanından kod alınması gerekmektedir.,"SİZE ÖZEL ÇÖZÜMLER
-ÜRÜN VE HİZMETLERİMİZ
-SİZE ÖZEL ÇÖZÜMLER
-ÜRÜN VE HİZMETLERİMİZ
-22 Nisan 2026 - 31 Aralık 2026
-VClub, Vakıf Katılım Bankası müşterilerine özel sunulan; restoran ve kafelerden giyim markalarına, market alışverişlerinden kuru temizlemeye, seyahat ve ulaşımdan konser ve etkinliklere kadar birçok alanda, her ay ayrıcalıklı indirimler sağlayan bir sadakat programıdır.
-- Vakıf Katılımlıysanız, Vakıf Katılım Mobil > İşlemler > Kampanyalar > VClub Dünyası adımlarını takip ederek ayrıcalıklara erişebilirsiniz.
-- Vakıf Katılımlı değilseniz, Vakıf Katılım Mobil’i indirerek “Vakıf Katılımlı Ol” adımını takip edebilir ya da en yakın şubemizi ziyaret ederek müşterimiz olabilirsiniz.
-- Restoran QR ödeme ayrıcalıklarından yararlanmak için Vakıf Katılım Kredi Kartınızı ekleyerek seçili restoranlarda QR ile ödemelerinizi avantajla yapabilirsiniz.
-- Seçtiğiniz kampanyadan aldığınız kodu fiziki işlemlerde aldığınız ödeme anında kasa görevlisine ileterek online alışverişlerde ise ilgili alana girerek indirimlerden yararlanabilirsiniz.
-- Vakıf Katılım Mobil > İşlemler > Kampanyalar > VClub Dünyası adımlarını izleyerek “Keşfet” butonuna tıklayınız.
-- VClub ayrıcalıklarından yararlanabilmek için Vakıf Katılım Kredi ya da Banka kartınızın aktif bir şekilde kullanılıyor olması gerekmektedir.
-- Vakıf Katılım Kredi Kartınız ile QR Ödeme Ayrıcalıklarından yararlanmak için kartınızın “İnternet Üzerinde Alışveriş” ayarlarının açık olması gerekmektedir.
-- Vakıf Katılım Kredi Kartınızın internet alışverişlerine açmak için Hesap/Kart > Kartlar > Kredi Kartı > Kart Ayarları > Alışveriş Ayarları adımlarını kullanabilirsiniz.
-- Vakıf Katılım Kredi Kartınız yoksa, başvurunuzu Vakıf Katılım Mobil içerisinde yer alan Hesap/Kart > Kartlar > Kredi Kartı > Kredi Kartı Başvurusu Yap adımlarıyla tamamlayabilirsiniz.
-- Vakıf Katılım Banka Kartınız yoksa, başvurularınızı size en yakın Vakıf Katılım şubemizden yapabilirsiniz.
-- VClub müşteriye özel sadakat programı sunması sebebiyle, her müşteri için sunulan ayrıcalıklar değişiklik gösterebilmektedir. VClub kapsamında yararlanabileceğiniz indirim oranları; uygulamada yer alan kayıtlı süpermarket, seyahat, giyim, teknoloji markaları, kafe ve restoranlarda değişiklik gösterebilmektedir.
-- VClub kapsamında bankamıza iletilen kredi kartı talepleri bankamız kredi ve tahsis politikaları çerçevesinde; müşterinin aylık gelir bilgileri, kredi skoru gibi kriterler göz önünde bulundurularak müşteri özelinde değerlendirilecektir. Bankamız uygun görmediği başvuruları reddetme, kampanya koşullarını değiştirme, gerekli görmesi hâlinde ek bilgi ve belge talebinde bulunma ve kampanyayı durdurma hakkını saklı tutar.
-- VClub, Vakıf Katılım ile GastroClub iş birliğiyle oluşturulmuş bir sadakat programıdır. Vakıf Katılım ve GastroClub, kampanyayı dilediği zaman durdurma ve/veya kampanya koşullarını değiştirme yetkisine sahiptir."
-0211-6c7bd2bc7373,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/isyeri-finansmani,finansman,İşyeri Finansmanı,,,,60,,,,,,,,"Büro, dükkan, mağaza ve depo alımları için 60 aya kadar vade ve esnek taksit seçenekleri.",,"Başvuru formu, kimlik belgesi, gelir belgesi ve alınacak işyerine ait tapu fotokopisi gerekmektedir.","İşyeri Finansmanı
-×
-Satın almak istediğiniz büro, dükkan, mağaza, depo gibi gayrimenkuller için finansal ihtiyaçlarınızı “Emlak Katılım İşyeri Finansmanı” ile karşılayabilirsiniz.
-- Finansman geri ödemeleriniz için 60 aya kadar vade imkanı sunulmaktadır.
-- Finansman geri ödemelerinizi her ay eşit taksitler halinde yapabileceğiniz gibi, farklı vade aralıklarında ve değişken taksit tutarları ile esnek vadelerde de yapabilirsiniz.
-- Gerekli görülmesi halinde finansman talebiniz için ek teminat istenebilir.
-Gerekli Belgeler
-- Başvuru formu
-- Nüfus cüzdanı, sürücü belgesi veya pasaport fotokopisi
-- Kişinin çalışma durumuna göre gelir belgesi
-- Şubece istenebilecek diğer belgeler
-- Alınacak işyerine ait tapu fotokopisi
-- Gerekirse azami iki ay öncesine ait müşteri adına kayıtlı sabit telefon, elektrik, su veya doğalgaz faturalarından herhangi birinin fotokopisi
-- Gerekli görülmesi hâlinde kefil ve kefile ilişkin belgeler"
-0205-6ffd7be261ce,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar,diger,Sürdürülebilir Finansmanlar,,,,48,,,,,,,,"Yeşil konut, TOGG, sürdürülebilir araç, elektrikli şarj ünitesi ve Çatı GES alımlarında 48 aya varan finansman imkanı.",,,"Yeşil Konut Finansmanı
-Kuveyt Türk Yeşil Konut Finansmanı ile çevre dostu ve enerji verimli bir yuvaya gönül rahatlığıyla sahip olun!
-Sürdürülebilir Araç Finansmanı
-Sürdürülebilir Araç Finansmanı ile çevre dostu ve enerji verimli araçlara, 48 aya varan vade seçeneklerinden faydalanarak sahip olun!
-TOGG Finansmanı
-Ülkemizin yerli ve milli otomobili TOGG’a, Kuveyt Türk desteğiyle hemen sahip olabilirsiniz!
-Elektrikli Araç Şarj Ünitesi Finansmanı
-Sürdürülebilir Yaşam, Sürdürülebilir Gelecek!
-Bisiklet Finansmanı
-Sürdürülebilir yaşam, sürdürülebilir gelecek!
-Çatı GES Finansmanı
-Çatı GES Finansmanı ile doğa dostu enerji çözümlerini kullanmanın avantajlarından faydalanın!"
-0209-d07dc61fca38,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/kampanyalar,diger,Aile Destek Paketi ve Kart Kampanyaları,,,,,,,,,,,,"Bankkart kredi kartı alışveriş avantajları ve ailelerin finansal ihtiyaçlarına yönelik finansman, fon ve sigorta desteği.",,,"Kart Kampanyaları Ziraat Katılım Bankkart Kredi Kartı İle Alışverişlerde Daha Fazlası Detaylı Bilgi Aile Destek Paketi Aile bireylerinin finansal ihtiyaçlarına çözüm sağlamak amacıyla Aile Destek Paketi oluşturulmuş olup Finansman, Fon ve Sigorta ürünlerinin yer aldığı geniş ürün yelpazesiyle ailelerin desteklenmesi hedeflenmektedir. Detaylı Bilgi"
-0211-c8d3cbb226ad,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel,diger,Bireysel Hesaplar ve Katılma Hesapları,,,,,,,,,,,,"Cari hesaplar, katılma hesapları, altın/gümüş hesapları ve devlet katkılı konut/çeyiz hesapları seçenekleri.",,,"Hesaplar
+0209-181fcb40fc04,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/finansman-urunleri/konut-gayrimenkul-finansmani,,,,,,,,,"Yalnızca ticari faaliyeti olmayan gerçek kişilere (kamu ve özel sektör çalışanları, emekliler vb.) hazır/bitmiş işyeri (ofis, büro, dükkân, muayenehane vb. nitelikteki işyerleri) alımının finansmanına yönelik olarak kullandırılan taksitli bireysel finansman ürünüdür."
+0212-edcd2aaa0445,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-dijital-uyelikler-kampanyasi,,,,,,,,,"Biz Kart ile Dijital Üyeliklerde %75 Nakit İade Fırsatı!
+Kampanya Dönemi: 16 Haziran - 31 Ağustos 2026
+Kampanya Koşulları
+Hayat Finans Mobil Uygulaması > Tüm işlemler > Kartlar > Biz Kart Başvurusu
+Kampanya Koşulları
+- Kampanya Hayat Finans bireysel müşterileri için geçerlidir.
+- Kampanyadan yararlanabilmek için Hayat Finans banka kartına sahip olmanız ve yakınınıza en az 1 adet Biz Kart tanımlamış olmanız gerekmektedir.
+Hayat Finans Mobil Uygulaması > Tüm işlemler > Kartlar > Biz Kart Başvurusu
+- Kampanyadan yararlanabilmek için Hayat Finans Banka Kartınızın “yurt dışı işlemleri ve şifresiz internet alışverişine”açık olması gerekmektedir.
+- Yakınlarınıza tanımladığınız Biz Kart’lar ile ödeme yapılmasını isterseniz “yurt dışı işlemleri ve şifresiz internet alışverişine”açık olması gerekmektedir.
+- Kart ayarlarınızı güncellemek veya kontrol etmek için: Tüm işlemler > Kartlar > Tüm Kartlarım > İlgili Kart Seçimi > Ayarlar menüsünden kart ayarlarınızı görüntüleyebilir ve güncelleyebilirsiniz.
+- Yakınlarınıza tanımladığınız Biz Kart’lar için kart ayarlarını güncellemek veya kontrol etmek için: Tüm işlemler > Kartlar > Tüm Kartlarım > İlgili Biz Kart seçimi > Ayarlar > Kart Yetkileri menüsünden ayarlarınızı görüntüleyebilir ve güncelleyebilirsiniz.
+- Kampanya kapsamındaki dijital platformlar:
+✔ Netflix
+✔ Chatgpt Open Ai
+✔ HBO Max
+✔ YouTube Premium
+✔ tabii
+✔ TOD
+- Kampanya kapsamında yapılan dijital üyelik ödemelerinin toplamının %75’i oranında nakit ödül kazanılacaktır.
+- Hayat Finans banka kartınız veya yakınlarınıza verdiğiniz Biz Kart’lar üzerinden yapılacak dijital üyelik ödemeleri kampanya kapsamındadır, her iki karttan yapılacak dijital üyelik ödemeleri kapsamınca kazanılabilecek maksimum nakit ödül tutarı toplamda 300 TL’dir.
+- Harcamalar yalnızca ilgili platformların resmî web sitesi veya mobil uygulamaları üzerinden Hayat Finans banka veya yakınınıza tanımladınız Biz Kart’lar ile yapılmalıdır.
+- App Store, Google Play Store , App Gallery veya benzeri uygulama mağazaları üzerinden yapılan ödemeler kampanya kapsamında değildir.
+- Kazanılan nakit ödüller ilgili ayın kapanışını takip eden 1 iş günü içerisinde Hayat Finans cari hesabınıza (asıl kart sahibinin) aktarılacaktır. Örnek Ağustos ayında harcama yapıldı ise nakit ödüller Eylül ayının ilk iş günü içinde yüklenir.
+- Nakit ödülün yatırabilmesi için harcama yapılan kartın/kartların açık olması gerekmektedir.
+- Ödeme iptal veya iade işlemleri kampanya kapsamında değerlendirilmeyecektir.
+- Bu kampanya Hayat Finans’ın diğer kampanyaları ile birleştirilemez.
+- Dijital platformlardaki üyelik koşulları ve fiyatlamalar, ilgili firmaların sorumluluğundadır.
+- Hayat Finans, kampanya süresince bu koşullardaki değişikliklerden sorumlu değildir.
+- Tespit edilen usulsüzlük hâlinde, kazanımlar iptal edilir ve/veya geri alınabilir.
+- Yasal/idari takibi olan veya hakkında haciz süreci başlatılan müşteriler kampanyadan yararlanamaz.
+- Hayat Finans, kampanya koşullarını değiştirme veya kampanyayı sonlandırma hakkını saklı tutar."
+0203-15db77051556,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac,,,,,,,,,"Albaraka Türk İhtiyaç Finansmanı ile hiçbir ihtiyacınızı ertelemeyin! İster yeni bir eşya ister tatile çıkmak olsun, uygun kar oranları ve esnek ödeme planlarıyla ihtiyacınız kadarını alın, ödemeleri rahat rahat yapın. Fiziki şubeler, mobil uygulama ve internet şube üzerinden kolaylıkla tüm işlemlerinizi yerine getirin!
+Faizsiz bankacılık prensiplerine uygun tüketici finansmanı desteği tam size göre. 125.000 TL'ye kadar olan finansmanlarda 36 aya kadar, 125.000 – 250.000 TL ye kadar olan finansmanlarda 24 aya kadar, 250.000 TL ve üzerindeki finansmanlar ise 12 aya kadar vade seçeneklerinden faydalanabilirsiniz.
+Temel ihtiyaç finansmanı ile eşya alımlarından sağlık giderlerine, tatil planlarından teknolojik aletlere kadar birçok alanda uygun vade seçenekleri ile ihtiyacınızı karşılayın.
+Finansman Tutarı |
+Maksimum Vade Seçeneği |
+125.000 TL'ye kadar |
+36 |
+125.000 - 250.000 TL arası |
+24 |
+250.000 TL üzeri |
+12 |
+Albaraka Türk faizsiz kâr paylı ihtiyaç finansmanı başvurusunu Albaraka Mobil uygulamamız ve Bireysel İnternet Şube üzerinden yapabilir veya aynı zamanda size en yakın Albaraka Türk şubelerini ziyaret edebilirsiniz.
+Başvuru Kanalları;
+- İhtiyaç Finansmanı / Jet Finansman Başvuru Formu üzerinden
+- Albaraka Mobil Uygulaması > İşlemler > Finansman İşlemleri > Finansman Başvuru üzerinden
+- Albaraka İnternet Şube > Kişisel Menüm > Finansman > Pratik Finansman Kart > Başvur
+- Şubelerimizden
+%
+Oranı kendim gireceğim.
+Aylık Taksit Tutarı
+11.349,76 TL
+Geri Ödenecek Toplam Tutar
+261.044,84 TL
+Yıllık Maliyet Oranı
+% 84,93
+Ücretler Toplamı
+750,00
+Başvuru Tipi |
+Gerekli Belgeler |
+Gerçek Kişi |
+Satın alınacak malın proforma faturası, kimlik kartı ve gelir belgesi. Ücretli çalışansanız maaş bordronuz veya işyeri tarafından onaylanmış maaş belgesi gerekmektedir. |
+Serbest Meslek Sahibi |
+Vergi levhası, onaylı bilanço ve gelir tablosu, cari yıl mizanı, faaliyet belgesi, varsa tapu fotokopileri, kira kontratları, gelir belgeleri ve noter onaylı imza beyannamesi. Gerektiğinde kefil belgeleri de talep edilebilir. |
+Tüzel Kişi |
+Satın alınacak malın proforma faturası, ortakların kimlik kartları, noter onaylı firma imza sirküleri, Ticaret Sicil Gazetesi örneği, Ticaret Odası kayıt belgesi, faaliyet belgesi, son 3 yıla ait bilanço ve gelir tabloları, son 3 yılda düzenlenmiş vergi levhası fotokopisi. Gerekirse kefil belgeleri de talep edilir. |
+- Albaraka Mobil’den yükleyeceğiniz fatura, nihai fatura olmalıdır.
+- Başvuru sırasında, banka politikaları gereği belirli durumlarda gelir belgenizi yüklemeniz gerekmektedir."
+0206-7965278e4024,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/yedek-hesap.aspx,,,,,,,,,"Yedek Hesap
+Yedek Hesap Nedir?
+Yedek Hesap; acil ihtiyaçlarınızı finanse edebilmeniz için hesabınızda yeterli tutar olmaması durumunda kullanılabileceğiniz Karz-ı Hasen'li Cari Hesap ürünüdür. Limitiniz dahilinde; fatura, kredi kartı ve finansman taksit ödemelerinizi yapmanızı, yurt içi tüm ATM’lerden nakit desteği almanızı, EFT/Havale ve FAST işlemlerinizi gerçekleştirmenizi, POS üzerinden işlem yapmanızı sağlar.
+Yedek Hesap Nasıl Çalışır?
+- Yedek Hesabınızı dilediğiniz zaman açabilir, dilediğiniz zaman limitiniz dahilinde kullanabilirsiniz.
+- Yedek Hesabınızı kullanmadığınız durumlarda kâr payı işlemez.
+- Yedek Hesabınızdan kullanım yaptığınız andan itibaren son ödeme tarihine kadar kullandırım tutarına akdi kâr payı oranı işler. Bu oran TCMB tarafından ilan edilen nakit çekim oranını geçemez. Karz akdi kapsamında müşteriye yansıtılan kar payının, Türkiye İstatistik Kurumunca ilan edilen on iki aylık ortalamalara göre açıklanan enflasyon farkından fazla olması durumunda, aşan tutarın iadesi müşteri hesabına otomatik yapılır.
+- 2.500 TL’ye kadar kullanılan yedek hesap limitine kâr payı işletilmez.
+- Son ödeme tarihine kadar belirlenen asgari tutar ödemesi yapılmadığı takdirde gecikme kâr payı işlemeye başlar. Kalan bakiyeye akdi kâr payı işlemeye devam eder.
+Yedek Hesap Borcumu Nasıl Takip Edebilirim?
+Yedek Hesabınızın limit ve borç bilgilerini Türkiye Finans Mobil ve İnternet Şube üzerinden rahatlıkla takip edebilirsiniz.
+Yedek Hesap Borcumu Nasıl Öderim?
+Yedek Hesap borcunuzun tutarı, yeterli bakiye olması durumunda vadesi geldiğinde Cari Hesabınızdan otomatik olarak tahsil edilir.
+Yedek Hesap’ın Avantajları
+- Yedek Hesap bir Karz-ı Hasen limitidir
+- Limitiniz dahilinde fatura ödemelerinizi yapabilirsiniz.
+- Yurt içi tüm ATM’lerden nakit desteği alabilirsiniz.
+- EFT/Havale/FAST işlemlerinizi yapabilirsiniz.
+- Kredi kartı taksit ödemelerinizi gerçekleştirebilirsiniz.
+- Kredi taksit ödemelerinizi Yedek Hesabınızdan yapabilirsiniz.
+- Yedek Hesabınızı kullanarak POS üzerinden işlem yapabilirsiniz.
+- Vade kısıtı yoktur.
+Yedek Hesap Başvurusu Nasıl Yapılır?
+- Yedek Hesap başvurunuzu size en yakın Türkiye Finans Şubesi’nden yapabilirsiniz ya da Mobil Bankacılık ve İnternet Bankacılığı kanalları ile başvuruda bulunabilirsiniz.
+- Türkiye Finans Mobil ve İnternet Şubesi üzerinden başvuru yapmak için “Yedek Hesap Başvuru” adımına tıklamanız ve talep ettiğiniz tutarı yazmanız yeterlidir. Ayrıca başvurunuzu yine bu kanallar üzerinden takip edebilirsiniz.
+Yedek Hesap Başvuru ve Kullanım Koşulları
+- Banka, Yedek Hesap başvurularını serbestçe değerlendirme, kefil ve ek belge isteme, uygun görmediği başvuruları onaylamama hakkına sahiptir.
+NOT: Karz-ı Hasen Akdi, müşterilerin faizsiz bankacılık ilke ve standartlarına uygun ihtiyaçları için tüketim ödüncü yöntemiyle fon kullanımıdır. Banka, tüketim ödüncünün verildiği tarihten ödeme gününe kadar geçen süre zarfında gerçekleşen “enflasyon farkını” talep edilebilir. Enflasyon farkı tahsilatı reel bir getiri ya da banka kârı değil paranın alım gücünün korunması işlemidir."
+0203-d7b3a1e8609d,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar,,,,,,,,,"Hayalinizdeki eve kira öder gibi sahip olun!
+Uzun vade ve size özel ödeme seçenekleri ile Albaraka Türk Konut Finansmanı tam size göre!
+Albaraka Türk’ten ihtiyaçlarınızı alışveriş anında karşılayan finansman fırsatı. Alışverişlerinizde Bayide Finansman’ı tercih edin, 36 aya varan vadelerle ödeyin. Üstelik elektronikten ev tekstiline kadar birçok sektörde geçerli.
+İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
+Findeks Kredi Notu ve Risk Raporu ile finansal geçmişimizi hızla öğrenip kredi değerlendirmenizi yapabilirsiniz. Bu sayede gelecekteki finansal kararlarınızı güvenli şekilde planlayabilirsiniz."
+0211-c8d3cbb226ad,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel,,,,,,,,,"Hesaplar
 Cari Hesaplar
 Bireysel müşterilerimize sunduğumuz cari hesap türlerimize bu sayfadan ulaşabilir, detaylı bilgi alabilirsiniz.
 Cari Hesaplar
@@ -192,128 +333,29 @@ Yuvam Katılma hesabı, yurt dışındaki yerleşik kişilerin tasarruflarını 
 Çeyiz hesabı ile 3 yıl düzenli birikim yaparak hem Emlak Katılım’ın 95/5 kâr payı hem de %25’e kadar devlet desteğiyle hayallerinize birikim fırsatı sağlayın.
 Konut Hesabı
 Birikimlerinizi Emlak Katılım Konut Hesabı’nda değerlendirin, birikim sürenize ve tutarınıza göre %20’ye varan devlet katkısı ile ilk evinizin sahibi olun."
-0212-e62736ec77eb,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari,diger,Bana Bunu Al Troy Mağaza Fırsatı,,,80000,,3,,,,,,,Hayat Finanslılara özel Troy mağazalarında Bana Bunu Al ile 80.000 TL'ye kadar 3 aya varan taksitli finansman fırsatı.,2026-08-31,Kampanya üst limiti 80.000 TL olup sadece Troy fiziksel mağazalarında geçerlidir.,"Bana Bunu Al İş Ortağım ile Troy Mağazalarında Finansman Fırsatı!
-Hayat Finanslılara özel Troy mağazalarında 3 aya varan taksit fırsatı Bana Bunu Al İş Ortağımda!
-Kampanya Koşulları
-- Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir.
-- Kampanya sadece fiziksel mağazalarda geçerlidir.
-- Kampanya üst limiti 80.000TL'dir.
-- Satın alınan ürünün sipariş, teslimat, iptal ve iade işlemlerinde yaşanabilecek sorunlardan Hayat Finans sorumlu değildir.
-- Banka uygun görmediği kredi başvurularını serbestçe değerlendirme, kefil ve ek belge isteme, uygun görmediği kredi başvurularını onaylamama hakkına sahiptir.
-- Hayat Finans kampanyayı dilediği zaman durdurma ve/veya kampanya koşullarını değiştirme yetkisine sahiptir."
-0205-51a65757c195,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari,diger,Alışveriş Finansmanı,,,,36,,,,,,,,Anlaşmalı mağaza ve e-ticaret platformlarında şubeye gitmeden kasada 36 aya varan taksitli alışveriş finansmanı.,,,"CebimPOS ile Alışveriş Finansmanı
-Alışveriş keyfinizi yetersiz limit bölmesin! Alışveriş Finansmanı ile kasada yüksek limit ve 36 aya varan taksit fırsatı sizi bekliyor!
-Taksitlio Alışveriş Finansmanı
-Taksitlio.com’un anlaşmalı olduğu mağazalarda kasada yüksek limit ve 36 aya varan taksit fırsatı sizi bekliyor!
-Hepsiburada Alışveriş Finansmanı
-Hepsiburada’dan yapacağınız alışverişlerde Hepsiburada Alışveriş Finansmanı sizinle!
-Trendyol Alışveriş Finansmanı
-Trendyol’dan oluşturduğunuz sepetinizi şubeye gitmeye gerek kalmadan Kuveyt Türk Alışveriş Finansmanı ile ödeyebilirsiniz.
-LC Waikiki Alışveriş Finansmanı
-LC Waikiki alışveriş uygulamasından ve web sitesinden yapacağınız alışverişlerde LC Waikiki Alışveriş Finansmanı sizinle!
-Teknosa Alışveriş Finansmanı
-Teknosa’dan yapacağınız alışverişlerde Teknosa Alışveriş Finansmanı sizinle!
-Alışveriş Finansmanı
-İlave bütçe ihtiyacınızı karşılamak için alışverişinizi yarıda kesmeyin. Hemen Yerinde Finansman'dan yararlanın!"
-0211-05bd14ec12f4,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar,diger,Kart Kampanyaları,,,,12,,,,,,40,,"Emlak Katılım Paraf kart ile seyahat, giyim, teknoloji ve market harcamalarında ParafPara, %40'a varan indirim ve 12 aya varan taksit fırsatları.",,,"Kampanyalar
-Marina Mayo’da Tüm Ürünlerde %15 İndirim!
-Modanisa’da Tüm İndirimlere Ek %15 İndirim Fırsatı!
-Enterprise Araç Kiralamalarında %35 İndirim Fırsatı!
-RentGo'da %40 İndirim Fırsatı!
-Hızlı Çiçek’te Tüm İndirimlere Ek %20 İndirim Fırsatı!
-Uçak Bileti Harcamalarınıza 2.000 TL ParafPara!
-Seyahat Alışverişlerinize 3.500 TL'ye varan ParafPara!
-Akaryakıt Harcamalarınıza 400 TL ParafPara!
-Elektrikli Araç Şarj İstasyonu Harcamalarınıza 200 TL ParafPara!
-Beyaz Eşya ve Elektronik Alışverişlerinize 5.000 TL'ye varan ParafPara!
-Mobilya, Dekorasyon ve Yapı Marketi Alışverişinize 1.250 TL'ye Varan ParafPara!
-Market Alışverişlerinize 800 TL ParafPara Hediye!
-Market Alışverişlerinize 2.000 TL ParafPara Hediye!
-Giyim ve Kozmetik Alışverişlerinize 2.500 TL ParafPara!
-Paraf ile Seçili E-Ticaret Alışverişlerinize 2.000 TL'ye varan ParafPara!
-Paraf ile Seçili E-Ticaret Alışverişlerinize 1.500 TL'ye varan ParafPara!
-Pazarama’da Ayın İlk Haftası TROY Haftası!
-TROY ile idefix’te 3.000 TL İndirim Fırsatı!
-Troy Apple’da vade farksız 5 aya varan taksit
-Paraf'a Özel Yolcu360'ta Yurt İçi Araç Kiralamalarına Net %10 İndirim, Üstelik Peşin Fiyatına 3 Taksit
-Emlak Katılım Debit Kart ile İlk Harcamanızın Yarısı Nakit İade!
-Metatechtr’de Peşin Fiyatına 9 aya varan taksit ve 6.000 TL’ye varan ParafPara!
-Paraf ile Damat Tween’de 2.000 TL ParafPara!
-Paraf ile DS Damat’ta 1.000 TL ParafPara!
-Paraf ile ADV mağazalarında 1.000 TL ParafPara
-Paraf ile Trendyol'da Peşin Fiyatına 9 Taksit Fırsatı!
-Paraf ile n11'de Peşin Fiyatına 3 Aya Varan Taksit Fırsatı!
-Paraf ile Hepsiburada’da Peşin Fiyatına 6 Aya Varan Taksit Fırsatı!
-Paraf ile A101’de Vade Farksız 6 Aya Varan Taksit Fırsatı!
-Paraf ile Zsa Zsa Zsu Mağazalarında Peşin Fiyatına 6 Taksit!
-Paraf ile İncehesap.com'da Peşin Fiyatına 3 Taksit Fırsatı!
-Paraf ile Koçtaş’ta 5 Taksit!
-Paraf ile Pazarama’da Peşin Fiyatına 6 Taksit!
-Paraf ile Ramsey’de 5 Taksit Fırsatı!
-Paraf ile Network’te 4 Taksit Fırsatı!
-Paraf ile Nocturne’de 4 Taksit!
-Paraf ile Divarese’de 4 Taksit Fırsatı!
-Paraf ile İpekyol’da 4 Taksit Fırsatı!
-Paraf ile Twist’te 4 Taksit!
-Paraf ile D’S Damat’ta 6 Aya Varan Taksit Fırsatı!
-Paraf ile Damat Tween’de 6 Aya Varan Taksit Fırsatı!
-Paraf ile Kip’te 5 Taksit!
-Paraf ile Yargıcı Mağazalarında 4 Taksit Fırsatı!
-Paraf ile ADV Mağazalarında 6 Taksit!
-Paraf ile Yataş’ta 8 Taksit Fırsatı!
-Paraf ile Vivense’de 5 Taksit Fırsatı!
-Paraf ile İder Mobilya’da 7 Taksite %15 İndirim Fırsatı!
-Paraf ile Alfemo’da 8 Taksit Fırsatı!
-Paraf ile Dyson’da 9 Aya Varan Taksit!
-Paraf ile Gürgençler’de Vade Farksız 9 Taksit Fırsatı!
-Paraf ile Monster Notebook’ta Peşin Fiyatına 12 Aya Varan Taksit Fırsatı!
-Paraf ile Casper.com.tr'de Peşin Fiyatına 6 Taksit Fırsatı!
-Paraf ile Vatan’da Peşin Fiyatına 6 Aya Varan Taksit Fırsatı!
-Paraf ile Vestel’de 9 Aya Varan Taksit Fırsatı!
-Paraf ile Evidea’da 4 Taksit Fırsatı!
-Paraf ile Yenilio’da 12 Aya Varan Taksit Fırsatı!
-Paraf ile Vaillant’ta 9 Aya Varan Taksit!
-Paraf ile DemirDöküm'de 9 Taksit Fırsatı!
-Paraf ile ITOPYA.COM'da Vade Farksız 6 Taksit!
-Paraf ile Schafer’de Peşin Fiyatına 9 Taksit!
-Paraf ile Porland’da Peşin Fiyatına 3 Taksit!
-Paraf ile Copa’da 12 Aya Varan Taksit!
-Paraf ile Touristica.com.tr’de Peşin Fiyatına 9 Taksit!
-Emekli Müşterilerimize Özel Ayrıcalıklar
-×"
-0212-f618de03d508,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-yemek-harcamasi-nakit-iade-kampanyasi,diger,Biz Kart Yemek Harcaması Nakit İade,,,,,,,,,,10,,"Biz Kart ile yemek ve restoran harcamalarında %10, günlük 100 TL, aylık toplam 1.000 TL nakit iade.",2026-08-31,Biz Kart ayarlarından Lokanta/Restoran ve Gıda sektörlerinin aktif olması ve harcamanın Biz Kart veya QR ile yapılması gerekmektedir.,"Biz Kart ile Yemek Harcamalarına 1.000 TL’ye Varan Nakit İade!
-Yakınlarınıza verdiğiniz Biz Kart ile yemek sektöründe yapılan harcamaların %10’una kadar nakit iade kazanın. Kampanya kapsamında günlük en fazla 100 TL, aylık toplamda ise 1.000 TL’ye kadar nakit iade alabilirsiniz.
-Kampanya Dönemi: 6 Şubat - 31 Ağustos 2026
-Kampanya Dönemi: 6 Şubat - 31 Ağustos 2026
-Yakınlarınız için Biz Kart Başvurusunu Nasıl Yapabilirsiniz?
-Mobil Uygulama Tüm İşlemler> Kartlar> Biz Kart Başvurusu adımlarını takip ederek başvurunuzu hızlıca tamamlayabilirsiniz.
-- Bu kampanya Hayat Finans bireysel müşterileri için geçerlidir.
-- Kampanya Tüm işlemler > Kartlar > Tüm Kartlarım > “Biz Kart” alanındaki yakınlarınıza verdiğiniz kartlar için geçerlidir.
-- Biz Kart ile yemek sektöründe yapılan harcamaların %10’u, günlük en fazla 100 TL, aylık en fazla 1.000 TL’ye kadar nakit iade hakkı kazanılabilir.
-- Kampanya Mevcut veya Yeni müşterilerimiz içerisinde Biz Kart sahibi olan müşterilerimiz için geçerlidir.
-- Sadece Hayat Finans Biz Kart veya Biz Kart QR ile yapılan harcamalar kampanyaya dahildir.
-- Kampanya bankanın kampanya için belirlediği Yemek sektöründeki iş yerlerinde yapılacak harcamaları kapsamaktadır.
-- Kampanya sektörü için Biz Kart > Ayarlar > Geçerli Sektörler alanındaki “Lokanta/Restoran” ve “Gıda” sektörü aktifleştirilmelidir.
-- Kampanya kapsamında hak edilen nakit iadeler 1 iş günü içerisinde Biz Kart'ın bağlı olduğu cari hesaba aktarılacaktır.
-- Kampanya kazanımındaki nakit iadelerden faydalanmak istemeyen müşterilerimiz 444 4 988 Müşteri İletişim Merkezi’mizi arayarak talebini iletmelidir.
-- Kampanya kart sahibi bazındadır. Nakit iade hakedişleri hesaplanırken Biz Kart sahibinin Fiziki ve Dijital kartlarının toplam harcama tutarları dikkate alınır.
-- İptal, iade işlemleri kampanya kapsamında değerlendirilmeyecektir.
-- Kampanya sadece yurtiçinde yapılan işlemler için geçerlidir.
-- Bu kampanya Hayat Finans’ın diğer kampanyaları ile birleştirilemez.
-- Kampanya süresince müşteri ilişiğini sonlandırıp yeniden müşteri olan bireyler kampanyadan yararlanamaz.
-- Hayat Finans kampanya koşullarında değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
-- Hayat Finans tarafından tespit edilen usulsüzlük durumlarında kazanılan ödül iptali ve/veya geri alma hakkı saklıdır.
-- Hayat Finansta yasal/idari takipte bulunan veya haciz süreci başlatılmış müşteriler kampanyadan yararlanamaz."
-0210-bda0f693a1df,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/arzumda-15-indirim,diger,Arzum İndirim Kampanyası,,,,15,,,,,,,,Vakıf Katılım müşterilerine arzum.com.tr'de yapacakları alışverişlerde %15 indirim.,2026-12-31,"Mobil Şube'den indirim kodu alınmalı, sepette en fazla 2 ürün için geçerlidir.","SİZE ÖZEL ÇÖZÜMLER
-ÜRÜN VE HİZMETLERİMİZ
-SİZE ÖZEL ÇÖZÜMLER
-ÜRÜN VE HİZMETLERİMİZ
-13 Mart 2026 - 31 Aralık 2026
-Vakıf Katılım müşterileri, Arzum'da yapacakları alışverişlerde %15 indirimden yararlanıyor!
-Mobil Şube “Kampanyalar” alanından Arzum kampanyasını görüntüleyebilir, “İndirim Kodu Oluştur” butonuna tıklayıp size özel indirim kodunuzu alarak www.arzum.com.tr adresinden yapacağınız alışverişlerde kullanabilirsiniz.
-Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek “Vakıf Katılımlı Ol” adımından ya da en yakın şubeye giderek müşteri olabilirsiniz.
-- Kampanya kodları sadece www.arzum.com.tr adresinde geçerlidir.
-- Kodlar, sepette en fazla 2 ürün için kullanılabilir.
-- Kampanyadan faydalanabilmek için www.arzum.com.tr web sitesine üye girişi yapılması gerekmektedir.
-- Farklı kampanyalarla birleştirilemez.
-- Vakıf Katılım Bankası AŞ ve Arzum, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
+0214-22a9e31406ec,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/lc-waikiki,,,,,,,,,"ÇEREZ KULLANIMINA İLİŞKİN AYDINLATMA METNİ
+1. Giriş Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu’nun (“Kanun”) 10’uncu maddesi, Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ (“Tebliğ”) ve Çerez Uygulamaları Hakkında Rehber (“Rehber”) kapsamında veri sorumlusu sıfatıyla Dünya Katılım Bankası A.Ş. tarafından hazırlanmıştır. Bu Çerez Aydınlatma Metni, internet sitemiz ziyaret edildiğinde kullanılan çerezler aracılığıyla toplanan kişisel verilerin işlenmesi, çerezlerin hangi amaçlarla ve hangi tür çerezlerin kullanıldığı konusunda bilgi sağlamanması, bu çerezleri nasıl yönetebileceğiniz hakkında rehberlik edilmesi amacıyla hazırlanmıştır. 2. Çerez Nedir ve Neden Kullanılmaktadır? Çerezler, bir internet sitesini ziyaret ettiğinizde bilgisayarınıza veya diğer internet bağlantılı cihazlara (örneğin, akıllı telefonlar veya tabletler) yerleştirilebilen dosyalar veya bilgi parçalarıdır. Başka bir deyişle, çerezler internet siteleri veya mobil uygulamalar gibi çevrim içi platformları kullanırken, cihazınıza yerleştirilen küçük metin dosyalarıdır. Çerezler, kullanıcılara kişiselleştirilmiş içerik sunmanın yanı sıra, internet sitesinin daha verimli ve etkin bir şekilde çalışmasını sağlamaktadır. Sizlere daha iyi bir ziyaret deneyimi sunmak için kullanıcının kişisel tercihlerine ve ihtiyaçlarına uygun içerikleri sunmaktadır. Önemli bir nokta olarak, çerezler sadece internet geçmişinizle ilgili bilgiler içermekte ve cihazınızda depolanan dosyalara erişim sağlayamamaktadır. Ayrıca, çerezler hizmetlerimizi sizin ilgi ve ihtiyaçlarınıza uygun hale getirmek için kullanılabilmektedir. Bu sayede, gelecekte internet sitelerimizi ziyaret ettiğinizde daha hızlı ve kişiselleştirilmiş deneyimler yaşamanız sağlanmaktadır. 3. Çerez Türleri Nelerdir? Taraflarına göre çerezler: Birinci Taraf Çerezleri: Kullanıcılarca oluşturularak internet sitesine konulan ve banka kontrolünde olan çerezlerdir. Üçüncü Taraf Çerezleri: İşbirliği yaptığımız üçüncü taraf firmalar tarafından oluşturulan ve yönetilen çerezlerdir. Saklama süresine göre çerezler: Oturum Çerezleri: Kullanıcıların sadece tarayıcıları açıkken mevcut olan ve tarayıcı kapanınca silinen çerez tipidir. Kalıcı Çerezler: Kullanıcıların tarayıcısı kapandıktan sonra belirli bir sona erme tarihine kadar kalıcı olan çerez türüdür. Yeniden web sitesi ziyaret edildiğinde bu çerezler aktif olur ve aynı bilgisayardan yapılan ziyareti tespit edebilmek amacıyla kullanılmaktadır. Kullanım amaçlarına göre çerezler a.Zorunlu Çerezler Bu çerezler internet sitesinin doğru ve etkin çalışmasını sağlamak amaçlarıyla kesinlikle gerekli olan çerezlerdir. Bu çerezler kaldırılırsa veya engellenirse internet sitesi kısmen veya tamamen belli işlevlerini yitirebilmektedir. b.İşlevsel Çerezler Web sitesinde kullanılan kişiselleştirme ve tercihlerin hatırlanması amaçları ile kullanılan çerezlerdir. Bu çerezler zorunlu çerezler dışında kalan işlevsellikleri sağlama amacıyla kullanılmaktadır. c.Performans - Analitik Çerezler İnternet sitelerinde kullanıcıların davranışlarını analiz etmek amacıyla istatistiki ölçümüne imkân veren çerezlerdir. Bu çerezler, sitenin iyileştirilmesi için sıklıkla kullanılmakta olup bu duruma reklamların ilgili kişiler üzerindeki etkisinin ölçümü de dâhildir. İnternet sitesi sahipleri tarafından, ziyarete yönelik ölçüm yapmak, analiz etmek ve tahminde bulunmak ile bir internet sayfasına götüren en önemli arama motoru anahtar kelimelerini tespit etmek için kullanılabilmektedir. d.Reklam / Pazarlama Çerezleri Reklam ve pazarlama amaçlı çerezler ile internet ortamında kullanıcıların çevrim içi hareketleri takip edilerek kişisel ilgi alanları saptanıp bu ilgi alanlarına yönelik internet ortamında kullanıcılara reklam gösterilmesi her durumda aynı reklamların sürekli tekrarlanmasının engellemesi, reklamların düzgün bir şekilde gösterilmesi sağlanabilmektedir. Bu çerezlerin kullanılmasındaki amaç kullanıcıya geliştirilmiş ve kişisel bir deneyim sunulabilmesidir. 4.Sitemizde Kullanılan Çerez Türleri Aşağıda İnternet Sitesinde kullandığımız farklı türdeki çerezlere yer verilmiştir. Zorunlu Çerezler Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi CultureInfo Banka Ziyaretçilerin internet site sayfalarını hangi dil kullandığını gösterir. Oturum süresince .AspNetCore.Session Banka Ziyaretçilere atanmış benzersiz bir kimlik numarasını gösterir Oturum süresince Performans ve Analitik Çerezleri Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi _ga_XXXXXXXXX Google Analytics Tracking Google Analytics tarafından ziyaretçilerin İnternet Sitesini ziyaret sıklığına ve ziyaret zamanlarına ilişkin bilgi toplamak amacıyla kullanılan çerezdir. 1 yıl 5.Kişisel Veri Sahibi Olarak Haklarınız Nelerdir? Kişisel veri sahipleri Kanunun “ilgili kişinin haklarını düzenleyen” 11’inci maddesi kapsamında aşağıda listeli haklara sahiptir. Kişisel veri işlenip işlenmediğini öğrenme Kişisel verileri işlenmişse buna ilişkin bilgi talep etme Kişisel verilerin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme Kişisel verilerin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme Kanun ve ilgili diğer kanun hükümlerine uygun olarak işlenmiş olmasına rağmen, işlenmesini gerektiren sebeplerin ortadan kalkması hâlinde kişisel verilerin silinmesini veya yok edilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme Yukarıda belirtilen haklarınızı kullanmak için; Kimlik tespiti yapılarak şubelerimiz aracılığıyla Kimlik doğrulaması gerçekleştirilerek Dijital Kanallarımız ya da Çağrı Merkezimiz üzerinden Yamanevler Mah. Ahmet Tevfik İleri Cad. 4B PLAZA No:26 KAT:15-16-17 Ümraniye / İSTANBUL adresine noter kanalıyla dunyakatilim@hs01.kep.tr adresine güvenli elektronik imzalı olarak Bankamız sisteminde kayıtlı bulunan elektronik posta adresinizi kullanarak taleplerinizi bankamıza iletebilirsiniz. Başvuruda; a) ad, soyadı ve başvuru yazılı ise imza b) Türkiye Cumhuriyeti vatandaşları için T.C. kimlik numarası, yabancılar için uyruğu, pasaport numarası veya varsa kimlik numarası c) tebligata esas yerleşim yeri veya iş yeri adresi ç) varsa bildirime esas elektronik posta adresi, telefon ve faks numarası d) talep konusu bulunmalıdır. Talebiniz en kısa sürede ve en geç otuz (30) gün içinde ücretsiz olarak sonuçlandırılmaktadır. Başvurunuza yönelik işlemlerin ayrı bir maliyeti gerektirmesi hâlinde, Kurul tarafından belirlenen tarifedeki ücret tarafınıza yansıtabilmektedir."
+0209-fa6ca7d275c0,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/sosyal-medya-icerik-ureticisi-hesabi,,,,,,,,,"Sosyal medya üzerinden elde etmiş olduğunuz kazançları herhangi bir beyanname bulunmadan otomatik olarak vergilendirilerek tahsilatlarının yapıldığı özel cari hesap türüdür.
+- İnternet ve benzeri elektronik ortamlar üzerinden metin, görüntü, ses, video gibi içerikler paylaşan sosyal içerik üreticilerinin bu faaliyetlerinden elde ettikleri kazançlar ve bu ortamlar üzerinden verilen bireysel kurs, eğitim, veri işleme ve geliştirme, ürün tanıtımı gibi hizmetlerden sağlanan kazançlar ile akıllı telefon veya tablet gibi mobil cihazlar için uygulama geliştirenlerin elektronik uygulama paylaşım ve satış platformları üzerinden elde ettikleri kazançlar bu vergi avantajından faydalanabilecektir.
+- Sosyal Medya İçerik Üreticisi Hesabı; sadece yurtiçi gerçek müşterilerimize açılabilen vadesiz özel cari hesaptır.
+- Hesap açılışları TL, USD ve EUR para cinsleri ile açılmaktadır.
+- Hesap açılışları mesai saatleri içerisinde yalnızca şubelerimiz aracılığı ile açılmaktadır.
+- Hesap açılışı gerçekleştikten sonra İBAN bilgileri ilgili vergi dairesine bildirilmesi gerekmektedir.
+- Hesap açılışı için “193 Sayılı Kanunun Mükerrer 20/B Maddesi Uygulamasına İlişkin İstisna Belgesi” gereklidir.Bu belge ile KDV’den istisna edilmiştir.
+- İlgili belge vergi dairesinden alınabilecektir.
+- Sosyal Medya İçerik Üreticisi Hesabı'na gelen tutarlar üzerinden işlem anında otomatik olarak %15 oranında vergi kesintisi gerçekleştirilmektedir.
+- 7/24 Sosyal Medya İçerik Üreticisi Hesabı'na para transferi yapılabilir.
+Hesap Açılabilen Para Cinsleri
+TL
+Euro
+Dolar
+Sosyal Medya İçerik Üreticisi Hesabı Açılabilen Kanallar
+Sıkça Sorulan Sorular
+- İnternet ortamındaki sosyal ağ sağlayıcıları üzerinden metin, görüntü, ses ve video gibi içerikler paylaşan sosyal içerik üreticisi,
+- Akıllı telefon veya tablet gibi mobil cihazlar için uygulama geliştiricisi
+- “193 Sayılı Kanunun Mükerrer 20/B Maddesi Uygulamasına İlişkin İstisna Belgesi” alınması,
+- Türkiye’de kurulu bir bankada hesap açılması.
+- İstisnadan faydalanmak isteyen mükelleflerin ikametgâhlarının bulunduğu yerdeki Vergi Dairesine başvurmaları gerekmektedir.
+- Bankamızda açılacak Sosyal Medya İçerik Üreticisi Hesabı'na gelen tutarlar üzerinden işlem anında %15 oranında otomatik olarak gelir vergisi tevkifatı yapılacak ve vergi ödemesi Bankamızca müşterilerimiz adına Gelir İdaresi Başkanlığı'na aktarılacaktır. Vergi kesintileri hesap özetinden takip edilebilecektir."
+0214-ab3545caa00c,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/avantajli-kurlar,,,,,,,,,"ÇEREZ KULLANIMINA İLİŞKİN AYDINLATMA METNİ
+1. Giriş Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu’nun (“Kanun”) 10’uncu maddesi, Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ (“Tebliğ”) ve Çerez Uygulamaları Hakkında Rehber (“Rehber”) kapsamında veri sorumlusu sıfatıyla Dünya Katılım Bankası A.Ş. tarafından hazırlanmıştır. Bu Çerez Aydınlatma Metni, internet sitemiz ziyaret edildiğinde kullanılan çerezler aracılığıyla toplanan kişisel verilerin işlenmesi, çerezlerin hangi amaçlarla ve hangi tür çerezlerin kullanıldığı konusunda bilgi sağlamanması, bu çerezleri nasıl yönetebileceğiniz hakkında rehberlik edilmesi amacıyla hazırlanmıştır. 2. Çerez Nedir ve Neden Kullanılmaktadır? Çerezler, bir internet sitesini ziyaret ettiğinizde bilgisayarınıza veya diğer internet bağlantılı cihazlara (örneğin, akıllı telefonlar veya tabletler) yerleştirilebilen dosyalar veya bilgi parçalarıdır. Başka bir deyişle, çerezler internet siteleri veya mobil uygulamalar gibi çevrim içi platformları kullanırken, cihazınıza yerleştirilen küçük metin dosyalarıdır. Çerezler, kullanıcılara kişiselleştirilmiş içerik sunmanın yanı sıra, internet sitesinin daha verimli ve etkin bir şekilde çalışmasını sağlamaktadır. Sizlere daha iyi bir ziyaret deneyimi sunmak için kullanıcının kişisel tercihlerine ve ihtiyaçlarına uygun içerikleri sunmaktadır. Önemli bir nokta olarak, çerezler sadece internet geçmişinizle ilgili bilgiler içermekte ve cihazınızda depolanan dosyalara erişim sağlayamamaktadır. Ayrıca, çerezler hizmetlerimizi sizin ilgi ve ihtiyaçlarınıza uygun hale getirmek için kullanılabilmektedir. Bu sayede, gelecekte internet sitelerimizi ziyaret ettiğinizde daha hızlı ve kişiselleştirilmiş deneyimler yaşamanız sağlanmaktadır. 3. Çerez Türleri Nelerdir? Taraflarına göre çerezler: Birinci Taraf Çerezleri: Kullanıcılarca oluşturularak internet sitesine konulan ve banka kontrolünde olan çerezlerdir. Üçüncü Taraf Çerezleri: İşbirliği yaptığımız üçüncü taraf firmalar tarafından oluşturulan ve yönetilen çerezlerdir. Saklama süresine göre çerezler: Oturum Çerezleri: Kullanıcıların sadece tarayıcıları açıkken mevcut olan ve tarayıcı kapanınca silinen çerez tipidir. Kalıcı Çerezler: Kullanıcıların tarayıcısı kapandıktan sonra belirli bir sona erme tarihine kadar kalıcı olan çerez türüdür. Yeniden web sitesi ziyaret edildiğinde bu çerezler aktif olur ve aynı bilgisayardan yapılan ziyareti tespit edebilmek amacıyla kullanılmaktadır. Kullanım amaçlarına göre çerezler a.Zorunlu Çerezler Bu çerezler internet sitesinin doğru ve etkin çalışmasını sağlamak amaçlarıyla kesinlikle gerekli olan çerezlerdir. Bu çerezler kaldırılırsa veya engellenirse internet sitesi kısmen veya tamamen belli işlevlerini yitirebilmektedir. b.İşlevsel Çerezler Web sitesinde kullanılan kişiselleştirme ve tercihlerin hatırlanması amaçları ile kullanılan çerezlerdir. Bu çerezler zorunlu çerezler dışında kalan işlevsellikleri sağlama amacıyla kullanılmaktadır. c.Performans - Analitik Çerezler İnternet sitelerinde kullanıcıların davranışlarını analiz etmek amacıyla istatistiki ölçümüne imkân veren çerezlerdir. Bu çerezler, sitenin iyileştirilmesi için sıklıkla kullanılmakta olup bu duruma reklamların ilgili kişiler üzerindeki etkisinin ölçümü de dâhildir. İnternet sitesi sahipleri tarafından, ziyarete yönelik ölçüm yapmak, analiz etmek ve tahminde bulunmak ile bir internet sayfasına götüren en önemli arama motoru anahtar kelimelerini tespit etmek için kullanılabilmektedir. d.Reklam / Pazarlama Çerezleri Reklam ve pazarlama amaçlı çerezler ile internet ortamında kullanıcıların çevrim içi hareketleri takip edilerek kişisel ilgi alanları saptanıp bu ilgi alanlarına yönelik internet ortamında kullanıcılara reklam gösterilmesi her durumda aynı reklamların sürekli tekrarlanmasının engellemesi, reklamların düzgün bir şekilde gösterilmesi sağlanabilmektedir. Bu çerezlerin kullanılmasındaki amaç kullanıcıya geliştirilmiş ve kişisel bir deneyim sunulabilmesidir. 4.Sitemizde Kullanılan Çerez Türleri Aşağıda İnternet Sitesinde kullandığımız farklı türdeki çerezlere yer verilmiştir. Zorunlu Çerezler Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi CultureInfo Banka Ziyaretçilerin internet site sayfalarını hangi dil kullandığını gösterir. Oturum süresince .AspNetCore.Session Banka Ziyaretçilere atanmış benzersiz bir kimlik numarasını gösterir Oturum süresince Performans ve Analitik Çerezleri Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi _ga_XXXXXXXXX Google Analytics Tracking Google Analytics tarafından ziyaretçilerin İnternet Sitesini ziyaret sıklığına ve ziyaret zamanlarına ilişkin bilgi toplamak amacıyla kullanılan çerezdir. 1 yıl 5.Kişisel Veri Sahibi Olarak Haklarınız Nelerdir? Kişisel veri sahipleri Kanunun “ilgili kişinin haklarını düzenleyen” 11’inci maddesi kapsamında aşağıda listeli haklara sahiptir. Kişisel veri işlenip işlenmediğini öğrenme Kişisel verileri işlenmişse buna ilişkin bilgi talep etme Kişisel verilerin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme Kişisel verilerin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme Kanun ve ilgili diğer kanun hükümlerine uygun olarak işlenmiş olmasına rağmen, işlenmesini gerektiren sebeplerin ortadan kalkması hâlinde kişisel verilerin silinmesini veya yok edilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme Yukarıda belirtilen haklarınızı kullanmak için; Kimlik tespiti yapılarak şubelerimiz aracılığıyla Kimlik doğrulaması gerçekleştirilerek Dijital Kanallarımız ya da Çağrı Merkezimiz üzerinden Yamanevler Mah. Ahmet Tevfik İleri Cad. 4B PLAZA No:26 KAT:15-16-17 Ümraniye / İSTANBUL adresine noter kanalıyla dunyakatilim@hs01.kep.tr adresine güvenli elektronik imzalı olarak Bankamız sisteminde kayıtlı bulunan elektronik posta adresinizi kullanarak taleplerinizi bankamıza iletebilirsiniz. Başvuruda; a) ad, soyadı ve başvuru yazılı ise imza b) Türkiye Cumhuriyeti vatandaşları için T.C. kimlik numarası, yabancılar için uyruğu, pasaport numarası veya varsa kimlik numarası c) tebligata esas yerleşim yeri veya iş yeri adresi ç) varsa bildirime esas elektronik posta adresi, telefon ve faks numarası d) talep konusu bulunmalıdır. Talebiniz en kısa sürede ve en geç otuz (30) gün içinde ücretsiz olarak sonuçlandırılmaktadır. Başvurunuza yönelik işlemlerin ayrı bir maliyeti gerektirmesi hâlinde, Kurul tarafından belirlenen tarifedeki ücret tarafınıza yansıtabilmektedir."

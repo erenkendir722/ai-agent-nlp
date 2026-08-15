@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from src.schema import Alan, Kampanya
+from src.schema import ALAN_ADLARI, Alan, Kampanya
 from tools import altin_set
 
 
@@ -41,11 +41,11 @@ def gold_dizini(tmp_path, monkeypatch):
 
     Modüldeki yol sabitleri içe aktarma anında `GOLD`'dan türetiliyor; yalnız
     `GOLD`'u yamalamak yetmez, ondan türeyen HER sabit ayrı ayrı yamalanmalıdır.
-    `KALIBRASYON_KAYDI` bir süre listede yoktu ve `make test` her koşuşta gerçek
-    `data/gold/kalibrasyon_listesi.json` dosyasını yeniden yazıyordu. O dosya
-    kalibrasyon bloğunun köken kaydıdır (tohum + oluşturma zamanı); jüriye
-    "bu 10 örneği nasıl seçtiniz?" sorusunun cevabı odur. Test koşusunun onu
-    ezmesi, ölçümün kanıtını sessizce yok eder.
+    Bir sabit listede unutulursa `make test` her koşuşta gerçek `data/gold/`
+    içindeki dosyayı yeniden yazar — örneğin `ornek_listesi.json`, örneklemin
+    köken kaydıdır (tohum + oluşturma zamanı) ve jüriye "bu 60 örneği nasıl
+    seçtiniz?" sorusunun cevabı odur. Test koşusunun onu ezmesi, ölçümün
+    kanıtını sessizce yok eder. Aşağıdaki bekçi bunu otomatik yakalar.
     """
     gercek_gold = altin_set.GOLD
     gold = tmp_path / "gold"
@@ -54,7 +54,6 @@ def gold_dizini(tmp_path, monkeypatch):
     monkeypatch.setattr(altin_set, "METINLER", gold / "metinler")
     monkeypatch.setattr(altin_set, "ALTIN_SET", gold / "altin_set.jsonl")
     monkeypatch.setattr(altin_set, "ORNEK_KAYDI", gold / "ornek_listesi.json")
-    monkeypatch.setattr(altin_set, "KALIBRASYON_KAYDI", gold / "kalibrasyon_listesi.json")
 
     # Bekçi: yamalamayı unutulan bir sabit kalırsa test gerçek veriye yazar.
     # Tek tek hatırlamak yerine burada kontrol ediyoruz — bundan sonra
@@ -273,6 +272,34 @@ def test_derleme_bos_birakilan_alani_belirtilmemis_sayar(gold_dizini):
     eren = [k for k in kayitlar if k.get("etiketleyen") == "Eren"]
     assert eren[0]["kampanya_turu"] == "diger"
     assert eren[0]["kar_payi_orani"] is None
+
+
+def test_sorulmayan_alan_sete_hic_girmez(gold_dizini):
+    """CSV'de OLMAYAN sütun, boş hücreyle aynı şey değildir.
+
+    Boş hücre bir iddiadır: "baktım, metinde yok" — ve metriğe öyle girer.
+    Sorulmamış bir alan ise hiç bakılmamış demektir; sete `null` olarak
+    girerse sistem doğru değeri bulduğunda haksız yere hata sayılır.
+
+    Altın set yalnız sekiz çekirdek alanı soruyor (ADR 008), yani kalan sekiz
+    alan için bu ayrım her satırda geçerli. `_csv_oku` `ALAN_ADLARI` üzerinde
+    körlemesine dönseydi her kayda sekiz sahte "yok" iddiası girerdi.
+    """
+    _hazirla(gold_dizini)
+    _csv_doldur(gold_dizini / "etiketleme_eren.csv", [{"kampanya_turu": "diger"}])
+
+    kayitlar, _ = altin_set.derle()
+    eren = next(k for k in kayitlar if k.get("etiketleyen") == "Eren")
+
+    sorulan = set(altin_set.CEKIRDEK_ALANLAR)
+    for alan in ALAN_ADLARI:
+        if alan in sorulan:
+            assert alan in eren, f"{alan} CSV'de soruluyor, sete girmeli"
+        else:
+            assert alan not in eren, (
+                f"{alan} CSV'de sorulmuyor ama sete girmiş — "
+                "metrik bunu 'metinde yok' iddiası sayar"
+            )
 
 
 def test_uzlasi_cogunluk_oyunu_alir(gold_dizini):
@@ -539,104 +566,63 @@ def test_uyum_tek_etiketleyiciyi_dogru_raporlar(gold_dizini):
 # ---------------------------------------------------------------------------
 
 
-def test_kopya_suphesi_ayni_serbest_metni_yakalar(gold_dizini):
-    """Tamamlanmış bir dosya depoya girip kopyalanırsa uyum oranı sahte olur."""
+def _blok(degerler: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Ortak bloğu her satırda 'bakıldı' işaretiyle doldurur."""
+    return [{"kampanya_turu": "kart", **d} for d in degerler]
+
+
+def test_kopya_suphesi_kusursuz_ortusmeyi_yakalar(gold_dizini):
+    """Tamamlanmış bir dosya depoya girip kopyalanırsa uyum oranı sahte olur.
+
+    Serbest metin alanları CSV'den çıktığı için detektör artık sekiz çekirdek
+    alana bakıyor; eşik %100 (bkz. ADR 008).
+    """
     _hazirla(gold_dizini, adet=18)
-    cumleler = [
-        {"kampanya_turu": "kart", "kampanya_avantaji": f"Kampanya {i} avantajı",
-         "kampanya_kosullari": f"Kampanya {i} koşulu"}
-        for i in range(8)
-    ]
+    ayni = _blok(
+        [
+            {"kar_payi_orani": f"{i + 1},50", "vade_ay_max": f"{12 * (i + 1)}"}
+            for i in range(8)
+        ]
+    )
     for kisi in ("eren", "samet"):
-        _csv_doldur(gold_dizini / f"etiketleme_uyum_{kisi}.csv", cumleler)
+        _csv_doldur(gold_dizini / f"etiketleme_uyum_{kisi}.csv", ayni)
 
     uyarilar = altin_set.kopya_suphesi()
     assert any("Eren" in u and "Samet" in u for u in uyarilar)
     assert "BİREBİR" in uyarilar[0]
 
 
-def test_kopya_suphesi_farkli_ifadelerde_sessiz(gold_dizini):
+def test_kopya_suphesi_tek_ayrisma_alarmi_susturur(gold_dizini):
+    """Bağımsız iki insan bir yerde mutlaka ayrışır — bu kopya değildir."""
     _hazirla(gold_dizini, adet=18)
-    _csv_doldur(
-        gold_dizini / "etiketleme_uyum_eren.csv",
-        [{"kampanya_turu": "kart", "kampanya_avantaji": f"Eren cümlesi {i}"} for i in range(8)],
-    )
-    _csv_doldur(
-        gold_dizini / "etiketleme_uyum_samet.csv",
-        [{"kampanya_turu": "kart", "kampanya_avantaji": f"Samet cümlesi {i}"} for i in range(8)],
-    )
+    eren = _blok([{"kar_payi_orani": f"{i + 1},50"} for i in range(8)])
+    samet = [dict(s) for s in eren]
+    samet[3]["kar_payi_orani"] = "9,99"  # tek hücre farklı
+
+    _csv_doldur(gold_dizini / "etiketleme_uyum_eren.csv", eren)
+    _csv_doldur(gold_dizini / "etiketleme_uyum_samet.csv", samet)
     assert altin_set.kopya_suphesi() == []
 
 
-def test_kopya_suphesi_az_ornekte_alarm_vermez(gold_dizini):
-    """Tek tük eşleşme kopya değildir; eşik altında sessiz kalmalı."""
+def test_kopya_suphesi_bos_alan_mutabakatini_saymaz(gold_dizini):
+    """Alanların çoğu zaten boş. 'İkimiz de burada bir şey yok dedik'
+    mutabakatı sayılsaydı her dosya çifti alarm verirdi."""
+    _hazirla(gold_dizini, adet=18)
+    # Yalnız kampanya_turu dolu; kalan yedi alan iki tarafta da boş.
+    for kisi in ("eren", "samet"):
+        _csv_doldur(gold_dizini / f"etiketleme_uyum_{kisi}.csv", _blok([{}] * 8))
+    assert altin_set.kopya_suphesi() == []
+
+
+def test_kopya_suphesi_az_hucrede_alarm_vermez(gold_dizini):
+    """Tek tük eşleşme kopya değildir; asgari hücre sayısının altında sessiz."""
     _hazirla(gold_dizini, adet=18)
     for kisi in ("eren", "samet"):
         _csv_doldur(
             gold_dizini / f"etiketleme_uyum_{kisi}.csv",
-            [{"kampanya_turu": "kart", "kampanya_avantaji": "aynı cümle"}],
+            _blok([{"kar_payi_orani": "2,05"}]),
         )
     assert altin_set.kopya_suphesi() == []
-
-
-# ---------------------------------------------------------------------------
-# Kalibrasyon bloğu — uyum ölçümü için ayrı örnek kümesi
-# ---------------------------------------------------------------------------
-
-
-def test_kalibrasyon_altin_set_ornekleminin_disindan_secer(gold_dizini, monkeypatch):
-    """Kalibrasyon altın sete dokunmamalı; aksi hâlde etiketlenmiş örnek
-    hem cevap anahtarında hem uyum ölçümünde olur."""
-    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
-    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
-
-    secilen = altin_set.katmanli_ornekle(kampanyalar, 20)
-    altin_set.calisma_sayfalari_yaz(secilen, altin_set.KISILER)
-    assert altin_set.komut_kalibrasyon(10) == 0
-
-    orneklemde = altin_set.altin_set_orneklemi()
-    kalibrasyonda = {
-        kimlik
-        for _, kimlik, _, _ in altin_set._csv_oku(
-            gold_dizini / f"{altin_set.KALIBRASYON_ONEK}eren.csv"
-        )
-    }
-    assert kalibrasyonda, "kalibrasyon bloğu boş"
-    assert not (kalibrasyonda & orneklemde), "kalibrasyon altın set örneklemiyle çakışıyor"
-
-
-def test_kalibrasyon_herkeste_ayni_ornekler(gold_dizini, monkeypatch):
-    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
-    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
-    altin_set.calisma_sayfalari_yaz(altin_set.katmanli_ornekle(kampanyalar, 20), altin_set.KISILER)
-    altin_set.komut_kalibrasyon(10)
-
-    listeler = [
-        [k for _, k, _, _ in altin_set._csv_oku(gold_dizini / f"{altin_set.KALIBRASYON_ONEK}{p.lower()}.csv")]
-        for p in altin_set.KISILER
-    ]
-    assert all(liste == listeler[0] for liste in listeler)
-
-
-def test_kalibrasyon_dolu_dosyayi_ezmez(gold_dizini, monkeypatch):
-    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
-    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
-    altin_set.calisma_sayfalari_yaz(altin_set.katmanli_ornekle(kampanyalar, 20), altin_set.KISILER)
-    altin_set.komut_kalibrasyon(10)
-    _csv_doldur(gold_dizini / f"{altin_set.KALIBRASYON_ONEK}eren.csv", [{"kampanya_turu": "kart"}])
-
-    assert altin_set.komut_kalibrasyon(10) == 1
-
-
-def test_uyum_kalibrasyon_varsa_onu_kullanir(gold_dizini, monkeypatch):
-    kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(10)]
-    monkeypatch.setattr(altin_set, "kampanyalari_oku", lambda: iter(kampanyalar))
-    altin_set.calisma_sayfalari_yaz(altin_set.katmanli_ornekle(kampanyalar, 20), altin_set.KISILER)
-    altin_set.komut_kalibrasyon(10)
-
-    assert altin_set.aktif_uyum_kaynagi()[0] == altin_set.UYUM_ONEK
-    _csv_doldur(gold_dizini / f"{altin_set.KALIBRASYON_ONEK}eren.csv", [{"kampanya_turu": "kart"}])
-    assert altin_set.aktif_uyum_kaynagi()[0] == altin_set.KALIBRASYON_ONEK
 
 
 # ---------------------------------------------------------------------------
@@ -689,12 +675,11 @@ def test_denetleyici_gecersiz_enum_ve_tarihi_yakalar(gold_dizini):
     _hazirla(gold_dizini)
     _csv_doldur(
         gold_dizini / "etiketleme_eren.csv",
-        [{"kampanya_turu": "konut", "hedef_kitle": "yeni", "kampanya_bitis": "16 ağustos"}],
+        [{"kampanya_turu": "konut", "kampanya_bitis": "16 ağustos"}],
     )
     hatalar, _, _ = altin_set.dosya_denetle(gold_dizini / "etiketleme_eren.csv")
     birlesik = " ".join(hatalar)
     assert "konut_finansmani" in birlesik
-    assert "yeni_musteri" in birlesik
     assert "YYYY-AA-GG" in birlesik
 
 
@@ -797,37 +782,66 @@ class TestSifirKarPayi:
         assert [h for h in hatalar if "kar_payi_orani" in h]
 
 
-class TestDogrulamaSayfasi:
-    """Doğrulama sayfası mevcut etiketi ve kaynak metni yan yana koyar."""
+class TestOkumaKagidi:
+    """Okuma kâğıdı, etiketlemenin pahalı kısmını — aramayı — önden yapar."""
 
-    def test_etiket_ve_alinti_birlikte_gosterilir(self, gold_dizini) -> None:
+    def test_alanla_ilgili_cumle_gosterilir(self, gold_dizini) -> None:
         kampanya = _kampanya(
             "0203", 1,
             metin="Konut finansmanında 120 aya kadar vade imkânı sunulmaktadır.",
         )
         yol = gold_dizini / "etiketleme_test.csv"
         altin_set._csv_yaz(yol, [kampanya])
-        _csv_doldur(yol, [{"kampanya_turu": "konut_finansmani", "vade_ay_max": "120"}])
 
-        sayfa = altin_set.dogrulama_sayfasi(yol)
-        assert "**vade_ay_max** — şu an: `120`" in sayfa
+        sayfa = altin_set.okuma_kagidi([yol])
+        assert "**vade_ay_max**" in sayfa
         assert "120 aya kadar vade" in sayfa
 
-    def test_sistemin_cikarimi_sayfada_YER_ALMAZ(self, gold_dizini) -> None:
-        """Sayfa sistemin tahminini gösterseydi cevap anahtarı kopyasına dönerdi."""
+    def test_bos_satir_da_kagida_girer(self, gold_dizini) -> None:
+        """Kâğıt etiketlemeden ÖNCE üretiliyor; boş satırlar atlanırsa boş çıkar."""
+        kampanya = _kampanya("0203", 1, metin="Kampanya 30 Eylül 2026'ya kadar geçerlidir.")
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+
+        sayfa = altin_set.okuma_kagidi([yol])
+        assert "satır 2" in sayfa
+        assert "30 Eylül 2026" in sayfa
+
+    def test_sistemin_cikarimi_kagitta_YER_ALMAZ(self, gold_dizini) -> None:
+        """Kâğıt sistemin tahminini gösterseydi cevap anahtarı kopyasına dönerdi."""
         kampanya = _kampanya("0203", 1, metin="Aylık kâr payı %1,89.")
         kampanya.kar_payi_orani = Alan(
             deger=1.89, ham_ifade="SISTEM_TAHMINI", guven=0.9, yontem="kural"
         )
         yol = gold_dizini / "etiketleme_test.csv"
         altin_set._csv_yaz(yol, [kampanya])
-        _csv_doldur(yol, [{"kampanya_turu": "finansman"}])
-        assert "SISTEM_TAHMINI" not in altin_set.dogrulama_sayfasi(yol)
+        assert "SISTEM_TAHMINI" not in altin_set.okuma_kagidi([yol])
 
-    def test_bos_hucre_anlami_yazili(self, gold_dizini) -> None:
+    def test_alinti_yoksa_metinde_yok_denmez(self, gold_dizini) -> None:
+        """İpucu bulunamaması 'bu bilgi metinde yok' demek DEĞİL — kâğıt bunu
+        söylemezse etiketleyen hücreyi bakmadan boş bırakır ve sisteme
+        yanlışlıkla hata yazdırır."""
+        kampanya = _kampanya("0203", 1, metin="Kısa bir tanıtım cümlesi.")
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+
+        sayfa = altin_set.okuma_kagidi([yol])
+        assert "aday cümle bulunamadı" in sayfa
+        assert "tam metne bak" in sayfa
+
+    def test_kagitta_uc_durum_hatirlatilir(self, gold_dizini) -> None:
         kampanya = _kampanya("0203", 1)
         yol = gold_dizini / "etiketleme_test.csv"
         altin_set._csv_yaz(yol, [kampanya])
-        _csv_doldur(yol, [{"kampanya_turu": "finansman"}])
-        sayfa = altin_set.dogrulama_sayfasi(yol)
-        assert 'metinde yok' in sayfa and '`?`' in sayfa
+        sayfa = altin_set.okuma_kagidi([yol])
+        assert "metinde yok" in sayfa and "`?`" in sayfa
+
+    def test_kisi_basina_tek_kagit_uretilir(self, gold_dizini, monkeypatch) -> None:
+        """Uyum bloğu + kişisel pay aynı dosyada; etiketleyen tek sayfa açsın."""
+        _hazirla(gold_dizini)
+        uretilen = altin_set.okuma_kagitlari_yaz(altin_set.KISILER)
+
+        assert [y.name for y in uretilen] == [f"okuma_{k.lower()}.md" for k in altin_set.KISILER]
+        icerik = (gold_dizini / "okuma_eren.md").read_text(encoding="utf-8")
+        assert "etiketleme_uyum_eren.csv" in icerik
+        assert "etiketleme_eren.csv" in icerik

@@ -1,6 +1,5 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
-        altin-ornekle altin-kalibrasyon altin-denetle altin-uyum altin-derle altin-dogrula \
-        altin-dogrulama \
+        altin-ornekle altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol
 
 PYTHON ?= .venv/bin/python
@@ -72,26 +71,17 @@ temiz:  ## türetilmiş dosyaları sil (ham veri KORUNUR)
 	@echo "✅ Temizlendi. data/raw/ dokunulmadı."
 
 # --- altın set (H-01 / H-02) ---
-altin-ornekle:  ## katmanlı örneklem -> kişi başı etiketleme CSV'si
+altin-ornekle:  ## katmanlı örneklem -> kişi başı CSV + okuma kâğıdı
 	@$(PYTHON) tools/altin_set.py ornekle --adet $(or $(adet),60)
-
-altin-kalibrasyon:  ## uyum ölçümü için taze blok çek (altın set dışından)
-	@$(PYTHON) tools/altin_set.py kalibrasyon --adet $(or $(adet),10)
 
 altin-denetle:  ## KENDİ etiketlerini pushlamadan önce kontrol et (ad=Esra)
 	@$(PYTHON) tools/altin_set.py denetle $(if $(ad),--ad $(ad))
-
-altin-dogrulama:  ## etiketleri kaynak metinle yan yana koyan sayfa (ad=Esra)
-	@$(PYTHON) tools/altin_set.py dogrulama $(if $(ad),--ad $(ad))
 
 altin-uyum:  ## etiketleyiciler arası uyum oranı
 	@$(PYTHON) tools/altin_set.py uyum
 
 altin-derle:  ## doldurulmuş CSV'ler -> data/gold/altin_set.jsonl
 	@$(PYTHON) tools/altin_set.py derle
-
-altin-dogrula:  ## mevcut altın seti denetle
-	@$(PYTHON) tools/altin_set.py dogrula
 
 # --- görev panosu ---
 gorev:  ## görev durumu (ad=Esra ile kişiye özel)

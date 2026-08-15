@@ -1,127 +1,5 @@
-kampanya_id,banka_adi,kaynak_url,kampanya_turu,urun_turu,hedef_kitle,kar_payi_orani,finansman_tutari_max,vade_ay_max,taksit_sayisi,tahsis_ucreti,masraf_bilgisi,masrafsiz_mi,odul_miktari,indirim_orani,alisveris_puani,kampanya_avantaji,kampanya_bitis,kampanya_kosullari,metin
-0206-61006b35204e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/konut-finansmani/Sayfalar/konut-finansmani.aspx,konut_finansmani,konut kredisi,,2.95,,120,,500,ekspertiz var,hayır,,,,avantajlı oran,,,"Konut Finansmanı (Konut Kredisi)*
-Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay!
-Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay! Türkiye Finans Konut Finansmanı (bankacılık kanununa göre konut kredisi), uygun koşullarda ev sahibi olmanız için sunulan finansman desteğidir.
-Satın almak istediğiniz gayrimenkul katılım bankacılığı prensiplerine uygun olarak Türkiye Finans tarafından satın alınır ve size istediğiniz vade üzerinden satılır.
-Konut Finansmanı (Konut Kredisi)* çözümlerimizden bütçenize göre dilediğinizi seçebilir, uygun ödeme koşulları ile zorlanmadan ev sahibi olabilirsiniz.
-EN YAKIN ŞUBE HESAPLAMA ARAÇLARIHEMEN BAŞVUR
-İlk Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
-Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
----|---|---|---|
-A–B | C | Enerji D ve Altı | |
-DEĞER ≤ 5 MİLYON TL | 90% | 80% | 70% |
-5.000.001 – 7.000.000 | 80% | 70% | 60% |
-7.000.001 – 10.000.000 | 70% | 60% | 50% |
-10.000.001 – 20.000.000 | 50% | 40% | 30% |
-DEĞER > 20 MİLYON TL | 40% | 30% | 20% |
-*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcut değilse başvurulacak maksimim finansman tutarlarıdır.
-Mevcut Konutu Olup İkinci Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
-Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
----|---|---|---|
-A–B | C | Enerji D ve Altı | |
-DEĞER ≤ 5 MİLYON TL | 22.50% | 20% | 17.50% |
-5.000.001 – 7.000.000 | 20% | 17.50% | 15% |
-7.000.001 – 10.000.000 | 17.50% | 15% | 12.50% |
-10.000.001 – 20.000.000 | 12.50% | 10% | 7.50% |
-DEĞER > 20 MİLYON TL | 10.00% | 7.5% | 5.00% |
-*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcutsa başvurulacak maksimim finansman tutarlarıdır.
-- Nüfus cüzdanı veya ehliyet,
-- Gelir belgesi/maaş bordrosu,
-- Serbest meslek sahipleri ve işletme sahipleri için son yıla ait vergi levhası ve onaylı bilanço, gelir tabloları, mizan, imza sirküleri, kuruluş ve en son ortaklık payını gösteren Ticaret Sicil Gazetesi,
-- Satın alınacak konuta ait kat mülkiyeti veya kat irtifakı tapusu ve yapı kullanım izin belgesi
-- Ücretli çalışan kişiler için, maaş bordrosu antetli kağıt ile bildiriliyor ise firmanın imza sirküleri beyanı gerekmektedir.
-- Banka gerekli gördüğü durumlarda kefil ve ek belge isteme hakkına sahiptir. Kefil için de aynı belgeler talep edilecektir.
-İlk Konutunu Alan / Sigortalı Konut Finansmanı (Konut Kredisi)*
-Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
-3 | 3,96% | 0,50% | 16,66% | 535,27% |
-6 | 3,92% | 0,50% | 11,21% | 257,86% |
-12 | 3,77% | 0,50% | 7,81% | 146,69% |
-18 | 3,73% | 0,50% | 6,60% | 115,39% |
-24 | 3,69% | 0,50% | 5,96% | 100,30% |
-36 | 3,58% | 0,50% | 5,24% | 84,67% |
-48 | 3,54% | 0,50% | 4,91% | 77,66% |
-59 | 3,35% | 0,50% | 4,53% | 70,15% |
-72 | 3,09% | 0,50% | 4,11% | 62,22% |
-120 | 2,95% | 0,50% | 3,76% | 55,66% |
-İlk Konutunu Alan / Sigortasız Konut Finansmanı (Konut Kredisi)*
-Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
-3 | 4,42% | 0,50% | 17,19% | 571,27% |
-6 | 4,38% | 0,50% | 11,73% | 278,57% |
-12 | 4,23% | 0,50% | 8,33% | 161,24% |
-18 | 4,19% | 0,50% | 7,12% | 128,24% |
-24 | 4,15% | 0,50% | 6,48% | 112,36% |
-36 | 4,04% | 0,50% | 5,77% | 95,98% |
-48 | 4,00% | 0,50% | 5,43% | 88,70% |
-59 | 3,81% | 0,50% | 5,06% | 80,85% |
-72 | 3,55% | 0,50% | 4,65% | 72,54% |
-120 | 3,41% | 0,50% | 4,31% | 65,94% |
-Konut Finansmanı (Konut Kredisi)* talep eden müşteri, eşi ve/veya 18 yaş altındaki çocukları herhangi bir konutta %50’den fazla pay sahibi değil ise geçerli oranlandır.
-Mevcut Konutu Olan / Sigortalı Konut Finansmanı (Konut Kredisi)*
-Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
-3 | 3,96% | 0,50% | 17,41% | 586,13% |
-6 | 3,92% | 0,50% | 11,91% | 285,87% |
-12 | 3,77% | 0,50% | 8,47% | 165,23% |
-18 | 3,73% | 0,50% | 7,24% | 131,45% |
-24 | 3,69% | 0,50% | 6,59% | 115,14% |
-36 | 3,58% | 0,50% | 5,86% | 98,12% |
-48 | 3,54% | 0,50% | 5,52% | 90,61% |
-59 | 3,35% | 0,50% | 5,12% | 81,99% |
-72 | 3,09% | 0,50% | 4,66% | 72,74% |
-120 | 2,95% | 0,50% | 4,29% | 65,61% |
-Mevcut Konutu Olan / Sigortasız Konut Finansmanı (Konut Kredisi)*
-Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
-3 | 4,42% | 0,50% | 18,03% | 630,77% |
-6 | 4,38% | 0,50% | 12,51% | 311,53% |
-12 | 4,23% | 0,50% | 9,06% | 183,23% |
-18 | 4,19% | 0,50% | 7,84% | 147,35% |
-24 | 4,15% | 0,50% | 7,19% | 130,08% |
-36 | 4,04% | 0,50% | 6,47% | 112,14% |
-48 | 4,00% | 0,50% | 6,14% | 104,32% |
-59 | 3,81% | 0,50% | 5,73% | 95,26% |
-72 | 3,55% | 0,50% | 5,28% | 85,50% |
-120 | 3,41% | 0,50% | 4,94% | 78,32% |
-Konut Finansmanı (Konut Kredisi)* talep eden müşteri, eşi ve/veya 18 yaş altındaki çocukları herhangi bir konutta %50’den fazla pay sahibi değil ise geçerli oranlandır.
-100.000 TL. baz alınarak oluşturulan konut finansmanı örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Maliyet tablosu hesaplamasında yer alan kar oranları; Yedek Hesap, DASK, Finansman Ferdi Kaza Sigortası, Konut Sigortası, Otomatik Fatura Ödeme Talimatı ürünlerinin tamamının finansman başvurusu ile birlikte alınması şartıyla uygulanmaktadır. Finansmanın maksimum vadesi 120 ay olup, tahsis ücreti vergiler hariç finansman tutarının binde 5’i oranındadır. Yıllık maliyete kar oranı, tahsis ücreti, ekspertiz ücreti, ipotek tesis ücreti dahil edilmiştir. Alınacak ücretler: 500 TL tahsis ücreti, 3.000 TL ipotek tesis ücreti, 16.500 TL Ekspertiz(Değerleme) ücretidir. Ekspertiz ücreti minimum maliyetler üzerinden hesaplanmış olup Ekspertiz ücreti Resmi Kurumlara ödenen harç miktarına, taşınmazın alanına, mevcut durumuna ve bulunduğu lokasyona göre değişebilmektedir.Gayrimenkulün bulunduğu lokasyona bağlı olarak ekspertiz firmasına ödenen meblağ arttığında, müşteriden tahsil edilecek ekspertiz ücreti de artacaktır. Ekspertiz maliyet tutarının 1.5 katı kadar hesabınıza bloke tesis edilmektedir. İşlem tamamlandıktan sonra oluşan gerçek maliyet tahsil edilerek, kalan bakiye için hesabınızdaki bloke çözülecektir. Konut sigortası ve DASK prim ücretleri lokasyona ve m2'ye göre, Finansman güvence sigortası ise müşterinin cinsiyeti, yaşı vb. kriterlere göre değişiklik göstermekte olup; yıllık maliyet hesaplamalarına dahil edilmemektedir. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. Yukarıda yazılı ürünlere sahip olmaksızın kullanılacak finansmana uygulanan genel ücret ve masraflara ilişkin bilgiyi Ürün ve Hizmet Ücretleri sayfamızdan ulaşabilirsiniz. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz
-*Katılım bankacılığı kuruluş esas ve faaliyetleri doğrultusunda Konut Finansmanı sağlamaktadır. Ancak bankacılık kanuna göre resmi olarak Konut Kredisi olarak da nitelendirilmektedir.
-Sıkça Sorulan Sorular
-İlk Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
-Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
----|---|---|---|
-A–B | C | Enerji D ve Altı | |
-DEĞER ≤ 5 MİLYON TL | 90% | 80% | 70% |
-5.000.001 – 7.000.000 | 80% | 70% | 60% |
-7.000.001 – 10.000.000 | 70% | 60% | 50% |
-10.000.001 – 20.000.000 | 50% | 40% | 30% |
-DEĞER > 20 MİLYON TL | 40% | 30% | 20% |
-*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcut değilse başvurulacak maksimim finansman tutarlarıdır.
-Mevcut Konutu Olup İkinci Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
-Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
----|---|---|---|
-A–B | C | Enerji D ve Altı | |
-DEĞER ≤ 5 MİLYON TL | 22.50% | 20% | 17.50% |
-5.000.001 – 7.000.000 | 20% | 17.50% | 15% |
-7.000.001 – 10.000.000 | 17.50% | 15% | 12.50% |
-10.000.001 – 20.000.000 | 12.50% | 10% | 7.50% |
-DEĞER > 20 MİLYON TL | 10.00% | 7.5% | 5.00% |
-*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcutsa başvurulacak maksimim finansman tutarlarıdır.
-- Konut finansmanı (Konut Kredisi)* başvurularında, konutun değerinin tespiti için, anlaşmalı firmalardan eksper talep edilir.
-- Ekspertiz ücreti eksper tarafından verilen hizmetin bedelidir.
-- Ekspertiz ücreti finansman desteği başvurusunda bulunan müşterilerimizden tahsil edilir.
-Bankamızdaki uygulamada mortgage kredileri için uygulanan maksimum vade süresi 120 aydır.
-- Satın alınacak konuta ait kat mülkiyeti veya kat irtifaklı tapu
-- Nüfus cüzdanı veya ehliyet
-- Gelir belgesi / Maaş bordrosu
-- İkametgah belgesi / Son 3 aya ait olmak üzere isme kayıtlı fatura
-İlgili proje eğer Bankamız ile anlaşmalı ise, henüz tamamlanmamış projedeki daireler için anlaşılan kâr oranları ile konut finansmanı (Konut Kredisi)* kullanılabilir.
-- Tüketicinin Korunması Hakkında Kanun'una ve Konut Finansmanı (Konut Kredisi)* Sözleşmeleri Yönetmeliği'ne göre tüketicinin borçlandığı tutarın tamamını veya bir ya da birden fazla taksiti vadesinden önce ödemesi durumunda konut finansmanı (Konut Kredisi)* kuruluşları tarafından erken ödeme tazminatı talep edilebilir.
-- Erken ödeme tazminatı oranı, erken ödenen tutarın kalan vadesi 36 ayı aşmayan kredilerde % 1'i, kalan vadesi 36 ayı aşan kredilerde ise % 2'si kadardır.
-Ön ödemeli konut finansmanlarında tüketiciler on dört gün içerisinde, herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin ön ödemeli konut satış sözleşmesinden cayma hakkında sahiptir.
-Cayma hakkının kullanıldığına dair bildirimin bu süre içinde satıcıya yöneltilmiş olması yeterlidir.
-Satıcı, cayma hakkı konusunda tüketicinin bilgilendirildiğini ispat etmekle yükümlüdür.
-Ekspertiz ve ipotek tesis ücreti, değerlemeyi yapan ekspertiz firması ile ipoteği tesis eden firmanın Bankamız'a faturalandırdığı tutar kadardır.
-İpotek fek masrafı alınmamaktadır.
-Sıkça Sorulan Sorular"
-0212-cb6a4dc1dc98,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/arkadasini-getir-avantajli-hesap-ac-nakit-odul-kazan,yeni_musteri,katılma hesabı,yeni_musteri,,,,,,,,2000,20,,nakit ödül,16 ağustos,,"Arkadaşını Davet Et, Avantajlı Hesapla Kazanmaya Başla!
+﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0212-cb6a4dc1dc98,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/arkadasini-getir-avantajli-hesap-ac-nakit-odul-kazan,,,,,,,,,"Arkadaşını Davet Et, Avantajlı Hesapla Kazanmaya Başla!
 Arkadaşlarınızı Hayat Finans'a davet edin. Davet ettiğiniz arkadaşlarınız ilk Avantajlı Hesaplarını açtığında nakit ödül kazanın, arkadaşlarınız ise Hayat Finans Banka Kartı ile gerçekleştirecekleri harcamalarda nakit ödül avantajından yararlansın!
 ✅ Avantajlı Hesap Nedir?
 Avantajlı Hesap, katılım finans ilkelerine uygun olarak yönetilen, her yatırımcıya eşit ve sürdürülebilir avantaj sunan özel bir katılma hesabıdır. Detaylar için tıklayınız.
@@ -152,194 +30,55 @@ Avantajlı Hesap, katılım finans ilkelerine uygun olarak yönetilen, her yatı
 - Hayat Finans kampanya koşullarında herhangi bir bildirimde bulunulmaksızın değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
 - Hayat Finans tarafından tespit edilen usulsüzlük durumlarında kazanılan ödül iptali ve/veya geri alma hakkı saklıdır.
 - Kampanya özelinde 1.000 kişi faydalanabilir."
-0209-181fcb40fc04,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/finansman-urunleri/konut-gayrimenkul-finansmani,finansman,işyeri finansmanı,bireysel,,,,,,,,,,,taksitli alım,,ticari olmamalı,"Yalnızca ticari faaliyeti olmayan gerçek kişilere (kamu ve özel sektör çalışanları, emekliler vb.) hazır/bitmiş işyeri (ofis, büro, dükkân, muayenehane vb. nitelikteki işyerleri) alımının finansmanına yönelik olarak kullandırılan taksitli bireysel finansman ürünüdür."
-0211-4b3897c08177,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani,tasit_finansmani,taşıt finansmanı,,,,48,,,,hayır,,,,hızlı onay,,,"İhtiyaç Finansmanı
-Emlak Katılım İhtiyaç Finansmanlarıyla Yanınızda
-- İhtiyaç Finansmanı Katılım Bankacılığı esaslarına uygun olarak bireysel ihtiyaçlarınız için gereken finansman desteğini sağlar.
-- Beyaz eşyadan mobilyaya, teknoloji ihtiyacınızdan eğitim ihtiyacınıza, hacdan umreye birçok konuda size özel çözümler getiren finansman modellerimiz hizmetinizdedir
-Bu kapsamda, ihtiyaç finansmanı ürünlerimiz aşağıdaki gibidir.
-Eğitim Tüketici Finansmanı
-Öğrencilerin eğitim/öğretim ihtiyaçlarına yönelik, anaokulu, özel okul, kolej, üniversite, dil eğitimi gibi hizmet ücretini eğitim kurumuna fatura karşılığında peşin ödeyerek, öğrenci velisi/vasisine aylık taksitler halinde ödeme yapmasına imkan sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Ev/Ofis Gereçleri Tüketici Finansmanı
-Bireysel müşterilerimizin, konutlarına mobilya ve aksesuar almak istemeleri durumunda, fatura karşılığında hizmet sağlayıcısına/satıcıya peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Ev/Ofis Tadilat Finansmanı
-Bireysel müşterilerimizin, konut tadilatı kapsamında konutun 22/11/2001 tarihli ve 4721 sayılı Türk Medeni Kanununun 684 üncü maddesinde düzenlenen bütünleyici parçası niteliğini haiz olacak şekilde (evin camlarının veya kapılarının değiştirilmesi gibi) mal veya hizmet alımı amacıyla konutlarını yenilemek istemeleri durumunda, fatura karşılığında hizmet sağlayıcısına peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Hac Tüketici Finansmanı
-Bireysel müşterilerimizin, Diyanet İşleri Başkanlığına veya tur firmalarına hac ibadeti seyahat hizmetinden dolayı finansman kullanmak istemeleri durumunda, fatura karşılığında hizmet sağlayıcısına peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Umre Tüketici Finansmanı
-Bireysel müşterilerimizin, Diyanet İşleri Başkanlığına veya tur firmalarına umre ibadeti seyahat hizmetinden dolayı finansman kullanmak istemeleri durumunda, fatura karşılığında hizmet sağlayıcısına peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Sağlık Finansmanı
-Bireysel müşterilerimizin diş kliniği, saç ekim merkezi veya hastane gibi sağlık kuruluşlarına yapılacak ödemelerini sağlık kurumlarına fatura karşılığında peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Çevreci Finansman
-Bireysel müşterilerimizin, doğal enerji tüketimine destek olan güneş enerjisi, güneş panelleri, rüzgâr tribünleri, su kuyusu, hidrofor vb. sistemleri ihtiyaçları için fatura karşılığında hizmet sağlayıcıya peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Doğalgaz Dönüşüm Finansmanı
-Bireysel müşterilerimizin, konutlarına doğalgaz sistemini kurmak istemeleri durumunda, fatura karşılığında hizmet sağlayıcısına peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Yurt Hizmeti Finansmanı
-Öğrencilerin yurt ihtiyaçlarına yönelik, yurt hizmet ücretini işletmeye fatura karşılığında peşin ödeyerek, öğrenci velisi/vasisine aylık taksitler halinde ödeme yapmasına imkan sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Beyaz Eşya Finansmanı
-Müşterilerimizin fatura karşılığı almak istedikleri buzdolabı, fırın, bulaşık makinesi, çamaşır makinesi, kurutma makinesi, klima, kahve makinesi, mutfak robotu gibi beyaz eşya ve küçük ev aletleri statüsünde ki ürünler için, satıcı firmaya peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Teknoloji Finansmanı
-Müşterilerimizin fatura karşılığı almak istedikleri televizyon, kamera, fotoğraf makinesi oyun konsolu gibi ihtiyacı olan teknolojik ürünler için, satıcı firmaya peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Bilgisayar Finansmanı
-Müşterilerimizin fatura karşılığı almak istedikleri bilgisayarlar için, satıcı firmaya peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Taksit sayısı azami 12 ay olarak uygulanmaktadır.
-Tablet Finansmanı
-Müşterilerimizin fatura karşılığı almak istedikleri tabletler için, satıcı firmaya peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Taksit sayısı azami 6 ay olarak uygulanmaktadır.
-Cep Telefonu Finansmanı
-Müşterilerimizin fatura karşılığı almak istedikleri cep telefonları için, satıcı firmaya peşin ödeme yapılmasını sağladığımız ve müşterimizin belirlenen vadede ödeme yapmasına olanak sağlayan tüketici ihtiyaç finansmanı ürünüdür.
-Fiyatı 20.000 TL’ye (yirmi bin Türk Lirasına) kadar olan cep telefonu alımı amacıyla kullandırılan kredilerin vadesi 12 ayı, fiyatı yirmi bin Türk Lirasının üzerinde olan cep telefonu alımı amacıyla kullandırılan kredilerin vadesi 3 ayı aşamaz.
-Yenilenmiş ürün niteliğinde olan cep telefonu tüketici finansmanından fiyatı 25.000 TL ve altında olanlar için 12 ay, fiyatı 25.000 TL üzerinde olanlar için 3 ay vade uygulanmaktadır.
-Bireysel Enerji Verimliliği Finansmanı
-Müşterilerimizin, bireysel olarak yapacakları enerji verimliliği yatırımlarının finansmanı amacıyla tasarlanmıştır.
+0211-872a8d2d7577,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/tasit-finansmani,,,,,,,,,"Taşıt Finansmanı
+Satın almak istediğiniz sıfır ve ikinci el binek araçlarda ihtiyacınız olan taşıt finansmanı Emlak Katılım’da!
+Tabloda belirtilen tutar ve marjlar ile ihtiyacınız olan araç finansmanına en yakın şubemiz aracılığı ile başvurabilirsiniz.
+Aracın Nihai Fatura Tutarı /Kasko Değeri | Taşıt Değerine Oranı | Vade |
+---|---|---|
+0-400,000 TL | %70 | 48 |
+400,001 – 800,000 TL | %50 | 36 |
+800,001 – 1,200,000 TL | %30 | 24 |
+1,200,001 – 2,000,000 TL | %20 | 12 |
+2,500,000 ve üzeri | %0 | 0 |
+Gerekli Belgeler
+- T.C Kimlik Kartı
+- Kişinin çalışma durumuna göre gelir belgesi (Maaş Bordrosu, Hizmet Dökümü vb.)
+- Sıfır Araçlar İçin : Finansmana konu aracın proforma faturası
+- 2.El Araç İçin : Aracın ruhsat fotokopisi
+Çevreci Araç Finansmanı
+Çevreci Araç Finansmanı, doğa dostu olarak kabul edilen, içten yanmalı motorları olan geleneksel araçlara kıyasla düşük karbon emisyon seviyelerine sahip araçların finansmanında kullanılan finansman ürünüdür.
+Müşterilerimiz elektrikli ya da hibrit araçlara yönelik bankamızdan kullanacakları finansmanda, klasik taşıt finansmanı oranlarımızdan 2 puan indirimli olarak finansman kullanabilmektedirler.
+Ayrıca, finansman kullanan müşterilerimiz adına OGEM-VAK aracılığı ile özel fidan bağışı yapılmaktadır.
+Karbon salınımı düşük araçlar için düşük kâr payı oranlarıyla Çevreci Araç Finansmanı sizleri bekliyor! Güncel oranlarımızdan 2 puan düşük oranlarla Emlak Katılım’da!
+Doğa Dostu Finansman Olarak Çevreci Araç Finansmanının Önemi
+Çevreci Araç Finansmanı, yalnızca elektrikli ve hibrit araçların alımına yönelik finansman ürünümüzdür. Klasik taşıt finansmanlarımı kıyasla düşük oran sunarak araç almak isteyen müşterilerimizi çevre dostu seçeneklere yönlendiriyoruz. Bu sayede ‘’Gelecek nesiller için temiz bir Dünya’’ anlayışımızı sürdürmekteyiz.
 Özellikleri:
-- Yalıtımlı pencere doğrama sistemleri, kapı ve çatı sistemleri,
-- Dış cephe mantolama ve konutun zemin, duvar ve tavanın ısı, su, ses ve/veya yangın yalıtımı,
-- Doğalgaz (kombi, tesisat, radyatör, ısı paylaşım sistemleri gibi doğalgaz dönüşüm sistemleri),
-- Verimli aydınlatma sistemleri (tasarruflu veya led aydınlatma cihazları),
-- Güneş enerjisi ile ısıtma ve sıcak su sağlayan sistemler (panel, kazan, tesisat, radyatör) güneşle enerji verimliliği sağlamak için
-- A sınıf performansa sahip beyaz eşyalar (buzdolabı, bulaşık makinesi, çamaşır makinesi, fırın, derin dondurucu, klima, kazan, termosifon vb),
-Devre Mülk Finansmanı:
-Hayalinizdeki Devre Mülke Emlak Katılım Devre Mülk Finansmanı ile Sahip Olun!
-Bütçenize uygun taksit imkanlarıyla devre mülk sahibi olma fırsatı Emlak Katılım’ da.
-Devre Mülk Finansmanı ile hayalini kurduğunuz Devre Mülk için Bankamızın avantajlı kâr oranları ile finansman kullanabilir bütçenize uygun taksit imkanları ile mülk sahibi olabilirsiniz.
-Kullandırılabilecek azami finansman tutarı, devre mülkün satışa esas değerine göre Bankamızca belirlenir. Proforma temini sonrası finansman kullandırım süreci başlatılır ve finansman talebinin onaylanması halinde tapuya tescil sonrası veya satış vaadi sözleşmesinin kurulmasından sonra ödeme satıcıya yapılarak süreç tamamlanır.
-- Devre Mülk Finansmanı, gerçek kişi müşterilerimize sağlanacak bireysel bir finansman desteğidir. Kullandırılacak finansman tutarlarına göre uygulanacak vade sınırlamaları BDDK’nın güncel kararları kapsamında belirlenmektedir.
-- Yalnızca sıfır devre mülkler için finansman sağlanmaktadır.
-- Finansmanın kullandırılabilmesi için finansmana konu edilecek devre mülke ilişkin oluşturulan satış teklifi veya proforma faturanın temin edilmesi gerekmektedir.
-- Onaylanan finansman bedelinin satıcıya ödenebilmesi için satış vaadi sözleşmesinin akdedilmiş olması veya tapunun alıcı adına tescil edilmiş olması gerekmektedir.
-- Finansmana konu devre mülk tapusu veya satış vaadi sözleşmesi teminata alınmamaktadır.
-Örnek İhtiyaç Finansmanı Tablosu |
-Finansman Tutarı | Vade | Kar Oranı | Taksit Tutarı | Finansman Tahsis Ücreti |
----|---|---|---|---|
-30.000,00 ₺ | 12 Ay | 1,69% | 2,841.66 ₺ | 157.50 ₺ |
-* İhtiyaç Finansmanı başvurusu için şubelerimizi ziyaret edebilirsiniz. |"
-0205-9f9ed7696f23,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti,ihtiyac_finansmani,ihtiyaç finansmanı,,,,36,,,,evet,,,,,,,"Sağlam Kart Kampüs
+- Çevreci Araç Finansmanı, elektrikli ya da hibrit araçların alımlarında kullanılmaktadır.
+- Çevreci Araç Finansmanı kullanan müşterilerimize mevcut tabela oranlarından 2 puan kâr oranı indirimi yapılmaktadır.
+- Çevreci Araç Finansmanı kullanan müşterilerimiz adına OGEM-VAK aracılığı ile özel fidan bağışı yapılmaktadır.
+- Çevreci Araç Finansmanı kapsamında kullandırılacak finansmanın vade ve tutar sınırlamaları BDDK’nın güncel kararları doğrultusunda belirlenmektedir.
+Kullandırım Aşaması:
+- Müşterilerimiz, şubelerimiz aracılığı ile Çevreci Araç Finansmanı başvurusunda bulunabilmektedir.
+- Başvuru için gerekli belgeler temin edildikten sonra bankamızca onay sürecinden geçmektedir.
+- Onay sonrası taşıt finansmanı kapsamında Çevreci Araç Finansmanı kullandırılır. Noter işlemlerinden sonra süreç tamamlanır ve araca Bankamızca rehin konulur.
+Detaylı bilgi ve başvuru için size en yakın şubemizi ziyaret edebilirsiniz.
+Şubelerimiz için tıklayınız."
+0206-d08e26c033db,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/hizli-finansman/Sayfalar/default.aspx,,,,,,,,,"Kâr Oranı | %1.00 |
+---|---|
+Toplam Geri Ödenen | 66.066,24 TL |
+Tüm ihtiyaçlarınız için ihtiyaç finansmanına SMS ile anında başvurun!
+Hayalinizdeki araca kavuşmanız için anlaşmalı bayilerimizden anında başvurun!
+Tüm ihtiyaçlarınız için anlaşmalı Hızlı Finansman bayilerine gelin, 0.99% oran avantajları ile ihtiyaçlarınızı ertelemeyin.
+Detaylı Bilgi
+© Copyright 2012 StarterBranding"
+0205-9f9ed7696f23,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti,,,,,,,,,"Sağlam Kart Kampüs
 Sağlam Kart Kampüs'te kart ücreti yok, sürprizler ve avantajlar çok!
 Sağlam Kart
 Sağlam Kart ile yıllık kart ücreti olmadan tüm eğitim ve sağlık harcamalarınızı vade farksız taksitlendirebilir, ekstra ödüller kazanabilirsiniz!
 Miles&Smiles Kuveyt Türk Kart
 Alışverişlerde vade farksız 6 taksit ve mil biriktirme avantajlarından Miles&Smiles Kredi Kartı ile yararlanın."
-0203-cfc1e9a26a6c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani,kart,kredi kartı,tum_musteriler,,,,,,,,500,,,aidatsız,,,"Hayalinizdeki eve kira öder gibi sahip olun!
+0203-cfc1e9a26a6c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani,,,,,,,,,"Hayalinizdeki eve kira öder gibi sahip olun!
 Uzun vade ve size özel ödeme seçenekleri ile Albaraka Türk Konut Finansmanı tam size göre!
 Albaraka Türk’ten ihtiyaçlarınızı alışveriş anında karşılayan finansman fırsatı. Alışverişlerinizde Bayide Finansman’ı tercih edin, 36 aya varan vadelerle ödeyin. Üstelik elektronikten ev tekstiline kadar birçok sektörde geçerli.
 İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
 Findeks Kredi Notu ve Risk Raporu ile finansal geçmişimizi hızla öğrenip kredi değerlendirmenizi yapabilirsiniz. Bu sayede gelecekteki finansal kararlarınızı güvenli şekilde planlayabilirsiniz."
-0210-5174ebf9b2b6,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/muhikuda-20-indirim,yatirim_urunu,altın hesabı,,,,,,,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
-ÜRÜN VE HİZMETLERİMİZ
-SİZE ÖZEL ÇÖZÜMLER
-ÜRÜN VE HİZMETLERİMİZ
-17 Aralık 2025 - 31 Aralık 2026
-Vakıf Katılımlılar Muhiku’da yapacakları 1.000 TL ve üzeri alışverişlerde %20 indirimden yararlanıyor!
-Mobil Şube “Kampanyalar” alanından Muhiku kampanyasını görüntüleyebilir, “İndirim Kodu Oluştur” butonuna tıklayarak alacağınız size özel indirim koduyla muhiku.com adresinden alışveriş yapabilirsiniz.
-Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek “Vakıf Katılımlı Ol” adımından ya da en yakın şubeye giderek müşteri olabilirsiniz.
-• Kampanya kodları, Vakıf Katılımlılara özeldir.
-• %20 indirim kodunun kullanılabilmesi için sepet tutarının 1.000 TL üzerinde olması gerekmektedir.
-• İndirim kodları, muhiku.com web sitesinde “Ödeme” sayfasında bulunan “Kupon Kodu” alanına yazılarak kullanılır.
-• Deneyim & aktivite hediyeleri, taze çiçek, söz & nişan hediyelikleri kategorileri indirim kampanyasına dâhil değildir.
-• Kampanya 31.12.2026 tarihine kadar geçerlidir.
-• Vakıf Katılım Bankası AŞ ve Muhiku, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0205-9e2afc07063a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari,tasit_finansmani,araç finansmanı,bireysel,,,48,,0.5,,hayır,,,,hızlı işlem,,,"Araç Finansmanı
-Araç Finansmanı ile hayalinizdeki otomobile 48 aya varan vade seçenekleri ile sahip olabilirsiniz.
-Dijital Araç Finansmanı
-Türkiye’de bir ilk! Hayallerinizi süsleyen araca sahip olmak için Kuveyt Türk Mobil'den Dijital Araç Finansmanı'na başvurabilir ve dijitale özel cazip oranlarla bütçenizi zorlamadan istediğiniz araca sahip olabilirsiniz.
-Dijital Motosiklet Finansmanı
-Trafik yoğunluğundan etkilenmeden seyahat etmek için Dijital Motosiklet Finansmanı'na başvurabilir ve hayalinizdeki motosiklete sahip olabilirsiniz!
-Motosiklet Finansmanı
-48 aya varan vade seçenekleri ile beğendiğiniz motosikleti Motosiklet Finansmanı'na başvurarak kolayca satın alabilirsiniz.
-TOGG Finansmanı
-Ülkemizin yerli ve milli otomobili TOGG’a, Kuveyt Türk desteğiyle hemen sahip olabilirsiniz!"
-0214-58cf4ca75ced,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/fiziki-altin,kart,sağlam kart,tum_musteriler,,,,,,,evet,,,,bedava,,,"⏰ Kampanya Süresi Dolmuştur!
-✨ Yeni Kampanyalarımız İçin Bizi Takip Etmeyi Unutmayın!
-Dünya Katılım’dan Yeni Müşterilere Altın Değerinde Fırsat!
-Dünya Katılım, yeni müşterilerine özel yepyeni bir kampanya ile karşınızda!
-13.01.2026-31.03.2026 tarihleri arasında Dünya Katılım Mobil Şube veya İnternet Şube üzerinden fiziki altın siparişi veren yeni müşterilerimize, siparişlerine ek olarak altın hediye ediyoruz.
-Dünya Katılım Mobil Şube’yi indirerek kolay ve güvenli bankacılığın keyfini çıkarın. Uygulamadaki “Bireysel Müşteri Olun” butonuyla hemen müşterimiz olun, ayrıcalıklı bankacılık deneyimine başlayın.
-Kampanya 01 Ocak 2026 tarihinden itibaren Dünya Katılım müşterisi olmuş ve 13.01.2026-31.03.2026 tarihleri arasında fiziki altın siparişi veren gerçek müşteriler için geçerlidir.
-Altın yatırımınıza değer katmak şimdi çok kolay. Kampanya süresince fiziki altın siparişinizin türüne göre aşağıdaki oranlarda altın kazanabilirsiniz:
-- Her 1 gram fiziki altın siparişinize→ 0,10 gram altın hediye
-- Çeyrek altın siparişinize → 0,17 gram altın hediye
-- Yarım altın siparişinize → 0,20 gram altın hediye
-- Tam altın siparişinize → 0,25 gram altın hediye
-- Bilezik çeşitleri siparişinize → 0.25 gram altın hediye
-Örnek Ödül Senaryoları:
-Alınan Ürün | Ödül Tutarı |
-1 Gram Altın | 0.10 gram altın |
-1 Çeyrek Altın | 0.17 gram altın |
-1 Yarım Altın | 0.20 gram altın |
-2 Gram Altın ( 1gr+1gr ) | 0.20 gram altın |
-2.5 Gram Altın | 0.20 gram altın |
-3 Gram Altın ( 1gr+1gr+1gr ) | 0.25 gram altın |
-1 Gram + 1 Çeyrek Altın | 0.25 gram altın |
-1 Tam Altın | 0.25 gram altın |
-2.5 Gram Altın + 1 Tam Altın | 0.25 gram altın |
-Fiziki altın güncel ürün ve fiyat listesine buradan ulaşabilirsiniz. İlgili değerler gösterge olup mobil şube ve internet şube üzerinden sipariş verebilirsiniz.
-👤 Kimler Kampanyadan Yararlanabilir?
-01 Ocak 2026 tarihinden itibaren, şubelerimizden veya görüntülü görüşme ile Dünya Katılım müşterisi olmuş gerçek kişiler bu kampanyadan yararlanabilir.
-Hemen Dünya Katılım Mobil Şube’sini indirerek avantajlı hizmetlerimizden yararlanabilir, kolay ve güvenli bankacılığın keyfini çıkarabilirsiniz. Uygulamamız üzerinden “Bireysel Müşteri Olun” butonuna tıklayarak kolayca müşterimiz olabilir ve ayrıcalıklı bankacılık deneyimine adım atabilirsiniz.
-👉 Kampanyadan faydalanmak için öncelikle Dünya Katılım’a uzaktan nasıl müşteri olabileceğinizi öğrenmek için buraya tıklayınız!
-📲 Katılım Adımları Çok Basit:
-- Dünya Katılım müşterisi olun.
-- Mobil Şube veya İnternet Şube üzerinden fiziki altın siparişi verin.
-- Siparişiniz sigortalı kargo ile adresinize teslim edilsin.
-- Kazandığınız hediye altınlar Altın Cari hesabınıza aktarılsın.
-📌 Kampanya Koşulları:
-- Kampanya 13.01.2026-31.03.2026 tarihleri arasında geçerlidir.
-- Hediye altın kazanabilmek için fiziki altın siparişinin Dünya Katılım Mobil Şube veya İnternet Şube üzerinden verilmiş olması gerekir.
-- Kampanya süresince bir müşteri en fazla 0,25 gram hediye altın kazanabilir.
-- Hediye altınlar, fiziki altın tesliminizin ardından en geç 1 iş günü içinde altın cari hesabınıza aktarılır.
-🏅 Fiziki Altın Siparişi Nasıl Verilir?
-- Mobil Şube: Diğer → Fiziki Altın İşlemleri → Fiziki Altın Al adımlarını izleyerek, listelenen altınlar arasından dilediğinizi sepetinize ekleyip kart veya hesabınızdan ödeme yapabilirsiniz.
-- İnternet Şube: Fiziki Altın Al menüsünden, istediğiniz altını seçip sepetinize ekleyerek kolayca satın alabilirsiniz.
-💡 Fiziki altın ürünlerimiz ve süreç hakkında daha detaylı bilgi almak için:
-👉 Dijitalden Fiziki Altın İşlemleri
-Bu kampanya ile hem altın yatırımınıza hemen başlayabilir hem de yatırımlarınızı daha kazançlı hale getirebilirsiniz. Dünya Katılım ailesine katılın, altın değerindeki avantajları kaçırmayın!
-🔸 Dünya Katılım Bankası, kampanya süresi boyunca şartları değiştirme ve sonlandırma hakkını saklı tutar."
-0206-6673dd6a5a23,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx,konut_finansmani,konut kredisi,tum_musteriler,,,120,,,ekspertiz falan,hayır,,,,uzun vade,,,"-
-Bireysel
-- KOBİ
-- Ticari
-- Dijital Bankacılık
-- Kampanyalar
--
-Blog
-- Finansal Okuryazarlık
-- IBAN Numarası Nedir?
-- Karbon Ayak İzi ve Su Ayak İzi Nedir? Nasıl Azaltılır?
-- Sigorta Nedir? Sigorta Çeşitleri Nelerdir?
-- Sigorta Primi Nedir? 2025 Sigorta Primi Ne Kadar?
-- NFC Teknolojisi Nedir, Nasıl Kullanılır?
-- Rahmet, Bereket ve İbadetin Ayı Ramazan
-- Kültürümüzde Ramazan ve Oruçla İlgili Gelenekler
-- Toplumsal Dayanışmanın Ayı Ramazan
-- Rayiç Bedel Nedir, Nasıl Hesaplanır?
-- e-İmza Nedir, Nasıl Kullanılır?
-- Yatırım Fonu Nedir, Nasıl Alınır?
-- Daha Sürdürülebilir Bir Dünya İçin Günlük Alışkanlıklarınızı Değiştirin!
-- Stopaj Nedir, Nasıl Hesaplanır?
-- İş Göremezlik (Rapor) Ödemesi Nedir? Nasıl Alınır?
-- Katılım Endeksi Nedir?
-- EFT Nedir? Hangi Saatlerde EFT Yapılabilir?
-- Sigorta ve Gayrimenkul: Konut Sigortaları
-- 30 Ağustos Zafer Bayramı ve Zafer Yürüyüşü: Tarihi ve Anlamı
-- Aşure'nin Ayı: Muharrem Ayında Paylaşmanın ve Bereketin Şöleni
-- Döviz Kuru Nedir? Döviz Kuru Türleri Nelerdir?
-- POS Cihazı Nedir, Nasıl Kullanılır?
-- Hayal Ettiğiniz Yurt Dışı Tatili İçin Para Biriktirme Yolları
-- Enflasyon Nedir? Nasıl Hesaplanır?
-- 3D Secure Nedir, Ne İşe Yarar?
-- Kredi Notu (Kredi Puanı) Nedir?
-- Türkiye Finans’ın 100’ünde Gelecek Olan 5 Üyesi
-- Cumhuriyetimizin Unutulmaz 100'leri
-- Bankacılığın Tarihçesi ve Türkiye’de Bankacılık Türleri
-- Dijital Dünyada Güvenlik İçin Temel İpuçları
-- Avrupa Yeşil Mutabakatı: Sürdürülebilir Ekonomiler İçin Yol Haritası
-- 2023'ü Geride Bırakırken
-- DASK - Zorunlu Deprem Sigortası Nedir?
-- Sağlık Sigortası Nedir? Neden Sağlık Sigortası Yaptırmalıyız?
-- Katılma Hesabı Nedir, Nasıl Açılır?
-- Sürdürülebilir Bir Geleceğin Anahtarı: Net Sıfır Hedefi
-- Tüm Renkleri Buluşturan Güzellikleriyle Hoş Geldin Ramazan!
-- İşsizlik Maaşı (İşsizlik Ödeneği) Nedir? İşsizlik Maaşı Hesaplama 2024
-- Trafik Cezası (TPC) Nedir? Trafik Cezası Sorgulama ve Ödeme 2024
-- Finansal Analiz: Finansal Durum Değerlendirmesi ve Veri Analizi"

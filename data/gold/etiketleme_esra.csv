@@ -1,53 +1,5 @@
-kampanya_id,banka_adi,kaynak_url,kampanya_turu,urun_turu,hedef_kitle,kar_payi_orani,finansman_tutari_max,vade_ay_max,taksit_sayisi,tahsis_ucreti,masraf_bilgisi,masrafsiz_mi,odul_miktari,indirim_orani,alisveris_puani,kampanya_avantaji,kampanya_bitis,kampanya_kosullari,metin
-0211-805c18fc26f9,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/konut-finansmani,konut_finansmani,konut finansmanı,ev almak isteyenler,,,120,,0.5,ekspertiz falan,hayır,,,,uzun vade,,düzenli gelir şart,"Konut Finansmanı
-Hayalinizdeki eve, uzun vade ve size özel ödeme seçenekleriyle sahip olabilirsiniz. Satın almak istediğiniz konut, katılım bankacılığı prensiplerine uygun olarak Bankamız tarafından satın alınır ve size istediğiniz vade üzerinden satılır.
-- Esnek Ödeme : Finansman geri ödemeleriniz için size uygun vadeler sunulmaktadır. Geri ödemelerinizi bütçenize uygun şartlarda belirleyebilir ve rahatça ödeyebilirsiniz.
-- Finansman Oranı : Satın almak istediğiniz konutun ekspertiz* değerinin %80'ine kadar finansman kullanabilirsiniz.
-- Vergi Muafiyeti : Konut finansmanı kullanımınızda, KKDF (Kaynak Kullanımı Destekleme Fonu), BSMV (Banka ve Sigorta Muameleleri Vergisi) ödemelerinden muaf olabilirsiniz.
-- Ek Teminat : Gerekli görülmesi halinde finansman talebiniz için ek teminat istenebilir.
-(*) Ekspertiz işlemi, Emlak Katılım’ın anlaşmalı olduğu SPK lisanslı kuruluşlar tarafından yapılmaktadır.
-Web sitemizdeki konut finansmanı oranlarımız 100.000 TL finansman tutarı ile sınırlıdır. Bu tutarın üzerindeki konut finansmanı talepleriniz için şubelerimize başvurmanızı rica ederiz.
-Gerekli Belgeler
-- Başvuru formu
-- Nüfus cüzdanı, sürücü belgesi veya pasaport fotokopisi
-- Kişinin çalışma durumuna göre gelir belgesi
-- Şubece istenebilecek diğer belgeler
-- Finansmana konu olan konutun tapu belgesi fotokopisi
-- Gerekirse azami iki ay öncesine ait müşteri adına kayıtlı sabit telefon, elektrik, su veya doğalgaz faturalarından herhangi birisinin fotokopisi
-- Gerekli görülmesi hâlinde kefil ve kefile ilişkin belgeler
-Birlikte Konut Finansmanı
-Ev sahibi olmak isteyen ama tek başına ev alma imkanı olmayanlar için şimdi Birlikte Konut Finansmanı var! Dilediğiniz eve, dilediğiniz kişiyle beraber kolayca sahip olun
-Yeni evinizi, finansmanı beraber kullanacağınız kişi ile müşterek tapulu olarak satın alır ve finansman ödemelerini beraber yaparak ödeme imkanınıza uygun olarak ev sahibi olabilirsiniz.
-Birlikte Konut Finansman’ını istediğiniz şekilde, arkadaşınız, kardeşiniz, akrabanız ya da eşiniz ile ortak olarak yatırım veya oturum amacıyla kullanabilirsiniz.
-Çevreci Konut Finansmanı
-Enerji verimliliği yüksek konut sayısını arttırılmasına katkı sağlamak amacıyla; mevcut konut finansmanı uygulamamıza ilave olarak, bireysel müşterilerimizin enerji verimliliği yüksek konutlara kullanacağı finansmanlar için tasarlanmıştır.
-- Kapsam : Enerji Kimlik Belgesi (EKB) bulunan ve enerji performansı A ve B sınıfı olan konutların finansmanı kapsamında kullandırılır.
-- Avantaj : Mevcut fiyatlarımızdan 2 puan kâr payı indirimi uygulanır.
-- Sosyal Sorumluluk : Finansman kullanan müşterilerimiz adına OGEM-VAK aracılığı ile isme özel fidan bağışı yapılmaktadır.
-Memlekette Konut Finansmanı
-Yurtdışında yerleşik Türkiye Cumhuriyeti vatandaşlarının Türkiye’de edinecekleri konutlar için TL, USD veya EUR cinsinden, Mortgage kapsamında finansman sağlanmasına yönelik bir fon kullandırım ürünüdür.
-- Vade : TL cinsinden 120 aya kadar; USD veya EUR cinsinden ise azami 60 ay vadeye kadar vade imkanı sunmaktadır.
-- Finansman Oranı : Ekspertiz değerinin %80’ine kadar finansman kullandırabilmektedir.
-- Şartlar : Finansman kullanacak olan kişinin yurtdışında yerleşik olma zorunluluğu bulunmaktadır.
-- Belge Onayı : Yabancı dilde düzenlenmiş olan başvuru belgeleri, Türkiye'deki yeminli mütercimler tarafından Türkçeye çevrilmesi ve çevirilerin noter tarafından onaylanmış olması gerekmektedir.
-- Dövizle Kullanım : Yurtdışında yerleşik Türkiye Cumhuriyeti vatandaşların resmi gelirinin ancak döviz cinsinden olması durumunda USD veya EUR para cinsiden fon kullanabilmektedir.
-Gerekli Belgelere Ek Olarak Talep Edilen Belgeler:
-- İşveren Referans Yazısı
-- Adres (Yerleşim Yeri) Belgesi / Yurtdışında İkamet Adresini Gösteren Belge
-- Son 3 Aylık Banka Maaş Hesabı Ekstresi
-**Kredi tutarı, teminat olarak alınacak mevcut ve satın alınacak konutun toplam ekspertiz değerine göre belirlenir. Mevcut ve satın alınacak konutun Enerji Kimlik Belgesi ve enerji performansına göre tablodaki kredi-değer oranı uygulanacaktır.
-KONUT ALIMINDA VE KONUT TEMİNATLI KREDİLERDE KULLANDIRILABİLECEK AZAMİ KREDİ TUTARI | |||
----|---|---|---|
-KONUT DEĞERİ | Enerji Sınıf | ||
-A | B | DİĞER | |
-DEĞER <= 5 MİLYON TL | DEĞER x 90% | DEĞER x 0% | DEĞER x 70% |
-5 MİLYON TL < DEĞER <= 7 MİLYON TL | DEĞER x 80% | DEĞER x 70% | DEĞER x 60% |
-10 MİLYON TL < DEĞER <= 10 MİLYON TL | DEĞER x 70% | DEĞER x 60% | DEĞER x 50% |
-10 MİLYON TL < DEĞER <= 20 MİLYON TL | DEĞER x 50% | DEĞER x 40% | DEĞER x 30% |
-20 MİLYON TL < DEĞER |
-DEĞER x 40% | DEĞER x 30% |
-DEĞER x 20% |"
-0209-7201b97fc48c,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari,ihtiyac_finansmani,ihtiyaç finansmanı,bireysel,,,36,,0.5,masraf var,,,,,,,kredi notu iyi olmalı,"Son Gün 07.09.2026
+﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0209-7201b97fc48c,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari,,,,,,,,,"Son Gün 07.09.2026
 Son Gün 07.09.2026
 Son Gün 07.09.2026
 Son Gün 07.09.2026
@@ -236,7 +188,169 @@ Son Gün 31.08.2026
 Son Gün 31.08.2026
 Son Gün 31.08.2026
 Son Gün 31.08.2026"
-0205-54bc08fa0088,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari,konut_finansmani,konut finansmanı,ev almak isteyenler,,,120,,0.5,ekspertiz falan,hayır,,,,uzun vade,,düzenli gelir şart,"Konut Finansmanı
+0203-6ff69597d9db,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/konut-finansmani,,,,,,,,,"Albaraka Türk konut finansmanı sayesinde kira öder gibi ev sahibi olmak artık çok kolay. Uygun, avantajlı ve esnek ödeme planlarımızı inceleyin, hayalini kurduğunuz evin sahibi olun. Müşterilerimize özel fırsatlar ve ev finansmanı çözümlerimizi hemen keşfedin.
+Konut finansmanı, ev sahibi olmak isteyen kişilere faizsiz finansman çözümleri sunan bir üründür. Albaraka Türk Katılım Bankası olarak, konut finansmanı aracılığıyla müşterilerimize esnek seçenekler sunarak, ev sahibi olma sürecini kolaylaştırıyoruz.
+Konut finansmanı hesaplama, finansman tutarı, vade süresi ve kar payı oranı bilgileri girilerek yapılır. Konut kredisi hesaplama aracımız ile bu bilgileri kullanarak aylık ödemelerinizi ve toplam geri ödeme tutarınızı anında öğrenebilirsiniz.
+- Dilediğiniz ev, katılım bankacılığı prensiplerine uygun olarak 120 aya kadar taksitlendirebilirsiniz.
+- Geri ödemelerinizi aylık eşit taksitler hâlinde her ay farklı miktarda ödemeler halinde yapabilirsiniz.
+- Konut kat mülkiyetini veya kat irtifakı tapusunu ibraz ederek konut finansmanı kullanabilirsiniz.
+- Konut kredisi/ finansmanı kullanmanız durumunda, Kaynak Kullanımı Destekleme Fonu (KKDF), Banka ve Sigorta Muameleleri Vergisi (BSMV) ödemelerinden muaf olabilirsiniz.
+- Ekspertiz işlemi Albaraka Türk'ün anlaşmalı olduğu SPK lisanslı kuruluşlar tarafından yapılmaktadır.
+Yasal mevzuat gereği Konut işlemlerinde ekspertiz değeri, konut durumu ve enerji sınıfına göre finanse edilebilir tutarlar değişmektedir. Ev finansmanı hesaplama aracını kullanmadan önce aşağıda yer alan konut ekspertiz değerine göre finansman oranlarını inceleyebilirsiniz.
+Standart Konut Alımında; KULLANDIRILABİLECEK AZAMİ KREDİ TUTARI |
+|||
+Konut Değeri | Enerji Sınıfı | ||
+A-B | C | DİĞER | |
+Değer <= 5 Milyon TL | Değer x 90% | Değer x 80% | Değer x 70% |
+5 Milyon - 7 Milyon TL | Değer x 80% | Değer x 70% | Değer x 60% |
+7 Milyon - 10 Milyon TL | Değer x 70% | Değer x 60% | Değer x 50% |
+10 Milyon TL - 20 Milyon TL | Değer x 50% | Değer x 40% | Değer x 30% |
+20 Milyon TL Üzeri | Değer x 40% | Değer x 30% | Değer x 20% |
+2. ve Sonraki Konut Alımında; KULLANDIRILABİLECEK AZAMİ KREDİ TUTARI |
+|||
+Konut Değeri | Enerji Sınıfı | ||
+A-B | C | DİĞER | |
+Değer <= 5 Milyon TL | Değer x 22,5% | Değer x 20% | Değer x 17,5% |
+5 Milyon - 7 Milyon TL | Değer x 20% | Değer x 17,5% | Değer x 15% |
+7 Milyon - 10 Milyon TL | Değer x 17,5% | Değer x 15% | Değer x 12,5% |
+10 Milyon TL - 20 Milyon TL | Değer x 12,5% | Değer x 10% | Değer x 7,5% |
+20 Milyon TL Üzeri | Değer x 10% | Değer x 7,5% | Değer x 5% |
+Albaraka Konut Finansmanı Başvuru Şartları
+- 18 yaşını tamamladıysanız, konut finansmanına başvurabilirsiniz.
+- Konut finansmanından gerçek kişi (bireysel) olarak yararlanmak isterseniz; kimlik kartınızı, gelir belgelerinizi, maaş bordronuzu ya da net maaş tutarını gösteren iş yerince onaylı belgeleriniz ile satın alınacak konutun tapu fotokopisini ibraz etmeniz gerekir.
+- Konut finansmanından serbest meslek sahibi olarak yararlanmak isterseniz; vergi levhanızı, onaylı bilanço ve gelir tablonuzu, cari yıl mizanınızı, faaliyet belgenizi, varsa tapu fotokopilerini, kira kontratlarınızı, gelir belgelerinizi ve imza beyannamenizi, ayrıca gerekli durumlarda kefiller için de aynı belgeleri ibraz etmeniz gerekmektedir.
+- Konut finansmanından tüzel kişi olarak yararlanmak isterseniz; satın alınacak konutun tapu fotokopisini, ortakların kimlik kartlarını, noter onaylı şirket imza sirkülerini, Ticaret Sicil Gazetesi örneğini, oda kayıt belgesini, faaliyet belgenizi, son üç yıla ait bilânço ve gelir tablolarınız ile son üç yılda düzenlenmiş vergi levhanızın fotokopisini, ayrıca gerekli durumlarda kefiller için de aynı belgeleri ibraz etmeniz gerekir.
+- İstenilen belgelerle, size en yakın Albaraka Türk şubesine uğrayarak başvuru formunu doldurabilir ve yeni eviniz için ilk adımı atabilirsiniz.
+- Ön değerlendirmenin olumlu sonuçlandığında ekspertiz başvurusunda bulunabilir, satın almak istediğiniz ev için yararlanabileceğiniz finansman tutarını öğrenebilirsiniz.
+- Detaylı bilgi ve diğer bankacılık işlemleri için 0850 222 5 666 numaralı Alo Albaraka'yı arayabilirsiniz.
+Albaraka’nın ev finansmanına başvuru yapmak aşağıdaki kanalları kullanabilirsiniz;
+- Şubelerimiz
+- Albaraka Mobil
+- İnternet Şubesi
+**Not: Ayrıca, Alo Albaraka (Müşteri Hizmetleri) merkezini arayarak da hızlıca finansman başvurusu gerçekleştirebilir, satın almak istediğiniz eve bir adım daha yaklaşabilirsiniz.
+-
+Avantajlı Kar Payı Oranları: Rekabetçi ve düşük kar payı oranlarıyla bütçeye uygun finansman seçenekleri sağlıyoruz.
+-
+Güvenilir ve Faizsiz Finansman: İslami Finans / Katılım Bankacılığı prensiplerine uygun olarak güvenilir ve faizsiz finansman sunuyoruz.
+-
+Esnek Vade Seçenekleri: 5-7-10 yıl vadeli konut finansmanı hesaplama seçenekleri ile esnek ödeme planları.
+-
+Hızlı ve Kolay Başvuru: Pratik ve kullanıcı dostu başvuru süreçlerinin yanı sıra hızlı onay mekanizması finansman başvurularını çözüme kavuşturuyoruz.
+-
+Farklı Konur Türlerine Uygunluk: Yeni ev alımı, ikinci el ev alımı ya da mevcut evin yenilenmesi gibi farklı konut ihtiyaçlarına yönelik finansman seçenekleri sunuyoruz.
+%
+Oranı kendim gireceğim.
+Aylık Taksit Tutarı
+9.169,06 TL
+Geri Ödenecek Toplam Tutar
+210.888,82 TL
+Yıllık Maliyet Oranı
+% 82,44
+Ücretler Toplamı
+28.076,27
+Finansman talepleriniz için müşterimiz olmanız gerekmeden; web sitemiz üzerinden hemen başvurup jet hızında sonuç alabilirsiniz.
+Finansman talepleriniz için müşterimiz olmanız gerekmeden; Albaraka Mobil üzerinden hemen başvurup jet hızında sonuç alabilirsiniz.
+Finansman talepleriniz için müşterimiz olmanız gerekmeden; 4462’ye SMS atarak hemen başvurup jet hızında sonuç alabilirsiniz.
+Finansman talepleriniz için müşterimiz olmanız gerekmeden Şubelerimizden hemen başvurup jet hızında sonuç alabilirsiniz."
+0205-22df955e1dda,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar,,,,,,,,,"Konut Finansmanları
+Kuveyt Türk’ün Konut Finansmanı ile siz de hayal ettiğiniz eve kolayca sahip olabilirsiniz!
+Araç Finansmanları
+Hemen araç sahibi olabilmek için yapmanız gereken tek şey, Kuveyt Türk'e başvurmak!
+Alışveriş Finansmanları
+Kuveyt Türk Alışveriş Finansmanı ihtiyacınız olduğu an yanınızda!
+İhtiyaç Finansmanları
+Seyahatten eğitime, hac ve umreden evlilik harcamalarınıza kadar tüm ihtiyaçlarınız için Kuveyt Türk yanınızda!
+Sürdürülebilir Finansmanlar
+Kuveyt Türk Sürdürülebilir Finansmanlar ihtiyacınız olduğu an yanınızda!"
+0211-805c18fc26f9,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/konut-finansmani,,,,,,,,,"Konut Finansmanı
+Hayalinizdeki eve, uzun vade ve size özel ödeme seçenekleriyle sahip olabilirsiniz. Satın almak istediğiniz konut, katılım bankacılığı prensiplerine uygun olarak Bankamız tarafından satın alınır ve size istediğiniz vade üzerinden satılır.
+- Esnek Ödeme : Finansman geri ödemeleriniz için size uygun vadeler sunulmaktadır. Geri ödemelerinizi bütçenize uygun şartlarda belirleyebilir ve rahatça ödeyebilirsiniz.
+- Finansman Oranı : Satın almak istediğiniz konutun ekspertiz* değerinin %80'ine kadar finansman kullanabilirsiniz.
+- Vergi Muafiyeti : Konut finansmanı kullanımınızda, KKDF (Kaynak Kullanımı Destekleme Fonu), BSMV (Banka ve Sigorta Muameleleri Vergisi) ödemelerinden muaf olabilirsiniz.
+- Ek Teminat : Gerekli görülmesi halinde finansman talebiniz için ek teminat istenebilir.
+(*) Ekspertiz işlemi, Emlak Katılım’ın anlaşmalı olduğu SPK lisanslı kuruluşlar tarafından yapılmaktadır.
+Web sitemizdeki konut finansmanı oranlarımız 100.000 TL finansman tutarı ile sınırlıdır. Bu tutarın üzerindeki konut finansmanı talepleriniz için şubelerimize başvurmanızı rica ederiz.
+Gerekli Belgeler
+- Başvuru formu
+- Nüfus cüzdanı, sürücü belgesi veya pasaport fotokopisi
+- Kişinin çalışma durumuna göre gelir belgesi
+- Şubece istenebilecek diğer belgeler
+- Finansmana konu olan konutun tapu belgesi fotokopisi
+- Gerekirse azami iki ay öncesine ait müşteri adına kayıtlı sabit telefon, elektrik, su veya doğalgaz faturalarından herhangi birisinin fotokopisi
+- Gerekli görülmesi hâlinde kefil ve kefile ilişkin belgeler
+Birlikte Konut Finansmanı
+Ev sahibi olmak isteyen ama tek başına ev alma imkanı olmayanlar için şimdi Birlikte Konut Finansmanı var! Dilediğiniz eve, dilediğiniz kişiyle beraber kolayca sahip olun
+Yeni evinizi, finansmanı beraber kullanacağınız kişi ile müşterek tapulu olarak satın alır ve finansman ödemelerini beraber yaparak ödeme imkanınıza uygun olarak ev sahibi olabilirsiniz.
+Birlikte Konut Finansman’ını istediğiniz şekilde, arkadaşınız, kardeşiniz, akrabanız ya da eşiniz ile ortak olarak yatırım veya oturum amacıyla kullanabilirsiniz.
+Çevreci Konut Finansmanı
+Enerji verimliliği yüksek konut sayısını arttırılmasına katkı sağlamak amacıyla; mevcut konut finansmanı uygulamamıza ilave olarak, bireysel müşterilerimizin enerji verimliliği yüksek konutlara kullanacağı finansmanlar için tasarlanmıştır.
+- Kapsam : Enerji Kimlik Belgesi (EKB) bulunan ve enerji performansı A ve B sınıfı olan konutların finansmanı kapsamında kullandırılır.
+- Avantaj : Mevcut fiyatlarımızdan 2 puan kâr payı indirimi uygulanır.
+- Sosyal Sorumluluk : Finansman kullanan müşterilerimiz adına OGEM-VAK aracılığı ile isme özel fidan bağışı yapılmaktadır.
+Memlekette Konut Finansmanı
+Yurtdışında yerleşik Türkiye Cumhuriyeti vatandaşlarının Türkiye’de edinecekleri konutlar için TL, USD veya EUR cinsinden, Mortgage kapsamında finansman sağlanmasına yönelik bir fon kullandırım ürünüdür.
+- Vade : TL cinsinden 120 aya kadar; USD veya EUR cinsinden ise azami 60 ay vadeye kadar vade imkanı sunmaktadır.
+- Finansman Oranı : Ekspertiz değerinin %80’ine kadar finansman kullandırabilmektedir.
+- Şartlar : Finansman kullanacak olan kişinin yurtdışında yerleşik olma zorunluluğu bulunmaktadır.
+- Belge Onayı : Yabancı dilde düzenlenmiş olan başvuru belgeleri, Türkiye'deki yeminli mütercimler tarafından Türkçeye çevrilmesi ve çevirilerin noter tarafından onaylanmış olması gerekmektedir.
+- Dövizle Kullanım : Yurtdışında yerleşik Türkiye Cumhuriyeti vatandaşların resmi gelirinin ancak döviz cinsinden olması durumunda USD veya EUR para cinsiden fon kullanabilmektedir.
+Gerekli Belgelere Ek Olarak Talep Edilen Belgeler:
+- İşveren Referans Yazısı
+- Adres (Yerleşim Yeri) Belgesi / Yurtdışında İkamet Adresini Gösteren Belge
+- Son 3 Aylık Banka Maaş Hesabı Ekstresi
+**Kredi tutarı, teminat olarak alınacak mevcut ve satın alınacak konutun toplam ekspertiz değerine göre belirlenir. Mevcut ve satın alınacak konutun Enerji Kimlik Belgesi ve enerji performansına göre tablodaki kredi-değer oranı uygulanacaktır.
+KONUT ALIMINDA VE KONUT TEMİNATLI KREDİLERDE KULLANDIRILABİLECEK AZAMİ KREDİ TUTARI | |||
+---|---|---|---|
+KONUT DEĞERİ | Enerji Sınıf | ||
+A | B | DİĞER | |
+DEĞER <= 5 MİLYON TL | DEĞER x 90% | DEĞER x 0% | DEĞER x 70% |
+5 MİLYON TL < DEĞER <= 7 MİLYON TL | DEĞER x 80% | DEĞER x 70% | DEĞER x 60% |
+10 MİLYON TL < DEĞER <= 10 MİLYON TL | DEĞER x 70% | DEĞER x 60% | DEĞER x 50% |
+10 MİLYON TL < DEĞER <= 20 MİLYON TL | DEĞER x 50% | DEĞER x 40% | DEĞER x 30% |
+20 MİLYON TL < DEĞER |
+DEĞER x 40% | DEĞER x 30% |
+DEĞER x 20% |"
+0214-b8f297f72f42,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/cevre-dostu-arac-finansmani,,,,,,,,,"Dünya Katılım Çevre Dostu Araç Finansmanı Nedir?
+Gelecek nesillere daha yaşanabilir bir dünya bırakma hedefiyle geliştirdiğimiz Çevre Dostu Araç Finansmanı, çevresel sürdürülebilirliği desteklemek isteyen müşterilerimize özel avantajlar sunar. Elektrikli veya hibrit (benzinli–elektrikli) araç alımlarınızı teşvik eden bu ürünümüz, düşük karbon salınımını artırma hedefi doğrultusunda hazırlanmıştır. Günün ekonomik koşulları dikkate alınarak, diğer taşıt finansmanlarımıza kıyasla daha avantajlı kâr oranları, esnek ödeme seçenekleri ve güvenli bir finansman deneyimi sunar. Böylece hem çevreyi koruyan bir tercih yapabilir hem de bütçenizi rahatlatan bir çözüme kolayca ulaşabilirsiniz.
+Hesaplama Aracı
+Çevre Dostu Araç Finansmanının Özellikleri Nelerdir?
+Çevre Dostu Araç Finansmanı, çevresel sürdürülebilirliği destekleyen finansal süreç ve araçları kapsar. Bu finansman modeli, iklim değişikliğiyle mücadele etmeyi, enerji verimliliğini artırmayı ve doğal kaynakların korunmasını amaçlar. Yani geleneksel finansman yaklaşımlarının aksine, çevresel etkileri azaltmayı ve toplumsal faydayı ön planda tutar.
+Bu model sadece doğayı korumakla kalmaz; aynı zamanda ekonomik büyüme ve sürdürülebilir kalkınmayı destekler. Örneğin, elektrikli veya hibrit araç yatırımlarına sağlanan finansman, karbon salınımını azaltırken yeni istihdam fırsatları yaratır. Ayrıca çevre dostu araçları tercih eden şirketler ve bireyler, toplum gözünde daha saygın ve güvenilir bir konum elde eder.
+Sonuç olarak, Çevre Dostu Araç Finansmanı, hem bireysel hem de kurumsal yatırımcılar için çevresel ve ekonomik açıdan çok yönlü faydalar sunar. Daha temiz bir gelecek ve sürdürülebilir bir ekonomi için bu finansman yaklaşımı önemli bir fırsat yaratır.
+Başvuru Şartları
+- 18 yaşını doldurmuş olmak: Başvuruda bulunacak kişinin reşit olması zorunludur.
+- Düzenli gelire sahip olmak: Başvuru sahibinin finansmanı geri ödeyebilecek gelir düzeyine sahip olması gerekir.
+- Gelir ve kredi uygunluğu: Kredi notu, ödeme alışkanlıkları ve finansal geçmiş bankanın tahsis kriterlerine göre değerlendirilir.
+- Kimlik ve adres doğrulaması: Geçerli T.C. kimlik kartı ve güncel adres bilgileri teyit edilmelidir.
+- Araç bilgilerinin sunulması: Finansman sağlanacak elektrikli veya hibrit araca ilişkin proforma fatura ve benzeri belgeler talep edilir.
+- Teminat veya kefil: Gerek görülmesi hâlinde banka tarafından ek güvence istenebilir.
+- Katılım bankacılığı prensiplerine uygunluk: Tüm finansman sürecinin faizsiz bankacılık esaslarına uygun ilerlemesi gerekir
+Gerekli Belgeler – Çevre Dostu Araç Finansmanı
+Gerçek Kişiler İçin
+- Proforma Fatura: Satın alınacak sıfır elektrikli veya hibrit araç için zorunludur.
+- Eski Ruhsat: Satın alınacak ikinci elektrikli veya hibrit el araçlar için zorunludur.
+- SGK Dökümü.
+- Kimlik Kartı: Kimlik doğrulaması için gereklidir.
+- Gelir Belgesi: Başvuru sahibinin ödeme gücünü göstermek için talep edilir.
+- Maaş Bordrosu / İşyeri Onaylı Maaş Belgesi: Ücretli çalışanlar için zorunludur.
+Serbest Meslek Sahipleri İçin
+- Vergi Levhası: Resmî kayıt ve vergi durumunu gösterir.
+- Onaylı Bilanço ve Gelir Tablosu: Mali durumu kanıtlamak için gereklidir.
+- Cari Yıl Mizanı: Güncel finansal durumun belgesi.
+- Faaliyet Belgesi: İşletmenin aktif olduğunu gösterir.
+- Tapu Fotokopileri / Kira Kontratları / Gelir Belgeleri: Varsa ek gelir kaynaklarını kanıtlamak için.
+- Noter Onaylı İmza Beyannamesi: Resmî yetki ve imza doğrulaması sağlar.
+- Kefil Belgeleri: Banka gerekli gördüğünde talep edebilir.
+Başvuru Kanalları
+Sıkça Sorulan Sorular
+Çevre Dostu Araç Finansmanı, satın alınacak elektrikli veya hibrit aracın bedelini doğrudan satıcıya öder; nakit olarak başvuru sahibine verilmez. Çevre dostu araç finansmanından yararlanılması için elektrikli veya hibrit araç satin alınması gerekmektedir.
+- Elektrikli araçlar
+- Hibrit araçlar (benzinli-elektrikli)
+Hayır. Finansman, aracın satın alınacağı satıcıya veya bayiye doğrudan aktarılır. Nakit olarak müşterinin hesabına geçmez.
+Evet. Başvuru yapacak kişinin 18 yaşını doldurmuş olması gerekir.
+Hayır, ancak banka gerekli görürse ek güvence talep edebilir. Bu teminat, kefil, araç rehni veya gayrimenkul olabilir.
+Evet, düşük kredi notu ile de başvuru yapılabilir; ancak onay ve finansman oranı kredi notuna göre şekillenir. Kredi notunuzu öğrenmek için Kredi Kayıt Bürosu (KKB) raporunu kullanabilirsiniz."
+0205-54bc08fa0088,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari,,,,,,,,,"Konut Finansmanı
 Avantajlı kar oranlarına ve farklı vade seçeneklerine sahip Konut Finansmanı'na başvurunuzu Kuveyt Türk Mobil üzerinden yapabilirsiniz.
 İlk Evim Konut Finansmanı
 İlk evini almak isteyenler için ilk evim konut finansmanı, hayallerini gerçeğe dönüştürmek için avantajlı bir seçenek sunuyor.
@@ -248,150 +362,343 @@ Gurbetten Sılaya Gayrimenkul Finansmanı
 Yurt dışında elde ettiğiniz kazançla memleketinizden ev almaya niyetliyseniz Gurbetten Sılaya Gayrimenkul Finansmanı'ndan faydalanmayı düşünebilirsiniz.
 İş Yeri Finansmanı
 İşinizi büyütürken güçlü finansman desteği ile Kuveyt Türk yanınızda!"
-0214-2ae200e061f6,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar,konut_finansmani,konut finansmanı,ev almak isteyenler,,,120,,0.5,ekspertiz falan,hayır,,,,uzun vade,,düzenli gelir şart,"Sitemizden çıkış yapıp başka bir web sitesine yönlendiriliyorsunuz.
-KENDİM İÇİN
-https://loremipsum/loremipsum.dolorsitamet
-Sitemizden çıkış yapıp başka bir web sitesine yönlendiriliyorsunuz.
-KENDİM İÇİN
-İŞİM İÇİN
-- Finansmanlar
-- Nakit Yönetimi
-- Sigortalar
-- Yatırım
-- KOBİ Bankacılığı
--
-Sürdürülebilir Çözümler
-Sürdürülebilir Çözümler
-KENDİM İÇİN
-İŞİM İÇİN
-Önerilen Aramalar
-Katılım finansman ürünlerimiz, faizsiz bankacılık prensipleri doğrultusunda, ihtiyaçlarınızı karşılamanız için size esnek ve uygun çözümler sunar.
-Hayallerinizi bekletmeyin! Dünya Katılım ihtiyaç finansmanı ile bütçenize uygun ve güvenli çözümler sizi bekliyor.
-Detaylı Bilgi
-Enerya yeni doğal gaz abonelerine özel konut içi tesisat, kombi, petek ve mutfak ocağı gibi ürün ve hizmetlerin alımı için başvurulabilecek finansman türüdür.
-Detaylı Bilgi
-Enerya Karz-ı Hasen finansmanı sayesinde, Enerya Abonelik Bedeli ve doğalgaz dönüşüm için kullanacağınız konut içi tesisat bedellerini vade farksız olarak finanse edebilirsiniz.
-Detaylı Bilgi
-Dünya Katılım Bankası ile hayalinizdeki araca ulaşmak artık çok daha kolay. Esnek ödeme planları, hızlı süreçler ve güvenilir finansman desteğiyle, yola çıkmak isteyen herkes için uygun çözümler Dünya Katılım Bankası’nda.
-Detaylı Bilgi
-Çevre dostu aracınız için beklemeyin! Dünya Katılım ile çevreci sürüşe bütçenize uygun ve güvenli şekilde adım atın.
-Detaylı Bilgi
-Ev sahibi olmak için uzun süreler boyunca beklemenize gerek yok! Dünya Katılım Bankası, katılım esaslı yapısıyla bütçenize uygun fırsatlar sunuyor. Huzurlu bir yuvaya giden yolda sizi destekleyecek fırsatlarımızı hemen keşfedin.
-Detaylı Bilgi
-Tüm site ziyaretçilerimizi daha iyi tanımak, sitemizdeki kullanıcı deneyimini kişiselleştirmek ve iyileştirmek için web sitemizde çerezler kullanıyoruz. Çerez ayarlarınızı yönetmek için ""Tercihler"" seçeneğine tıklayabilir, sitemizdeki çerezlerle ilgili detaylı bilgiler için Çerez Aydınlatma Metni'ni inceleyebilirsiniz.
-Çerez Ayarları
-Çerez Politikası
-Zorunlu Çerezler
-Bu çerezler, web sitemizin çalışması için gereklidir ve sistemlerimizde kapatılamaz. Bunlar genellikle tarafınızca yapılan ve hizmet talebi anlamına gelen eylemlere yanıt olarak yerleştirilir, örneğin gizlilik tercihlerinizi ayarlamak, oturum açmak ya da formları doldurmak. Tarayıcınızı bu çerezleri engelleyecek ya da bu çerezlerle ilgili olarak size uyarıda bulunacak şekilde ayarlayabilirsiniz, ancak bu durumda sitenizin bazı kısımları çalışmayabilir. Bu çerezler sizi kişisel olarak tanımlayabilecek herhangi bir bilgi saklamamaktadır.
-İşlevsellik Çerezleri
-Web sitesi deneyiminizi iyileştirmek amacıyla analitik çerezler kullanılır. Analitik çerezler, web sitesini nasıl kullandığınızı (örn; hangi sayfaları ziyaret ettiğiniz, ziyaret süresi vb.) anlamamızı sağlar. Böylelikle sunduğumuz içerikleri geliştirebilir ya da web sitesi tasarımını değiştirebiliriz.
-Kişiselleştirilmiş Reklam Çerezleri
-Bu çerezler reklam partnerlerimiz tarafından sitemiz üzerinden yerleştirilebilir. Bunlar söz konusu şirketler tarafından ilgi alanlarınızın bir profilini oluşturmak ve size diğer sitelerdeki ilgili reklamları göstermek amacıyla kullanılabilir ve paylaşılabilir. Bu işlem, tarayıcınızı ve internet cihazınızı benzersiz biçimde tanımlamaya dayalıdır. Bu çerezlere izin vermediğiniz takdirde, hedefli reklamları daha az görebileceksiniz.
-ÇEREZ KULLANIMINA İLİŞKİN AYDINLATMA METNİ
-1. Giriş Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu’nun (“Kanun”) 10’uncu maddesi, Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ (“Tebliğ”) ve Çerez Uygulamaları Hakkında Rehber (“Rehber”) kapsamında veri sorumlusu sıfatıyla Dünya Katılım Bankası A.Ş. tarafından hazırlanmıştır. Bu Çerez Aydınlatma Metni, internet sitemiz ziyaret edildiğinde kullanılan çerezler aracılığıyla toplanan kişisel verilerin işlenmesi, çerezlerin hangi amaçlarla ve hangi tür çerezlerin kullanıldığı konusunda bilgi sağlamanması, bu çerezleri nasıl yönetebileceğiniz hakkında rehberlik edilmesi amacıyla hazırlanmıştır. 2. Çerez Nedir ve Neden Kullanılmaktadır? Çerezler, bir internet sitesini ziyaret ettiğinizde bilgisayarınıza veya diğer internet bağlantılı cihazlara (örneğin, akıllı telefonlar veya tabletler) yerleştirilebilen dosyalar veya bilgi parçalarıdır. Başka bir deyişle, çerezler internet siteleri veya mobil uygulamalar gibi çevrim içi platformları kullanırken, cihazınıza yerleştirilen küçük metin dosyalarıdır. Çerezler, kullanıcılara kişiselleştirilmiş içerik sunmanın yanı sıra, internet sitesinin daha verimli ve etkin bir şekilde çalışmasını sağlamaktadır. Sizlere daha iyi bir ziyaret deneyimi sunmak için kullanıcının kişisel tercihlerine ve ihtiyaçlarına uygun içerikleri sunmaktadır. Önemli bir nokta olarak, çerezler sadece internet geçmişinizle ilgili bilgiler içermekte ve cihazınızda depolanan dosyalara erişim sağlayamamaktadır. Ayrıca, çerezler hizmetlerimizi sizin ilgi ve ihtiyaçlarınıza uygun hale getirmek için kullanılabilmektedir. Bu sayede, gelecekte internet sitelerimizi ziyaret ettiğinizde daha hızlı ve kişiselleştirilmiş deneyimler yaşamanız sağlanmaktadır. 3. Çerez Türleri Nelerdir? Taraflarına göre çerezler: Birinci Taraf Çerezleri: Kullanıcılarca oluşturularak internet sitesine konulan ve banka kontrolünde olan çerezlerdir. Üçüncü Taraf Çerezleri: İşbirliği yaptığımız üçüncü taraf firmalar tarafından oluşturulan ve yönetilen çerezlerdir. Saklama süresine göre çerezler: Oturum Çerezleri: Kullanıcıların sadece tarayıcıları açıkken mevcut olan ve tarayıcı kapanınca silinen çerez tipidir. Kalıcı Çerezler: Kullanıcıların tarayıcısı kapandıktan sonra belirli bir sona erme tarihine kadar kalıcı olan çerez türüdür. Yeniden web sitesi ziyaret edildiğinde bu çerezler aktif olur ve aynı bilgisayardan yapılan ziyareti tespit edebilmek amacıyla kullanılmaktadır. Kullanım amaçlarına göre çerezler a.Zorunlu Çerezler Bu çerezler internet sitesinin doğru ve etkin çalışmasını sağlamak amaçlarıyla kesinlikle gerekli olan çerezlerdir. Bu çerezler kaldırılırsa veya engellenirse internet sitesi kısmen veya tamamen belli işlevlerini yitirebilmektedir. b.İşlevsel Çerezler Web sitesinde kullanılan kişiselleştirme ve tercihlerin hatırlanması amaçları ile kullanılan çerezlerdir. Bu çerezler zorunlu çerezler dışında kalan işlevsellikleri sağlama amacıyla kullanılmaktadır. c.Performans - Analitik Çerezler İnternet sitelerinde kullanıcıların davranışlarını analiz etmek amacıyla istatistiki ölçümüne imkân veren çerezlerdir. Bu çerezler, sitenin iyileştirilmesi için sıklıkla kullanılmakta olup bu duruma reklamların ilgili kişiler üzerindeki etkisinin ölçümü de dâhildir. İnternet sitesi sahipleri tarafından, ziyarete yönelik ölçüm yapmak, analiz etmek ve tahminde bulunmak ile bir internet sayfasına götüren en önemli arama motoru anahtar kelimelerini tespit etmek için kullanılabilmektedir. d.Reklam / Pazarlama Çerezleri Reklam ve pazarlama amaçlı çerezler ile internet ortamında kullanıcıların çevrim içi hareketleri takip edilerek kişisel ilgi alanları saptanıp bu ilgi alanlarına yönelik internet ortamında kullanıcılara reklam gösterilmesi her durumda aynı reklamların sürekli tekrarlanmasının engellemesi, reklamların düzgün bir şekilde gösterilmesi sağlanabilmektedir. Bu çerezlerin kullanılmasındaki amaç kullanıcıya geliştirilmiş ve kişisel bir deneyim sunulabilmesidir. 4.Sitemizde Kullanılan Çerez Türleri Aşağıda İnternet Sitesinde kullandığımız farklı türdeki çerezlere yer verilmiştir. Zorunlu Çerezler Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi CultureInfo Banka Ziyaretçilerin internet site sayfalarını hangi dil kullandığını gösterir. Oturum süresince .AspNetCore.Session Banka Ziyaretçilere atanmış benzersiz bir kimlik numarasını gösterir Oturum süresince Performans ve Analitik Çerezleri Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi _ga_XXXXXXXXX Google Analytics Tracking Google Analytics tarafından ziyaretçilerin İnternet Sitesini ziyaret sıklığına ve ziyaret zamanlarına ilişkin bilgi toplamak amacıyla kullanılan çerezdir. 1 yıl 5.Kişisel Veri Sahibi Olarak Haklarınız Nelerdir? Kişisel veri sahipleri Kanunun “ilgili kişinin haklarını düzenleyen” 11’inci maddesi kapsamında aşağıda listeli haklara sahiptir. Kişisel veri işlenip işlenmediğini öğrenme Kişisel verileri işlenmişse buna ilişkin bilgi talep etme Kişisel verilerin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme Kişisel verilerin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme Kanun ve ilgili diğer kanun hükümlerine uygun olarak işlenmiş olmasına rağmen, işlenmesini gerektiren sebeplerin ortadan kalkması hâlinde kişisel verilerin silinmesini veya yok edilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme Yukarıda belirtilen haklarınızı kullanmak için; Kimlik tespiti yapılarak şubelerimiz aracılığıyla Kimlik doğrulaması gerçekleştirilerek Dijital Kanallarımız ya da Çağrı Merkezimiz üzerinden Yamanevler Mah. Ahmet Tevfik İleri Cad. 4B PLAZA No:26 KAT:15-16-17 Ümraniye / İSTANBUL adresine noter kanalıyla dunyakatilim@hs01.kep.tr adresine güvenli elektronik imzalı olarak Bankamız sisteminde kayıtlı bulunan elektronik posta adresinizi kullanarak taleplerinizi bankamıza iletebilirsiniz. Başvuruda; a) ad, soyadı ve başvuru yazılı ise imza b) Türkiye Cumhuriyeti vatandaşları için T.C. kimlik numarası, yabancılar için uyruğu, pasaport numarası veya varsa kimlik numarası c) tebligata esas yerleşim yeri veya iş yeri adresi ç) varsa bildirime esas elektronik posta adresi, telefon ve faks numarası d) talep konusu bulunmalıdır. Talebiniz en kısa sürede ve en geç otuz (30) gün içinde ücretsiz olarak sonuçlandırılmaktadır. Başvurunuza yönelik işlemlerin ayrı bir maliyeti gerektirmesi hâlinde, Kurul tarafından belirlenen tarifedeki ücret tarafınıza yansıtabilmektedir."
-0212-edcd2aaa0445,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-dijital-uyelikler-kampanyasi,kart,sağlam kart,genel kart kullanıcıları,,,,,,,evet,500,,,puan kazandırıyor,,yeni başvuru,"Biz Kart ile Dijital Üyeliklerde %75 Nakit İade Fırsatı!
-Kampanya Dönemi: 16 Haziran - 31 Ağustos 2026
-Kampanya Koşulları
-Hayat Finans Mobil Uygulaması > Tüm işlemler > Kartlar > Biz Kart Başvurusu
-Kampanya Koşulları
-- Kampanya Hayat Finans bireysel müşterileri için geçerlidir.
-- Kampanyadan yararlanabilmek için Hayat Finans banka kartına sahip olmanız ve yakınınıza en az 1 adet Biz Kart tanımlamış olmanız gerekmektedir.
-Hayat Finans Mobil Uygulaması > Tüm işlemler > Kartlar > Biz Kart Başvurusu
-- Kampanyadan yararlanabilmek için Hayat Finans Banka Kartınızın “yurt dışı işlemleri ve şifresiz internet alışverişine”açık olması gerekmektedir.
-- Yakınlarınıza tanımladığınız Biz Kart’lar ile ödeme yapılmasını isterseniz “yurt dışı işlemleri ve şifresiz internet alışverişine”açık olması gerekmektedir.
-- Kart ayarlarınızı güncellemek veya kontrol etmek için: Tüm işlemler > Kartlar > Tüm Kartlarım > İlgili Kart Seçimi > Ayarlar menüsünden kart ayarlarınızı görüntüleyebilir ve güncelleyebilirsiniz.
-- Yakınlarınıza tanımladığınız Biz Kart’lar için kart ayarlarını güncellemek veya kontrol etmek için: Tüm işlemler > Kartlar > Tüm Kartlarım > İlgili Biz Kart seçimi > Ayarlar > Kart Yetkileri menüsünden ayarlarınızı görüntüleyebilir ve güncelleyebilirsiniz.
-- Kampanya kapsamındaki dijital platformlar:
-✔ Netflix
-✔ Chatgpt Open Ai
-✔ HBO Max
-✔ YouTube Premium
-✔ tabii
-✔ TOD
-- Kampanya kapsamında yapılan dijital üyelik ödemelerinin toplamının %75’i oranında nakit ödül kazanılacaktır.
-- Hayat Finans banka kartınız veya yakınlarınıza verdiğiniz Biz Kart’lar üzerinden yapılacak dijital üyelik ödemeleri kampanya kapsamındadır, her iki karttan yapılacak dijital üyelik ödemeleri kapsamınca kazanılabilecek maksimum nakit ödül tutarı toplamda 300 TL’dir.
-- Harcamalar yalnızca ilgili platformların resmî web sitesi veya mobil uygulamaları üzerinden Hayat Finans banka veya yakınınıza tanımladınız Biz Kart’lar ile yapılmalıdır.
-- App Store, Google Play Store , App Gallery veya benzeri uygulama mağazaları üzerinden yapılan ödemeler kampanya kapsamında değildir.
-- Kazanılan nakit ödüller ilgili ayın kapanışını takip eden 1 iş günü içerisinde Hayat Finans cari hesabınıza (asıl kart sahibinin) aktarılacaktır. Örnek Ağustos ayında harcama yapıldı ise nakit ödüller Eylül ayının ilk iş günü içinde yüklenir.
-- Nakit ödülün yatırabilmesi için harcama yapılan kartın/kartların açık olması gerekmektedir.
-- Ödeme iptal veya iade işlemleri kampanya kapsamında değerlendirilmeyecektir.
-- Bu kampanya Hayat Finans’ın diğer kampanyaları ile birleştirilemez.
-- Dijital platformlardaki üyelik koşulları ve fiyatlamalar, ilgili firmaların sorumluluğundadır.
-- Hayat Finans, kampanya süresince bu koşullardaki değişikliklerden sorumlu değildir.
-- Tespit edilen usulsüzlük hâlinde, kazanımlar iptal edilir ve/veya geri alınabilir.
-- Yasal/idari takibi olan veya hakkında haciz süreci başlatılan müşteriler kampanyadan yararlanamaz.
-- Hayat Finans, kampanya koşullarını değiştirme veya kampanyayı sonlandırma hakkını saklı tutar."
-0206-d08e26c033db,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/hizli-finansman/Sayfalar/default.aspx,ihtiyac_finansmani,ihtiyaç finansmanı,bireysel,,,36,,0.5,masraf var,,,,,,,kredi notu iyi olmalı,"Kâr Oranı | %1.00 |
----|---|
-Toplam Geri Ödenen | 66.066,24 TL |
-Tüm ihtiyaçlarınız için ihtiyaç finansmanına SMS ile anında başvurun!
-Hayalinizdeki araca kavuşmanız için anlaşmalı bayilerimizden anında başvurun!
-Tüm ihtiyaçlarınız için anlaşmalı Hızlı Finansman bayilerine gelin, 0.99% oran avantajları ile ihtiyaçlarınızı ertelemeyin.
-Detaylı Bilgi
-© Copyright 2012 StarterBranding"
-0212-7910f6e3d2a8,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/finansmanlar-is,ihtiyac_finansmani,ihtiyaç finansmanı,bireysel,,,36,,0.5,masraf var,,,,,,,kredi notu iyi olmalı,"İş Finansmanı
-İşletme ve firmanızın ihtiyacına uygun nakdi ve gayrinakdi finansman türlerimizle işinizi kolaylaştırıyoruz.
-İşletme ve firmanızın ihtiyacına uygun nakdi ve gayrinakdi finansman türlerimizle işinizi kolaylaştırıyoruz.
+0212-35aa6e0c7c00,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/hayatfinansla-islem-yaptikca-kazan,,,,,,,,,"Hayat Finans’la İşlem Yaptıkça Kazan!
+Masraf yok, kazanç var: Hayat’la Kazan
+Bankacılık işlemlerinizi kazanca dönüştürün.
+Günlük bankacılık işlemlerinizi Hayat Finans'tan gerçekleştirin, yaptığınız işlemlerden nakit ödül kazanın.
+Nakit ödül kazanabileceğiniz işlemler:
+Kazandığınız ödüller Hayat Pay cüzdan hesabınıza yatırılır. Böylece hem Hayat Finans işlemlerinizden hem de Hayat Pay kampanya ve harcamalarınızdan kazandığınız tüm nakit ödüller tek yerde birikir.
+Biriken Hayat Pay cüzdan bakiyenizi günlük harcamalarınızda kullanabilir veya Hayat Pay uygulaması içerisindeki hediye alanında dilediğiniz ürün ve hizmetlerde değerlendirebilirsiniz.
+📢 Kampanya Dönemi: 2 Temmuz - 31 Aralık 2026
+Nakit ödül kazanabileceğiniz işlemler:
+- Gelen Para Transferi
+- Banka Kartı Harcaması
+- Fatura Ödeme
+- Döviz İşlemleri
+- Biz Kart Başvurusu
+Kazandığınız ödüller Hayat Pay cüzdan hesabınıza yatırılır. Böylece hem Hayat Finans işlemlerinizden hem de Hayat Pay kampanya ve harcamalarınızdan kazandığınız tüm nakit ödüller tek yerde birikir.
+Biriken Hayat Pay cüzdan bakiyenizi günlük harcamalarınızda kullanabilir veya Hayat Pay uygulaması içerisindeki hediye alanında dilediğiniz ürün ve hizmetlerde değerlendirebilirsiniz.
+📢 Kampanya Dönemi: 2 Temmuz - 31 Aralık 2026
+Kazandıran İşlemler
+💵 Hesaba Gelen Para Transferleri
+Başka bir banka hesabından veya para kuruluşundan Hayat Finans hesabınıza gelen en az 1.000 TL tutarlı EFT veya FAST transferlerinde nakit ödül kazanırsınız.
+Ödül
+Net Tutar = Aynı gün içinde hesabınıza EFT / FAST ile gelen toplam tutardan, aynı gün EFT / FAST veya ATM para çekme işlemleriyle çıkan toplam tutarın düşülmesiyle hesaplanır.
+Net tutarın, hesabınıza gelen transfer tutarının en az %50’si kadar olması durumunda ödül kazanılır.
+Ödül
+- İşlem tutarının 0.1%’i kadar nakit ödül kazanılır. Örneğin her 1.000 TL’lik işlemde 1 TL kazanırsınız.
+- Hesabınıza gelen para transferlerinden bir takvim ayı içerisinde en fazla 10 adet işlem için maksimum 100 TL kazanabilirsiniz.
+- Bir işlem için kazanılabilecek ödül tutarı en fazla 10 TL’dir.
+- Koşulların sağlanması halinde ödül, ertesi gün Hayat Pay cüzdanına yatırılır.
+- Sadece EFT/FAST ile gelen transferler kampanya kapsamındadır. Banka içi havale/Hayat Finans hesaplarınız arası transfer işlemleri kapsam dışıdır.
+- Transfer hesaba geldikten sonra ertesi gün net tutar hesaplanır. Net tutar, gelen transfer tutarının %50’si veya daha fazlası ise ödül kazanılır.
+- Bir ay içinde en fazla 10 transfer işleminden ödül kazanılabilir.
+Net Tutar = Aynı gün içinde hesabınıza EFT / FAST ile gelen toplam tutardan, aynı gün EFT / FAST veya ATM para çekme işlemleriyle çıkan toplam tutarın düşülmesiyle hesaplanır.
+Net tutarın, hesabınıza gelen transfer tutarının en az %50’si kadar olması durumunda ödül kazanılır.
+🧾 Fatura Ödemeleri
+Ödemesi gerçekleşen talimatlı veya talimatsız her faturadan nakit ödül kazanırsınız.
+Ödül
+Ödül
+- Talimatsız ödenen faturalarda fatura başına en fazla 20 TL ödül kazanılır. Fatura tutarı 20 TL’den küçükse fatura tutarı kadar nakit ödül kazanılır.
+- Talimatlı ödenen faturalarda fatura başına en fazla 30 TL nakit ödül kazanılır. Fatura tutarı 30 TL’den küçükse fatura tutarı kadar nakit ödül kazanılır.
+- Otomatik ödeme talimatı verilen faturanın, Hayat Finans hesabınızdan ilk kez otomatik olarak ödenmesi durumunda ilk ödemeye özel 100 TL nakit ödül kazanılır. Fatura tutarının 100 TL’den düşük olması halinde, fatura tutarı kadar nakit ödül kazanılır. İptal edilip yeniden otomatik ödeme talimatı oluşturulan fatura işlemleri kampanyaya dahil değildir.
+- Koşulların sağlanması halinde, ödül fatura ödendikten sonra aynı gün içinde Hayat Pay cüzdanınıza yatırılır.
+- Bankamızın anlaşmalı olduğu tüm fatura kurumlarından yapılacak ödemeler kampanyaya dahildir.
+- Bir müşteri bir ay boyunca talimatlı veya talimatsız ödenen en fazla 5 adet fatura ödemesi için nakit ödül kazanabilir.
+📈 Döviz Alış / Satış İşlemleri
+Döviz alış ve satış işlemlerinizden nakit ödül kazanırsınız.
+Ödül
+Ödül
+- İşlem tutarının 0.1%’i kadar nakit ödül kazanılır. Örneğin her 1.000 TL’lik işlemde 1 TL kazanırsınız.
+- Aylık kazanılabilecek maksimum nakit ödül 200 TL’dir.
+- Ödül tutarı aynı gün içinde Hayat Pay cüzdanınıza yatırılır.
+- TL döviz çiftlerinde, gerçekleşen işlemin TL tutarına göre nakit iade kazanılır.
+- Çapraz kurlarda, alınan dövizin gün içi banka alış kuruna göre TL cinsinden nakit iade kazanılır.
+🛍️ Banka Kart Harcamaları
+Belirlenen koşullarda yaptığınız harcamalardan nakit ödül kazanırsınız.
+Ödül
+Ödül
+- Banka kartı harcama tutarının %1’i tutarında nakit ödül kazanılır. Örneğin 1.000 TL banka kartı harcamanızda 10 TL nakit ödül kazanırsınız.
+- İşlem başına kazanılabilecek maksimum nakit iade tutarı 10 TL’dir.
+- Aylık maksimum 10 harcama işleminden maksiumum 100 TL nakit ödül kazanılabilir.
+- Nakit ödül işlemin ertesi günü Hayat Pay cüzdanına yatırılır.
+- Sadece Hayat Finans Banka Kartı veya QR ile yapılan harcamalar kampanya dahildir. Biz Kart ile yapılan işlemler dahil değildir.
+- Yapılacak harcamalar restoran, market, akaryakıt, eğitim, elektronik, giyim, kozmetik, seyahat, sağlık, ulaşım, yapı, sigorta sektörlerinde geçerlidir.
+- Online alışverişlerle yapılan harcamalar dahildir.
+- ATM’den yapılan işlemler kampanyaya dahil değildir.
+- Mobil cüzdanlara yapılan yüklemeler kampanya dahilinde değildir.
+- İstanbul Kart yüklemeleri kampanya dahilinde değildir.
+- Fon transferi içeren işlemler kampanyaya dahil değildir.
+- Kulüp/Dernek/Sosyal hizmetler/Hayır kurumları vb. nitelikteki yerlere yapılan bağış veya her ne ad altında olursa olsun tüm ödemeler ile kuyum alışverişleri, kamu ve vergi ödemeleri, katılım bankacılığı prensiplerine uygun olmayan ödemeler kampanya dahilinde değildir.
+💳 Biz Kart Başvuruları
+Yakınlarınız için yaptığınız her Biz Kart başvurusunda nakit ödül kazanırsınız.
+Ödül
+Ödül
+- Başvuru başına 20 TL nakit ödül verilir.
+- Bir müşteri kampanya boyunca en fazla 5 adet Biz Kart başvurusu için ödül kazanabilir.
+- Kampanya boyunca toplam kazanım üst limiti 100 TL’dir.
+- Koşulların sağlanması halinde ödül, başvurudan 30 gün sonra Hayat Pay cüzdanına yatırılır.
+- Aynı kişiye verilen fiziki ve dijital Biz kartların sadece ilki ödül kazandırır.
+- Bir müşteri program kapsamında en fazla 5 adet Biz Kart başvurusundan kazanım sağlayabilir.
+- Başvurunun yapıldığı günden sonra 30 gün boyunca ödülün yükleneceği güne kadar kart açık olmalıdır.
+- Geçici kapanıp tekrar açılan veya tamamen kapatılıp aynı kişiye yeniden tanımlanan kartlar için tekrar ödül kazanılması mümkün değildir.
+Kazanım Yolu | Ödül Miktarı | Öne Çıkan Detay |
+---|---|---|
+Hesaba Gelen Para Transferi | İşlem başına transfer tutarının %0,1'i kadar, en fazla 10 TL. Ayda en fazla 10 işlem. |
+Ödül kazanılabilmesi için hesabınızda kalan net tutarın gelen transferin en az %50'si kadar olması gerekir. Aktif Hayat Pay cüzdanı bulunmalıdır. |
+Fatura Ödeme | Talimatsız ödemelerde fatura başına en fazla 20 TL. Otomatik ödemelerde fatura başına en fazla 30 TL. Hayat Finans'tan ilk kez otomatik ödenen faturada 100 TL'ye varan ilk ödeme ödülü. |
+Ayda en fazla 5 fatura ödemesi ödül kazandırır. Aktif Hayat Pay cüzdanı bulunmalıdır. |
+Döviz / Altın Alış-Satış İşlemleri | İşlem tutarının %0,1'i kadar ödül. Ayda en fazla 200 TL. |
+Kazanımlar Hayat Pay cüzdanına yatırılır. Aktif Hayat Pay cüzdanı bulunmalıdır. |
+Banka Kartı Harcamaları | Harcama tutarının %1'i kadar, işlem başına en fazla 10 TL. Ayda en fazla 100 TL. |
+Sadece geçerli sektörlerde yapılan Hayat Finans Banka Kartı ve QR harcamaları kampanyaya dahildir. İptal/iade işlemleri ve Biz Kart harcamaları dahil değildir. Aktif Hayat Pay cüzdanı bulunmalıdır. |
+* Net Tutar = Gelen Transfer − (Aynı Gün Giden EFT/FAST Tutarı + ATM Para Çekme)
+📜 Genel Koşullar
+- Kampanya yalnızca bireysel müşteriler için geçerlidir.
+- Ödülün yatırılabilmesi için aktif Hayat Pay cüzdanı bulunmalıdır. Kazanım sağlanması için Hayat Pay üyeliği, işlemi yapmadan önce açılmalıdır. İşlem yapıldıktan sonra üyelik oluşturulması durumunda o işlem üzerinden kazanım sağlanamayacaktır.
+- Yasal takipte olan, izleme altında bulunan veya haciz süreci başlatılmış müşteriler kampanyadan yararlanamaz.
+- Kampanya koşullarını yanıltmaya yönelik usulsüz işlemler tespit edildiğinde bankanın bu işlemleri kampanyaya dahil etmeme, bu işlemler sonucu hesaba yatan ödülleri geri alma hakkı saklıdır.
+- Hayat Finans kampanya koşullarında herhangi bir bildirimde bulunulmaksızın değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
+- Kampanya süresince müşteri ilişiğini sonlandırıp yeniden müşteri olan bireyler kampanyadan yararlanamaz.
+Hayat Pay’e Nasıl Üye Olunur?
+Hayat Finans Mobil uygulaması ana sayfasında yer alan Hayat Pay yönlendirmesine tıklayarak veya App Store / Google Play üzerinden Hayat Pay uygulamasını indirerek üyeliğinizi kolayca oluşturabilirsiniz."
+0205-735109071c75,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kampanyalar/kendim-icin/kart-kampanyalari/egitim-ve-saglik-harcamalarinizda-5-taksit-firsati,,,,,,,,,"Kampanya Tarihleri
+21.06.2024 - 31.12.2027
+Kampanyayı Paylaş
+- Sağlam Kart ile istediğiniz iki adet eğitim ve sağlık harcamanızı işlem sonrasında Kuveyt Türk Mobil üzerinden vade farksız bir şekilde 2 ila 5 taksite bölebilirsiniz.
+- 1000 TL ve üzeri taksitlendirmeye uygun işlemlerinizi Kuveyt Türk Mobil içerisindeki Kart işlemleri – Dönem İçi İşlemler menüsünden ""Ücretsiz Taksitlendir"" butonuyla vade farksız 2 ile 5 taksit arasında taksitlendirebilirsiniz.
+- İşlemden önce kart üzerindeki taksit sayısının 0 olması gerekmektedir.
+- İşlemler otomatik olarak bölünmeyecektir.
+- Kampanya sağlık, eğitim, kitap ve kırtasiye sektörlerinde yapacağınız harcamalar için geçerlidir.
+- Bir ekstre döneminde toplamda en fazla 2 adet eğitim veya sağlık harcaması taksitlendirilebilir.
+- Biz Bize ve Biz Bize Plus müşterilerimiz bir ekstre döneminde toplamda en fazla 6 adet eğitim veya sağlık harcaması taksitlendirebilir.
+- Özel Bankacılık segment müşterilerimiz bir ekstre döneminde toplamda en fazla 10 adet eğitim veya sağlık harcamasını taksitlendirebilir.
+- Taksitlendirilmiş bir işlem için tekrar taksitlendirme talebi alınamamaktadır.
+- Kampanyaya Sağlam Kart ve Özel Bankacılık World Elite Kart ile bu kartların sanal ve ek kartları dahildir.
+- Kampanya yalnızca bireysel harcamalar içindir. Ticari amaç ile yapılan harcamalar (Örn. Ecza Depoları üzerinden yapılan harcamalar) kampanya kapsamında değildir.
+- Sonradan taksitlendirilmiş işlemin Kuveyt Türk Müşteri İletişim Merkezi üzerinden erken kapaması yapılabilmektedir.
+- Kuveyt Türk önceden haber vermeden kampanya koşullarında değişiklik yapabilir ya da kampanyayı sonlandırabilir."
+0212-273063a66570,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kartlar-tuzel,,,,,,,,,"Tüzel Kartlar
+Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
+Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Çerezleri Yönet
 Size en iyi deneyimi sağlamak ve hizmetlerin tercihlerinize göre kişiselleştirilmiş içerikler olarak sunulabilmesi için web sitemizde çerezler ve benzeri takip teknolojileri kullanılmaktadır. Daha fazla bilgi için Çerez Aydınlatma Metni’ni inceleyebilirsiniz."
-0203-d7b3a1e8609d,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar,konut_finansmani,konut finansmanı,ev almak isteyenler,,,120,,0.5,ekspertiz falan,hayır,,,,uzun vade,,düzenli gelir şart,"Hayalinizdeki eve kira öder gibi sahip olun!
-Uzun vade ve size özel ödeme seçenekleri ile Albaraka Türk Konut Finansmanı tam size göre!
-Albaraka Türk’ten ihtiyaçlarınızı alışveriş anında karşılayan finansman fırsatı. Alışverişlerinizde Bayide Finansman’ı tercih edin, 36 aya varan vadelerle ödeyin. Üstelik elektronikten ev tekstiline kadar birçok sektörde geçerli.
-İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
-Findeks Kredi Notu ve Risk Raporu ile finansal geçmişimizi hızla öğrenip kredi değerlendirmenizi yapabilirsiniz. Bu sayede gelecekteki finansal kararlarınızı güvenli şekilde planlayabilirsiniz."
-0209-6e6a3e087b27,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/finansman-urunleri,konut_finansmani,konut finansmanı,ev almak isteyenler,,,120,,0.5,ekspertiz falan,hayır,,,,uzun vade,,düzenli gelir şart,"Konut/Gayrimenkul Finansmanı Konut ve Gayrimenkul Finansmanı; konut, kentsel dönüşüm, arsa alımlarınızda başvurabileceğiniz finansman türüdür. Detaylı Bilgi Taşıt Finansmanı Taşıt finansmanı, sıfır veya ikinci el otomobiller için alım kolaylığı sağlayan finansman türüdür. Detaylı Bilgi İhtiyaç Finansmanı İhtiyacınız olan ürün ve hizmetleri Bankamızla anlaşması olan kurum ve kuruluşlardan, şubeye gitmeye gerek kalmaksızın, günün her saatinde ve dijital kanallar vasıtasıyla kolay ve hızlı bir şekilde finanse etmenizi sağlayan bir finansman ürünüdür. Detaylı Bilgi Sürdürülebilirlik Finansmanı Enerji verimliliği ve yenilenebilir enerji alanına özel hazırlanmış finansman ürünleridir. Detaylı Bilgi"
-0214-a47c782088da,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/altin-kesemTicari,ihtiyac_finansmani,ihtiyaç finansmanı,bireysel,,,36,,0.5,masraf var,,,,,,,kredi notu iyi olmalı,"ÇEREZ KULLANIMINA İLİŞKİN AYDINLATMA METNİ
-1. Giriş Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu’nun (“Kanun”) 10’uncu maddesi, Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ (“Tebliğ”) ve Çerez Uygulamaları Hakkında Rehber (“Rehber”) kapsamında veri sorumlusu sıfatıyla Dünya Katılım Bankası A.Ş. tarafından hazırlanmıştır. Bu Çerez Aydınlatma Metni, internet sitemiz ziyaret edildiğinde kullanılan çerezler aracılığıyla toplanan kişisel verilerin işlenmesi, çerezlerin hangi amaçlarla ve hangi tür çerezlerin kullanıldığı konusunda bilgi sağlamanması, bu çerezleri nasıl yönetebileceğiniz hakkında rehberlik edilmesi amacıyla hazırlanmıştır. 2. Çerez Nedir ve Neden Kullanılmaktadır? Çerezler, bir internet sitesini ziyaret ettiğinizde bilgisayarınıza veya diğer internet bağlantılı cihazlara (örneğin, akıllı telefonlar veya tabletler) yerleştirilebilen dosyalar veya bilgi parçalarıdır. Başka bir deyişle, çerezler internet siteleri veya mobil uygulamalar gibi çevrim içi platformları kullanırken, cihazınıza yerleştirilen küçük metin dosyalarıdır. Çerezler, kullanıcılara kişiselleştirilmiş içerik sunmanın yanı sıra, internet sitesinin daha verimli ve etkin bir şekilde çalışmasını sağlamaktadır. Sizlere daha iyi bir ziyaret deneyimi sunmak için kullanıcının kişisel tercihlerine ve ihtiyaçlarına uygun içerikleri sunmaktadır. Önemli bir nokta olarak, çerezler sadece internet geçmişinizle ilgili bilgiler içermekte ve cihazınızda depolanan dosyalara erişim sağlayamamaktadır. Ayrıca, çerezler hizmetlerimizi sizin ilgi ve ihtiyaçlarınıza uygun hale getirmek için kullanılabilmektedir. Bu sayede, gelecekte internet sitelerimizi ziyaret ettiğinizde daha hızlı ve kişiselleştirilmiş deneyimler yaşamanız sağlanmaktadır. 3. Çerez Türleri Nelerdir? Taraflarına göre çerezler: Birinci Taraf Çerezleri: Kullanıcılarca oluşturularak internet sitesine konulan ve banka kontrolünde olan çerezlerdir. Üçüncü Taraf Çerezleri: İşbirliği yaptığımız üçüncü taraf firmalar tarafından oluşturulan ve yönetilen çerezlerdir. Saklama süresine göre çerezler: Oturum Çerezleri: Kullanıcıların sadece tarayıcıları açıkken mevcut olan ve tarayıcı kapanınca silinen çerez tipidir. Kalıcı Çerezler: Kullanıcıların tarayıcısı kapandıktan sonra belirli bir sona erme tarihine kadar kalıcı olan çerez türüdür. Yeniden web sitesi ziyaret edildiğinde bu çerezler aktif olur ve aynı bilgisayardan yapılan ziyareti tespit edebilmek amacıyla kullanılmaktadır. Kullanım amaçlarına göre çerezler a.Zorunlu Çerezler Bu çerezler internet sitesinin doğru ve etkin çalışmasını sağlamak amaçlarıyla kesinlikle gerekli olan çerezlerdir. Bu çerezler kaldırılırsa veya engellenirse internet sitesi kısmen veya tamamen belli işlevlerini yitirebilmektedir. b.İşlevsel Çerezler Web sitesinde kullanılan kişiselleştirme ve tercihlerin hatırlanması amaçları ile kullanılan çerezlerdir. Bu çerezler zorunlu çerezler dışında kalan işlevsellikleri sağlama amacıyla kullanılmaktadır. c.Performans - Analitik Çerezler İnternet sitelerinde kullanıcıların davranışlarını analiz etmek amacıyla istatistiki ölçümüne imkân veren çerezlerdir. Bu çerezler, sitenin iyileştirilmesi için sıklıkla kullanılmakta olup bu duruma reklamların ilgili kişiler üzerindeki etkisinin ölçümü de dâhildir. İnternet sitesi sahipleri tarafından, ziyarete yönelik ölçüm yapmak, analiz etmek ve tahminde bulunmak ile bir internet sayfasına götüren en önemli arama motoru anahtar kelimelerini tespit etmek için kullanılabilmektedir. d.Reklam / Pazarlama Çerezleri Reklam ve pazarlama amaçlı çerezler ile internet ortamında kullanıcıların çevrim içi hareketleri takip edilerek kişisel ilgi alanları saptanıp bu ilgi alanlarına yönelik internet ortamında kullanıcılara reklam gösterilmesi her durumda aynı reklamların sürekli tekrarlanmasının engellemesi, reklamların düzgün bir şekilde gösterilmesi sağlanabilmektedir. Bu çerezlerin kullanılmasındaki amaç kullanıcıya geliştirilmiş ve kişisel bir deneyim sunulabilmesidir. 4.Sitemizde Kullanılan Çerez Türleri Aşağıda İnternet Sitesinde kullandığımız farklı türdeki çerezlere yer verilmiştir. Zorunlu Çerezler Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi CultureInfo Banka Ziyaretçilerin internet site sayfalarını hangi dil kullandığını gösterir. Oturum süresince .AspNetCore.Session Banka Ziyaretçilere atanmış benzersiz bir kimlik numarasını gösterir Oturum süresince Performans ve Analitik Çerezleri Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi _ga_XXXXXXXXX Google Analytics Tracking Google Analytics tarafından ziyaretçilerin İnternet Sitesini ziyaret sıklığına ve ziyaret zamanlarına ilişkin bilgi toplamak amacıyla kullanılan çerezdir. 1 yıl 5.Kişisel Veri Sahibi Olarak Haklarınız Nelerdir? Kişisel veri sahipleri Kanunun “ilgili kişinin haklarını düzenleyen” 11’inci maddesi kapsamında aşağıda listeli haklara sahiptir. Kişisel veri işlenip işlenmediğini öğrenme Kişisel verileri işlenmişse buna ilişkin bilgi talep etme Kişisel verilerin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme Kişisel verilerin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme Kanun ve ilgili diğer kanun hükümlerine uygun olarak işlenmiş olmasına rağmen, işlenmesini gerektiren sebeplerin ortadan kalkması hâlinde kişisel verilerin silinmesini veya yok edilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme Yukarıda belirtilen haklarınızı kullanmak için; Kimlik tespiti yapılarak şubelerimiz aracılığıyla Kimlik doğrulaması gerçekleştirilerek Dijital Kanallarımız ya da Çağrı Merkezimiz üzerinden Yamanevler Mah. Ahmet Tevfik İleri Cad. 4B PLAZA No:26 KAT:15-16-17 Ümraniye / İSTANBUL adresine noter kanalıyla dunyakatilim@hs01.kep.tr adresine güvenli elektronik imzalı olarak Bankamız sisteminde kayıtlı bulunan elektronik posta adresinizi kullanarak taleplerinizi bankamıza iletebilirsiniz. Başvuruda; a) ad, soyadı ve başvuru yazılı ise imza b) Türkiye Cumhuriyeti vatandaşları için T.C. kimlik numarası, yabancılar için uyruğu, pasaport numarası veya varsa kimlik numarası c) tebligata esas yerleşim yeri veya iş yeri adresi ç) varsa bildirime esas elektronik posta adresi, telefon ve faks numarası d) talep konusu bulunmalıdır. Talebiniz en kısa sürede ve en geç otuz (30) gün içinde ücretsiz olarak sonuçlandırılmaktadır. Başvurunuza yönelik işlemlerin ayrı bir maliyeti gerektirmesi hâlinde, Kurul tarafından belirlenen tarifedeki ücret tarafınıza yansıtabilmektedir."
-0205-f2ab3ac65c43,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kampanyalar/kendim-icin,kart,sağlam kart,genel kart kullanıcıları,,,,,,,evet,500,,,puan kazandırıyor,,yeni başvuru,"Colin’s’de Vade Farksız 4 Aya Varan Taksit Fırsatı
-Colin’s’de Vade Farksız 4 Aya Varan Taksit Fırsatı!
-Yeni Sağlam Kart Troy'lulara Özel Vade Farksız 5 Aya Varan Taksit İmkanı!
-Yeni Sağlam Kart Troy müşterilerine özel 50.000 TL'ye kadar vade farksız 5 taksit fırsatını kaçırmayın!
-Davet Kodunla Gel, Memnuniyet Anketine Katıl, 750 TL Kazan!
-Davet Kodu ile Müşteri Olup Memnuniyet Anketine Katılanlara Toplamda 750 TL Hediye!
-Yeni Kuveyt Türk Mobil Müşterilerine 10.000 Mil'e Varan Fırsat!
-Miles&Smiles Kuveyt Türk kredi kartınız ile 1.000 TL ve üzeri harcamanıza 10.000 Mil’e varan hediye!
-Mobilden Kuveyt Türklü Olanlara Toplamda 7.250 TL Hediye!
-Mobilden Kuveyt Türklü Olun Toplamda 7.250 TL Kazanın!
-Yakınlarını Kuveyt Türk'e Davet Et Toplamda 5.000 TL'ye Varan Hediye Kazan!
-Yakınlarını Kuveyt Türk'e Davet Et Toplamda 5.000 TL'ye Varan Hediye Kazan!
-Kuveyt Türk Kampüs’e Gelenlere Toplamda 13.500 TL Hediye!
-Kuveyt Türk Kampüs'e katılanlar davet kodu, kart harcamaları ve ilk E-Ticaret harcaması kampanyalarından toplamda 13.500 TL Hediye!
-Kuveyt Türk ile Yurt Dışı Seyahatlerinde Ayrıcalıklar Sizinle!
-Kuveyt Türk’te size yurt dışında özel avantajlar bekliyor! Güvenle seyahat ederken internetin kesilmesin, her harcamada avantajlı marjdan ödeme imkanıyla bütçen nefes alsın!
-Kuveyt Türk Mobil’den Müşterimiz Olun Özel Kur Fırsatını Kaçırmayın!
-Kuveyt Türk Mobil’den müşterimiz olan bireysel müşterilerimize özel avantajlı kur fırsatları Kuveyt Türk’te!"
-0214-b0cbc205fd4d,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/isim-icin/finansmanlar,tasit_finansmani,araç kredisi,bireysel,,,48,48,,kasko zorunlu,hayır,,,,,,araç rehin alınır,"Sitemizden çıkış yapıp başka bir web sitesine yönlendiriliyorsunuz.
-KENDİM İÇİN
-https://loremipsum/loremipsum.dolorsitamet
-Sitemizden çıkış yapıp başka bir web sitesine yönlendiriliyorsunuz.
-KENDİM İÇİN
-İŞİM İÇİN
-- Finansmanlar
-- Nakit Yönetimi
-- Sigortalar
-- Yatırım
-- KOBİ Bankacılığı
--
-Sürdürülebilir Çözümler
-Sürdürülebilir Çözümler
-KENDİM İÇİN
-İŞİM İÇİN
-Önerilen Aramalar
-Katılım finansman ürünlerimiz, faizsiz bankacılık prensipleri doğrultusunda, ihtiyaçlarınızı karşılamanız için size esnek ve uygun çözümler sunar.
-Arsa, araç, iş yeri, makine teçhizat, ekipman ihtiyaçlarınızı Taksitli Ticari Finansman ile rahatça karşılayabilirsiniz.
-Detaylı Bilgi
-Banka teminat mektupları, işlemlerde güven sağlamak ve taahhütlerin yerine getirilmesini garanti altına almak için yaygın olarak kullanılan etkili bir finansal araçtır.
-Detaylı Bilgi
-İşletmenizin banka limit ve risk durumunu Referans Mektupları aracılığıyla muhataplarınıza sunun!
-Detaylı Bilgi
-Tüm site ziyaretçilerimizi daha iyi tanımak, sitemizdeki kullanıcı deneyimini kişiselleştirmek ve iyileştirmek için web sitemizde çerezler kullanıyoruz. Çerez ayarlarınızı yönetmek için ""Tercihler"" seçeneğine tıklayabilir, sitemizdeki çerezlerle ilgili detaylı bilgiler için Çerez Aydınlatma Metni'ni inceleyebilirsiniz.
-Çerez Ayarları
-Çerez Politikası
-Zorunlu Çerezler
-Bu çerezler, web sitemizin çalışması için gereklidir ve sistemlerimizde kapatılamaz. Bunlar genellikle tarafınızca yapılan ve hizmet talebi anlamına gelen eylemlere yanıt olarak yerleştirilir, örneğin gizlilik tercihlerinizi ayarlamak, oturum açmak ya da formları doldurmak. Tarayıcınızı bu çerezleri engelleyecek ya da bu çerezlerle ilgili olarak size uyarıda bulunacak şekilde ayarlayabilirsiniz, ancak bu durumda sitenizin bazı kısımları çalışmayabilir. Bu çerezler sizi kişisel olarak tanımlayabilecek herhangi bir bilgi saklamamaktadır.
-İşlevsellik Çerezleri
-Web sitesi deneyiminizi iyileştirmek amacıyla analitik çerezler kullanılır. Analitik çerezler, web sitesini nasıl kullandığınızı (örn; hangi sayfaları ziyaret ettiğiniz, ziyaret süresi vb.) anlamamızı sağlar. Böylelikle sunduğumuz içerikleri geliştirebilir ya da web sitesi tasarımını değiştirebiliriz.
-Kişiselleştirilmiş Reklam Çerezleri
-Bu çerezler reklam partnerlerimiz tarafından sitemiz üzerinden yerleştirilebilir. Bunlar söz konusu şirketler tarafından ilgi alanlarınızın bir profilini oluşturmak ve size diğer sitelerdeki ilgili reklamları göstermek amacıyla kullanılabilir ve paylaşılabilir. Bu işlem, tarayıcınızı ve internet cihazınızı benzersiz biçimde tanımlamaya dayalıdır. Bu çerezlere izin vermediğiniz takdirde, hedefli reklamları daha az görebileceksiniz.
-ÇEREZ KULLANIMINA İLİŞKİN AYDINLATMA METNİ
-1. Giriş Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu’nun (“Kanun”) 10’uncu maddesi, Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ (“Tebliğ”) ve Çerez Uygulamaları Hakkında Rehber (“Rehber”) kapsamında veri sorumlusu sıfatıyla Dünya Katılım Bankası A.Ş. tarafından hazırlanmıştır. Bu Çerez Aydınlatma Metni, internet sitemiz ziyaret edildiğinde kullanılan çerezler aracılığıyla toplanan kişisel verilerin işlenmesi, çerezlerin hangi amaçlarla ve hangi tür çerezlerin kullanıldığı konusunda bilgi sağlamanması, bu çerezleri nasıl yönetebileceğiniz hakkında rehberlik edilmesi amacıyla hazırlanmıştır. 2. Çerez Nedir ve Neden Kullanılmaktadır? Çerezler, bir internet sitesini ziyaret ettiğinizde bilgisayarınıza veya diğer internet bağlantılı cihazlara (örneğin, akıllı telefonlar veya tabletler) yerleştirilebilen dosyalar veya bilgi parçalarıdır. Başka bir deyişle, çerezler internet siteleri veya mobil uygulamalar gibi çevrim içi platformları kullanırken, cihazınıza yerleştirilen küçük metin dosyalarıdır. Çerezler, kullanıcılara kişiselleştirilmiş içerik sunmanın yanı sıra, internet sitesinin daha verimli ve etkin bir şekilde çalışmasını sağlamaktadır. Sizlere daha iyi bir ziyaret deneyimi sunmak için kullanıcının kişisel tercihlerine ve ihtiyaçlarına uygun içerikleri sunmaktadır. Önemli bir nokta olarak, çerezler sadece internet geçmişinizle ilgili bilgiler içermekte ve cihazınızda depolanan dosyalara erişim sağlayamamaktadır. Ayrıca, çerezler hizmetlerimizi sizin ilgi ve ihtiyaçlarınıza uygun hale getirmek için kullanılabilmektedir. Bu sayede, gelecekte internet sitelerimizi ziyaret ettiğinizde daha hızlı ve kişiselleştirilmiş deneyimler yaşamanız sağlanmaktadır. 3. Çerez Türleri Nelerdir? Taraflarına göre çerezler: Birinci Taraf Çerezleri: Kullanıcılarca oluşturularak internet sitesine konulan ve banka kontrolünde olan çerezlerdir. Üçüncü Taraf Çerezleri: İşbirliği yaptığımız üçüncü taraf firmalar tarafından oluşturulan ve yönetilen çerezlerdir. Saklama süresine göre çerezler: Oturum Çerezleri: Kullanıcıların sadece tarayıcıları açıkken mevcut olan ve tarayıcı kapanınca silinen çerez tipidir. Kalıcı Çerezler: Kullanıcıların tarayıcısı kapandıktan sonra belirli bir sona erme tarihine kadar kalıcı olan çerez türüdür. Yeniden web sitesi ziyaret edildiğinde bu çerezler aktif olur ve aynı bilgisayardan yapılan ziyareti tespit edebilmek amacıyla kullanılmaktadır. Kullanım amaçlarına göre çerezler a.Zorunlu Çerezler Bu çerezler internet sitesinin doğru ve etkin çalışmasını sağlamak amaçlarıyla kesinlikle gerekli olan çerezlerdir. Bu çerezler kaldırılırsa veya engellenirse internet sitesi kısmen veya tamamen belli işlevlerini yitirebilmektedir. b.İşlevsel Çerezler Web sitesinde kullanılan kişiselleştirme ve tercihlerin hatırlanması amaçları ile kullanılan çerezlerdir. Bu çerezler zorunlu çerezler dışında kalan işlevsellikleri sağlama amacıyla kullanılmaktadır. c.Performans - Analitik Çerezler İnternet sitelerinde kullanıcıların davranışlarını analiz etmek amacıyla istatistiki ölçümüne imkân veren çerezlerdir. Bu çerezler, sitenin iyileştirilmesi için sıklıkla kullanılmakta olup bu duruma reklamların ilgili kişiler üzerindeki etkisinin ölçümü de dâhildir. İnternet sitesi sahipleri tarafından, ziyarete yönelik ölçüm yapmak, analiz etmek ve tahminde bulunmak ile bir internet sayfasına götüren en önemli arama motoru anahtar kelimelerini tespit etmek için kullanılabilmektedir. d.Reklam / Pazarlama Çerezleri Reklam ve pazarlama amaçlı çerezler ile internet ortamında kullanıcıların çevrim içi hareketleri takip edilerek kişisel ilgi alanları saptanıp bu ilgi alanlarına yönelik internet ortamında kullanıcılara reklam gösterilmesi her durumda aynı reklamların sürekli tekrarlanmasının engellemesi, reklamların düzgün bir şekilde gösterilmesi sağlanabilmektedir. Bu çerezlerin kullanılmasındaki amaç kullanıcıya geliştirilmiş ve kişisel bir deneyim sunulabilmesidir. 4.Sitemizde Kullanılan Çerez Türleri Aşağıda İnternet Sitesinde kullandığımız farklı türdeki çerezlere yer verilmiştir. Zorunlu Çerezler Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi CultureInfo Banka Ziyaretçilerin internet site sayfalarını hangi dil kullandığını gösterir. Oturum süresince .AspNetCore.Session Banka Ziyaretçilere atanmış benzersiz bir kimlik numarasını gösterir Oturum süresince Performans ve Analitik Çerezleri Çerez Adı Sağlayıcı Kullanım amacı Kullanım Süresi _ga_XXXXXXXXX Google Analytics Tracking Google Analytics tarafından ziyaretçilerin İnternet Sitesini ziyaret sıklığına ve ziyaret zamanlarına ilişkin bilgi toplamak amacıyla kullanılan çerezdir. 1 yıl 5.Kişisel Veri Sahibi Olarak Haklarınız Nelerdir? Kişisel veri sahipleri Kanunun “ilgili kişinin haklarını düzenleyen” 11’inci maddesi kapsamında aşağıda listeli haklara sahiptir. Kişisel veri işlenip işlenmediğini öğrenme Kişisel verileri işlenmişse buna ilişkin bilgi talep etme Kişisel verilerin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme Yurt içinde veya yurt dışında kişisel verilerin aktarıldığı üçüncü kişileri bilme Kişisel verilerin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme Kanun ve ilgili diğer kanun hükümlerine uygun olarak işlenmiş olmasına rağmen, işlenmesini gerektiren sebeplerin ortadan kalkması hâlinde kişisel verilerin silinmesini veya yok edilmesini isteme ve bu kapsamda yapılan işlemin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme İşlenen verilerin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle kişinin kendisi aleyhine bir sonucun ortaya çıkmasına itiraz etme Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme Yukarıda belirtilen haklarınızı kullanmak için; Kimlik tespiti yapılarak şubelerimiz aracılığıyla Kimlik doğrulaması gerçekleştirilerek Dijital Kanallarımız ya da Çağrı Merkezimiz üzerinden Yamanevler Mah. Ahmet Tevfik İleri Cad. 4B PLAZA No:26 KAT:15-16-17 Ümraniye / İSTANBUL adresine noter kanalıyla dunyakatilim@hs01.kep.tr adresine güvenli elektronik imzalı olarak Bankamız sisteminde kayıtlı bulunan elektronik posta adresinizi kullanarak taleplerinizi bankamıza iletebilirsiniz. Başvuruda; a) ad, soyadı ve başvuru yazılı ise imza b) Türkiye Cumhuriyeti vatandaşları için T.C. kimlik numarası, yabancılar için uyruğu, pasaport numarası veya varsa kimlik numarası c) tebligata esas yerleşim yeri veya iş yeri adresi ç) varsa bildirime esas elektronik posta adresi, telefon ve faks numarası d) talep konusu bulunmalıdır. Talebiniz en kısa sürede ve en geç otuz (30) gün içinde ücretsiz olarak sonuçlandırılmaktadır. Başvurunuza yönelik işlemlerin ayrı bir maliyeti gerektirmesi hâlinde, Kurul tarafından belirlenen tarifedeki ücret tarafınıza yansıtabilmektedir."
+0206-016254a2c9b8,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/isyeri-finansmani.aspx,,,,,,,,,"İş yeri Finansmanı (İş yeri Kredisi)*
+Yatırım amaçlı iş yeri satın almak isteyen bireysel kişiler için sağlanan finansman (bankacılık kanununa göre kredi) desteğidir.
+Katılım bankacılığı prensipleri çerçevesinde satın almak istediğiniz gayrimenkul Türkiye Finans tarafından satın alınır, istenilen vadeye göre üzerine kâr payı ilave edilerek tarafınıza satışı yapılır.
+EN YAKIN ŞUBEHESAPLAMA ARAÇLARI- Nüfus cüzdanı veya ehliyet,
+- Gelir belgesi/maaş bordrosu,
+- Serbest meslek sahipleri ve işletme sahipleri için son yıla ait vergi levhası ve onaylı bilanço, gelir tabloları, mizan, imza sirküleri, kuruluş ve en son ortaklık payını gösteren Ticaret Sicil Gazetesi,
+- Finansmana konu ürünün proforma faturası.
+- Satın alınacak konuta ait kat mülkiyeti veya kat irtifakı tapusu ve yapı kullanım izin belgesi
+Ücretli çalışan kişiler için, maaş bordrosu antetli kağıt ile bildiriliyor ise firmanın imza sirküleri beyanı gerekmektedir.
+Banka gerekli gördüğü durumlarda kefil ve ek belge isteme hakkına sahiptir. Kefil için de aynı belgeler talep edilecektir.
+İşyeri Finansmanı (Sigortalı)
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+3 | 4,46% | 0,50% | 18,92% | 700,08% |
+6 | 4,42% | 0,50% | 13,35% | 349,99% |
+12 | 4,27% | 0,50% | 9,86% | 208,95% |
+18 | 4,23% | 0,50% | 8,62% | 169,75% |
+24 | 4,19% | 0,50% | 7,97% | 150,89% |
+36 | 4,08% | 0,50% | 7,23% | 131,20% |
+48 | 4,04% | 0,50% | 6,90% | 122,81% |
+59 | 3,85% | 0,50% | 6,48% | 112,35% |
+84 | 3,59% | 0,50% | 5,93% | 99,71% |
+İşyeri Finansmanı (Sigortasız)
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+3 | 4,92% | 0,50% | 19,62% | 758,45% |
+6 | 4,88% | 0,50% | 14,04% | 383,58% |
+12 | 4,73% | 0,50% | 10,53% | 232,54% |
+18 | 4,69% | 0,50% | 9,30% | 190,66% |
+24 | 4,65% | 0,50% | 8,65% | 170,59% |
+36 | 4,54% | 0,50% | 7,93% | 149,77% |
+48 | 4,50% | 0,50% | 7,61% | 141,07% |
+59 | 4,31% | 0,50% | 7,19% | 130,02% |
+84 | 4,05% | 0,50% | 6,66% | 116,78% |
+100.000 TL. baz alınarak oluşturulan İş yeri Finansmanı (İş yeri Kredisi)* örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Maliyet tablosu hesaplamasında yer alan kar oranları; Finansman Ferdi Kaza Sigortası ürünlerinin tamamının finansman başvurusu ile birlikte alınması şartıyla uygulanmaktadır. Finansmanın maksimum vadesi 84 aydır. Yıllık maliyete kar oranı, tahsis ücreti, ekspertiz ücreti, ipotek tesis ücreti dahil edilmiştir. Alınacak ücretler: 60 ay vadede 500 TL tahsis ücreti, 3.000 TL ipotek tesis ücreti, 16.500 TL Ekspertiz(Değerleme) ücretidir. Ekspertiz ücreti minimum maliyetler üzerinden hesaplanmış olup Ekspertiz ücreti Resmi Kurumlara ödenen harç miktarına, taşınmazın alanına, mevcut durumuna ve bulunduğu lokasyona göre değişebilmektedir.Gayrimenkulün bulunduğu lokasyona bağlı olarak ekspertiz firmasına ödenen meblağ arttığında, müşteriden tahsil edilecek ekspertiz ücreti de artacaktır. Ekspertiz maliyet tutarının 1.5 katı kadar hesabınıza bloke tesis edilmektedir. İşlem tamamlandıktan sonra oluşan gerçek maliyet tahsil edilerek, kalan bakiye için hesabınızdaki bloke çözülecektir. Finansman güvence sigortası müşterinin cinsiyeti, yaşı vb. kriterlere göre değişiklik göstermekte olup; yıllık maliyet hesaplamalarına dahil edilmemektedir. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir.Yukarıda yazılı ürünlere sahip olmaksızın kullanılacak finansmana uygulanan genel ücret ve masraflara ilişkin bilgiyi Ürün ve Hizmet Ücretleri sayfamızdan ulaşabilirsiniz. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz.
+*Katılım bankacılığı kuruluş esas ve faaliyetleri doğrultusunda İş yeri Finansmanı sağlamaktadır. Ancak bankacılık kanuna göre resmi olarak İş yeri Kredisi olarak da nitelendirilmektedir."
+0203-fcb188f0e696,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani,,,,,,,,,"Hayalinizdeki aracı satın alabilmek için ihtiyacınız olan taşıt finansmanı Albaraka Türk’te! İster sıfır (0) araç ister ikinci el (2.el) araç satın alımlarında başvuru işlemlerini hızlıca gerçekleştirin, hayalinizdeki araca hemen kavuşun!
+Taşıt finansmanı, araç alımlarında kullanabileceğiniz, belirli bir vade ve kâr oranıyla sunulan finansman türüdür. Albaraka taşıt finansmanı ile sıfır veya 2. el araçlarınızı kolayca alabilirsiniz.
+Ayrıca Taşıt Finansmanı Hesaplama Aracı üzerinden, kullanacağınız finansman tutarının aylık taksit miktarını, tahmini ücretler toplamı ve geri ödeme planını anında öğrenebilir, dilerseniz hemen başvuru gerçekleştirebilirsiniz.
+Not: Araç finansmanı işlemlerinde finansman tutarının taşıt tutarına oranı ve azami vadeler aşağıdaki gibidir:
+Nihai Fatura / Kasko Değeri | Maksimum Oran | Azami Vade (Ay) |
+0 TL – 400.000 TL | 70% | 48 |
+400.001 TL – 800.000 TL | 50% | 36 |
+800.001 TL – 1.200.000 TL | 30% | 24 |
+1.200.001 TL- 2.000.000 TL | 20% | 12 |
+2.000.000 ve üzeri | 0% | 0 |
+- Sıfır ve ikinci el araç alımları için uygun, esnek ve avantajlı finansman çözümleri sağlar.
+- Hem bireysel hem de ticari araç alımlarınızda finansman desteği sağlar.
+- Katılım bankacılığı prensipleriyle faizsiz ve adil bir finansman süreci sunar.
+- Müşterilerine en uygun ödeme planını sunar.
+Albaraka Türk Katılım bankasında farklı taşıt finansmanı ürünleri bulunmaktadır. Farklı taşıt ihtiyaçları için müşterilerimize finansman destekleri sağlamaktayız.
+Deniz Taşıt Finansmanı
+Tekne, kayık, jetski, yelkenli vb. istekleriniz ve ihtiyaçlarınız için Albaraka desteği sizinle! Talep ettiğiniz her türlü deniz aracına dair kredi talebinde bulunabilirsiniz. Albaraka Deniz Taşıt Finansmanı hakkında detaylı bilgi için tıklayınız.
+Taşıt Kiralama Finansmanı
+Araç, tekne gibi taşıtları kiralamak için finansmana ihtiyaç duyarsanız Albaraka olarak yanınızdayız. Ödemelerinizi 36 kadar vadelendirebilir, geri ödemelerinizi aylık eşit taksitler hâlinde yapabilirsiniz. Albaraka Taşıt Kiralama Finansmanı hakkında detaylı bilgi için tıklayınız.
+Motosiklet Finansmanı
+Hayalinizdeki motosikletle özgürlüğün keyfini sürmek artık çok daha kolay! Albaraka Türk olarak motosiklet alımlarınız için uygun finansman seçenekleri sunuyoruz.
+- 125 cc ve üzeri motosikletler için taşıt finansmanı koşulları geçerlidir.
+- 125 cc altındaki motosikletler için ise ihtiyaç finansmanı kapsamında destek sağlıyoruz.
+Karavan Finansmanı
+Hayalinizdeki karavana sahip olmak artık çok daha kolay! Albaraka Türk olarak karavan alımlarınız için uygun finansman seçenekleri sunuyoruz.
+- Motokaravanlar için taşıt finansmanı marjları uygulanır.
+- Çekme karavanlar için, çekme karavan kampanyası kapsamında ihtiyaç finansmanı desteği sunulmaktadır.
+- 18 yaşını tamamladıysanız, taşıt finansmanına başvurabilirsiniz.
+- Taşıt finansmanından gerçek kişi olarak yararlanmak isterseniz; kimlik kartınızı, gelir belgenizi, ücretli çalışansanız maaş bordronuzu veya net maaş tutarınızı gösteren, işyeri tarafından onaylanmış belgeyi ibraz etmeniz gerekir. 0 km araçlar için aracın proforma faturası veya asıl faturası gerekmektedir. İkinci el araçlar için 10 yaşını aşmamış olması şartıyla sadece araç ruhsatı yeterlidir.
+- Taşıt finansmanından serbest meslek sahibi olarak yararlanmak isterseniz; Vergi levhanızı, onaylı bilanço ve gelir tablonuzu, cari yıl mizanınızı, faaliyet belgenizi, varsa tapu fotokopilerini, kira kontratlarınızı, gelir belgelerinizi ve imza beyannamenizi, ayrıca gerekli durumlarda kefiller için de aynı belgeleri ibraz etmeniz gerekir.
+- Taşıt finansmanından tüzel kişi olarak yararlanmak isterseniz; ortakların kimlik kartlarını, noter onaylı şirket imza sirkülerini, Ticaret Sicil Gazetesi Örneğini, Ticaret Odası kayıt belgenizi, faaliyet belgenizi, son üç yıla ait bilânço, gelir tablolarınızı ve son üç yılda düzenlenmiş vergi levhası fotokopisini ibraz etmeniz gerekir. Ayrıca gerekli durumlarda kefiller için de aynı belgeleri ibraz etmeniz gerekir. 0 km araçlar için aracın proforma faturası veya asıl faturası gerekmektedir. İkinci el araçlar için araç ruhsatı gereklidir.”
+- Taşıt kredilerinde Tüzel Kişi kullanımlarda KKDF muafiyeti uygulanmaktadır.
+- İstenilen belgelerle birlikte size en yakın Albaraka Türk şubesine uğrayarak, başvuru formunu doldurabilir ve yeni aracınız için ilk adımı atabilirsiniz.
+- Detaylı bilgi ve bankacılık işlemleri için 0850 222 5 666 Alo Albaraka'yı arayabilirsiniz.
+Albaraka Türk Katılım Bankası’nın araç finansmanına başvuru yapmak için aşağıdaki kanalları kullanabilirsiniz;
+- Şubelerimiz,
+- Albaraka Mobil,
+- İnternet Şubesi.
+**Not: Ayrıca, Alo Albaraka (Müşteri Hizmetleri) merkezini arayarak da hızlıca taşıt finansmanı başvurusu gerçekleştirebilir, satın almak istediğiniz araca bir adım daha yaklaşabilirsiniz.
+%
+Oranı kendim gireceğim.
+Aylık Taksit Tutarı
+10.283,74 TL
+Geri Ödenecek Toplam Tutar
+236.526,84 TL
+Yıllık Maliyet Oranı
+% 64,48
+Ücretler Toplamı
+862,50
+Finansman talepleriniz için müşterimiz olmanız gerekmeden; web sitemiz üzerinden hemen başvurup jet hızında sonuç alabilirsiniz.
+Finansman talepleriniz için müşterimiz olmanız gerekmeden; Albaraka Mobil üzerinden hemen başvurup jet hızında sonuç alabilirsiniz.
+Finansman talepleriniz için müşterimiz olmanız gerekmeden; 4462’ye SMS atarak hemen başvurup jet hızında sonuç alabilirsiniz.
+Finansman talepleriniz için müşterimiz olmanız gerekmeden Şubelerimizden hemen başvurup jet hızında sonuç alabilirsiniz."
+0205-9e2afc07063a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari,,,,,,,,,"Araç Finansmanı
+Araç Finansmanı ile hayalinizdeki otomobile 48 aya varan vade seçenekleri ile sahip olabilirsiniz.
+Dijital Araç Finansmanı
+Türkiye’de bir ilk! Hayallerinizi süsleyen araca sahip olmak için Kuveyt Türk Mobil'den Dijital Araç Finansmanı'na başvurabilir ve dijitale özel cazip oranlarla bütçenizi zorlamadan istediğiniz araca sahip olabilirsiniz.
+Dijital Motosiklet Finansmanı
+Trafik yoğunluğundan etkilenmeden seyahat etmek için Dijital Motosiklet Finansmanı'na başvurabilir ve hayalinizdeki motosiklete sahip olabilirsiniz!
+Motosiklet Finansmanı
+48 aya varan vade seçenekleri ile beğendiğiniz motosikleti Motosiklet Finansmanı'na başvurarak kolayca satın alabilirsiniz.
+TOGG Finansmanı
+Ülkemizin yerli ve milli otomobili TOGG’a, Kuveyt Türk desteğiyle hemen sahip olabilirsiniz!"
+0206-61006b35204e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/konut-finansmani/Sayfalar/konut-finansmani.aspx,,,,,,,,,"Konut Finansmanı (Konut Kredisi)*
+Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay!
+Avantajlı kâr payı oranları ile hayalinizdeki eve sahip olmak çok kolay! Türkiye Finans Konut Finansmanı (bankacılık kanununa göre konut kredisi), uygun koşullarda ev sahibi olmanız için sunulan finansman desteğidir.
+Satın almak istediğiniz gayrimenkul katılım bankacılığı prensiplerine uygun olarak Türkiye Finans tarafından satın alınır ve size istediğiniz vade üzerinden satılır.
+Konut Finansmanı (Konut Kredisi)* çözümlerimizden bütçenize göre dilediğinizi seçebilir, uygun ödeme koşulları ile zorlanmadan ev sahibi olabilirsiniz.
+EN YAKIN ŞUBE HESAPLAMA ARAÇLARIHEMEN BAŞVUR
+İlk Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
+Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
+---|---|---|---|
+A–B | C | Enerji D ve Altı | |
+DEĞER ≤ 5 MİLYON TL | 90% | 80% | 70% |
+5.000.001 – 7.000.000 | 80% | 70% | 60% |
+7.000.001 – 10.000.000 | 70% | 60% | 50% |
+10.000.001 – 20.000.000 | 50% | 40% | 30% |
+DEĞER > 20 MİLYON TL | 40% | 30% | 20% |
+*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcut değilse başvurulacak maksimim finansman tutarlarıdır.
+Mevcut Konutu Olup İkinci Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
+Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
+---|---|---|---|
+A–B | C | Enerji D ve Altı | |
+DEĞER ≤ 5 MİLYON TL | 22.50% | 20% | 17.50% |
+5.000.001 – 7.000.000 | 20% | 17.50% | 15% |
+7.000.001 – 10.000.000 | 17.50% | 15% | 12.50% |
+10.000.001 – 20.000.000 | 12.50% | 10% | 7.50% |
+DEĞER > 20 MİLYON TL | 10.00% | 7.5% | 5.00% |
+*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcutsa başvurulacak maksimim finansman tutarlarıdır.
+- Nüfus cüzdanı veya ehliyet,
+- Gelir belgesi/maaş bordrosu,
+- Serbest meslek sahipleri ve işletme sahipleri için son yıla ait vergi levhası ve onaylı bilanço, gelir tabloları, mizan, imza sirküleri, kuruluş ve en son ortaklık payını gösteren Ticaret Sicil Gazetesi,
+- Satın alınacak konuta ait kat mülkiyeti veya kat irtifakı tapusu ve yapı kullanım izin belgesi
+- Ücretli çalışan kişiler için, maaş bordrosu antetli kağıt ile bildiriliyor ise firmanın imza sirküleri beyanı gerekmektedir.
+- Banka gerekli gördüğü durumlarda kefil ve ek belge isteme hakkına sahiptir. Kefil için de aynı belgeler talep edilecektir.
+İlk Konutunu Alan / Sigortalı Konut Finansmanı (Konut Kredisi)*
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+3 | 3,96% | 0,50% | 16,66% | 535,27% |
+6 | 3,92% | 0,50% | 11,21% | 257,86% |
+12 | 3,77% | 0,50% | 7,81% | 146,69% |
+18 | 3,73% | 0,50% | 6,60% | 115,39% |
+24 | 3,69% | 0,50% | 5,96% | 100,30% |
+36 | 3,58% | 0,50% | 5,24% | 84,67% |
+48 | 3,54% | 0,50% | 4,91% | 77,66% |
+59 | 3,35% | 0,50% | 4,53% | 70,15% |
+72 | 3,09% | 0,50% | 4,11% | 62,22% |
+120 | 2,95% | 0,50% | 3,76% | 55,66% |
+İlk Konutunu Alan / Sigortasız Konut Finansmanı (Konut Kredisi)*
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+3 | 4,42% | 0,50% | 17,19% | 571,27% |
+6 | 4,38% | 0,50% | 11,73% | 278,57% |
+12 | 4,23% | 0,50% | 8,33% | 161,24% |
+18 | 4,19% | 0,50% | 7,12% | 128,24% |
+24 | 4,15% | 0,50% | 6,48% | 112,36% |
+36 | 4,04% | 0,50% | 5,77% | 95,98% |
+48 | 4,00% | 0,50% | 5,43% | 88,70% |
+59 | 3,81% | 0,50% | 5,06% | 80,85% |
+72 | 3,55% | 0,50% | 4,65% | 72,54% |
+120 | 3,41% | 0,50% | 4,31% | 65,94% |
+Konut Finansmanı (Konut Kredisi)* talep eden müşteri, eşi ve/veya 18 yaş altındaki çocukları herhangi bir konutta %50’den fazla pay sahibi değil ise geçerli oranlandır.
+Mevcut Konutu Olan / Sigortalı Konut Finansmanı (Konut Kredisi)*
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+3 | 3,96% | 0,50% | 17,41% | 586,13% |
+6 | 3,92% | 0,50% | 11,91% | 285,87% |
+12 | 3,77% | 0,50% | 8,47% | 165,23% |
+18 | 3,73% | 0,50% | 7,24% | 131,45% |
+24 | 3,69% | 0,50% | 6,59% | 115,14% |
+36 | 3,58% | 0,50% | 5,86% | 98,12% |
+48 | 3,54% | 0,50% | 5,52% | 90,61% |
+59 | 3,35% | 0,50% | 5,12% | 81,99% |
+72 | 3,09% | 0,50% | 4,66% | 72,74% |
+120 | 2,95% | 0,50% | 4,29% | 65,61% |
+Mevcut Konutu Olan / Sigortasız Konut Finansmanı (Konut Kredisi)*
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | Yıllık Toplam Maliyet |
+3 | 4,42% | 0,50% | 18,03% | 630,77% |
+6 | 4,38% | 0,50% | 12,51% | 311,53% |
+12 | 4,23% | 0,50% | 9,06% | 183,23% |
+18 | 4,19% | 0,50% | 7,84% | 147,35% |
+24 | 4,15% | 0,50% | 7,19% | 130,08% |
+36 | 4,04% | 0,50% | 6,47% | 112,14% |
+48 | 4,00% | 0,50% | 6,14% | 104,32% |
+59 | 3,81% | 0,50% | 5,73% | 95,26% |
+72 | 3,55% | 0,50% | 5,28% | 85,50% |
+120 | 3,41% | 0,50% | 4,94% | 78,32% |
+Konut Finansmanı (Konut Kredisi)* talep eden müşteri, eşi ve/veya 18 yaş altındaki çocukları herhangi bir konutta %50’den fazla pay sahibi değil ise geçerli oranlandır.
+100.000 TL. baz alınarak oluşturulan konut finansmanı örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Maliyet tablosu hesaplamasında yer alan kar oranları; Yedek Hesap, DASK, Finansman Ferdi Kaza Sigortası, Konut Sigortası, Otomatik Fatura Ödeme Talimatı ürünlerinin tamamının finansman başvurusu ile birlikte alınması şartıyla uygulanmaktadır. Finansmanın maksimum vadesi 120 ay olup, tahsis ücreti vergiler hariç finansman tutarının binde 5’i oranındadır. Yıllık maliyete kar oranı, tahsis ücreti, ekspertiz ücreti, ipotek tesis ücreti dahil edilmiştir. Alınacak ücretler: 500 TL tahsis ücreti, 3.000 TL ipotek tesis ücreti, 16.500 TL Ekspertiz(Değerleme) ücretidir. Ekspertiz ücreti minimum maliyetler üzerinden hesaplanmış olup Ekspertiz ücreti Resmi Kurumlara ödenen harç miktarına, taşınmazın alanına, mevcut durumuna ve bulunduğu lokasyona göre değişebilmektedir.Gayrimenkulün bulunduğu lokasyona bağlı olarak ekspertiz firmasına ödenen meblağ arttığında, müşteriden tahsil edilecek ekspertiz ücreti de artacaktır. Ekspertiz maliyet tutarının 1.5 katı kadar hesabınıza bloke tesis edilmektedir. İşlem tamamlandıktan sonra oluşan gerçek maliyet tahsil edilerek, kalan bakiye için hesabınızdaki bloke çözülecektir. Konut sigortası ve DASK prim ücretleri lokasyona ve m2'ye göre, Finansman güvence sigortası ise müşterinin cinsiyeti, yaşı vb. kriterlere göre değişiklik göstermekte olup; yıllık maliyet hesaplamalarına dahil edilmemektedir. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. Yukarıda yazılı ürünlere sahip olmaksızın kullanılacak finansmana uygulanan genel ücret ve masraflara ilişkin bilgiyi Ürün ve Hizmet Ücretleri sayfamızdan ulaşabilirsiniz. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz
+*Katılım bankacılığı kuruluş esas ve faaliyetleri doğrultusunda Konut Finansmanı sağlamaktadır. Ancak bankacılık kanuna göre resmi olarak Konut Kredisi olarak da nitelendirilmektedir.
+Sıkça Sorulan Sorular
+İlk Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
+Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
+---|---|---|---|
+A–B | C | Enerji D ve Altı | |
+DEĞER ≤ 5 MİLYON TL | 90% | 80% | 70% |
+5.000.001 – 7.000.000 | 80% | 70% | 60% |
+7.000.001 – 10.000.000 | 70% | 60% | 50% |
+10.000.001 – 20.000.000 | 50% | 40% | 30% |
+DEĞER > 20 MİLYON TL | 40% | 30% | 20% |
+*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcut değilse başvurulacak maksimim finansman tutarlarıdır.
+Mevcut Konutu Olup İkinci Konut Alımlarında Ekspertiz Değerine Göre Finansman Tutarları
+Konut Ekspertiz Değeri (TL) | Enerji Sınıfı | ||
+---|---|---|---|
+A–B | C | Enerji D ve Altı | |
+DEĞER ≤ 5 MİLYON TL | 22.50% | 20% | 17.50% |
+5.000.001 – 7.000.000 | 20% | 17.50% | 15% |
+7.000.001 – 10.000.000 | 17.50% | 15% | 12.50% |
+10.000.001 – 20.000.000 | 12.50% | 10% | 7.50% |
+DEĞER > 20 MİLYON TL | 10.00% | 7.5% | 5.00% |
+*Ailenin (Kendi,Eşi ve Çocuğu) farklı bir konutu mevcutsa başvurulacak maksimim finansman tutarlarıdır.
+- Konut finansmanı (Konut Kredisi)* başvurularında, konutun değerinin tespiti için, anlaşmalı firmalardan eksper talep edilir.
+- Ekspertiz ücreti eksper tarafından verilen hizmetin bedelidir.
+- Ekspertiz ücreti finansman desteği başvurusunda bulunan müşterilerimizden tahsil edilir.
+Bankamızdaki uygulamada mortgage kredileri için uygulanan maksimum vade süresi 120 aydır.
+- Satın alınacak konuta ait kat mülkiyeti veya kat irtifaklı tapu
+- Nüfus cüzdanı veya ehliyet
+- Gelir belgesi / Maaş bordrosu
+- İkametgah belgesi / Son 3 aya ait olmak üzere isme kayıtlı fatura
+İlgili proje eğer Bankamız ile anlaşmalı ise, henüz tamamlanmamış projedeki daireler için anlaşılan kâr oranları ile konut finansmanı (Konut Kredisi)* kullanılabilir.
+- Tüketicinin Korunması Hakkında Kanun'una ve Konut Finansmanı (Konut Kredisi)* Sözleşmeleri Yönetmeliği'ne göre tüketicinin borçlandığı tutarın tamamını veya bir ya da birden fazla taksiti vadesinden önce ödemesi durumunda konut finansmanı (Konut Kredisi)* kuruluşları tarafından erken ödeme tazminatı talep edilebilir.
+- Erken ödeme tazminatı oranı, erken ödenen tutarın kalan vadesi 36 ayı aşmayan kredilerde % 1'i, kalan vadesi 36 ayı aşan kredilerde ise % 2'si kadardır.
+Ön ödemeli konut finansmanlarında tüketiciler on dört gün içerisinde, herhangi bir gerekçe göstermeksizin ve cezai şart ödemeksizin ön ödemeli konut satış sözleşmesinden cayma hakkında sahiptir.
+Cayma hakkının kullanıldığına dair bildirimin bu süre içinde satıcıya yöneltilmiş olması yeterlidir.
+Satıcı, cayma hakkı konusunda tüketicinin bilgilendirildiğini ispat etmekle yükümlüdür.
+Ekspertiz ve ipotek tesis ücreti, değerlemeyi yapan ekspertiz firması ile ipoteği tesis eden firmanın Bankamız'a faturalandırdığı tutar kadardır.
+İpotek fek masrafı alınmamaktadır.
+Sıkça Sorulan Sorular"

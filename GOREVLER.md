@@ -240,20 +240,35 @@ Etiketlenmiş olan tek şey 10 örneklik ortak uyum bloğu — yani altın set
 **İyi haber:** etiketler modelin kendi çıktısından kopyalanmamış (veritabanında
 o alanlar `None`) — altın set kendini ölçmüyor, emek kurtarılabilir.
 
-**Bu akşam yapılacak — kişi başı ~1,5 saat:**
+**15 Ağu kararı: altın set sıfırdan kuruldu.** Etiketlerin bir bölümü dil
+modelinden geldiği için hepsi geçersiz sayıldı ve süreç sadeleştirildi
+(bkz. [ADR 008](docs/kararlar/008-altin-set-kapsami.md)):
 
-1. `data/gold/etiketleme_<adın>.csv` → 12-13 satır, **yalnız çekirdek 8 alan**,
-   kalanlara `?`
-2. `data/gold/kalibrasyon_<adın>.csv` → 10 satır, aynı 8 alan
+| | Önce | Şimdi |
+|---|---|---|
+| Etiketlenecek alan | 16 | **8** |
+| Ortak (uyum) blok | 10 satır | **5 satır** |
+| Kılavuz | 403 satır | **1 sayfa** |
+| make komutu | 7 | **4** |
+| Kişi başı süre | ~90 dk | **~25 dk** |
+
+**Yapılacak — kişi başı ~25 dakika:**
+
+1. `data/gold/etiketleme_<adın>.csv` → 13-14 satır × 8 alan
+2. `data/gold/etiketleme_uyum_<adın>.csv` → 5 satır (dördünüzde de aynı satırlar)
 3. `make altin-denetle ad=<adın>` → ✅ çıkana kadar düzelt
-4. Sonra push
+4. Kişisel dosyanı pushla; **ortak dosyayı Eren'e gönder**, pushlama
 
 > **Çekirdek 8:** `kampanya_turu` · `kar_payi_orani` · `vade_ay_max` ·
 > `finansman_tutari_max` · `tahsis_ucreti` · `masrafsiz_mi` · `odul_miktari` ·
 > `kampanya_bitis`
 >
-> ⚠️ **Kalibrasyon dosyasını kimseyle karşılaştırma, bitmeden pushlama.**
-> Uyum oranını o blok ölçüyor; erken push tam da bu yüzden %96 kopya üretti.
+> 🤖 **Etiketi yapay zekâya sordurma.** Cevap anahtarı bir modelden gelirse
+> ölçtüğümüz şey doğruluk değil, iki modelin benzerliği olur. Model okuma
+> yardımı olarak serbest; etiketi insan, metne bakarak yazar.
+>
+> 📄 **`data/gold/okuma_<adın>.md`** — her satır için sekiz alanın aday cümleleri
+> önden çıkarılmış. CSV'nin yanında aç, arama derdinden kurtul.
 
 ### Yük dağılımı
 
@@ -336,27 +351,32 @@ davranışı ayrışamaz.
 
 Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
-- [ ] **H-01** 🔴 **ALTIN VERİ SETİ — kişi başı ~23 örnek** · 📅 **16 Ağu (kesin)**
+- [ ] **H-01** 🔴 **ALTIN VERİ SETİ — kişi başı 13-14 satır × 8 alan (~20 dk)** · 📅 **16 Ağu (kesin)**
       ⛔ **Önce bitmeli:** H-02 (Herkes)
       ↳ Bitti sayılır: `data/gold/altin_set.jsonl` içinde **60** etiketli örnek var,
         `make eval` doğruluk metriklerini hesaplıyor (artık "beklemede" demiyor)
-      ↳ ✅ **12 Ağu: altyapı hazır.** Örneklem çıkarıldı, çalışma sayfaları üretildi,
-        derleyici ve denetçi yazıldı. **Kalan iş yalnız etiketleme.**
-      ↳ Senin dosyan: **`data/gold/etiketleme_<adın>.csv`** (12–13 örnek)
-        Excel/Sheets'te aç, doldur, kaydet. Metin sütunu içinde hazır.
-      ↳ 📖 **Önce `docs/ETIKETLEME_KILAVUZU.md` oku** — boş hücre ile `?` farklı
-        şeyler demek ve bu fark doğrudan metriğe giriyor.
-      ↳ **12 Ağu kararı: 100 değil 60 örnek.** Panodaki kaçış bugün kullanıldı;
+      ↳ ✅ **15 Ağu: altyapı sıfırdan kuruldu.** Boş CSV'ler ve okuma kâğıtları
+        hazır, kılavuz tek sayfaya indi. **Kalan iş yalnız etiketleme.**
+      ↳ Senin dosyan: **`data/gold/etiketleme_<adın>.csv`** (13-14 satır, 8 sütun)
+        Yanında **`data/gold/okuma_<adın>.md`** — aday cümleler önden çıkarılmış.
+      ↳ 📖 **Önce `docs/ETIKETLEME_KILAVUZU.md` oku** (tek sayfa) — boş hücre ile
+        `?` farklı şeyler demek ve bu fark doğrudan metriğe giriyor.
+      ↳ 🤖 **Etiketi yapay zekâya sordurma** — 15 Ağustos'ta altın setin sıfırdan
+        kurulmasının sebebi buydu. Model okuma yardımı olarak serbest.
+      ↳ **12 Ağu kararı: 100 değil 60 örnek.** Panodaki kaçış kullanıldı;
         16 Ağustos'ta "yetişmedi" demek S-12 → S-13 → ES-13 zincirini kaydırırdı.
-      ↳ ⚠️ Katmanlama modele değil metne göre kontrol edilmeli: örneklem sistemin
-        kendi tür tahminine göre dengelendi (bkz. kılavuz bölüm 8).
+      ↳ ⚠️ Katmanlama sistemin kendi tür tahminine göre yapıldı; bu sınır
+        `docs/SONUCLAR.md` ve sunumda açıkça söylenir.
 
-- [ ] **H-02** İlk 10 örneği DÖRDÜNÜZ BİRLİKTE etiketleyin · 📅 **10 Ağu ⏰ GECİKMİŞ (2 gün)**
-      ↳ ✅ `docs/ETIKETLEME_KILAVUZU.md` yazıldı (12 Ağu) — kalan iş uyum ölçümü
-      ↳ Dosyan: **`data/gold/etiketleme_uyum_<adın>.csv`** — dördünüzde de **aynı 10 örnek**
+- [ ] **H-02** Ortak 5 örneği DÖRDÜNÜZ BİRLİKTE etiketleyin · 📅 **16 Ağu**
+      ↳ ✅ `docs/ETIKETLEME_KILAVUZU.md` v2.0 yazıldı (15 Ağu) — kalan iş uyum ölçümü
+      ↳ Dosyan: **`data/gold/etiketleme_uyum_<adın>.csv`** — dördünüzde de **aynı 5 örnek**
+      ↳ 🔒 **Bitmeden pushlama.** Doldur, doğrudan Eren'e gönder; o dördünü birden
+        koyar. Erken push, kalan üç kişiye cevap anahtarını gösterir.
       ↳ Bitti sayılır: dördü de doldurdu, `make altin-uyum` ≥ %85 gösteriyor
-      ↳ Uyum düşükse ayrışan alanları konuşun, kararı kılavuzun **6. bölümüne** yazın
-      ↳ Bu 10 örnek çoğunluk oyuyla uzlaştırılıp altın sete girer — boşa etiketleme değil
+      ↳ Uyum düşükse ayrışan alanları konuşun, kararı kılavuzun **kararlar
+        defteri** tablosuna yazın
+      ↳ Bu 5 örnek çoğunluk oyuyla uzlaştırılıp altın sete girer — boşa etiketleme değil
       ↳ Sunumda "etiketleme uzlaşmamız %X" cümlesi akademik jüriyi etkiler
 
 - [ ] **H-03** Günlük yazılı stand-up · her gün 21:00 · WhatsApp
@@ -983,10 +1003,10 @@ make eval         # metrikler → docs/SONUCLAR.md
 make lisanslar    # lisans raporu
 
 # --- altın set (H-01 / H-02) ---
-make altin-ornekle   # örneklem + kişi başı etiketleme sayfası (bir kez çalıştırıldı)
-make altin-uyum      # etiketleyiciler arası uyum oranı
-make altin-derle     # doldurulmuş CSV'ler → data/gold/altin_set.jsonl
-make altin-dogrula   # altın seti denetle
+make altin-ornekle       # örneklem + etiketleme CSV'si + okuma kâğıdı (bir kez)
+make altin-denetle ad=X  # KENDİ dosyanı pushlamadan önce kontrol et
+make altin-uyum          # etiketleyiciler arası uyum oranı
+make altin-derle         # doldurulmuş CSV'ler → data/gold/altin_set.jsonl
 ```
 
 > ⚠️ **`make extract` çalışırken `make run`'ı kapat.** 8 GB makinede aynı anda
