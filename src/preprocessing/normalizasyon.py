@@ -356,15 +356,63 @@ def _guvenli_tarih(yil: int, ay: int, gun: int) -> date | None:
 # Masrafsızlık (bool alan)
 # ---------------------------------------------------------------------------
 
-_MASRAFSIZ_IFADELERI = (
-    "masraf alinmaz", "masraf alinmiyor", "masrafsiz", "masraf yok",
-    "dosya masrafi yok", "dosya masrafi alinmaz", "tahsis ucreti yok",
-    "tahsis ucreti alinmaz", "sifir masraf", "0 masraf", "ucretsiz",
-    "komisyon alinmaz", "hicbir masraf",
+MASRAF_SOZCUKLERI = ("masraf", "ucret", "komisyon", "tahsis", "dosya parasi")
+"""Bir cümlenin masraftan bahsedip bahsetmediği. Bunlardan biri yoksa cümle
+masrafsızlık beyanı DEĞİLDİR — 14 Ağustos'ta LLM, masraf sözcüğü hiç geçmeyen
+bir metinden `masrafsiz_mi=True` uydurdu (şartname madde 11, C Bankası)."""
+
+# TUZAK 6 — Türkçe olumsuzlama EK ile yapılır, sözcükle değil.
+#
+# Önceki sürüm kalıp listesi tutuyordu ("masraf alinmaz", "masraf yok", ...).
+# Bankaların resmî sitelerinde baskın olan kip ise -mAktAdır'dır:
+#
+#     "Kampanya kapsamında 50.000 TL'ye kadar dosya masrafı ALINMAMAKTADIR."
+#
+# Bu kalıp listede yoktu; cümle "masraf bilgisi yok" sayıldı ve daha kötüsü,
+# olumsuzlama görülmediği için 50.000 TL bir TAHSİS ÜCRETİ olarak çıkarıldı.
+# Şartnamenin kendi örnek metni (madde 11, A Bankası) tam bu cümledir.
+#
+# Çözüm kalıp eklemek değil, EKİ tanımaktır: -mAz, -mIyor, -mAmAktA(dır).
+# Kalıp listesi her yeni çekimde tekrar kırılırdı.
+_OLUMSUZ_YUKLEM = re.compile(
+    r"\w*m(?:az|ez)\b"  # alınmaz, ödenmez, uygulanmaz
+    r"|\w*m[iu]yor\b"  # alınmıyor, olmuyor  (ı->i, u ünlü uyumu)
+    r"|\w*m[ae]m(?:akta|ekte)(?:dir)?\b"  # alınmamaktadır, tahsil edilmemektedir
+    r"|\byok(?:tur)?\b"
+    r"|\bbulunmamaktadir\b"
+    r"|\bsifir\b"
 )
-_MASRAFLI_IFADELERI = (
-    "masraf alinir", "dosya masrafi alinir", "tahsis ucreti alinir",
+
+_MASRAFSIZ_SIFAT = re.compile(r"\b(?:masraf|ucret|komisyon)(?:siz|suz)\b")
+"""masrafsız / ücretsiz / komisyonsuz — yüklem gerektirmeyen sıfat biçimi."""
+
+_MASRAFSIZ_KALIPLAR = ("sifir masraf", "0 masraf", "hicbir masraf")
+
+_BANKA_KARSILIYOR = "banka tarafindan karsilan"
+"""«Ekspertiz ücreti banka tarafından karşılanmaktadır» — yüklem OLUMLU ama
+masraf müşteriye yansımıyor. Şartname madde 11, B Bankası bunu «Ekspertiz
+ücretsiz» olarak tablolar."""
+
+_MASRAFLI_YUKLEM = re.compile(
+    r"\balin(?:ir|maktadir|mistir)\b"
+    r"|\btahsil edil(?:ir|mektedir)\b"
+    r"|\buygulan(?:ir|maktadir)\b"
+    r"|\byansitil(?:ir|maktadir)\b"
 )
+
+
+def olumsuzlanmis_mi(parca: str) -> bool:
+    """Cümlede olumsuz bir yüklem var mı? (kural katmanı da bunu kullanır)
+
+    Tek kaynak olması bilinçli: kural katmanı kendi olumsuzlama listesini
+    tutsaydı iki liste zamanla ayrışır, biri düzeltilirken diğeri unutulurdu.
+
+    >>> olumsuzlanmis_mi("Dosya masrafı alınmamaktadır.")
+    True
+    >>> olumsuzlanmis_mi("Dosya masrafı alınır.")
+    False
+    """
+    return bool(_OLUMSUZ_YUKLEM.search(arama_anahtari(parca)))
 
 
 def masrafsiz_mi(parca: str) -> bool | None:
@@ -381,21 +429,40 @@ def masrafsiz_mi(parca: str) -> bool | None:
     False
     >>> masrafsiz_mi("Konut finansmanı kampanyası") is None
     True
+    >>> masrafsiz_mi("50.000 TL'ye kadar dosya masrafı alınmamaktadır.")
+    True
+    >>> masrafsiz_mi("Ekspertiz ücreti banka tarafından karşılanmaktadır.")
+    True
     """
     if not parca:
         return None
     anahtar = arama_anahtari(parca)
-    if any(ifade in anahtar for ifade in _MASRAFSIZ_IFADELERI):
+
+    # Sıfat biçimi ("masrafsız") kendi başına yeter, yüklem aramaya gerek yok.
+    if _MASRAFSIZ_SIFAT.search(anahtar) or any(k in anahtar for k in _MASRAFSIZ_KALIPLAR):
         return True
-    if any(ifade in anahtar for ifade in _MASRAFLI_IFADELERI):
+
+    # Buradan sonrası bir MASRAF cümlesi olmayı şart koşar. Bu kapı olmadan
+    # "kampanya sona ermemektedir" gibi alakasız bir olumsuzlama masrafsızlık
+    # sanılırdı.
+    if not any(sozcuk in anahtar for sozcuk in MASRAF_SOZCUKLERI):
+        return None
+
+    if _BANKA_KARSILIYOR in anahtar:
+        return True
+    if _OLUMSUZ_YUKLEM.search(anahtar):
+        return True
+    if _MASRAFLI_YUKLEM.search(anahtar):
         return False
     return None
 
 
 __all__ = [
+    "MASRAF_SOZCUKLERI",
     "arama_anahtari",
     "bosluk_duzelt",
     "masrafsiz_mi",
+    "olumsuzlanmis_mi",
     "oran_ayristir",
     "para_ayristir",
     "sapkasiz",

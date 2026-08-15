@@ -235,6 +235,31 @@ def sayisal_dogrulama(cevap_metni: str, kayitlar: list[KampanyaKaydi]) -> tuple[
 # ---------------------------------------------------------------------------
 
 
+def sayi_goster(deger: float | int) -> str:
+    """Türkçe sayı gösterimi: binlik ayracı '.', ondalık ayracı ','.
+
+    Eskiden `f"{deger:g}"` kullanılıyordu ve büyük tutarları BİLİMSEL
+    GÖSTERİME çeviriyordu: 150.000.000 TL ekranda "1.5e+08 TL" olarak
+    görünüyordu. Bankacılık arayüzünde bu, hatalı sayı göstermekle aynı şey.
+
+    Sayısal doğrulama kalkanı bu biçimi zaten tanır (`sayisal_dogrulama`
+    izin listesine hem "150.000.000" hem "1,89" biçimlerini ekler), dolayısıyla
+    gösterimi düzeltmek kalkanı gevşetmez.
+
+    >>> sayi_goster(150000000.0)
+    '150.000.000'
+    >>> sayi_goster(1.89)
+    '1,89'
+    >>> sayi_goster(60.0)
+    '60'
+    """
+    sayi = float(deger)
+    if sayi == int(sayi):
+        return f"{int(sayi):,}".replace(",", ".")
+    # Önce binlik virgüllerini koru, sonra ondalık noktasını virgüle çevir.
+    return f"{sayi:,.2f}".replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+
+
 def _kaynakca(kayit: KampanyaKaydi) -> Kaynakca:
     return Kaynakca(
         banka_adi=kayit.banka_adi,
@@ -270,7 +295,7 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         deger = getattr(kayit, alan, None)
         if deger is None:
             continue
-        gosterim = f"{deger:g}" if isinstance(deger, float) else str(deger)
+        gosterim = sayi_goster(deger) if isinstance(deger, float) else str(deger)
         satirlar.append(f"- {etiket}: {bicim.format(gosterim)}")
         bulunan += 1
 
@@ -318,7 +343,7 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         kazanan = min(adaylar, key=lambda k: getattr(k, alan)) if yon == "dusuk" \
             else max(adaylar, key=lambda k: getattr(k, alan))
         deger = getattr(kazanan, alan)
-        gosterim = f"{deger:g}" if isinstance(deger, float) else str(deger)
+        gosterim = sayi_goster(deger) if isinstance(deger, float) else str(deger)
         satirlar.append(
             f"- **{etiket}** açısından **{kazanan.banka_adi}** daha avantajlıdır, "
             f"çünkü {bicim.format(gosterim)}."

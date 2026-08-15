@@ -21,12 +21,19 @@ from typing import Any, Literal
 
 from src.preprocessing.normalizasyon import (
     masrafsiz_mi,
+    olumsuzlanmis_mi,
     oran_ayristir,
     para_ayristir,
     tarih_ayristir,
     vade_ayristir,
 )
-from src.schema import AYLIK_KAR_PAYI_UST_SINIRI, Alan, Kaynak
+from src.schema import (
+    AYLIK_KAR_PAYI_ALT_SINIRI,
+    AYLIK_KAR_PAYI_UST_SINIRI,
+    EN_AZ_FINANSMAN_TUTARI,
+    Alan,
+    Kaynak,
+)
 
 # ---------------------------------------------------------------------------
 # Değer desenleri — "metinde şuna benzeyen bir şey var mı?"
@@ -120,7 +127,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # değildir (bkz. schema.AYLIK_KAR_PAYI_UST_SINIRI). Sınır ayrıca
         # SEÇİMİ de düzeltiyor: makul olmayan adaylar elenince `en_dusuk`
         # seçimi gerçek orana ulaşabiliyor — temiz sayısı 14'ten 15'e çıkıyor.
-        gecerli_aralik=(0.0, AYLIK_KAR_PAYI_UST_SINIRI),
+        gecerli_aralik=(AYLIK_KAR_PAYI_ALT_SINIRI, AYLIK_KAR_PAYI_UST_SINIRI),
     ),
     KuralTanimi(
         alan="finansman_tutari_max",
@@ -129,15 +136,37 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         baglam_sozcukleri=(
             "finansman", "limit", "tutar", "kredi", "destek", "kadar finansman",
         ),
-        dislayici_sozcukler=("odul", "hediye", "iade", "masraf", "ucret", "puan"),
+        # "degerinde" ve "... ceki" bir HEDİYENİN değerini işaret eder, finansman
+        # limitini değil. Şartname madde 11, C Bankası: "5.000 TL değerinde
+        # alışveriş çeki verilmektedir" cümlesindeki 5.000 TL, aynı cümlede
+        # "konut finansmanı" geçtiği için finansman tutarı sanılıyordu.
+        # Tam sözcük yerine "ceki" kullanmak zorunlu: "cek" parçası "gercek",
+        # "cekim", "cekilis" gibi sözcüklerin içinde geçer ve yanlış eleme yapar.
+        dislayici_sozcukler=(
+            "odul", "hediye", "iade", "masraf", "ucret", "puan",
+            "degerinde", "alisveris ceki", "hediye ceki", "market ceki",
+        ),
         secim="en_yuksek",
         taban_guven=0.88,
+        # Üst sınır YOK: kurumsal finansmanda yüz milyonlu limitler gerçektir.
+        gecerli_aralik=(EN_AZ_FINANSMAN_TUTARI, float("inf")),
     ),
     KuralTanimi(
         alan="vade_ay_max",
         deger_deseni=D_VADE,
         ayristirici=vade_ayristir,
-        baglam_sozcukleri=("vade", "geri odeme", "odeme plani", "taksit"),
+        # "aya kadar" / "aya varan" bilinçli olarak burada: bu kalıpların
+        # KENDİSİ vade ifadesidir, ayrıca "vade" sözcüğü aramaya gerek yok.
+        # Uzun sayfalarda "vade" zaten pencerede geçtiği için bu fark
+        # görünmüyordu; ŞARTNAME MADDE 11'in kısa örnek metninde görünüyor:
+        #     "%1,89 kâr payı oranı ile 120 aya kadar konut finansmanı"
+        # Burada hiçbir bağlam sözcüğü yok ve vade kaçırılıyordu. Jürinin
+        # kendi örneği ve `/extract` uç noktasına yapıştırılan kısa metinler
+        # tam olarak bu biçimde geliyor.
+        baglam_sozcukleri=(
+            "vade", "geri odeme", "odeme plani", "taksit",
+            "aya kadar", "ay kadar", "aya varan", "ay varan",
+        ),
         secim="en_yuksek",
         taban_guven=0.92,
         gecerli_aralik=(0.0, 361.0),  # 30 yıl üstü vade katılım finansmanında yok
@@ -173,6 +202,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         ayristirici=lambda s: para_ayristir(s, birim_zorunlu=True),
         baglam_sozcukleri=(
             "odul", "hediye", "kazan", "nakit iade", "bonus", "cashback", "para puan",
+            "alisveris ceki", "hediye ceki", "market ceki", "degerinde",
         ),
         dislayici_sozcukler=("finansman", "limit", "masraf"),
         secim="en_yuksek",
@@ -275,18 +305,19 @@ def _en_yakin_uzaklik(pencere: str, sozcukler: tuple[str, ...], hedef: int) -> i
     return en_yakin
 
 
-_OLUMSUZLAMA = ("alinmaz", "alinmiyor", "yoktur", " yok", "ucretsiz", "sifir", "bulunmamaktadir")
-
-
 def _olumsuz_cumle_mi(cumle: str) -> bool:
     """"Dosya masrafı alınmaz" -> bu cümleden sayısal ücret çıkarılamaz.
 
     Olumsuzlanmış bir masraf beyanının yakınındaki sayı, o masrafın tutarı
     DEĞİLDİR. Bu ayrımı yapmamak, "masrafsız" diyen bir kampanyaya 5.000.000
     TL'lik tahsis ücreti atamakla sonuçlanır.
+
+    Olumsuzlama tanıma normalizasyon katmanından gelir; burada ikinci bir
+    sözcük listesi TUTULMAZ. Eskiden tutuluyordu ve listede -mAktAdır kipi
+    yoktu: "50.000 TL'ye kadar dosya masrafı alınmamaktadır" cümlesinden
+    50.000 TL'lik tahsis ücreti çıkarılıyordu.
     """
-    anahtar = _konum_koruyan_anahtar(cumle)
-    return any(olumsuz in anahtar for olumsuz in _OLUMSUZLAMA)
+    return olumsuzlanmis_mi(cumle)
 
 
 def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) -> float | None:

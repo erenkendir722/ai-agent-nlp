@@ -1,6 +1,6 @@
 # Şartname Uyum Takibi
 
-**Görev:** E-12 · **Sorumlu:** Eren · **Son denetim:** 12 Ağustos 2026
+**Görev:** E-12 · **Sorumlu:** Eren · **Son denetim:** 15 Ağustos 2026
 **Kaynak:** `2026_TYDA_SARTNAME_Ikinci_Senaryo_TR_1_1IAJb.pdf` (20 sayfa, 2. Senaryo)
 
 Jüri bu şartnameye göre puanlıyor. Bu dosya her maddeyi tek tek satır olarak
@@ -8,18 +8,35 @@ tutar; unutulan bir gereklilik yüzünden puan kaybetmenin panzehiri budur.
 
 **Durum işaretleri:** ✅ tamam · 🟠 kısmi · ❌ eksik · ⬜ sırası gelmedi
 
+> ⚠️ **Bu dosya bayatlarsa zararlıdır.** 15 Ağustos denetiminde "kritik" listesinin
+> 6 maddesinden 4'ü aslında çözülmüştü; pano ise hâlâ ❌ gösteriyordu. Yanlış
+> alarm, takımı çözülmüş işe koşturur. Değişiklik yapan burayı da günceller.
+
 ---
 
 ## 🚨 ÖNCE BUNLAR — açık ve riskli
 
 | # | Sorun | Neden kritik | Kim |
 |---|---|---|---|
-| 1 | **Depo private** | Madde 8 açık kaynak paylaşımı **zorunlu** tutuyor; madde 9 yüklenmemiş projelerin **değerlendirmeye alınmayacağını** söylüyor | Eren (E-01) |
-| 2 | **`BilisimVadisi2026` etiketi yok** | Madde 9 bu etiketle yüklemeyi şart koşuyor | Eren (E-01) |
-| 3 | **"Türkiye Açık Kaynak Platformu" etiketi yok** | Madde 9: *"yükleme işlemi gerçekleştirilirken … etiketlenmesi gerekmektedir"* | Eren (E-01) |
-| 4 | **10 faal bankanın 2'sinde veri yok** | Madde 5.1: veri seti BDDK listesindeki kuruluşların **tümünü** içermeli | Görkem (G-03, G-04) |
-| 5 | **Veri seti indirme bağlantısı yok** | Madde 9 herkese açık bağlantıyı zorunlu tutuyor | Görkem (G-11, G-12) |
-| 6 | **Teslim tarihi belirsiz — aşağıya bak** | Şartname kendi içinde çelişiyor | Eren — **bugün sor** |
+| 1 | **10 faal bankanın 2'sinde veri yok** | Madde 5.1: veri seti BDDK listesindeki kuruluşların **tümünü** içermeli | Görkem (G-03, G-04) |
+| 2 | **Demo videosu yok (5 dk *ve* 1 dk)** | Madde 6 ve madde 10 ayrı ayrı zorunlu tutuyor | Esra (ES-17, ES-18) |
+| 3 | **Sunum materyali yok (PDF + PPTX)** | Madde 6 ikisini birden istiyor; `sunum/` klasörü boş | Esra (ES-13) |
+| 4 | **Docker hiç çalıştırılmadı** | %20'lik On-Prem kriterinin tek somut kanıtı | Eren (E-02) |
+| 5 | **Teslim tarihi belirsiz — aşağıya bak** | Şartname kendi içinde çelişiyor | Eren — **sor** |
+
+### ✅ 15 Ağustos'ta kapandığı doğrulanan maddeler
+
+Depo durumu GitHub API'sinden teyit edildi (`api.github.com/repos/erenkendir722/ai-agent-nlp`):
+
+| Eski uyarı | Gerçek durum |
+|---|---|
+| ~~Depo private~~ | **Public** (`"private": false`) — madde 8 karşılandı |
+| ~~`BilisimVadisi2026` etiketi yok~~ | **Var** (`bilisimvadisi2026`; GitHub topic'leri küçük harfe indirir) |
+| ~~"Türkiye Açık Kaynak Platformu" etiketi yok~~ | **Var** (`turkiye-acik-kaynak-platformu`) |
+| ~~Veri seti indirme bağlantısı yok~~ | **Var** — 96 ham kayıt (`data/raw/**/*.json`) depoda izleniyor, README'de «Veri seti» bölümünde belgelendi |
+
+> Kalan tek repo eksiği: **depo açıklaması "SVARTAL"**. Madde 9 *"projeye ait
+> tanımlamasının yapılması"* diyor; takım adı proje tanımı değildir.
 
 ### ⚠️ Şartnamede iki iç tutarsızlık var
 
@@ -50,7 +67,8 @@ Planımız 25 Ağustos hedefiyle devam ediyor; erken bitirmek her iki okumada da
 |---|---|---|---|---|
 | 5.1 | Veri BDDK listesindeki katılım bankalarının **tümünü** içermeli | 🟠 | `data/banks.yaml` 10 faal banka listeliyor ama **8'inde kampanya var**; T.O.M. ve Adil'de 0 | Görkem |
 | 5.1 | Python tabanlı toplama / web scraping / **manuel** toplama serbest | ✅ | `src/collector/toplayici.py` · manuel yedek şartnameye uygun | Görkem |
-| 5.2 | *"%2,05 kâr payı oranı"* yorumlanmalı | ✅ | `src/extraction/kural.py` · `tests/test_normalizasyon.py` | Samet |
+| 5.2 | *"%2,05 kâr payı oranı"* yorumlanmalı | ✅ | `src/extraction/kural.py` · `tests/test_normalizasyon.py` · `tests/test_kural.py` | Samet |
+| **11** | **Şartnamenin kendi örnek tablosu (madde 11, A/B/C Bankası)** | ✅ | `tests/test_kural.py::TestSartnameMadde11` — 15 Ağu: 12 iddiadan 4'ü başarısızdı, düzeltildi, hibrit hat **11/11** | Eren |
 | 5.2 | *"avantajlı kâr payı fırsatı"* yorumlanmalı | 🟠 | Sayı uydurmama davranışı test edilecek | Samet (S-08) |
 | 5.2 | *"özel oranlı finansman"* yorumlanmalı | 🟠 | S-08 | Samet |
 | 5.2 | *"düşük maliyetli finansman"* yorumlanmalı | 🟠 | S-08 | Samet |
@@ -125,7 +143,7 @@ Planımız 25 Ağustos hedefiyle devam ediyor; erken bitirmek her iki okumada da
 
 | Gereklilik | Durum | Not | Kim |
 |---|---|---|---|
-| Kodlar/veri kümeleri GitHub'da **açık kaynak** paylaşılmalı | ❌ | **Depo private** | Eren (E-01) |
+| Kodlar/veri kümeleri GitHub'da **açık kaynak** paylaşılmalı | ✅ | Depo **public** — 15 Ağu'da API ile teyit edildi | Eren |
 | Açık kaynak lisans (Apache/MIT/GNU) | ✅ | `LICENSE` — Apache 2.0 | Eren |
 | Yarışma bitişinde Apache 2.0 ile Türkiye Açık Kaynak Platformu hesabında paylaşım kabulü | ✅ | Apache 2.0 seçildi | Eren |
 | Sunumda **tüm üyelerin görev tanımları** olmalı | ⬜ | Slayt köşesinde ad + rol | Esra (ES-13) |
@@ -141,14 +159,14 @@ Planımız 25 Ağustos hedefiyle devam ediyor; erken bitirmek her iki okumada da
 
 | Gereklilik | Durum | Not | Kim |
 |---|---|---|---|
-| GitHub'da **`BilisimVadisi2026`** etiketi | ❌ | Topic yok | Eren (E-01) |
-| **"Türkiye Açık Kaynak Platformu"** etiketlenmesi | ❌ | Topic yok | Eren (E-01) |
-| Ekip adı repo'da belirtilmiş | ✅ | README: "Takım SVARTAL" — repo açıklaması boş, doldurulacak | Eren (E-01) |
+| GitHub'da **`BilisimVadisi2026`** etiketi | ✅ | `bilisimvadisi2026` topic'i mevcut | Eren |
+| **"Türkiye Açık Kaynak Platformu"** etiketlenmesi | ✅ | `turkiye-acik-kaynak-platformu` topic'i mevcut | Eren |
+| Ekip adı repo'da belirtilmiş | 🟠 | README: "Takım SVARTAL" ✅ — ama **repo açıklaması yalnız "SVARTAL"**; madde 9 proje tanımı istiyor | Eren (E-01) |
 | (1) Bağımlılıkların **eksiksiz** listesi | ✅ | `requirements.txt` + `docs/LISANSLAR.md` | Eren |
-| (2) Çalıştırma adımlarının tamamı | ✅ | `docs/KURULUM.md` | Eren |
-| (3) Veri setinin **herkese açık indirme bağlantısı** | ❌ | Yayınlanmadı | Görkem (G-11, G-12) |
-| **En az haftalık** güncelleme | ✅ | 7, 9, 10, 12 Ağustos commit'leri | Eren (E-03) |
-| Sürüm etiketleri | ❌ | Depoda hiç git tag yok | Eren (E-03) |
+| (2) Çalıştırma adımlarının tamamı | ✅ | `docs/KURULUM.md` + README «Veri seti» | Eren |
+| (3) Veri setinin **herkese açık indirme bağlantısı** | ✅ | 96 ham kayıt `data/raw/**/*.json` olarak depoda; README'de belgelendi. Taze klonda `make extract` ağsız koşar | Eren |
+| **En az haftalık** güncelleme | ✅ | 7, 9, 10, 12, 14, 15 Ağustos commit'leri | Eren (E-03) |
+| Sürüm etiketleri | ❌ | Depoda hiç git tag yok (şartname zorunlu tutmuyor, izlenebilirlik için istiyoruz) | Eren (E-03) |
 
 ---
 
@@ -187,3 +205,6 @@ Planımız 25 Ağustos hedefiyle devam ediyor; erken bitirmek her iki okumada da
 | Tarih | Denetleyen | Bulgu |
 |---|---|---|
 | 12 Ağu | Eren | İlk tam tarama. Depo private, 2 etiket eksik, veri seti bağlantısı yok, 2 bankada veri yok, madde 9'da tarih çelişkisi bulundu. |
+| 15 Ağu | Eren | **Panonun kendisi bayattı:** depo public'e alınmış, iki etiket de eklenmiş, veri seti (96 ham kayıt) zaten depodaydı — pano üçüne de ❌ diyordu. Düzeltildi. |
+| 15 Ağu | Eren | **Şartname madde 11'in kendi örneği koşuldu, 12 iddiadan 4'ü başarısızdı.** (1) «dosya masrafı **alınmamaktadır**» cümlesinden 50.000 TL tahsis ücreti çıkarılıyordu — `-mAktAdır` olumsuzlama kipi sözlükte yoktu; (2) aynı kayıtta `masrafsiz_mi=True` ile çelişiyordu; (3) «5.000 TL değerinde alışveriş çeki» finansman tutarı sanılıyordu; (4) masraftan hiç söz etmeyen metinden `masrafsiz_mi=True` uyduruluyordu. Dördü de düzeltildi ve `tests/test_kural.py`'de sabitlendi. |
+| 15 Ağu | Eren | **Veritabanı bozuktu.** 12 Ağu'daki yarım kalan çıkarım koşusu iyi kayıtların üstüne yazmış; alan doluluğu %25,7'den %13,7'ye, `kampanya_turu` %99'dan %20,8'e düşmüştü. `docs/SONUCLAR.md` ise 9 Ağu'daki iyi koşudan kalmıştı — yayımlanan sayılar yeniden üretilemiyordu. Çıkarım yeniden koşuldu. |

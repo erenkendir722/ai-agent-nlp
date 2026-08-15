@@ -26,6 +26,8 @@ import ollama
 
 from src.ajanlar.elestirmen import ElestirmenAjani
 from src.preprocessing.normalizasyon import (
+    MASRAF_SOZCUKLERI,
+    arama_anahtari,
     masrafsiz_mi,
     oran_ayristir,
     para_ayristir,
@@ -39,6 +41,55 @@ log = logging.getLogger(__name__)
 VARSAYILAN_MODEL = os.getenv("OLLAMA_MODEL", "qwen3.5:4b-q4_K_M")
 OLLAMA_SUNUCU = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
 AZAMI_METIN = 6000  # karakter; 4B modelde bağlamı dar tutmak doğruluğu artırıyor
+
+AZAMI_URETIM = 2048
+"""Üretim bütçesi (token). 1200'den yükseltildi.
+
+Model nadiren uzun bir üretime giriyor (ölçülen: 6 kayıtta 1, ~98 saniye) ve
+bütçe dolduğunda JSON cümlenin ORTASINDA kesiliyor. Aynı kayıt ikinci denemede
+135 token'da bitiyor — yani sorun metnin uzunluğu değil, ara sıra oluşan
+savrulma. Bütçeyi büyütmek bu savrulmaların çoğunu tamamlanmaya bırakır;
+tamamlanmayanları `_kismi_json_kurtar` yakalar."""
+
+
+def _kismi_json_kurtar(icerik: str) -> dict[str, Any]:
+    """Yarıda kesilmiş JSON'dan tamamlanmış alanları kurtarır.
+
+    NEDEN GEREKLİ — bu sessiz bir veri kaybıydı:
+        `json.loads` hata verince tüm kayıt için `{}` dönüyordu. Yani model 15
+        alanın 14'ünü doğru üretmiş olsa bile, son alan yarım kaldığı için
+        14'ü birden çöpe gidiyordu. Kayıt yine de yazıldığından hata hiçbir
+        yerde görünmüyor, yalnız doluluk oranı sessizce düşüyordu.
+
+    NASIL: JSON nesnesi sıralı yazılır; son tam anahtar-değer çiftinden
+    sonrasını atıp süslü parantezi kapatmak geçerli bir nesne verir. En sondaki
+    virgülden başlayarak geriye doğru denenir, ilk ayrıştırılabilen kabul edilir.
+
+    Kanıt zinciri BOZULMAZ: kurtarılan alanlar da eleştirmen ajanının birebir
+    metin doğrulamasından geçer. Kurtarma yalnız ayrıştırma katmanındadır.
+    """
+    govde = icerik.strip()
+    if (bas := govde.find("{")) == -1:
+        return {}
+    govde = govde[bas:]
+
+    # Zaten geçerliyse dokunma. Üretimde buraya yalnız `json.loads` başarısız
+    # olunca gelinir, ama fonksiyonun tek başına da doğru olması test
+    # edilebilirliği ve yeniden kullanımı güvenli kılar.
+    for aday in (govde, govde + "}"):
+        try:
+            sonuc = json.loads(aday)
+        except json.JSONDecodeError:
+            continue
+        return sonuc if isinstance(sonuc, dict) else {}
+
+    for konum in reversed([i for i, karakter in enumerate(govde) if karakter == ","]):
+        try:
+            sonuc = json.loads(govde[:konum] + "}")
+        except json.JSONDecodeError:
+            continue
+        return sonuc if isinstance(sonuc, dict) else {}
+    return {}
 
 
 # ---------------------------------------------------------------------------
@@ -162,12 +213,19 @@ class LLMCikarici:
             ],
             format=ollama_json_semasi(),
             think=False,
-            options={"temperature": 0.1, "num_predict": 1200},
+            options={"temperature": 0.1, "num_predict": AZAMI_URETIM},
         )
         icerik = yanit["message"]["content"]
         try:
             return json.loads(icerik)
         except json.JSONDecodeError:
+            kurtarilan = _kismi_json_kurtar(icerik)
+            if kurtarilan:
+                log.warning(
+                    "JSON kesilmiş, %d alan kurtarıldı (done_reason=%s)",
+                    len(kurtarilan), yanit.get("done_reason"),
+                )
+                return kurtarilan
             log.error("Şema kısıtına rağmen JSON ayrıştırılamadı: %.200s", icerik)
             return {}
 
@@ -226,6 +284,18 @@ class LLMCikarici:
 
         # 3) Sayısal / tarihsel alanlar — KANIT ZORUNLU
         if alan_adi == "masrafsiz_mi":
+            # `masrafsiz_mi` bir bool olduğu için `KANIT_ZORUNLU_ALANLAR`
+            # dışındadır: metinde birebir aranacak bir "ham ifade"si yoktur.
+            # Bu, kanıt zincirinde bir delik bırakıyordu — model, masraftan hiç
+            # söz etmeyen bir metinden `true` üretebiliyordu (şartname madde 11,
+            # C Bankası metni tam olarak buydu).
+            #
+            # Kanıtın bu alandaki karşılığı şudur: metin masrafın KONUSUNU
+            # ediyor olmalı. Etmiyorsa çıkarılacak bir masraf beyanı da yoktur.
+            metin_anahtari = arama_anahtari(metin)
+            if not any(sozcuk in metin_anahtari for sozcuk in MASRAF_SOZCUKLERI):
+                log.info("masrafsiz_mi reddedildi: metinde masraf sözcüğü yok (%s)", url)
+                return None
             deger = ham_deger if isinstance(ham_deger, bool) else masrafsiz_mi(ham_ifade)
             if deger is None:
                 return None

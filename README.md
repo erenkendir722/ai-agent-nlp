@@ -162,11 +162,44 @@ Ayrıntı: [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md)
 
 ---
 
+## Veri seti — indirme ve içerik
+
+Şartname madde 9, veri setinin **herkese açık bir bağlantıdan indirilebilmesini**
+şart koşuyor. Veri seti ayrı bir sunucuda değil, **bu deponun içindedir**; depo
+Apache 2.0 ile herkese açıktır, dolayısıyla klonlamak indirmektir:
+
+```bash
+git clone https://github.com/erenkendir722/ai-agent-nlp.git
+```
+
+| Yol | İçerik | Kayıt |
+|---|---|---|
+| [`data/raw/<banka_kodu>/*.json`](data/raw/) | Toplanan sayfaların ham anlık görüntüsü: URL, çekim tarihi, HTTP durumu, başlık ve **çıkarılmış gövde metni** | 96 |
+| [`data/banks.yaml`](data/banks.yaml) | BDDK kayıt defteri — faal + kuruluş aşamasındaki tüm katılım bankaları | 16 |
+| [`data/gold/`](data/gold/) | Altın set etiketleme dosyaları ve etiketlenen metinler | — |
+
+**Ham HTML depoda tutulmaz** (`.gitignore`): depoyu şişirir ve bankaların sayfa
+telifini yeniden yayımlamak olurdu. Çıkarım zaten `govde_metin` alanından
+çalıştığı için bu bir eksiklik değildir — taze bir klonda ağ bağlantısı olmadan
+`make extract` koşar:
+
+```bash
+git clone https://github.com/erenkendir722/ai-agent-nlp.git && cd ai-agent-nlp
+make kur && ollama pull qwen3.5:4b-q4_K_M
+make extract          # data/raw/*.json -> SQLite   (crawl GEREKMEZ)
+make eval             # metrikler -> docs/SONUCLAR.md
+```
+
+Sayfaları kaynağından yeniden toplamak isteyen `make crawl` çalıştırır; kimlikler
+URL'den deterministik üretildiği için aynı sayfa aynı kaydın üstüne yazar.
+
+---
+
 ## Depo yapısı
 
 ```
 ├── src/
-│   ├── schema.py              ← ŞEMA SÖZLEŞMESİ (donmuş, v1.0.0)
+│   ├── schema.py              ← ŞEMA SÖZLEŞMESİ (donmuş, v1.1.0)
 │   ├── boru_hatti.py          ← CLI giriş noktası
 │   ├── depolama.py            ← SQLite + SQLAlchemy
 │   ├── collector/             ← jenerik toplayıcı (banka başına özel kod YOK)

@@ -117,7 +117,7 @@ make crawl        # kampanya topla
 make extract      # çıkarım (kural + LLM) -> SQLite
 make durum        # kaç kampanya, kaç banka
 make run          # Streamlit arayüzü
-make test         # testler (106 test)
+make test         # testler (281 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make lisanslar    # lisans raporu
 make gorev ad=X   # görev durumu

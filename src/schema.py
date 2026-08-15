@@ -473,6 +473,34 @@ saçma bir orandan üretilen taksit tutarı, kendinden emin biçimde sunulduğun
 "Belirtilmemiş" demekten çok daha zararlıdır. Aynı sınır altın set
 denetleyicisinde de kullanılır (`tools/altin_set.py`)."""
 
+AYLIK_KAR_PAYI_ALT_SINIRI = 0.10
+"""Aylık kâr payı oranı için makul ALT sınır (yüzde).
+
+Üst sınırın ikizi. 15 Ağustos ölçümünde bir kayıtta `kar_payi_orani = %0,05`
+görüldü; kaynağı bir ücret tarifesi tablosuydu:
+
+    Giden Fon Transferi | USD | 25 | % 0.05 | 5000
+
+Bu bir havale komisyonu oranıdır, finansman kâr payı değil. Aylık kâr payı
+binde beş olmaz; olsaydı bile "en düşük kâr payı" sıralamasının tepesine
+oturup tüm karşılaştırmayı bozardı — nitekim bozuyordu."""
+
+EN_AZ_FINANSMAN_TUTARI = 5_000.0
+"""`finansman_tutari_max` için makul alt sınır (TL).
+
+15 Ağustos ölçümü: dolu 31 kaydın 8'i finansman limiti DEĞİLDİ. Yakalananlar
+harcama eşiği, ödül tavanı ve tablo hücreleriydi:
+
+    "1.000 TL ve üzeri harcamanıza"        -> kampanya eşiği
+    "günlük maksimum 100 TL"               -> ödül tavanı
+    "100 TL'lik katkı payı ... 120 TL"     -> emeklilik katkısı
+    "2.500 TL'ye kadar ... kâr payı işletilmez" -> yedek hesap limiti
+
+Bağlam kontrolü bunları kurtarmaz: hepsinin yakınında "finansman" ya da
+"limit" sözcüğü geçiyor. Ayıran tek şey büyüklük — hiçbir katılım bankası
+1.000 TL finansman kampanyası yapmaz. Üst sınır KONULMADI: kurumsal
+finansmanda yüz milyonlu limitler gerçektir (Ziraat Katılım: 150.000.000 TL)."""
+
 _SAYI_DESENI_DENETIM = re.compile(r"\d[\d.,]*\d|\d")
 
 
@@ -527,7 +555,9 @@ def ollama_json_semasi() -> dict[str, Any]:
 
 
 __all__ = [
+    "AYLIK_KAR_PAYI_ALT_SINIRI",
     "AYLIK_KAR_PAYI_UST_SINIRI",
+    "EN_AZ_FINANSMAN_TUTARI",
     "SEMA_SURUMU",
     "ALAN_ADLARI",
     "SAYISAL_ALANLAR",

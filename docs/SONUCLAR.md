@@ -1,6 +1,6 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 09.08.2026 18:14 · `make eval`_
+_Otomatik üretildi: 15.08.2026 13:42 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
@@ -8,41 +8,41 @@ _Otomatik üretildi: 09.08.2026 18:14 · `make eval`_
 
 - İşlenen kampanya: **96**
 - Banka sayısı: **8**
-- Toplam alan: 1536 · Dolu: 394
+- Toplam alan: 1536 · Dolu: 353
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.25 | ≤ %3 | ✅ |
-| Alan doluluğu | %25.7 | — | — |
-| Ortalama güven | 0.782 | — | — |
+| **Halüsinasyon oranı** | %0.28 | ≤ %3 | ✅ |
+| Alan doluluğu | %23.0 | — | — |
+| Ortalama güven | 0.787 | — | — |
 
 ## Yöntem dağılımı (ablasyonun temeli)
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 244 |
-| `kural` | 139 |
+| `llm` | 223 |
+| `kural` | 119 |
 | `hibrit` | 11 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
-- `kampanya_kosullari: özette geçen '1,5' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '1,89' sayısı ham metinde yok`
 
 ## Alan bazlı doluluk
 
 | Alan | Doluluk |
 |---|---|
-| `kampanya_turu` | %99 |
-| `masrafsiz_mi` | %61 |
-| `kampanya_kosullari` | %59 |
+| `kampanya_turu` | %100 |
+| `kampanya_kosullari` | %67 |
 | `kampanya_avantaji` | %39 |
 | `vade_ay_max` | %34 |
-| `finansman_tutari_max` | %32 |
-| `kar_payi_orani` | %28 |
-| `kampanya_bitis` | %17 |
+| `masrafsiz_mi` | %31 |
+| `finansman_tutari_max` | %22 |
+| `kampanya_bitis` | %19 |
+| `kar_payi_orani` | %16 |
 | `odul_miktari` | %12 |
 | `taksit_sayisi` | %7 |
 | `tahsis_ucreti` | %7 |
