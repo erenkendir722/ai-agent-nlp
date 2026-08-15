@@ -625,7 +625,11 @@ def denetle(kayitlar: list[dict[str, Any]], kampanyalar: list[Kampanya]) -> list
                 hatalar.append(f"{kimlik}: {alan} sayıya çevrilemedi -> {deger!r}")
 
         oran = kayit.get("kar_payi_orani")
-        if isinstance(oran, int | float) and not 0 < oran < AYLIK_KAR_PAYI_UST_SINIRI:
+        # SIFIR GEÇERLİDİR — "vade farksız" kampanyada kâr payı gerçekten
+        # sıfırdır, bilinmiyor değil. `dosya_denetle` bunu zaten kabul ediyordu;
+        # burası `0 < oran` diyordu ve etiketleyen `make altin-denetle`den ✅
+        # alıp `make altin-derle`de hata yiyordu.
+        if isinstance(oran, int | float) and not 0 <= oran < AYLIK_KAR_PAYI_UST_SINIRI:
             hatalar.append(f"{kimlik}: kar_payi_orani %{oran} — aylık oran için şüpheli")
 
         vade = kayit.get("vade_ay_max")
@@ -882,7 +886,8 @@ def komut_derle() -> int:
 
 
 _TUR_ESANLAMLI: dict[str, str] = {
-    # docs/ETIKETLEME_KILAVUZU.md §4.1 karar sırasında AÇIKÇA yazanlar
+    # docs/ETIKETLEME_KILAVUZU.md «kampanya_turu seçenekleri» karar sırasında
+    # AÇIKÇA yazanlar
     "arac": "tasit_finansmani", "araba": "tasit_finansmani", "otomobil": "tasit_finansmani",
     "kredi karti": "kart", "kart aidati": "kart", "taksit": "kart",
     "puan": "alisveris_puani", "mil": "alisveris_puani", "chip para": "alisveris_puani",

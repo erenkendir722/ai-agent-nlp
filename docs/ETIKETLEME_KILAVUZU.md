@@ -54,6 +54,11 @@ geçiyor?"* diye sorabilirsin. Etiketi sen, metne bakarak yazarsın.
 | **boş bırak** | "Baktım, bu bilgi metinde **yok**" | ✅ Evet |
 | **`?`** | "Bakmadım / emin değilim" | ❌ Hayır, hücre metrikten çıkar |
 | **bir değer** | "Metinde var, değeri bu" | ✅ Evet |
+| **`0`** | "Metin açıkça **yok/alınmaz** diyor" | ✅ Evet |
+
+`0` ile boş aynı şey değil. *"Tahsis ücreti alınmaz"* → `tahsis_ucreti` = `0`
+(bilgi var, değeri sıfır). Sayfa tahsis ücretinden hiç söz etmiyorsa → **boş**
+(bilgi yok). Aynısı `kar_payi_orani` için: "vade farksız" → `0`.
 
 **Boş bırakmak bir iddiadır.** "Bu sayfada kâr payı oranı yazmıyor" demiş
 olursun; sistem bir oran uydurduysa **hata sayılır**. Halüsinasyonu yakalayan
@@ -64,20 +69,48 @@ Bu yüzden: bakmadan boş bırakma. Emin değilsen `?` yaz, çekinme.
 
 ---
 
+## Önce: hangi ürün?
+
+Bir sayfa çoğu zaman tek bir ürünü anlatır, ama bazen dokuz farklı finansmanı
+birden listeler. Sekiz alanı doldurmadan önce **hangi ürünün sayılarını
+yazacağına** karar vermelisin.
+
+**Kural: `kaynak_url` hangi ürüne işaret ediyorsa o.**
+
+URL bir kaydın kimliğidir; yorum değil. `.../konut-finansmani-kampanyasi`
+diyorsa sayfa başka ürünlerden de söz etse bile **konut** finansmanının
+sayılarını yazarsın.
+
+URL genel bir listeleme sayfasıysa (`.../kampanyalar`, `.../finansman`) →
+sayfadaki **ilk / başlıktaki** ürünü al. Diğer ürünlerin sayılarını **yazma**.
+Bir ürünün oranını sayfanın tamamına mal etme.
+
+`kampanya_turu` da bu ürüne göre yazılır — çok ürünlü diye `diger` deme.
+
+---
+
 ## Sekiz alan
 
-Ondalık ayırıcı **virgül** (`1,89`). Birim yazma — `%`, `TL`, `ay` koyma, sadece sayı.
+Birim yazma — `%`, `TL`, `ay` koyma, sadece sayı. Ondalıkta **nokta da virgül de
+olur** (`0.99` ve `0,99` ikisi de doğru okunuyor); binlik ayracı istersen koy,
+istersen koyma (`2000000` = `2.000.000`).
 
 | Alan | Ne yazarsın | Örnek metin | → Hücre |
 |---|---|---|---|
 | **`kampanya_turu`** | Aşağıdaki listeden **tam olarak biri**. Her satırda dolu olmalı. | "Konut Finansmanı Kampanyası" | `konut_finansmani` |
-| **`kar_payi_orani`** | **Aylık** yüzde | "aylık %2,05 kâr payı" | `2,05` |
-| **`vade_ay_max`** | Ay cinsinden en uzun vade | "36 aya varan vade" | `36` |
-| **`finansman_tutari_max`** | TL, en yüksek tutar | "500.000 TL'ye kadar" | `500000` |
+| **`kar_payi_orani`** | **Aylık** yüzde | "aylık %0,99 kâr payı" | `0.99` |
+| **`vade_ay_max`** | Ay cinsinden **en uzun** vade | "36 aya varan vade" | `36` |
+| **`finansman_tutari_max`** | TL, **en yüksek** tutar | "500.000 TL'ye kadar" | `500000` |
 | **`tahsis_ucreti`** | TL veya % | "tahsis ücreti 750 TL" | `750` |
 | **`masrafsiz_mi`** | `evet` / `hayır` / boş | "dosya masrafı alınmaz" | `evet` |
 | **`odul_miktari`** | TL | "1.500 TL hediye" | `1500` |
 | **`kampanya_bitis`** | `YYYY-AA-GG` | "30 Eylül 2026'ya kadar" | `2026-09-30` |
+
+> ⚠️ **`kar_payi_orani` bir maliyet oranıdır, bir kapsam oranı değil.**
+> Sayfadaki her `%` kâr payı değildir. **Taşıt değerine oranı**, **peşinat
+> oranı**, **kredi/değer oranı**, **azami finansman oranı** gibi kolonlar bu
+> alana **yazılmaz** — onlar "ne kadarını finanse ediyoruz" der, "kaça mal
+> oluyor" demez. Emin değilsen `?`.
 
 ### `kampanya_turu` seçenekleri
 
@@ -106,16 +139,30 @@ olasılıkla yıllıktır, 12'ye böl ("yıllık %24" → `2`). Emin değilsen `
 Müşterinin lehine olan ucu al → `1,89`. Tutarda ise en yükseği
 ("50.000 – 500.000 TL" → `500000`), çünkü alan adı `_max`.
 
+**Kademeli tablo var (vade arttıkça oran değişiyor)?**
+`vade_ay_max` = tablodaki **en büyük** vade. `finansman_tutari_max` =
+finansmana konu **en yüksek** tutar. Alan adları `_max`; en küçüğü yazarsan
+alan adı yalan söyler ve her satır hata sayılır.
+
 **"…'a varan", "…'dan başlayan"?** O sayıyı yaz.
 
 **Vade "5 yıl" yazıyor?** Aya çevir → `60`.
 
-**Sayfa birden çok ürün listeliyor (9 farklı finansman gibi)?**
-`kampanya_turu` = `diger`, sayısal alanlar hangi ürüne ait belli değilse `?`.
-Bir ürünün sayısını sayfanın tamamına mal etme.
-
 **Masraftan hiç söz edilmiyor?**
 `masrafsiz_mi` **boş** bırak. Yazmıyor olması masrafsız olduğu anlamına gelmez.
+`hayır` da yazma — `hayır`, metnin masraf **alındığını** açıkça söylediği
+durumdur.
+
+**"Kart ücreti yok" yazıyor, masrafsız mı?**
+**Hayır.** `masrafsiz_mi`, **finansmanın** masrafını anlatır: tahsis ücreti,
+dosya masrafı, komisyon. Kart aidatı / kart ücreti ayrı bir şeydir.
+
+| Metinde geçen | `masrafsiz_mi` |
+|---|---|
+| "tahsis ücreti alınmaz", "dosya masrafı yok", "masrafsız finansman" | `evet` |
+| "kart aidatı yok", "kart ücreti alınmaz" | **boş** (finansman masrafı hakkında bilgi yok) |
+| "tahsis ücreti finansman tutarının %0,5'i" | `hayır` |
+| Masraftan hiç söz yok | **boş** |
 
 **"Avantajlı kâr payı" diyor ama sayı vermiyor?**
 `kar_payi_orani` **boş**. Sistem burada bir sayı uydurursa altın set yakalar —
@@ -183,13 +230,17 @@ Tartışıp karara bağladığımız her kenar durum buraya, tarihiyle yazılır
 | 12 Ağu | Yıllık/aylık oran ayrımı yoksa? | %5 üstü yıllık kabul, 12'ye bölünür; şüpheliyse `?` |
 | 12 Ağu | Oran aralığı verilmişse? | En düşük (müşteri lehine) uç yazılır |
 | 12 Ağu | Sayfa kampanya değilse? | `kampanya_turu = diger`, gruba bildirilir |
-| 12 Ağu | Sayfa birden çok ürün listeliyorsa? | `diger`; sayısal alanlar belirsizse `?` |
 | 12 Ağu | Masraftan hiç söz edilmiyorsa? | **Boş** — "yazmıyor" ile "masraf var" aynı şey değil |
 | 15 Ağu | Kâr payı sıfırsa ("vade farksız")? | `0` yaz — boş değil. Sıfır bir bilgidir. |
+| 15 Ağu | Sayfa birden çok ürün listeliyorsa? | **`kaynak_url`'in ürünü** esas alınır, türü de o ürüne göre yazılır. URL genelse ilk/başlıktaki ürün. *(12 Ağu'daki "`diger` + `?`" kuralının yerine geçti: fazla `?` üretiyor ve uyum oranını hesaplanamaz hâle getiriyordu.)* |
+| 15 Ağu | Kademeli tabloda hangi değer? | En büyüğü — alan adları `_max` |
+| 15 Ağu | "Taşıt değerine oranı", "peşinat oranı" kâr payı mı? | **Hayır.** Kapsam oranı, maliyet oranı değil. `kar_payi_orani`'ye yazılmaz |
+| 15 Ağu | "Kart ücreti yok" masrafsız mı? | **Hayır** — `masrafsiz_mi` finansman masrafını anlatır, kart aidatını değil. Boş bırakılır |
+| 15 Ağu | Ondalık ayırıcı nokta mı virgül mü? | İkisi de serbest; ayrıştırıcı ikisini de aynı sayıya çeviriyor |
 
 ---
 
-## Üç örnek
+## Dört örnek
 
 **1 — Temiz**
 
@@ -211,6 +262,31 @@ Tartışıp karara bağladığımız her kenar durum buraya, tarihiyle yazılır
 > Taşıt finansmanında yıllık %24'ten başlayan oranlar. Detaylar şubelerimizde.
 
 `tasit_finansmani` · `2` *(24 ÷ 12)* · *(kalanı boş)*
+
+**4 — Çok ürünlü sayfa + tuzak oran** ← yeni kuralların ikisi birden
+
+`kaynak_url`: `.../tasit-finansmani`
+
+> **Taşıt Finansmanı.** Taşıt değerinin **%70**'ine kadar finansman.
+> Sıfır araçta aylık **%2,45**, ikinci elde **%2,89**.
+>
+> | Vade | Tutar |
+> |---|---|
+> | 12 ay | 500.000 TL |
+> | 24 ay | 750.000 TL |
+> | 36 ay | 1.000.000 TL |
+>
+> Kart aidatı alınmaz. *(Sayfanın altında ayrıca konut ve ihtiyaç finansmanı
+> tabloları var.)*
+
+| Alan | Değer | Neden |
+|---|---|---|
+| `kampanya_turu` | `tasit_finansmani` | URL taşıta işaret ediyor — çok ürünlü diye `diger` denmez |
+| `kar_payi_orani` | `2.45` | **%70 değil** — o kapsam oranı. Sıfır araç sayfanın ana konusu |
+| `vade_ay_max` | `36` | Tablodaki en büyük |
+| `finansman_tutari_max` | `1000000` | Tablodaki en yüksek |
+| `masrafsiz_mi` | **boş** | "Kart aidatı yok" finansman masrafı hakkında bilgi vermez |
+| konut/ihtiyaç sayıları | **yazılmaz** | URL'nin ürünü değil |
 
 ---
 

@@ -781,6 +781,25 @@ class TestSifirKarPayi:
         hatalar, _, _ = altin_set.dosya_denetle(yol)
         assert [h for h in hatalar if "kar_payi_orani" in h]
 
+    def test_iki_denetci_sifirda_ayni_karari_verir(self, gold_dizini) -> None:
+        """`altin-denetle` ✅ deyip `altin-derle` hata veremez.
+
+        İki denetçi ayrı kod yollarında: `dosya_denetle` ham CSV hücresine,
+        `denetle` derlenmiş JSONL kaydına bakıyor. Sınırları ayrışırsa
+        etiketleyen masasında temiz görünen dosyayla derlemede duvara toslar.
+        """
+        kampanya = _kampanya("0203", 1)
+        yol = gold_dizini / "etiketleme_test.csv"
+        altin_set._csv_yaz(yol, [kampanya])
+        _csv_doldur(yol, [{"kampanya_turu": "finansman", "kar_payi_orani": "0"}])
+
+        kayitlar = [
+            {"kampanya_id": kimlik, **etiketler}
+            for _, kimlik, etiketler, _d in altin_set._csv_oku(yol)
+        ]
+        assert kayitlar[0]["kar_payi_orani"] == 0
+        assert not [h for h in altin_set.denetle(kayitlar, [kampanya]) if "kar_payi" in h]
+
 
 class TestOkumaKagidi:
     """Okuma kâğıdı, etiketlemenin pahalı kısmını — aramayı — önden yapar."""
