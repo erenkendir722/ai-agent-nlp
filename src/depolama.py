@@ -17,11 +17,13 @@ ortam değişkenini değiştirin, kod aynı kalır.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from collections.abc import Iterator
 from datetime import date, datetime
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import (
     JSON,
@@ -42,6 +44,19 @@ from src.schema import SAYISAL_ALANLAR, Kampanya
 KOK = Path(__file__).resolve().parents[1]
 VARSAYILAN_VERITABANI = f"sqlite:///{KOK / 'data' / 'katilim.db'}"
 VERITABANI_URL = os.getenv("VERITABANI_URL", VARSAYILAN_VERITABANI)
+
+
+CIKARIM_KAYNAKLARI: tuple[str, ...] = (
+    "src/schema.py",
+    "src/preprocessing/normalizasyon.py",
+    "src/extraction",
+)
+"""Çıktıyı belirleyen kaynaklar — parmak izi bunlardan hesaplanır.
+
+Bu listeye giren dosya değiştiğinde veritabanındaki değerler eskir. Toplayıcı
+(`src/collector/`) ve arayüz (`app/`) DIŞARIDA: ham metni değiştirmezler,
+dolayısıyla aynı ham metinden aynı değerler çıkar.
+"""
 
 
 class Temel(DeclarativeBase):
@@ -90,19 +105,60 @@ class KampanyaKaydi(Temel):
         return Kampanya.model_validate(self.tam_kayit)
 
 
+class CikarimKosusu(Temel):
+    """Çıkarımın NE ZAMAN ve HANGİ KODLA koştuğunun kaydı.
+
+    NEDEN VAR — 15 Ağustos'ta yaşanan hata:
+        Veritabanı 17:49'da yazıldı, çıkarım düzeltmeleri 18:05'te commit
+        edildi. `docs/SONUCLAR.md` bir gün boyunca güncel göründü ama
+        düzeltmeleri içermeyen sayıları taşıyordu. Kimse fark etmedi; sunuma
+        yanlış rakam gitmesine bir adım kalmıştı.
+
+        `cekim_tarihi` bunu yakalayamaz — o kampanyanın TOPLANDIĞI tarihtir,
+        çıkarımın koştuğu tarih değil. Aradaki farkı tutan hiçbir alan yoktu.
+
+    `kod_parmak_izi` neden zaman damgasından daha güvenilir:
+        Zaman karşılaştırması dosya mtime'ına muhtaçtır; git checkout mtime'ı
+        bozar, temiz klonda her şey «yeni» görünür. Parmak izi içeriğe bakar:
+        kod gerçekten değiştiyse değişir, checkout'tan etkilenmez.
+    """
+
+    __tablename__ = "cikarim_kosulari"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    zaman: Mapped[datetime] = mapped_column(DateTime, index=True)
+    yapilandirma: Mapped[str] = mapped_column(String(16))
+    """`kural` | `llm` | `hibrit` — ablasyon tablosunun hangi satırı olduğu.
+
+    Ablasyon koşuları aynı veritabanının üzerine yazar. Bu alan olmadan
+    `make extract-kural && make eval` sonrasında rapora bakan biri, kural-only
+    sayıları hibrit sanır."""
+    kayit_sayisi: Mapped[int] = mapped_column(Integer, default=0)
+    kod_parmak_izi: Mapped[str] = mapped_column(String(16))
+
+
 # ---------------------------------------------------------------------------
 # Oturum yönetimi
 # ---------------------------------------------------------------------------
 
-_motor = None
+_motorlar: dict[str, Any] = {}
+"""URL başına motor. Tek global motor DEĞİL — sebebi önemli:
+
+Bu modüldeki her fonksiyon `url` parametresi ilan ediyor. Tek global motorla
+o parametre yalnız İLK çağrıda işe yarardı; sonraki her çağrı, farklı bir URL
+verilse bile ilk açılan veritabanına giderdi. Test geçici bir veritabanı
+isterken üretim veritabanına yazabilirdi.
+
+Motorlar süreç boyunca yaşar; havuzu her seferinde kurmak SQLite'ta da
+pahalıdır, bu yüzden önbellek korunuyor — yalnız anahtarı URL oldu."""
 
 
 def motor(url: str = VERITABANI_URL):
-    global _motor
-    if _motor is None:
-        _motor = create_engine(url, echo=False, future=True)
-        Temel.metadata.create_all(_motor)
-    return _motor
+    if url not in _motorlar:
+        yeni = create_engine(url, echo=False, future=True)
+        Temel.metadata.create_all(yeni)
+        _motorlar[url] = yeni
+    return _motorlar[url]
 
 
 def oturum(url: str = VERITABANI_URL) -> Session:
@@ -163,6 +219,92 @@ def kaydet(kampanyalar: Kampanya | list[Kampanya], url: str = VERITABANI_URL) ->
 
 
 # ---------------------------------------------------------------------------
+# Çıkarım koşusu — köken ve bayatlık
+# ---------------------------------------------------------------------------
+
+
+def kod_parmak_izi(kok: Path = KOK) -> str:
+    """`CIKARIM_KAYNAKLARI` dosyalarının içerik özeti (kısa sha256).
+
+    Aynı kod her makinede aynı izi verir: yollar göreli ve sıralıdır, mutlak
+    yol ya da dosya tarihi karışmaz.
+    """
+    yollar: list[Path] = []
+    for gosterge in CIKARIM_KAYNAKLARI:
+        hedef = kok / gosterge
+        if hedef.is_dir():
+            yollar.extend(hedef.rglob("*.py"))
+        elif hedef.is_file():
+            yollar.append(hedef)
+
+    ozet = hashlib.sha256()
+    for yol in sorted(yollar):
+        ozet.update(yol.relative_to(kok).as_posix().encode())
+        ozet.update(yol.read_bytes())
+    return ozet.hexdigest()[:16]
+
+
+def cikarim_kosusu_yaz(
+    yapilandirma: str, kayit_sayisi: int, url: str = VERITABANI_URL
+) -> None:
+    """Çıkarım bitiminde koşuyu kaydeder. `make eval` bayatlığı buradan anlar."""
+    with oturum(url) as oturum_:
+        oturum_.add(
+            CikarimKosusu(
+                zaman=datetime.now(),
+                yapilandirma=yapilandirma,
+                kayit_sayisi=kayit_sayisi,
+                kod_parmak_izi=kod_parmak_izi(),
+            )
+        )
+        oturum_.commit()
+
+
+def son_cikarim_kosusu(url: str = VERITABANI_URL) -> dict[str, object] | None:
+    """En son çıkarım koşusu; hiç kaydedilmemişse None."""
+    sorgu = select(CikarimKosusu).order_by(CikarimKosusu.id.desc()).limit(1)
+    with oturum(url) as oturum_:
+        kayit = oturum_.scalars(sorgu).first()
+        if kayit is None:
+            return None
+        return {
+            "zaman": kayit.zaman,
+            "yapilandirma": kayit.yapilandirma,
+            "kayit_sayisi": kayit.kayit_sayisi,
+            "kod_parmak_izi": kayit.kod_parmak_izi,
+        }
+
+
+def cikarim_durumu(url: str = VERITABANI_URL) -> dict[str, object]:
+    """Veritabanındaki değerler GÜNCEL kodla mı üretildi?
+
+    `bayat` True ise rapordaki sayılar eski koddan geliyordur ve sunuma
+    kopyalanmamalıdır — `make extract` yeniden koşmalıdır.
+
+    Koşu kaydı olmayan eski veritabanları `bayat=True` sayılır: bilmemek,
+    güncel varsaymak için gerekçe değildir.
+    """
+    kosu = son_cikarim_kosusu(url)
+    simdiki = kod_parmak_izi()
+    if kosu is None:
+        return {
+            "kosu": None,
+            "bayat": True,
+            "sebep": "Çıkarım koşusu kaydı yok — veritabanı bu özellik eklenmeden önce üretilmiş.",
+        }
+    if kosu["kod_parmak_izi"] != simdiki:
+        return {
+            "kosu": kosu,
+            "bayat": True,
+            "sebep": (
+                f"Çıkarım {kosu['zaman']:%d.%m.%Y %H:%M}'de koştu; çıkarım kodu "
+                f"o tarihten sonra değişti ({kosu['kod_parmak_izi']} → {simdiki})."
+            ),
+        }
+    return {"kosu": kosu, "bayat": False, "sebep": ""}
+
+
+# ---------------------------------------------------------------------------
 # Okuma
 # ---------------------------------------------------------------------------
 
@@ -217,13 +359,19 @@ def istatistikler(url: str = VERITABANI_URL) -> dict[str, object]:
 
 
 __all__ = [
+    "CIKARIM_KAYNAKLARI",
     "VERITABANI_URL",
+    "CikarimKosusu",
     "KampanyaKaydi",
+    "cikarim_durumu",
+    "cikarim_kosusu_yaz",
     "istatistikler",
     "kampanyalari_getir",
     "kampanyalari_oku",
     "kaydet",
+    "kod_parmak_izi",
     "oturum",
     "semayi_kur",
+    "son_cikarim_kosusu",
     "tum_kayitlar",
 ]

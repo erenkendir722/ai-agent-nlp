@@ -258,10 +258,27 @@ def test_sinir_degerleri():
     assert _oran("Aylık kâr payı oranı %14,9 olarak uygulanır.") == 14.9
 
 
-def test_sifir_oran_uretilmez():
-    """'0%' bir aylık kâr payı değil; müşterinin anaparayı birebir ödemesi
-    demek olurdu. Hesaplanırsa maliyet listesinin en tepesine çıkar."""
-    assert _oran("Kâr payı oranı 0% olarak görünmektedir.") is None
+def test_sifir_oran_gecerlidir():
+    """'0%' GEÇERLİ bir aylık kâr payıdır — «vade farksız» kampanyanın ta kendisi.
+
+    Bu test 16 Ağustos'ta TERSİNE ÇEVRİLDİ. Önceki hâli sıfırın üretilmemesini
+    şart koşuyor ve gerekçesi şuydu: "müşterinin anaparayı birebir ödemesi
+    demek olurdu". Katılım bankacılığında bu tam olarak gerçekleşen şeydir;
+    vade farksız/0 kâr paylı kampanyalar yaygındır ve anapara birebir ödenir.
+
+    Altın set kılavuzu bunu zaten söylüyordu (`tools/altin_set.py`:
+    "SIFIR GEÇERLİDİR ve boş hücreden farklıdır") ve 60 örneğin 3'ü sıfır
+    etiketli. Çıkarım katmanı ise `gecerli_aralik` alt sınırı (0,10) yüzünden
+    sıfırı hiçbir koşulda üretemiyordu: etiketleyene "sıfır yaz" denen değer
+    çıkarıcı için erişilemezdi. Alanın dolu hücrelerinin %30'u buydu.
+
+    Eski testin ikincil kaygısı — "hesaplanırsa maliyet listesinin tepesine
+    çıkar" — yerinde ama aşağı akışta zaten karşılanmış:
+    `toplam_maliyet()` `i == 0` durumunda `anapara / vade_ay` kullanıyor,
+    bölme hatası yok ve sonuç doğru. Sıfır oranlı kampanya listenin tepesine
+    çıkmalıdır; gerçekten en ucuzudur.
+    """
+    assert _oran("Kâr payı oranı 0% olarak görünmektedir.") == 0.0
 
 
 def test_vade_ustu_sinir():

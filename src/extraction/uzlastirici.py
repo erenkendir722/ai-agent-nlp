@@ -64,6 +64,14 @@ class UzlastirmaRaporu:
     hibrit_alan_sayisi: int = 0
     celiskiler: list[Celiski] = field(default_factory=list)
     llm_reddedilen: int = 0  # metinde doğrulanamadığı için düşen alanlar
+    elenen_alan_sayisi: int = 0
+    """Uzlaştırmayı kazanıp ALAN MAKULLÜĞÜNDEN düşen değerler.
+
+    Ayrı sayaç, çünkü ayrı bir hata sınıfını ölçüyor: değer metinde
+    gerçekten geçiyor (`llm_reddedilen` değil) ama o alana ait değil —
+    dilim tablosundan, hesap makinesi çıktısından ya da vergi oranından
+    geliyor. Sıfırdan büyük olması sağlıklıdır; sıfır olması kapının
+    çalışmadığı anlamına gelir."""
 
 
 def _degerler_uyusuyor_mu(a: object, b: object) -> bool:
@@ -121,6 +129,30 @@ def _birlestir(alan_adi: str, kural: Alan | None, llm: Alan | None) -> tuple[Ala
     )
 
 
+def _makul_mu(alan_adi: str, alan: Alan, metin: str) -> bool:
+    """Kazanan alanın son makullük denetimi. Konumsuz değer denetlenmez.
+
+    Konumu olmayan değerler (enum alanları, `masrafsiz_mi` gibi cümleden
+    türetilenler) bu kapıdan muaftır: aralık-ucu ve veto denetimleri metindeki
+    YERE bakar, yer yoksa uygulanamaz. Onların kendi kapıları zaten var
+    (`masrafsiz_mi()` içindeki `FINANSMAN_DISI_UCRET` ve `_KAPSAM_DISI`).
+
+    Konumun metinle tutarlı olduğu da doğrulanır: LLM katmanı bazı alanlarda
+    `karakter_baslangic=0` ile kanıtsız kaynak üretiyor (bkz. `llm.py`),
+    öyle bir konumdan pencere çıkarmak metnin başını denetlemek olurdu.
+    """
+    from src.extraction.kural import deger_makul_mu  # döngüsel içe aktarımı önler
+
+    if not alan.var_mi or alan.kaynak is None:
+        return True
+
+    bas, bit = alan.kaynak.karakter_baslangic, alan.kaynak.karakter_bitis
+    if bas == bit or bit > len(metin):
+        return True  # konum yok ya da metne oturmuyor — denetlenemez
+
+    return deger_makul_mu(alan_adi, alan.deger, metin, bas, bit)
+
+
 def uzlastir(
     kural_alanlari: dict[str, Alan],
     llm_alanlari: dict[str, Alan],
@@ -136,6 +168,16 @@ def uzlastir(
         kural = kural_alanlari.get(alan_adi)
         llm = llm_alanlari.get(alan_adi)
         sonuc, durum = _birlestir(alan_adi, kural, llm)
+
+        # SON KAPI — kazanan değer, geldiği katmandan bağımsız olarak alan
+        # makullüğünden geçer. Bu kapı olmadan kural katmanının elediği bir
+        # değer LLM yolundan geri giriyordu (bkz. `deger_makul_mu`): eleme,
+        # hatayı önlemek yerine kaynağını değiştiriyordu.
+        if not _makul_mu(alan_adi, sonuc, kayit.govde_metin):
+            sonuc = Alan.yok()
+            durum = "elendi"
+            rapor.elenen_alan_sayisi += 1
+
         alanlar[alan_adi] = sonuc
 
         if durum == "kural":

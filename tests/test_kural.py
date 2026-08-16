@@ -16,7 +16,7 @@ from datetime import datetime
 
 import pytest
 
-from src.extraction.kural import kurallarla_cikar
+from src.extraction.kural import GUVEN_BANDI, Aday, _sec, kurallarla_cikar
 
 CEKIM = datetime(2026, 8, 14, 12, 0)
 
@@ -195,10 +195,231 @@ class TestFinansmanTutariMakulluk:
         ).get("finansman_tutari_max") == pytest.approx(5_000_000.0)
 
     def test_kurumsal_buyuk_limit_elenmez(self) -> None:
-        """Üst sınır bilinçli olarak YOK — yüz milyonlu limitler gerçektir."""
+        """Üst sınır bilinçli olarak YOK — yüz milyonlu limitler gerçektir.
+
+        Bu testin ÖNCEKİ metni şuydu:
+
+            "Hesapta 1.000 TL alt limit ve 150.000.000 TL üst limit
+             bulunmaktadır. Finansman limiti."
+
+        16 Ağustos'ta altın set o cümlenin geldiği kaydı `null` etiketledi ve
+        haklıydı: metin Ziraat Katılım'ın GÜNLÜK HESAP sayfasından geliyor,
+        150.000.000 TL kâr payı işletilecek bakiyenin üst sınırı. Test,
+        `EN_AZ_FINANSMAN_TUTARI` docstring'indeki "kurumsal finansmanda yüz
+        milyonlu limitler gerçektir" iddiasını doğru bir örnekle değil, bir
+        mevduat bandıyla sınıyordu.
+
+        İddia hâlâ geçerli — o yüzden test duruyor, yalnız örneği gerçek bir
+        kurumsal finansman cümlesiyle değişti. Bandın kendisi artık
+        `test_hesap_bandi_finansman_limiti_sayilmaz` ile REDDEDİLİYOR.
+        """
         assert cikar(
-            "Hesapta 1.000 TL alt limit ve 150.000.000 TL üst limit bulunmaktadır. Finansman limiti."
+            "Kurumsal müşterilerimize 150.000.000 TL'ye varan proje finansmanı sağlanmaktadır."
         ).get("finansman_tutari_max") == pytest.approx(150_000_000.0)
+
+    @pytest.mark.parametrize(
+        "metin",
+        [
+            # Mevduat bandı — sayı bir aralığın UCU, finansman limiti değil.
+            "Hesapta 1.000 TL alt limit ve 150.000.000 TL üst limit bulunmaktadır. Finansman limiti.",
+            # Dilim tablosu: tutar vadeyi belirliyor, finansmanı değil.
+            "Fatura bedeli 1.200.001 TL – 2.000.000 TL aralığında olan taşıt "
+            "finansmanlarında en fazla 12 ay vade uygulanır.",
+            # Kredi-değer tablosu: finansman bir YÜZDE, mutlak sayı konut değeri.
+            "Azami kredi tutarı: Değer <= 5.000.000 TL | Değer x 22,5% finansman.",
+            # Hesaplama aracının çıktısı.
+            "Aylık Taksit Tutarı 11.349,76 TL Geri Ödenecek Toplam Tutar "
+            "261.044,84 TL finansman tutarı",
+            # Örnek ödeme tablosunun tabanı.
+            "100.000 TL. baz alınarak oluşturulan Arsa Finansmanı örnek ödeme tablosu.",
+        ],
+    )
+    def test_hesap_bandi_finansman_limiti_sayilmaz(self, metin: str) -> None:
+        """16 Ağustos ölçümünün kapattığı 11 yanlış pozitifin biçimleri.
+
+        Hepsinde "finansman" ya da "limit" sözcüğü sayının YANINDA; bağlam
+        kontrolü hiçbirini elemiyor. Büyüklük sınırı da elemiyor — 2 milyon TL
+        makul bir taşıt finansmanıdır. Ayıran şey sayının YAZILIŞ BİÇİMİ:
+        aralığın ucu, tablo hücresi ya da hesap makinesi çıktısı.
+        """
+        assert "finansman_tutari_max" not in cikar(metin)
+
+
+class TestKampanyaBitisAraligi:
+    """Bitiş tarihi çoğu zaman çıplak bir ARALIK olarak yazılıyor.
+
+    16 Ağustos ölçümü: duyarlılık 0,571 → 0,929 (kaçırılan 6 → 1).
+    """
+
+    def test_baglam_sozcugu_olmadan_aralik_sonu_kabul_edilir(self) -> None:
+        """Kaçırmaların çoğu buydu: menü metninin ardına düşmüş çıplak aralık.
+
+        Yakınında "son", "bitiş", "geçerli" gibi hiçbir sözcük yok; kanıt
+        yapısal — iki tarih tire ile bağlanmış.
+        """
+        assert str(
+            cikar(
+                "SİZE ÖZEL ÇÖZÜMLER ÜRÜN VE HİZMETLERİMİZ "
+                "13 Mart 2026 - 31 Aralık 2026 Vakıf Katılım müşterileri..."
+            ).get("kampanya_bitis")
+        ) == "2026-12-31"
+
+    def test_aralik_basi_bitis_sayilmaz(self) -> None:
+        """Yalnız SONA bakılır; başlangıç tarihi bitiş değildir."""
+        alanlar = cikar("Kampanya Dönemi: 2 Temmuz 2026 - 31 Aralık 2026")
+        assert str(alanlar.get("kampanya_bitis")) == "2026-12-31"
+
+    def test_kampanya_donemi_sozcugu_taninir(self) -> None:
+        assert str(
+            cikar("📢 Kampanya Dönemi: 16 Haziran - 31 Ağustos 2026 Koşullar...")
+            .get("kampanya_bitis")
+        ) == "2026-08-31"
+
+    def test_tek_basina_tarih_hala_baglam_ister(self) -> None:
+        """Yapısal istisna, bağlam kuralını TÜMDEN kaldırmamalı.
+
+        Aralık yoksa ve sözcük yoksa tarih kabul edilmez — aksi hâlde
+        sayfadaki telif yılı ya da mevzuat tarihi bitiş sanılırdı.
+        """
+        assert "kampanya_bitis" not in cikar(
+            "Bu düzenleme 14 Aralık 2021 tarihli yönetmeliğe dayanmaktadır."
+        )
+
+
+class TestKarPayiSifirVeYabanciOranlar:
+    """Yüzde her yerde geçer; hangisi KÂR PAYI?
+
+    16 Ağustos ölçümü: F1 0,545 → 0,842 (YP 6 → 1).
+    """
+
+    def test_sifir_kar_payi_cikarilir(self) -> None:
+        """«Vade farksız» kampanyada oran gerçekten sıfırdır.
+
+        `gecerli_aralik` alt sınırı (0,10) sıfırı eliyordu; altın setin dolu
+        hücrelerinin %30'u sıfır etiketli olduğu için alan yapısal olarak
+        erişilemezdi.
+        """
+        assert cikar(
+            "Vade farksız kampanyamızda aylık kâr payı oranı 0% olarak uygulanır."
+        ).get("kar_payi_orani") == pytest.approx(0.0)
+
+    def test_sifir_disindaki_kucuk_oran_hala_elenir(self) -> None:
+        """Muafiyet YALNIZ tam sıfıra; alt sınırın asıl işi duruyor.
+
+        "Giden Fon Transferi | USD | 25 | % 0.05" bir havale komisyonudur.
+        """
+        assert "kar_payi_orani" not in cikar(
+            "Giden Fon Transferi komisyon oranı % 0,05 olarak uygulanır."
+        )
+
+    def test_guven_bandi_tablo_hucresini_kapsar(self) -> None:
+        """Tablo hücresi güven çarpanı yediği için bandın dışında kalıyordu.
+
+        Güvenler Albaraka kaydından ÖLÇÜLMÜŞ gerçek değerlerdir: aynı kâr
+        oranı tablosunun iki hücresi farklı yoldan puanlanıyor —
+        0% tablo yolundan (0,93 × 0,78), 3,95% mesafe yolundan.
+        0,05'lik bantta 0% eleniyor ve `en_dusuk` 3,95'i seçiyordu.
+
+        Doğrudan `_sec` üzerinde sınanıyor: uçtan uca metinle sınamak
+        tablo kolon hizasına bağımlı olurdu ve bandı değil ayrıştırmayı
+        ölçerdi.
+        """
+        tablo_hucresi = Aday(0.0, "0%", 3407, 3409, 0.7254)
+        duz_metin = Aday(3.95, "3,95%", 3466, 3471, 0.8516)
+
+        assert _sec([tablo_hucresi, duz_metin], "en_dusuk").deger == 0.0
+        assert duz_metin.guven - tablo_hucresi.guven < GUVEN_BANDI
+
+    @pytest.mark.parametrize(
+        "metin",
+        [
+            # Vergi oranı — "oranlarda" bağlam sözcüğü sayının yanında.
+            "Hesaba yatan hasılattan belirtilen oranlarda (%4 ve %2) gelir "
+            "vergisi kesilmesini sağlayan cari hesap türüdür.",
+            # Mülkiyet payı, oran değil.
+            "Finansman kullanan kişinin üzerinde %1 oranında dahi konut "
+            "hissesi bulunuyorsa banka tarafından BSMV uygulanabilir.",
+            # Mevduat getirisi, finansman kâr payı değil.
+            "Günlük hesap oranına ek +%2'ye varan getiri oranından yararlanın.",
+            # Tazminat oranı.
+            "Erken ödeme tazminatı oranı, kalan vadesi 36 ayı aşmayan "
+            "finansmanlarda erken ödenen tutarın %1'i kadardır.",
+        ],
+    )
+    def test_kar_payi_olmayan_yuzdeler_elenir(self, metin: str) -> None:
+        assert "kar_payi_orani" not in cikar(metin)
+
+
+class TestOdulMiktariSecimi:
+    """Ödül KİŞİ BAŞINA düşen tutardır — toplam havuz ya da eşik değil.
+
+    16 Ağustos ölçümü: `odul_miktari` 5 yanlış pozitif üretiyordu, F1 0,400.
+    """
+
+    def test_toplam_odul_kisi_basi_odul_yerine_gecmez(self) -> None:
+        """`en_yuksek` seçimi toplamı alıp kişi başı ödülü eziyordu.
+
+        BİLİNEN AÇIK — doğru cevap 2.000 TL, sistem "Belirtilmemiş" diyor.
+        Veto aynı cümledeki doğru adayı da eliyor. Yanlış bir 10.000'den
+        iyidir (uydurulmuş ödül vaadi yok) ama tam değildir.
+
+        "kisi basi"yi bağlam sözcüğü yapmak denendi ve ÖLÇÜLDÜ: alan F1'ini
+        0,667'den 0,333'e düşürdü, başka yerlerde yeni yanlış pozitif açtı.
+        Doğrusu seçim katmanında çözmek — S-14'e bırakıldı.
+        """
+        odul = cikar(
+            "Davet eden kişi, kişi başı maksimum 2.000 TL, toplamda 5 kişi "
+            "için maksimum 10.000 TL nakit ödül kazanabilir."
+        ).get("odul_miktari")
+        assert odul != pytest.approx(10_000.0)
+
+    @pytest.mark.parametrize(
+        "metin",
+        [
+            # Mevduat ürünü eşiği — ödül değil.
+            "Zümrüt Katılma Hesabı 3 milyon TL ve üzerinde birikimi olan "
+            "müşterilerimiz için sunulmuştur. Kazanç sağlar.",
+            # ATM çekim limiti — "kadar olan" aralık ucu.
+            "Tek seferde 500 TL'ye kadar olan tüm para çekme işlemlerini "
+            "komisyon ödemeden yapın, nakit ödül kazanın.",
+            # Harcama örneği: ödül 10 TL, 1.000 TL harcamanın kendisi değil.
+            "Örneğin 1.000 TL banka kartı harcamanızda 10 TL nakit ödül kazanırsınız.",
+        ],
+    )
+    def test_odul_olmayan_tutarlar_elenir(self, metin: str) -> None:
+        assert cikar(metin).get("odul_miktari") != pytest.approx(3_000_000.0)
+        assert cikar(metin).get("odul_miktari") not in (500.0, 1000.0)
+
+
+class TestMasrafsizlikKapsami:
+    """`masrafsiz_mi` FİNANSMANIN masrafını anlatır, her ücreti değil.
+
+    16 Ağustos ölçümü: 7 yanlış pozitif, F1 0,250 → düzeltmeden sonra 0,714.
+    """
+
+    def test_kapsam_beyani_masrafsizlik_degildir(self) -> None:
+        """«ücretini içermemektedir» = ücret VAR, toplama dahil değil."""
+        assert cikar(
+            "Ödenecek toplam tutar finansman tahsis ücretini içermemektedir."
+        ).get("masrafsiz_mi") is False
+
+    def test_tuketici_mevzuati_kalibi_masrafsizlik_degildir(self) -> None:
+        """Banka sayfalarının altbilgisinde standart; tek başına 3 hata verdi."""
+        assert "masrafsiz_mi" not in cikar(
+            "Talebiniz en kısa sürede ve en geç otuz (30) gün içinde "
+            "ücretsiz olarak sonuçlandırılmaktadır."
+        )
+
+    def test_temel_bankacilik_masrafsizligi_finansmani_baglamaz(self) -> None:
+        assert "masrafsiz_mi" not in cikar(
+            "Türkiye Finans'ın temel bankacılık işlemlerinden de ücretsiz yararlanın."
+        )
+
+    def test_gercek_masrafsizlik_beyani_korunur(self) -> None:
+        """Daraltma doğru cevapları elememeli — asıl risk bu."""
+        assert cikar(
+            "50.000 TL'ye kadar dosya masrafı alınmamaktadır."
+        ).get("masrafsiz_mi") is True
 
 
 class TestKismiJsonKurtarma:

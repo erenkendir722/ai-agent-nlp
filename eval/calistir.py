@@ -13,10 +13,17 @@ metriğin kendisinden daha pahalıya patlar.
     halüsinasyon oranı, şema geçerliliği, alan doluluğu, yöntem dağılımı,
     güven dağılımı, çelişki sayısı
 
-  ALTIN SET GEREKTİRENLER — 16 Ağustos'tan sonra:
-    alan bazlı doğruluk, F1, makro-F1, dayanıklılık düşüşü
+  ALTIN SET GEREKTİRENLER — altın set 15 Ağustos'ta geldi, aktif:
+    alan bazlı doğruluk, kesinlik/duyarlılık/F1, makro-F1
+    (dayanıklılık düşüşü S-07'nin bozuk varyant üreticisini bekliyor)
 
 Altın set yoksa ikinci grup "beklemede" olarak raporlanır; koşu ÇÖKMEZ.
+
+DOĞRULUK TEK BAŞINA OKUNMAZ — altın setin çoğu hücresi boştur, dolayısıyla
+«iki taraf da boş» hücreler doğruluğu şişirir. Rapordaki *hep boş* sütunu
+hiçbir şey çıkarmayan bir sistemin alacağı doğruluğu gösterir; doğruluk onun
+altındaysa sistem o alanda zarar veriyordur. Karşılaştırılabilir tek sayı
+makro-F1'dir (bkz. `altin_set_metrikleri`).
 """
 
 from __future__ import annotations
@@ -28,7 +35,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from src.depolama import kampanyalari_oku
+from src.depolama import cikarim_durumu, kampanyalari_oku
 from src.schema import ALAN_ADLARI, METINSEL_ALANLAR, SAYISAL_ALANLAR, Kampanya
 
 KOK = Path(__file__).resolve().parents[1]
@@ -118,8 +125,54 @@ def _degerler_esit(beklenen: Any, bulunan: Any, tolerans: float = 0.01) -> bool:
     return str(beklenen).strip().lower() == str(bulunan).strip().lower()
 
 
+def _f1(dogru_pozitif: int, yanlis_pozitif: int, yanlis_negatif: int) -> dict[str, float | None]:
+    """Bir alanın kesinlik / duyarlılık / F1 üçlüsü.
+
+    Hiç pozitif hücre yoksa (altın da sistem de o alanda hiç değer üretmemiş)
+    üçü de None döner — sıfır DEĞİL. Gerekçe `ortalama()` ile aynı: ölçülmemişi
+    başarısız göstermek, ölçmemekten kötüdür.
+    """
+    if dogru_pozitif + yanlis_pozitif + yanlis_negatif == 0:
+        return {"kesinlik": None, "duyarlilik": None, "f1": None}
+    kesinlik = (
+        dogru_pozitif / (dogru_pozitif + yanlis_pozitif)
+        if dogru_pozitif + yanlis_pozitif
+        else 0.0
+    )
+    duyarlilik = (
+        dogru_pozitif / (dogru_pozitif + yanlis_negatif)
+        if dogru_pozitif + yanlis_negatif
+        else 0.0
+    )
+    toplam = kesinlik + duyarlilik
+    return {
+        "kesinlik": kesinlik,
+        "duyarlilik": duyarlilik,
+        "f1": 2 * kesinlik * duyarlilik / toplam if toplam else 0.0,
+    }
+
+
 def altin_set_metrikleri(kampanyalar: list[Kampanya]) -> dict[str, Any] | None:
-    """Altın sete karşı alan bazlı doğruluk. Set yoksa None."""
+    """Altın sete karşı alan bazlı doğruluk, F1 ve makro-F1. Set yoksa None.
+
+    NEDEN F1 DE ÖLÇÜLÜYOR — doğruluk tek başına yanıltıyor:
+        Altın setin çoğu hücresi boş (`kar_payi_orani` 60 örnekte yalnız 10
+        kez dolu). Doğruluk «iki taraf da boş» hücreleri DOĞRU sayar, yani
+        hiçbir şey çıkarmayan bir sistem `odul_miktari`'nda 0,950 doğruluk
+        alır. Gerçek başarı, değer ÜRETİLMESİ gereken hücrelerde ölçülür.
+
+        F1 doğru negatifi hiç saymaz: yalnız bir taraf değer ürettiğinde
+        sayaç işler. Bu yüzden aşırı çıkarım (boş olması gereken yere değer
+        yazmak) doğruluğu az, F1'i çok düşürür — istediğimiz tam olarak bu.
+
+    Yuva doldurma (slot filling) sözleşmesi:
+        DP — altın dolu, sistem dolu, değerler eşit
+        YP — sistem değer üretti ama isabet etmedi (altın boş ya da farklı)
+        YN — altın dolu ama sistem ıskaladı (boş bıraktı ya da yanlış yazdı)
+
+        Yanlış değer hem YP hem YN sayılır: hem uydurulmuş bir değerdir hem de
+        doğru cevap kaçırılmıştır. Tek sayaca yazmak ikisinden birini gizlerdi.
+    """
     altin = altin_seti_yukle()
     if not altin:
         return None
@@ -127,6 +180,10 @@ def altin_set_metrikleri(kampanyalar: list[Kampanya]) -> dict[str, Any] | None:
     kimlik_kampanya = {k.kampanya_id: k for k in kampanyalar}
     dogru: Counter[str] = Counter()
     toplam: Counter[str] = Counter()
+    dp: Counter[str] = Counter()
+    yp: Counter[str] = Counter()
+    yn: Counter[str] = Counter()
+    altin_bos: Counter[str] = Counter()
 
     for kayit in altin:
         kampanya = kimlik_kampanya.get(kayit.get("kampanya_id", ""))
@@ -136,9 +193,20 @@ def altin_set_metrikleri(kampanyalar: list[Kampanya]) -> dict[str, Any] | None:
             if alan_adi not in kayit:
                 continue
             toplam[alan_adi] += 1
-            alan = getattr(kampanya, alan_adi)
-            if _degerler_esit(kayit[alan_adi], alan.deger):
+            beklenen = kayit[alan_adi]
+            bulunan = getattr(kampanya, alan_adi).deger
+            isabet = _degerler_esit(beklenen, bulunan)
+            if isabet:
                 dogru[alan_adi] += 1
+            if beklenen is None:
+                altin_bos[alan_adi] += 1
+            if isabet and beklenen is not None:
+                dp[alan_adi] += 1
+            else:
+                if bulunan is not None:
+                    yp[alan_adi] += 1
+                if beklenen is not None:
+                    yn[alan_adi] += 1
 
     def ortalama(alanlar: tuple[str, ...]) -> float | None:
         """Karşılaştırılacak hücre yoksa None — sıfır DEĞİL.
@@ -153,12 +221,26 @@ def altin_set_metrikleri(kampanyalar: list[Kampanya]) -> dict[str, Any] | None:
         t = sum(toplam[a] for a in alanlar)
         return d / t if t else None
 
+    alan_f1 = {a: _f1(dp[a], yp[a], yn[a]) for a in ALAN_ADLARI}
+    olculen = [d["f1"] for d in alan_f1.values() if d["f1"] is not None]
+
     return {
         "eslesen_ornek": sum(1 for k in altin if k.get("kampanya_id") in kimlik_kampanya),
         "altin_set_boyutu": len(altin),
         "sayisal_dogruluk": ortalama(SAYISAL_ALANLAR),
         "metinsel_dogruluk": ortalama(METINSEL_ALANLAR),
         "alan_bazli": {a: (dogru[a] / toplam[a] if toplam[a] else None) for a in ALAN_ADLARI},
+        # Makro-F1 alanları EŞİT ağırlıklar: nadir ama kritik bir alan (örn.
+        # tahsis_ucreti) sık alanların içinde erimesin. Mikro ortalama alsaydık
+        # tablo, en çok hücresi olan alanın performansını gösterirdi.
+        "makro_f1": sum(olculen) / len(olculen) if olculen else None,
+        "alan_f1": alan_f1,
+        "sayimlar": {a: {"dp": dp[a], "yp": yp[a], "yn": yn[a]} for a in ALAN_ADLARI},
+        # «Hep boş bırak» tabanı: hiçbir şey çıkarmayan sistemin doğruluğu.
+        # Doğruluk sütununun yanına konunca metriğin şişkinliği görünür olur.
+        "hep_bos_tabani": {
+            a: (altin_bos[a] / toplam[a] if toplam[a] else None) for a in ALAN_ADLARI
+        },
     }
 
 
@@ -171,6 +253,9 @@ HEDEFLER = {
     "metinsel_dogruluk": 0.78,
     "sema_gecerliligi": 1.00,
     "halusinasyon_orani": 0.03,
+    # F1 hedefi şemadan geliyor (`METINSEL_ALANLAR` açıklaması: «alan bazlı F1
+    # ile ölçülür, hedef ≥0,78»). Makro-F1 aynı çıtayı tüm alanlara uygular.
+    "makro_f1": 0.78,
 }
 
 
@@ -189,7 +274,40 @@ def _durum(ad: str, deger: float | None) -> str:
     return "✅" if deger >= hedef else "❌"
 
 
-def rapor_yaz(temel: dict[str, Any], altin: dict[str, Any] | None, doluluk: dict[str, float]) -> str:
+def _kokenlik_notu(durum: dict[str, Any]) -> list[str]:
+    """Raporun EN BAŞINA giden bayatlık uyarısı.
+
+    Başa konuyor çünkü aşağıdaki her sayı bu uyarıya bağlı: kod değiştiyse
+    tablolar eski çıkarımı anlatır. Sonuna konsa, sayıyı kopyalayan kişi
+    uyarıyı görmeden kopyalamış olurdu.
+    """
+    kosu = durum.get("kosu")
+    if not durum.get("bayat"):
+        return [
+            f"> ✅ **Güncel.** Çıkarım {kosu['zaman']:%d.%m.%Y %H:%M}'de "
+            f"`{kosu['yapilandirma']}` yapılandırmasıyla koştu "
+            f"({kosu['kayit_sayisi']} kayıt) ve o tarihten beri çıkarım kodu değişmedi.",
+            "",
+        ]
+    satirlar = [
+        "> 🔴 **BAYAT — bu sayıları sunuma kopyalamayın.**",
+        f"> {durum.get('sebep', '')}",
+    ]
+    if kosu:
+        satirlar.append(
+            f"> Kayıtlı koşu: `{kosu['yapilandirma']}` yapılandırması, "
+            f"{kosu['kayit_sayisi']} kayıt."
+        )
+    satirlar += ["> Düzeltmek için: `make extract && make eval`.", ""]
+    return satirlar
+
+
+def rapor_yaz(
+    temel: dict[str, Any],
+    altin: dict[str, Any] | None,
+    doluluk: dict[str, float],
+    kokenlik: dict[str, Any] | None = None,
+) -> str:
     s: list[str] = [
         "# Değerlendirme Sonuçları",
         "",
@@ -197,6 +315,10 @@ def rapor_yaz(temel: dict[str, Any], altin: dict[str, Any] | None, doluluk: dict
         "",
         "> Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.",
         "",
+    ]
+    if kokenlik is not None:
+        s += _kokenlik_notu(kokenlik)
+    s += [
         "## Veri kapsamı",
         "",
         f"- İşlenen kampanya: **{temel.get('kampanya_sayisi', 0)}**",
@@ -256,18 +378,52 @@ def rapor_yaz(temel: dict[str, Any], altin: dict[str, Any] | None, doluluk: dict
             f"{_durum('sayisal_dogruluk', altin['sayisal_dogruluk'])} |",
             f"| Metinsel alan doğruluğu | {_oran(altin['metinsel_dogruluk'])} | ≥ 0,78 | "
             f"{_durum('metinsel_dogruluk', altin['metinsel_dogruluk'])} |",
+            f"| **Makro-F1** | {_oran(altin['makro_f1'])} | ≥ 0,78 | "
+            f"{_durum('makro_f1', altin['makro_f1'])} |",
             "",
             "> Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM "
             "katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.",
             "",
-            "### Alan bazlı doğruluk",
+            "### Alan bazlı doğruluk ve F1",
             "",
-            "| Alan | Doğruluk |",
-            "|---|---|",
+            "> **Doğruluk sütununu tek başına okumayın.** Altın setin çoğu hücresi "
+            "boş, dolayısıyla «iki taraf da boş» hücreler doğruluğu şişiriyor. "
+            "*Hep boş* sütunu, hiçbir şey çıkarmayan bir sistemin alacağı "
+            "doğruluktur: doğruluk o sütunun altındaysa, sistem o alanda "
+            "hiçbir şey yapmamaktan daha kötüdür. F1 doğru negatifi saymaz, "
+            "bu yüzden gerçek başarıyı gösterir.",
+            "",
+            "| Alan | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |",
+            "|---|---|---|---|---|---|---|",
         ]
         for ad, deger in altin["alan_bazli"].items():
-            s.append(f"| `{ad}` | {'—' if deger is None else f'{deger:.3f}'} |")
+            olcum = altin["alan_f1"][ad]
+            sayim = altin["sayimlar"][ad]
+            taban = altin["hep_bos_tabani"][ad]
+            # Tabanın altına düşen alan, aşırı çıkarım yapıyor demektir.
+            isaret = (
+                " ⚠️"
+                if deger is not None and taban is not None and deger < taban
+                else ""
+            )
+            s.append(
+                f"| `{ad}` | {'—' if deger is None else f'{deger:.3f}'}{isaret} "
+                f"| {'—' if taban is None else f'{taban:.3f}'} "
+                f"| {_oran(olcum['kesinlik'])} | {_oran(olcum['duyarlilik'])} "
+                f"| **{_oran(olcum['f1'])}** "
+                f"| {sayim['dp']}/{sayim['yp']}/{sayim['yn']} |"
+            )
         s.append("")
+        s += [
+            "> ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem "
+            "boş olması gereken hücrelere değer yazıyor (yanlış pozitif); "
+            "önce kesinliği düzeltmek gerekir.",
+            "",
+            "> **DP/YP/YN** — doğru pozitif / yanlış pozitif / yanlış negatif. "
+            "Yanlış değer hem YP hem YN sayılır: uydurulmuş bir değerdir ve "
+            "aynı anda doğru cevap kaçırılmıştır.",
+            "",
+        ]
 
     return "\n".join(s)
 
@@ -281,8 +437,9 @@ def calistir(ablasyon: bool = False) -> int:
     temel = temel_metrikler(kampanyalar)
     altin = altin_set_metrikleri(kampanyalar)
     doluluk = alan_bazli_doluluk(kampanyalar)
+    kokenlik = cikarim_durumu()
 
-    icerik = rapor_yaz(temel, altin, doluluk)
+    icerik = rapor_yaz(temel, altin, doluluk, kokenlik)
     if ablasyon:
         icerik += _ablasyon_notu()
 
@@ -290,11 +447,28 @@ def calistir(ablasyon: bool = False) -> int:
     SONUC_DOSYASI.write_text(icerik, encoding="utf-8")
 
     print(f"✅ {SONUC_DOSYASI.relative_to(KOK)} yazıldı")
+    if kokenlik["bayat"]:
+        print(f"   🔴 BAYAT — {kokenlik['sebep']}")
+        print("      Sunuma sayı kopyalamadan önce: make extract && make eval")
     print(f"   Kampanya: {temel['kampanya_sayisi']} · Banka: {temel['banka_sayisi']}")
     print(f"   Halüsinasyon oranı: %{temel['halusinasyon_orani'] * 100:.2f} (hedef ≤ %3)")
     print(f"   Alan doluluğu: %{temel['alan_dolulugu'] * 100:.1f}")
     if altin is None:
         print("   ⏳ Altın set yok — doğruluk metrikleri beklemede (son tarih 16 Ağustos)")
+    else:
+        print(
+            f"   Sayısal doğruluk: {_oran(altin['sayisal_dogruluk'])} (hedef ≥ 0,90) · "
+            f"Makro-F1: {_oran(altin['makro_f1'])} (hedef ≥ 0,78)"
+        )
+        zayif = [
+            ad
+            for ad, deger in altin["alan_bazli"].items()
+            if deger is not None
+            and altin["hep_bos_tabani"][ad] is not None
+            and deger < altin["hep_bos_tabani"][ad]
+        ]
+        if zayif:
+            print(f"   ⚠️  «Hep boş» tabanının altındaki alanlar: {', '.join(zayif)}")
     return 0
 
 

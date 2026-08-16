@@ -381,8 +381,28 @@ FINANSMAN_DISI_UCRET = (
     "havale", "eft", "fast", "para transfer", "transfer ucret",
     "hesap isletim", "uyelik", "hisse senedi", "alim-satim", "alim satim",
     "ekstre", "sigorta primi",
+    # Tüketici mevzuatı kalıbı — BAŞVURUNUN ücretsiz sonuçlandırılmasını
+    # anlatır, finansmanın masrafsızlığını değil. Banka sayfalarının
+    # altbilgisinde neredeyse standart olarak geçiyor ve 16 Ağustos
+    # ölçümünde tek başına 3 yanlış pozitif üretti:
+    #   "Talebiniz en kısa sürede ve en geç otuz (30) gün içinde ücretsiz
+    #    olarak sonuçlandırılmaktadır."
+    "talebiniz", "sonuclandirilmakta", "basvurunuz",
+    # "temel bankacılık işlemlerinden de ücretsiz yararlanın" — hesap/kart
+    # hizmetleri paketi, finansman masrafı değil.
+    "temel bankacilik",
 )
 """Ücretin finansmana DEĞİL başka bir hizmete ait olduğunu gösteren imler."""
+
+_KAPSAM_DISI = re.compile(
+    r"\bicermemekte(?:dir)?\b|\bicermez\b|\bdahil degil|\bharic(?:tir)?\b"
+)
+"""«Ödenecek toplam tutar finansman tahsis ücretini İÇERMEMEKTEDİR.»
+
+Olumsuz yüklem ama masrafsızlık DEĞİL — tam tersi. Cümle ücretin var
+olduğunu, yalnız gösterilen toplama dahil edilmediğini söylüyor. Ek tanıyan
+`_OLUMSUZ_YUKLEM` bunu "alınmamaktadır" ile aynı kefeye koyup True üretiyordu;
+altın set False diyor ve haklı. Kapsam beyanı ile ücret beyanı ayrı şeylerdir."""
 
 # TUZAK 6 — Türkçe olumsuzlama EK ile yapılır, sözcükle değil.
 #
@@ -462,6 +482,17 @@ def masrafsiz_mi(parca: str) -> bool | None:
     True
     >>> masrafsiz_mi("Hisse senedi alım-satım işlemlerinde komisyon alınır.") is None
     True
+
+    Kapsam beyanı masrafsızlık değildir — ücret VARDIR, yalnız gösterilen
+    toplama dahil edilmemiştir:
+
+    >>> masrafsiz_mi("Ödenecek toplam tutar finansman tahsis ücretini içermemektedir.")
+    False
+
+    Tüketici mevzuatı kalıbı BAŞVURUNUN ücretsizliğini anlatır:
+
+    >>> masrafsiz_mi("Talebiniz 30 gün içinde ücretsiz sonuçlandırılmaktadır.") is None
+    True
     """
     if not parca:
         return None
@@ -491,6 +522,11 @@ def masrafsiz_mi(parca: str) -> bool | None:
 
     if _BANKA_KARSILIYOR in anahtar:
         return True
+    # Kapsam beyanı olumsuzlamadan ÖNCE bakılır: "ücreti içermemektedir"
+    # olumsuz bir yüklemdir ama ücretin YOK olduğunu değil, gösterilen
+    # toplama DAHİL OLMADIĞINI söyler — yani ücret vardır.
+    if _KAPSAM_DISI.search(anahtar):
+        return False
     if _OLUMSUZ_YUKLEM.search(anahtar):
         return True
     if _MASRAFLI_YUKLEM.search(anahtar):

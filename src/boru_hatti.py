@@ -21,7 +21,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src.collector.toplayici import bankalari_yukle, ham_kayitlari_oku, topla
-from src.depolama import istatistikler, kaydet, semayi_kur
+from src.depolama import cikarim_kosusu_yaz, istatistikler, kaydet, semayi_kur
 from src.extraction.uzlastirici import UzlastirmaRaporu, kampanya_cikar
 from src.schema import HamKayit
 
@@ -156,7 +156,13 @@ def _cikar_ve_kaydet(kayitlar: list[HamKayit], args: argparse.Namespace) -> int:
     if bekleyen:
         kaydet(bekleyen)
 
+    # Koşuyu kaydet: `make eval` bayat sayı raporlamasın diye. Ara kayıttan
+    # SONRA, tek sefer — koşunun tamamlandığı an budur.
+    yapilandirma = "kural" if args.yalniz_kural else "llm" if args.yalniz_llm else "hibrit"
+    cikarim_kosusu_yaz(yapilandirma, len(kampanyalar))
+
     print("\n" + "=" * 64)
+    print(f"  Yapılandırma         : {yapilandirma}")
     print(f"  İşlenen kayıt        : {len(kampanyalar)}")
     print(f"  Yalnız kuraldan gelen: {toplam_rapor.kural_alan_sayisi} alan")
     print(f"  Yalnız LLM'den gelen : {toplam_rapor.llm_alan_sayisi} alan")

@@ -50,10 +50,28 @@ D_VADE = re.compile(
     r"(?:a|e|ı|i|da|de|ta|te|dan|den|tan|ten|lık|lik|luk|lük|lı|li|ya|ye)?\b",
     re.IGNORECASE,
 )
+AYLAR = (
+    "Ocak", "Şubat", "Subat", "Mart", "Nisan", "Mayıs", "Mayis", "Haziran",
+    "Temmuz", "Ağustos", "Agustos", "Eylül", "Eylul", "Ekim", "Kasım", "Kasim",
+    "Aralık", "Aralik",
+)
+"""Türkçe ay adları — şapkalı ve şapkasız biçimleriyle TEK kaynak.
+
+Tarihe bakan her desen bundan türetilir (`D_TARIH`, tarih aralığı
+denetimleri). Ayrı ayrı yazılsalardı yeni bir biçim eklemek birkaç regex'i
+birden düzeltmeyi gerektirirdi ve biri unutulduğunda hata sessiz olurdu:
+desen eşleşmez, alan boş kalır, kimse fark etmez."""
+
+_AY = "|".join(AYLAR)
+_GUN_AY = rf"\d{{1,2}}\s+(?:{_AY})"
+"""«13 Mart» — yılsız da eşleşir; aralığın başında yıl çoğu zaman yazılmıyor
+("16 Haziran - 31 Ağustos 2026")."""
+
+_SAYISAL_TARIH = r"\d{1,2}[./]\d{1,2}[./]\d{4}"
+
 D_TARIH = re.compile(
-    r"\d{1,2}[./]\d{1,2}[./]\d{4}"
-    r"|\d{1,2}\s+(?:Ocak|Şubat|Subat|Mart|Nisan|Mayıs|Mayis|Haziran|Temmuz|"
-    r"Ağustos|Agustos|Eylül|Eylul|Ekim|Kasım|Kasim|Aralık|Aralik)\s+\d{4}"
+    rf"{_SAYISAL_TARIH}"
+    rf"|{_GUN_AY}\s+\d{{4}}"
     r"|\d{4}\s*(?:y[ıi]l\s*sonu|sonuna\s+kadar)",
     re.IGNORECASE,
 )
@@ -84,6 +102,46 @@ class KuralTanimi:
     """True ise bağlam sözcüğü değerle AYNI CÜMLEDE olmak zorunda."""
     olumsuzlama_reddet: bool = False
     """True ise "alınmaz / yok / ücretsiz" içeren bağlamdan sayı çıkarılmaz."""
+    veto_ifadeleri: tuple[str, ...] = field(default=())
+    """Pencerede GEÇMESİ yeten ifadeler — mesafe karşılaştırması yapılmaz.
+
+    `dislayici_sozcukler` "hangisi daha yakın?" diye sorar ve bazı hatalarda
+    yapısal olarak kaybeder:
+
+        "Geri Ödenecek Toplam Tutar 261.044,84 TL"
+
+    Burada dışlayıcı olarak "geri odenecek" eklense bile bağlam sözcüğü
+    "tutar" sayıya DAHA YAKINDIR (hemen solunda), dolayısıyla mesafe kuralı
+    değeri kabul eder. Oysa bu ifade pencerede geçiyorsa sayı ne olursa olsun
+    finansman limiti değildir. Böyle ifadeler için yakınlık değil VARLIK
+    ölçüttür."""
+    tarih_araligi_sonu_kabul: bool = False
+    """True ise «X - Y» aralığının SONU, bağlam sözcüğü olmasa da kabul edilir.
+
+    Bağlam sözcüğü kuralının tek istisnası ve gerekçesi ölçülmüş: kampanya
+    bitiş tarihlerinin çoğu, yakınında hiçbir anahtar sözcük olmayan çıplak
+    bir aralık olarak yazılıyor. Bkz. `_tarih_araligi_sonu_mu`."""
+    aralik_ucu_reddet: bool = False
+    """True ise bir ARALIĞIN UCU olarak yazılmış sayı aday sayılmaz.
+
+    Dilim tabloları ("400.000-800.000 TL arasında %50'si") bağlam kontrolünü
+    de büyüklük sınırını da geçer; onları ayıran tek şey yazılış biçimidir.
+    Bkz. `_aralik_ucu_mu`."""
+    sifir_gecerli: bool = False
+    """True ise TAM SIFIR, `gecerli_aralik` alt sınırından muaftır.
+
+    "Vade farksız" / "0 kâr payı" kampanyalarında oran gerçekten sıfırdır ve
+    bu, boş hücreden FARKLI bir bilgidir — altın set kılavuzu bunu açıkça
+    söylüyor (`tools/altin_set.py`: "SIFIR GEÇERLİDİR").
+
+    Kural katmanı ise üretemiyordu: `gecerli_aralik` denetimi `alt < deger`
+    biçiminde ve `AYLIK_KAR_PAYI_ALT_SINIRI` 0,10. Yani etiketleyene "sıfır
+    yaz" denen değeri çıkarıcı hiçbir koşulda bulamıyordu. 16 Ağustos
+    ölçümünde `kar_payi_orani`'nın 10 dolu hücresinin 3'ü sıfırdı — alanın
+    %30'u yapısal olarak erişilemezdi.
+
+    Muafiyet YALNIZ tam sıfıra: alt sınırın asıl işi "%0,05 havale
+    komisyonu" gibi küçük ama sıfır olmayan oranları elemek ve o iş duruyor."""
     gecerli_aralik: tuple[float, float] | None = None
     """(alt, üst) — değer bu ARALIĞIN DIŞINDAYSA aday hiç üretilmez (dışlayıcı sınırlar).
 
@@ -100,6 +158,69 @@ class KuralTanimi:
     Burada bağlam kontrolü kuralı KURTARMAZ: "oran" sözcüğü sayıya
     "maliyet"ten daha yakın, dolayısıyla dışlayıcı sözcük tetiklenmez.
     Aylık kâr payının %82 olamayacağını bilen tek şey alan bilgisidir."""
+
+
+# ---------------------------------------------------------------------------
+# Veto kategorileri — "bu sayı kampanyanın koşulu değil"
+# ---------------------------------------------------------------------------
+#
+# Bunlar ALAN'a değil, sayının geldiği BAĞLAM TÜRÜNE bakar. Bir hesap
+# makinesi widget'ı hem tutar hem oran üretir; ikisi de kampanya koşulu
+# değildir. Kategoriyi tek alana bağlamak, aynı hatayı bir alanda eleyip
+# diğerinde geçirmek demektir — 16 Ağustos'ta tam olarak bu oldu:
+#
+#     Kâr Oranı | %1.00 |
+#     Toplam Geri Ödenen | 66.066,24 TL |
+#
+# Tutar için veto yazılmıştı, oran serbestti; üstelik %1,00 makullük
+# aralığının içinde olduğu için sınır da yakalamıyordu.
+
+HESAP_ARACI_CIKTISI = (
+    "geri oden",
+    "aylik taksit tutari",
+    "yillik maliyet oran",
+    "toplam geri",
+    "ucretler toplami",
+)
+"""Sayfadaki taksit hesaplama aracının ÜRETTİĞİ değerler.
+
+Kampanyanın koşulu değil, kullanıcının girdiği örneğin sonucudur. Gövde
+hâlinde yazılıyor çünkü bankalar aynı şeyi farklı çekimlerle söylüyor:
+"Geri Ödenecek Toplam Tutar" (Albaraka) / "Toplam Geri Ödenen"
+(Türkiye Finans). Ek'e bağlı yazılan veto ikincisini kaçırıyordu."""
+
+ORNEK_TABLO = ("baz alinarak", "ornek odeme")
+"""«100.000 TL baz alınarak oluşturulan örnek ödeme tablosu».
+
+Tablodaki her sayı temsilîdir; taban tutar da, satırlardaki oranlar da."""
+
+MEVDUAT_URUNU = (
+    "hesap bakiyesi",
+    "gunluk hesap",
+    "katilma hesabi",
+    "katilim fonu",
+    "getiri oran",
+    "hos geldin",
+)
+"""Mevduat/katılma hesabı ürünleri — finansman kampanyası değil.
+
+Aynı sayfada hem hesap hem finansman anlatılabiliyor; hesabın alt/üst
+bakiye limitleri ve getiri oranları finansman koşulu sanılıyordu."""
+
+VERGI_VE_MEVZUAT = ("gelir vergisi", "vergi istisna", "bsmv", "kkdf")
+"""Yasal kesinti oranları — bankanın sunduğu koşul değil.
+
+NOT: Buradaki her ifade derlemde EN AZ İKİ kayıtta geçmelidir. Tek kayıtta
+geçen bir veto, örüntü değil o kaydın ezberidir; ölçümü şişirir ve
+görülmemiş metinde işe yaramaz. `tools/` altındaki tarama bunu denetler."""
+
+SAYISAL_ALAN_VETOLARI = (
+    HESAP_ARACI_CIKTISI + ORNEK_TABLO + MEVDUAT_URUNU + VERGI_VE_MEVZUAT
+)
+"""Her sayısal alana uygulanan ortak taban.
+
+Alan bazlı ekler bunun ÜSTÜNE gelir; taban ortak olduğu için yeni bir
+bağlam türü keşfedildiğinde tek yere yazmak bütün alanları korur."""
 
 
 KURALLAR: tuple[KuralTanimi, ...] = (
@@ -122,8 +243,22 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # sezgisel olarak doğru görünüyordu, ölçüm aksini söyledi.
         baglam_sozcukleri=("kar payi", "kar orani", "kar payi orani", "oran", "aylik kar"),
         dislayici_sozcukler=("indirim", "iade", "nakit iade", "kdv"),
+        # Yüzde her yerde var; ortak taban KÂR PAYI olmayan yüzdeleri eler.
+        # Hepsinde "oran" bağlam sözcüğü yakında geçtiği için mesafe kuralı
+        # elemiyor — varlık ölçüt olmalı.
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI
+        + (
+            # "Erken ödeme tazminatı oranı ... % 1'i" — tazminat, kâr payı değil.
+            "erken odeme tazminati",
+        ),
+        # NOT: "konut hissesi" / "hisseli" de denendi (mülkiyet payı yüzdesi)
+        # ama ÖLÇÜMDE hiçbir şey katmadı — o kaydı ortak tabandaki "bsmv"
+        # zaten yakalıyor. Derlemde tek kayıtta geçen ifadeler eklenmedi.
         secim="en_dusuk",  # "%1,89'dan başlayan" — vitrin oranı en düşüğüdür
         taban_guven=0.93,
+        # "Vade farksız" kampanyada oran gerçekten sıfırdır; alt sınır onu
+        # eliyordu. Bkz. `KuralTanimi.sifir_gecerli`.
+        sifir_gecerli=True,
         # Aylık kâr payı tek haneli yüzdelerde seyreder; %15 üstü aylık oran
         # değildir (bkz. schema.AYLIK_KAR_PAYI_UST_SINIRI). Sınır ayrıca
         # SEÇİMİ de düzeltiyor: makul olmayan adaylar elenince `en_dusuk`
@@ -147,10 +282,19 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             "odul", "hediye", "iade", "masraf", "ucret", "puan",
             "degerinde", "alisveris ceki", "hediye ceki", "market ceki",
         ),
+        # Ortak taban yeterli: hesap makinesi çıktısı, örnek tablo ve mevduat
+        # limitleri bu alanın yanlış pozitiflerinin tamamını oluşturuyordu.
+        # Dışlayıcı SÖZCÜK olarak eklemek işe yaramıyordu: bağlam sözcüğü
+        # "tutar" ifadelerin kendi içinde geçiyor ve sayıya daha yakın kalıp
+        # mesafe kuralını her seferinde kazanıyordu.
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
         secim="en_yuksek",
         taban_guven=0.88,
         # Üst sınır YOK: kurumsal finansmanda yüz milyonlu limitler gerçektir.
         gecerli_aralik=(EN_AZ_FINANSMAN_TUTARI, float("inf")),
+        # Üst sınırın yerine geçen kısıt. 16 Ağustos ölçümünde 15 yanlış
+        # pozitifin 8'i dilim tablosundandı; büyüklük değil YAZILIŞ ayırıyor.
+        aralik_ucu_reddet=True,
     ),
     KuralTanimi(
         alan="vade_ay_max",
@@ -168,6 +312,10 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             "vade", "geri odeme", "odeme plani", "taksit",
             "aya kadar", "ay kadar", "aya varan", "ay varan",
         ),
+        # Ölçüldü (16 Ağu): ortak taban bu alanda F1'i 0,756 → 0,791 yapıyor.
+        # Örnek ödeme tablolarındaki vade sütunu ("48 | 4,50% | ...") ve
+        # hesap makinesi çıktısındaki vade artık aday olmuyor.
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
         secim="en_yuksek",
         taban_guven=0.92,
         gecerli_aralik=(0.0, 361.0),  # 30 yıl üstü vade katılım finansmanında yok
@@ -177,6 +325,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         deger_deseni=re.compile(r"\d+\s*taksit\w*", re.IGNORECASE),
         ayristirici=vade_ayristir,
         baglam_sozcukleri=("taksit", "pesin fiyatina"),
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
         secim="en_yuksek",
         taban_guven=0.90,
         gecerli_aralik=(0.0, 361.0),
@@ -192,6 +341,12 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # her iki kural da aynı sayıya talip olur. Mesafe kuralı sayesinde
         # "finansman" daha yakın olduğu için tahsis ücreti reddedilir.
         dislayici_sozcukler=("finansman", "limit", "odul", "hediye", "iade"),
+        # Ortak taban burada ÖLÇÜMDE nötr (0,909 sabit) ama yine de bağlı:
+        # hesap makinesi çıktısı bir tahsis ücreti satırı da üretebilir ve
+        # aynı bağlam türünü bir alanda eleyip diğerinde geçirmek, bugün
+        # düzeltilen tutarsızlığın ta kendisiydi. Nötr olması zarar değil;
+        # kapsam dışı bırakmak ise bilinen bir hataya açık kapı bırakmaktır.
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
         secim="en_yakin",
         taban_guven=0.85,
         ayni_cumle=True,
@@ -206,8 +361,40 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             "alisveris ceki", "hediye ceki", "market ceki", "degerinde",
         ),
         dislayici_sozcukler=("finansman", "limit", "masraf"),
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI
+        + (
+            # "kişi başı maksimum 2.000 TL, TOPLAMDA 5 kişi için maksimum
+            # 10.000 TL" — ödül kişi başına düşendir; `en_yuksek` toplamı
+            # alıyordu. Veto aynı cümledeki DOĞRU adayı (2.000) da eliyor,
+            # sonuç "Belirtilmemiş" — yanlış bir 10.000'den iyi ama tam değil.
+            #
+            # YÖNLÜ NİTELİK DENENDİ VE ÖLÇÜLDÜ (16 Ağu). Sayının yalnız soluna
+            # bakıp "toplamda"yı "kişi başı"ndan ayıran bir mekanizma yazıldı;
+            # izole cümlede 2.000'i doğru seçti ama altın sette alan F1'ini
+            # 0,667'den 0,333'e DÜŞÜRDÜ. İki sebep:
+            #   1) Belgede ikinci bir cümle daha var — "davet eden kişinin
+            #      maksimum 10.000 TL ödül kazanabilmesi için" — solunda
+            #      "toplamda" yok, eleme tutmuyor, `en_yuksek` yine onu seçiyor.
+            #   2) Eleme, hayatta kalan aday kümesini değiştirdiği için başka
+            #      kayıtlarda seçimi kaydırıp iki yeni hata açtı.
+            # Ders: bu bir ELEME değil SIRALAMA sorunu. Aday eleyerek
+            # çözülmüyor; `secim="en_yuksek"` ödül alanı için yanlış ölçüt.
+            # Doğru çözüm seçim katmanında — S-14'e bırakıldı.
+            "toplamda",
+            # "ÖRNEĞİN 1.000 TL banka kartı harcamanızda 10 TL nakit ödül" —
+            # burada veto DOĞRU araç: cümledeki sayıların hiçbiri ödül tutarı
+            # değil, ikisi de örneğin parçası.
+            "ornegin",
+            # "Zümrüt Katılma Hesabı 3 milyon TL ve üzerinde BİRİKİMİ OLAN" —
+            # ürünün kendisi ortak tabandaki `MEVDUAT_URUNU` ile eleniyor;
+            # bu ek, hesap adı geçmeyen birikim eşiği ifadeleri için.
+            "birikimi olan",
+        ),
         secim="en_yuksek",
         taban_guven=0.86,
+        # Ödül tutarı bir aralığın ucu olarak yazılmaz. "500 TL'ye kadar olan
+        # tüm para çekme işlemleri" bir ATM limitidir, ödül değil.
+        aralik_ucu_reddet=True,
     ),
     KuralTanimi(
         alan="indirim_orani",
@@ -215,6 +402,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         ayristirici=oran_ayristir,
         baglam_sozcukleri=("indirim", "iade orani", "avantaj orani"),
         dislayici_sozcukler=("kar payi",),
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
         secim="en_yuksek",
         taban_guven=0.88,
         gecerli_aralik=(0.0, 100.1),  # yüzde; %100'den fazla indirim olmaz
@@ -224,6 +412,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         deger_deseni=D_PARA,
         ayristirici=lambda s: para_ayristir(s, birim_zorunlu=True),
         baglam_sozcukleri=("puan", "alisveris puani", "para puan", "chip para"),
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
         secim="en_yuksek",
         taban_guven=0.84,
     ),
@@ -233,9 +422,14 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         ayristirici=tarih_ayristir,
         baglam_sozcukleri=(
             "son", "bitis", "gecerli", "kadar", "kampanya suresi", "son basvuru",
+            # "Kampanya Dönemi: 2 Temmuz - 31 Aralık 2026" — ölçümde kaçırılan
+            # 6 tarihin 2'si yalnız bu sözcüğün eksikliğinden düşüyordu.
+            "kampanya donemi", "donem", "kampanya tarihleri",
         ),
         secim="en_yakin",
         taban_guven=0.90,
+        # Kalan 4 kaçırma bağlam sözcüğü OLMAYAN çıplak aralıklardı.
+        tarih_araligi_sonu_kabul=True,
     ),
 )
 
@@ -272,9 +466,23 @@ def _cumle_araligi(metin: str, baslangic: int, bitis: int, azami: int = 300) -> 
 
 
 _KONUM_KORUYAN_ESLEME = str.maketrans(
-    {"I": "ı", "İ": "i", "Ş": "ş", "Ğ": "ğ", "Ü": "ü", "Ö": "ö", "Ç": "ç",
-     "â": "a", "î": "i", "û": "u", "Â": "a", "Î": "i", "Û": "u",
-     "ı": "i", "ş": "s", "ğ": "g", "ü": "u", "ö": "o", "ç": "c"}
+    # BÜYÜK harfler DOĞRUDAN ASCII karşılığına iner — iki adımda değil.
+    #
+    # `str.translate` metni TEK GEÇİŞTE çevirir: bir karakterin yerine
+    # konan şey tabloya tekrar sokulmaz. Önceki sürüm "Ö"yü "ö"ye, ayrı bir
+    # satırda da "ö"yü "o"ya eşliyordu; ilk kural uygulandığı için sonuç
+    # "ö"de kalıyor, ASCII'ye hiç inmiyordu. Ardından gelen `.lower()` de
+    # zaten küçük olan harfi değiştirmiyordu.
+    #
+    # Sonuç sessiz bir körlüktü: bağlam, dışlayıcı ve veto sözcükleri
+    # `arama_anahtari` ile (ASCII'ye inmiş) yazılıyor, metin ise BÜYÜK
+    # harfliyse inmemiş hâlde kalıyordu. Banka sayfaları büyük harfli
+    # başlıkla dolu ("KULLANDIRILABİLECEK AZAMİ KREDİ TUTARI", "ÖDÜL"),
+    # yani eşleşmesi gereken sözcükler eşleşmiyordu.
+    #
+    # Hepsi 1:1 — uzunluk korunuyor, mesafe hesabı bozulmuyor.
+    "IİŞĞÜÖÇÂÎÛ" "ışğüöçâîû",
+    "iisguocaiu" "isguocaiu",
 )
 
 
@@ -394,6 +602,141 @@ def _kolon_basligi(metin: str, baslangic: int) -> str | None:
     return basliklar[(veri - 1) % len(basliklar)]
 
 
+_KARSILASTIRMA = r"[-–—]|<=?|>=?|≤|≥|ile|ila"
+
+_ARALIK_SOLU = re.compile(
+    rf"(?:\d[\d.,]*\s*(?:tl|₺|milyon\s*tl|milyon)?|deger)\s*(?:{_KARSILASTIRMA})\s*$",
+    re.IGNORECASE,
+)
+_ARALIK_SAGI = re.compile(
+    rf"^\s*(?:tl|₺)?\s*(?:{_KARSILASTIRMA})\s*(?:\d|deger)",
+    re.IGNORECASE,
+)
+_ARALIK_EKI = re.compile(
+    # Araya parantezli açıklama girebiliyor: "20.000 TL'ye (yirmi bin Türk
+    # Lirasına) kadar olan cep telefonu" — parantezi atlamazsak kaçırırız.
+    r"^\s*(?:tl|₺)?\s*(?:milyon\s*tl\s*)?[a-z]{0,4}\s*(?:\([^)]{0,80}\)\s*)?[a-z]{0,4}\s*"
+    r"(?:arasi|arasinda|araliginda|uzeri|uzerinde|altinda|ve altinda|"
+    r"ust limit|alt limit|kadar olan|fazla olmasi|fazla olan)",
+    re.IGNORECASE,
+)
+_ARALIK_ETIKETI_SOLDA = re.compile(r"(?:ust|alt)\s+limit\s*$", re.IGNORECASE)
+"""«üst limit 44.500.000 TL» — etiket sayının SOLUNDA kalır.
+
+`_ARALIK_EKI` yalnız sağa bakar; bu biçim onun aynadaki hâlidir."""
+_ORAN_TABLOSU = re.compile(r"deger\s*x\s*\d|kredi[- ]deger oran", re.IGNORECASE)
+
+TARIH_ARALIGI_CARPANI = 0.86
+"""Yapısal kanıtla kabul edilen tarihin güven çarpanı.
+
+Sözcükle desteklenen tarihten (0,80–1,00 bandı) bir tık aşağıda: "Kampanya
+son başvuru: 31 Aralık" beyanı, çıplak bir tarih aralığından daha güçlü
+kanıttır. Ama aralık da gerçek kanıttır, o yüzden tablo hücresi kadar
+(0,78) aşağı çekilmez."""
+
+_TIRE = r"[-–—]"
+
+_TARIH_ARALIGI_SOLU = re.compile(
+    rf"(?:{_GUN_AY}(?:\s+\d{{4}})?|{_SAYISAL_TARIH})\s*{_TIRE}\s*$",
+    re.IGNORECASE,
+)
+_TARIH_ARALIGI_SAGI = re.compile(
+    rf"^\s*{_TIRE}\s*(?:{_GUN_AY}|{_SAYISAL_TARIH})",
+    re.IGNORECASE,
+)
+TARIH_ARALIGI_PENCERESI = 40
+
+
+def _tarih_araligi_basi_mu(metin: str, bitis: int) -> bool:
+    """Bu tarih bir «X - Y» aralığının BAŞI mı? Başıysa bitiş tarihi değildir.
+
+    `_tarih_araligi_sonu_mu`'nun aynadaki hâli ve onunla birlikte zorunlu.
+    Tek başına "sonu kabul et" kuralı eklemek yetmiyor:
+
+        "Kampanya Dönemi: 2 Temmuz 2026 - 31 Aralık 2026"
+
+    "kampanya donemi" bağlam sözcüğü İLK tarihe daha yakın olduğu için
+    `en_yakin` seçimi başlangıcı seçiyordu — yani bağlam sözcüğü eklemek
+    duyarlılığı artırırken kesinliği bozuyordu. Aralığın başını baştan
+    aday olmaktan çıkarmak ikisini birden düzeltir.
+    """
+    return bool(
+        _TARIH_ARALIGI_SAGI.match(
+            arama_anahtari(metin[bitis : bitis + TARIH_ARALIGI_PENCERESI])
+        )
+    )
+
+
+def _tarih_araligi_sonu_mu(metin: str, baslangic: int) -> bool:
+    """Bu tarih bir «X - Y» aralığının SONU mu?
+
+    NEDEN GEREKLİ — 16 Ağustos ölçümü, `kampanya_bitis` duyarlılığı 0,571:
+        Kaçırılan 6 tarihin hepsi aralıktı ve 4'ünde yakınında hiçbir bağlam
+        sözcüğü yoktu — menü metninin ardına düşmüş çıplak bir aralık:
+
+            "... ÜRÜN VE HİZMETLERİMİZ 13 Mart 2026 - 31 Aralık 2026 Vakıf
+             Katılım müşterileri ..."
+
+        Sözcük eklemek bunları kurtarmaz çünkü ortada sözcük yok. Kanıt
+        YAPISALDIR: iki tarih tire ile bağlanmışsa ikincisi bitiş tarihidir.
+        Kampanya metinlerinde bu dizilişin başka anlamı yok.
+
+    Yalnız SOLA bakılır: aralığın SONUNU arıyoruz, başlangıcını değil.
+    "13 Mart 2026 - 31 Aralık 2026" ifadesinde 13 Mart'ın solunda tire yok,
+    dolayısıyla o kabul edilmez — istenen tam olarak budur.
+    """
+    sol = metin[max(0, baslangic - TARIH_ARALIGI_PENCERESI) : baslangic]
+    return bool(_TARIH_ARALIGI_SOLU.search(arama_anahtari(sol)))
+
+
+ARALIK_UCU_PENCERESI = 45
+"""Aralık işaretini ararken değerin sağına/soluna bakılacak karakter sayısı.
+
+Dar tutuluyor: aralık bağlacı değere BİTİŞİKTİR ("1.200.001 TL – 2.000.000 TL").
+Pencere genişlerse tabloda iki satır ötedeki tire de yakalanır ve gerçek
+limitler elenmeye başlar."""
+
+
+def _aralik_ucu_mu(metin: str, baslangic: int, bitis: int) -> bool:
+    """Bu sayı bir ARALIĞIN UCU mu, yoksa tek başına bir limit mi?
+
+    NEDEN GEREKLİ — 16 Ağustos ölçümü:
+        `finansman_tutari_max` 15 yanlış pozitif üretiyordu ve 8'i tek bir
+        hata biçimiydi: sayı bir dilim tablosundan geliyordu.
+
+            "Nihai fatura bedeli 1.200.001 TL – 2.000.000 TL aralığında olan
+             taşıt finansmanlarında en fazla 12 ay vade uygulanır."
+
+        Buradaki 2.000.000 TL finansman limiti DEĞİL, vadeyi belirleyen taşıt
+        fiyatı dilimidir — metin bunu kendisi söylüyor: "Belirtilen tutarlar
+        yalnızca vade süresinin belirlenmesine esas alınmaktadır."
+
+        Bağlam sözcüğü bunu kurtaramaz: cümlede "finansman" geçiyor, hem de
+        sayının hemen yanında. Büyüklük sınırı da kurtaramaz — 2 milyon TL
+        makul bir taşıt finansmanı limitidir. Ayıran tek şey, sayının bir
+        ARALIĞIN UCU olarak yazılmış olmasıdır.
+
+    Konut kredi-değer tabloları da aynı biçimde yakalanır:
+
+        "KULLANDIRILABİLECEK AZAMİ KREDİ TUTARI | Konut Değeri
+         Değer <= 5.000.000 TL | Değer x 22.5%"
+
+        Finansman burada bir YÜZDEDİR; 5.000.000 TL konut değeri dilimidir.
+    """
+    sol = metin[max(0, baslangic - ARALIK_UCU_PENCERESI) : baslangic]
+    sag = metin[bitis : bitis + ARALIK_UCU_PENCERESI]
+    sol_anahtar = arama_anahtari(sol)
+    sag_anahtar = arama_anahtari(sag)
+
+    if _ARALIK_SOLU.search(sol_anahtar) or _ARALIK_SAGI.match(sag_anahtar):
+        return True
+    if _ARALIK_EKI.match(sag_anahtar) or _ARALIK_ETIKETI_SOLDA.search(sol_anahtar):
+        return True
+    # Kredi-değer tablosu: finansman yüzdeyle ifade ediliyorsa buradaki mutlak
+    # sayılar konut değeri dilimidir.
+    return bool(_ORAN_TABLOSU.search(sol_anahtar) or _ORAN_TABLOSU.search(sag_anahtar))
+
+
 def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) -> float | None:
     """Bağlam sözcüğü yakınlığına göre güven çarpanı. Sözcük yoksa None (=reddet).
 
@@ -424,6 +767,12 @@ def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) ->
     ham_pencere = metin[sol:sag]
     pencere = _konum_koruyan_anahtar(ham_pencere)
     hedef = baslangic - sol
+
+    # VETO mesafeden ÖNCE gelir: bu ifadeler pencerede geçiyorsa, bağlam
+    # sözcüğü sayının ne kadar yakınında olursa olsun değer bu alana ait
+    # değildir (bkz. `KuralTanimi.veto_ifadeleri`).
+    if any(ifade in pencere for ifade in kural.veto_ifadeleri):
+        return None
 
     # Değer bir tablo hücresindeyse KOLON BAŞLIĞI bir KAPIDIR: yanlış kolonun
     # değeri elenir. Ama puanlamayı devralmaz — eleme sonrası aday yine normal
@@ -472,15 +821,109 @@ def _adaylari_bul(metin: str, kural: KuralTanimi) -> list[Aday]:
 
         if kural.gecerli_aralik is not None and isinstance(deger, int | float):
             alt, ust = kural.gecerli_aralik
-            if not alt < float(deger) < ust:
+            sifir_muafiyeti = kural.sifir_gecerli and float(deger) == 0.0
+            if not sifir_muafiyeti and not alt < float(deger) < ust:
                 continue
 
+        if kural.aralik_ucu_reddet and _aralik_ucu_mu(metin, eslesme.start(), eslesme.end()):
+            continue
+
+        if kural.tarih_araligi_sonu_kabul and _tarih_araligi_basi_mu(metin, eslesme.end()):
+            continue  # aralığın BAŞI — bitiş tarihi olamaz
+
         guven = _baglam_skoru(metin, kural, eslesme.start(), eslesme.end())
+        if (
+            guven is None
+            and kural.tarih_araligi_sonu_kabul
+            and _tarih_araligi_sonu_mu(metin, eslesme.start())
+        ):
+            # Sözcük yok ama YAPI var: "13 Mart 2026 - 31 Aralık 2026".
+            guven = kural.taban_guven * TARIH_ARALIGI_CARPANI
         if guven is None:
             continue
 
         adaylar.append(Aday(deger, ham, eslesme.start(), eslesme.end(), guven))
     return adaylar
+
+
+GUVEN_BANDI = 0.15
+"""`en_dusuk`/`en_yuksek` seçiminde "yeterince güvenilir" sayılan aralık.
+
+NEDEN 0,05 DEĞİL — aynı tablonun iki hücresi farklı yoldan puanlanıyor:
+
+    Finansman Tutarı | Vade | Aylık Kar Oranı
+    250-40.000 TL    | 1-6 ay | 0%       <- tablo yolu:  0,93 * 0,78 = 0,725
+    40.001-150.000   | 1-6 ay | 3,95%    <- mesafe yolu: 0,93 * 0,916 = 0,852
+
+Tablo hücresi `TABLO_GUVEN_CARPANI` (0,78) yediği için düz metin gibi
+puanlanan bir kardeşiyle asla aynı banda giremez. 0,05'lik bantta 0%
+eleniyor, `en_dusuk` 3,95'i seçiyordu — oysa altın set 0 diyor ve haklı:
+vade farksız dilim tablonun ilk satırında duruyor.
+
+Ölçüm (16 Ağu, altın set): 0,05 ve 0,10 → `kar_payi_orani` F1 0,737;
+0,15'ten itibaren 0,842 ve plato. En küçük kazançlı değer seçildi.
+
+`tahsis_ucreti` ETKİLENMEZ (0,909 sabit): o alan `en_yakin` kullanıyor ve
+bu bant yalnız değere göre seçim yapan iki kipe uygulanır. Yani geçen
+sürümdeki "düz beyan tabloyu yener" düzeltmesi olduğu gibi duruyor."""
+
+
+_ALAN_KURALI: dict[str, KuralTanimi] = {k.alan: k for k in KURALLAR}
+
+
+def deger_makul_mu(
+    alan_adi: str, deger: Any, metin: str, baslangic: int, bitis: int
+) -> bool:
+    """Bu DEĞER bu alana ait olabilir mi? Hangi katmandan geldiği önemsiz.
+
+    NEDEN KURAL KATMANININ DIŞINDA — 16 Ağustos'ta bulunan sızıntı:
+        Makullük sınırı, aralık-ucu denetimi ve veto ifadeleri `KuralTanimi`
+        üzerinde duruyordu, yani YALNIZ kural katmanına uygulanıyordu.
+        Uzlaştırıcıda ise şu satır var:
+
+            if kural is None and llm is not None:
+                return llm
+
+        Yani kural katmanı bir değeri elediğinde susuyor, susunca da LLM'in
+        değeri filtresiz geçiyor. Eleme, hatayı önlemek yerine hatanın
+        kaynağını değiştiriyordu. Ölçülmüş örnek:
+
+            finansman_tutari_max: sistem=66066.24 yontem=llm
+            ham_ifade "66.066,24 TL"   <- "Geri Ödenecek Toplam Tutar"
+
+        Kural katmanı için veto yazılmıştı; LLM aynı sayıyı aynı tablodan
+        okuyup içeri sokuyordu.
+
+    Bu yüzden denetim ALANIN özelliğidir, kuralın değil: kazanan değer hangi
+    katmandan gelirse gelsin aynı kapıdan geçer.
+
+    Konum gerekiyor çünkü aralık-ucu ve veto denetimleri metindeki YERE bakar.
+    LLM sayısal değerleri de konum taşır — eleştirmen ajanı ham metinde
+    doğruladığı için (`llm.py`, `elestirmen.dogrula` -> `konum`).
+    """
+    kural = _ALAN_KURALI.get(alan_adi)
+    if kural is None:
+        return True
+
+    if kural.gecerli_aralik is not None and isinstance(deger, int | float | bool):
+        if isinstance(deger, bool):
+            return True  # bool alanlarda sayısal aralık anlamsız
+        alt, ust = kural.gecerli_aralik
+        sifir_muafiyeti = kural.sifir_gecerli and float(deger) == 0.0
+        if not sifir_muafiyeti and not alt < float(deger) < ust:
+            return False
+
+    if kural.aralik_ucu_reddet and _aralik_ucu_mu(metin, baslangic, bitis):
+        return False
+
+    if kural.veto_ifadeleri:
+        sol = max(0, baslangic - kural.baglam_penceresi)
+        sag = min(len(metin), bitis + kural.baglam_penceresi)
+        pencere = _konum_koruyan_anahtar(metin[sol:sag])
+        if any(ifade in pencere for ifade in kural.veto_ifadeleri):
+            return False
+
+    return True
 
 
 def _sec(adaylar: list[Aday], secim: Secim) -> Aday | None:
@@ -492,7 +935,7 @@ def _sec(adaylar: list[Aday], secim: Secim) -> Aday | None:
         return max(adaylar, key=lambda a: a.guven)
     # Sayısal seçimlerde önce en güvenilir grubu al, sonra değere göre seç
     en_yuksek_guven = max(a.guven for a in adaylar)
-    guvenli = [a for a in adaylar if a.guven >= en_yuksek_guven - 0.05]
+    guvenli = [a for a in adaylar if a.guven >= en_yuksek_guven - GUVEN_BANDI]
     sirali = sorted(guvenli, key=lambda a: (a.deger, a.guven))
     return sirali[-1] if secim == "en_yuksek" else sirali[0]
 
