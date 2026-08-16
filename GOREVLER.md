@@ -351,23 +351,33 @@ davranışı ayrışamaz.
 
 Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
-- [x] **H-01** ✅ **ALTIN VERİ SETİ — 60 örnek, 15 Ağu'da bitti** (hedef 16 Ağu)
-      ↳ `data/gold/altin_set.jsonl` · 8 banka (7-8'er), 7 tür · `make eval` çalışıyor
-      ↳ İlk ölçüm: **sayısal alan doğruluğu 0,850** (hedef 0,90)
-      ↳ Elle denetimde 5 kayıtta eksik `kar_payi_orani` bulundu ve dolduruldu
+- [ ] **H-01** 🔴 **ALTIN VERİ SETİ — kişi başı 13-14 satır × 8 alan (~20 dk)** · 📅 **16 Ağu (kesin)**
+      ⛔ **Önce bitmeli:** H-02 (Herkes)
+      ↳ Bitti sayılır: `data/gold/altin_set.jsonl` içinde **60** etiketli örnek var,
+        `make eval` doğruluk metriklerini hesaplıyor (artık "beklemede" demiyor)
+      ↳ ✅ **15 Ağu: altyapı sıfırdan kuruldu.** Boş CSV'ler ve okuma kâğıtları
+        hazır, kılavuz tek sayfaya indi. **Kalan iş yalnız etiketleme.**
+      ↳ Senin dosyan: **`data/gold/etiketleme_<adın>.csv`** (13-14 satır, 8 sütun)
+        Yanında **`data/gold/okuma_<adın>.md`** — aday cümleler önden çıkarılmış.
+      ↳ 📖 **Önce `docs/ETIKETLEME_KILAVUZU.md` oku** (tek sayfa) — boş hücre ile
+        `?` farklı şeyler demek ve bu fark doğrudan metriğe giriyor.
+      ↳ 🤖 **Etiketi yapay zekâya sordurma** — 15 Ağustos'ta altın setin sıfırdan
+        kurulmasının sebebi buydu. Model okuma yardımı olarak serbest.
+      ↳ **12 Ağu kararı: 100 değil 60 örnek.** Panodaki kaçış kullanıldı;
+        16 Ağustos'ta "yetişmedi" demek S-12 → S-13 → ES-13 zincirini kaydırırdı.
       ↳ ⚠️ Katmanlama sistemin kendi tür tahminine göre yapıldı; bu sınır
         `docs/SONUCLAR.md` ve sunumda açıkça söylenir.
-      ↳ 🔓 **S-12, S-13, E-05, S-07 artık açık** — kritik yolun başı geçildi.
 
-- [x] **H-02** ✅ **Uyum turu tamamlandı — %80,8** (hedef %85)
-      ↳ `docs/ETIKETLEME_KILAVUZU.md` v2.0 yazıldı, kararlar defteri 15 madde
-      ↳ **Kopya şüphesi YOK** — detektör sessiz, etiketleme bağımsız yapıldı
-      ↳ %85 tutmadı ama beş ayrışmanın hepsi tanımlı kural boşluğuydu; hepsi
-        kaynak metne dönülüp karara bağlandı ve kılavuza yazıldı
-      ↳ ⚠️ **Sunumda %80,8 denir, 5 örnek üzerinde olduğu da söylenir.**
-        Güven aralığı %68–87; bu sayıyı "yüksek/düşük" diye yorumlamak yanlış olur
-      ↳ Uyum metriğinin göremediği bir oybirliği hatası elle yakalandı
-        (dördü de başka ürünün vadesini yazmıştı) — sunumda anlatılacak
+- [ ] **H-02** Ortak 5 örneği DÖRDÜNÜZ BİRLİKTE etiketleyin · 📅 **16 Ağu**
+      ↳ ✅ `docs/ETIKETLEME_KILAVUZU.md` v2.0 yazıldı (15 Ağu) — kalan iş uyum ölçümü
+      ↳ Dosyan: **`data/gold/etiketleme_uyum_<adın>.csv`** — dördünüzde de **aynı 5 örnek**
+      ↳ 🔒 **Bitmeden pushlama.** Doldur, doğrudan Eren'e gönder; o dördünü birden
+        koyar. Erken push, kalan üç kişiye cevap anahtarını gösterir.
+      ↳ Bitti sayılır: dördü de doldurdu, `make altin-uyum` ≥ %85 gösteriyor
+      ↳ Uyum düşükse ayrışan alanları konuşun, kararı kılavuzun **kararlar
+        defteri** tablosuna yazın
+      ↳ Bu 5 örnek çoğunluk oyuyla uzlaştırılıp altın sete girer — boşa etiketleme değil
+      ↳ Sunumda "etiketleme uzlaşmamız %X" cümlesi akademik jüriyi etkiler
 
 - [ ] **H-03** Günlük yazılı stand-up · her gün 21:00 · WhatsApp
       ↳ Üç satır: dün ne yaptım / bugün ne yapacağım / neyde takıldım
@@ -617,157 +627,11 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 3 (22–23 Ağustos)
 
-- [x] **S-12** ✅ `make eval` tam metrik takımı — **16 Ağu'da bitti** (hedef 22 Ağu)
-      ↳ Alan bazlı doğruluk, kesinlik/duyarlılık/F1, makro-F1 ve halüsinasyon
-        oranı `docs/SONUCLAR.md`'de otomatik doluyor. 13 test eklendi (320).
-      ↳ 🔓 **S-11, S-13, S-14, S-15 artık açık.**
-      ↳ 🔴 **Ölçüm bir sorun ortaya çıkardı — S-14'ün malzemesi.**
-        Makro-F1 **0,491** (hedef ≥0,78), oysa doğruluk 0,857 görünüyor.
-        Fark şundan: altın setin çoğu hücresi boş, doğruluk «iki taraf da boş»
-        hücreleri doğru sayıyor. Üç alanda doğruluk, *hiçbir şey çıkarmayan*
-        bir sistemin alacağı puanın **altında**:
-        `finansman_tutari_max` (2 doğru / 15 yanlış pozitif),
-        `masrafsiz_mi` (2/7), `odul_miktari` (2/5).
-        Baskın hata aşırı çıkarım — boş kalması gereken hücrelere değer
-        yazılıyor. Sunumda «doğruluk 0,857» demek savunulamaz.
-      ↳ ⚠️ Rapordaki sayılar **bayat veritabanından** (bkz. S-13 notu).
-
-- [x] **S-12b** ✅ Aşırı çıkarım düzeltmesi + köken takibi — **16 Ağu**
-      ↳ S-12'nin ortaya çıkardığı yanlış pozitifler kapatıldı. Kural katmanı
-        altın sete karşı ölçüldü (LLM'siz, saniyeler süren koşu):
-
-        | Alan | F1 önce | F1 sonra |
-        |---|---|---|
-        | `kampanya_bitis` | 0,727 | **0,966** |
-        | `kar_payi_orani` | 0,545 | **0,842** |
-        | `vade_ay_max` | 0,756 | **0,791** |
-        | `finansman_tutari_max` | 0,190 | **0,400** |
-        | `masrafsiz_mi` | 0,250 | **0,714** |
-        | `odul_miktari` | 0,400 | **0,667** |
-        | **Makro-F1** | **0,540** | **0,755** |
-
-      ↳ ⚠️ **BU SAYI BİR UYUM ÖLÇÜSÜDÜR, GENELLEME DEĞİL.** Veto ifadeleri
-        altın setin hatalarına bakılarak yazıldı, yani aynı 60 örnek hem
-        geliştirme hem ölçüm kümesi. Görülmemiş metindeki başarı bundan
-        DÜŞÜK olacaktır. Ayrık bir doğrulama kümesi yok; bunu kapatacak
-        görev **S-07** (dayanıklılık üreteci — bozuk varyantlar).
-        Sunumda "makro-F1 0,755" derken bu kaydı düşmek gerekir.
-
-      ↳ Üç mekanizma eklendi:
-        **(1)** `aralik_ucu_reddet` — dilim tablosundan gelen sayı elenir.
-        *"1.200.001 TL – 2.000.000 TL aralığında olan taşıt finansmanlarında
-        12 ay vade"* → 2.000.000 finansman limiti değil, vade dilimi.
-        Üst sınır koymak YANLIŞ olurdu: kurumsal 150 milyonluk limitler
-        gerçek, ayıran şey büyüklük değil yazılış biçimi.
-        **(2)** `veto_ifadeleri` — varlığı yeten ifade, mesafe bakılmaz.
-        *"Geri Ödenecek Toplam Tutar 261.044,84 TL"*'de bağlam sözcüğü
-        "tutar" sayıya dışlayıcıdan daha yakın olduğu için mesafe kuralı
-        yapısal olarak kaybediyordu.
-        **(3)** `_KAPSAM_DISI` — *"ücretini içermemektedir"* olumsuz yüklem
-        ama masrafsızlık değil: ücret VAR, gösterilen toplama dahil değil.
-      ↳ Yan ürün — sessiz bir hata bulundu: `_konum_koruyan_anahtar` büyük
-        harfli Türkçe karakterleri ASCII'ye indirmiyordu (`str.translate`
-        tek geçiş yapar, "Ö"→"ö"→"o" zinciri kurulmuyor). Banka sayfaları
-        BÜYÜK HARFLİ başlık dolu olduğu için bağlam eşleşmesi körleşiyordu.
-      ↳ Köken takibi: veritabanı artık çıkarımın ne zaman, hangi
-        yapılandırmayla (`kural`/`llm`/`hibrit`) ve hangi kod parmak iziyle
-        koştuğunu tutuyor. `make eval` bayatlığı kendisi tespit ediyor.
-      ↳ **`kar_payi_orani` — en büyük kazanç (0,545 → 0,842).** İki sebep:
-        **(a) Sıfır yapısal olarak erişilemezdi.** Altın set kılavuzu
-        *"SIFIR GEÇERLİDİR — vade farksız kampanyada kâr payı gerçekten
-        sıfırdır"* diyor ve 60 örneğin 3'ü sıfır etiketli; ama kural
-        katmanının `gecerli_aralik` alt sınırı 0,10 ve denetim `alt < deger`
-        biçimindeydi. Yani etiketleyene "sıfır yaz" denen değeri çıkarıcı
-        hiçbir koşulda üretemiyordu — alanın dolu hücrelerinin %30'u.
-        Muafiyet yalnız TAM sıfıra; "%0,05 havale komisyonu" hâlâ eleniyor.
-        **(b) Kâr payı olmayan yüzdeler.** Gelir vergisi (%4 ve %2), konut
-        hissesi (%1), mevduat getirisi (+%2), erken ödeme tazminatı (%1) —
-        hepsinde "oran" bağlam sözcüğü sayının yanında olduğu için mesafe
-        kuralı elemiyordu; veto listesine eklendi.
-      ↳ `GUVEN_BANDI` 0,05 → 0,15. Aynı tablonun iki hücresi farklı yoldan
-        puanlanıyor (tablo yolu 0,78 çarpanı yiyor), bu yüzden sıfır dilimi
-        bandın dışında kalıp `en_dusuk` seçimine giremiyordu. Ölçüm: 0,05 ve
-        0,10 → 0,737; 0,15'ten itibaren 0,842 ve plato. `tahsis_ucreti`
-        etkilenmiyor (0,909 sabit) — o alan `en_yakin` kullanıyor.
-      ↳ ⚠️ Bir test TERSİNE ÇEVRİLDİ: `test_sifir_oran_uretilmez` →
-        `test_sifir_oran_gecerlidir`. Eski test "0% bir kâr payı değil"
-        diyordu; altın set ve kılavuz aksini söylüyor. İkincil kaygısı
-        ("maliyet sıralamasının tepesine çıkar") aşağı akışta zaten
-        karşılanmış: `toplam_maliyet()` `i == 0`'ı doğru işliyor.
-      ↳ 🔴 **Kalan açık — `odul_miktari` seçimi.** *"kişi başı maksimum
-        2.000 TL, toplamda 5 kişi için 10.000 TL"* cümlesinde sistem artık
-        yanlış 10.000'i üretmiyor ama doğru 2.000'i de seçemiyor;
-        "Belirtilmemiş" diyor. **Yönlü nitelik mekanizması denendi ve
-        ÖLÇÜLDÜ:** izole cümlede 2.000'i doğru seçti, altın sette alan F1'ini
-        0,667'den 0,333'e düşürdü (belgede ikinci bir "10.000 TL" cümlesi var
-        ve eleme, hayatta kalan aday kümesini değiştirip başka kayıtlarda
-        seçimi kaydırdı). Geri alındı. Eleme değil SIRALAMA işi → S-14.
-      ↳ **`kampanya_bitis` 0,727 → 0,966 (duyarlılık 0,571 → 1,000).**
-        Kaçırılan 6 tarihin hepsi ARALIKTI ve 4'ünün yakınında hiçbir bağlam
-        sözcüğü yoktu — menü metninin ardına düşmüş çıplak bir aralık:
-        *"…ÜRÜN VE HİZMETLERİMİZ 13 Mart 2026 - 31 Aralık 2026"*.
-        Sözcük eklemek bunları kurtarmaz çünkü ortada sözcük yok; kanıt
-        YAPISAL: iki tarih tire ile bağlıysa ikincisi bitiştir.
-        ⚠️ Tek başına yetmiyor — aynanın diğer yüzü de şart. "kampanya
-        dönemi" sözcüğü eklenince o sözcük İLK tarihe daha yakın kaldığı
-        için `en_yakin` başlangıcı seçmeye başladı; duyarlılık artarken
-        kesinlik bozuluyordu. Aralığın BAŞI baştan aday olmaktan çıkarıldı.
-        Bu hatayı ölçüm değil, yazdığım regresyon testi yakaladı.
-
-- [x] **S-12c** ✅ Uzlaştırıcı makullük kapısı — **16 Ağu**
-      ↳ 🔴 **Sessiz bir sızıntı kapatıldı.** Makullük sınırı, aralık-ucu ve
-        veto denetimleri `KuralTanimi` üzerindeydi — yani YALNIZ kural
-        katmanına uygulanıyordu. Uzlaştırıcıda ise şu satır var:
-        `if kural is None and llm is not None: return llm`.
-        Kural bir değeri eleyince susuyor, susunca LLM'in değeri filtresiz
-        geçiyordu. **Eleme, hatayı önlemek yerine kaynağını değiştiriyordu.**
-      ↳ Kanıt (altın set): `finansman_tutari_max = 66066.24`, `yontem=llm`,
-        kaynağı *"Toplam Geri Ödenen | 66.066,24 TL"*. Kural katmanı için
-        veto yazılmıştı; LLM aynı sayıyı aynı tablodan okuyup sokuyordu.
-      ↳ Denetim artık **alanın** özelliği (`deger_makul_mu`), kuralın değil.
-        Kazanan değer hangi katmandan gelirse gelsin aynı kapıdan geçiyor.
-        Konumsuz değerler muaf (pencere denetimi yer ister); LLM sayısal
-        değerleri konum taşıyor çünkü eleştirmen ham metinde doğruluyor.
-      ↳ Mevcut veritabanında ölçüldü: **24 değer** bu kapıdan düşerdi
-        (`odul_miktari` 9, `finansman_tutari_max` 8, `kar_payi_orani` 7).
-      ↳ Yan bulgu: veto `"geri odenecek"` yazılmıştı ama Türkiye Finans
-        *"Toplam Geri Ödenen"* diyor — ek farklı, eşleşmiyordu. Gövdeye
-        (`"geri oden"`) indirildi. Ek'e bağlı veto yazmak kırılgan.
-      ↳ `UzlastirmaRaporu.elenen_alan_sayisi` eklendi: sıfır olması kapının
-        çalışmadığı anlamına gelir.
-
-- [x] **S-12d** ✅ Kural tablosunda tutarlılık denetimi — **16 Ağu**
-      ↳ Vetolar alan alan yazılmıştı ama kavramlar alan-bağımsız. Hesap
-        makinesi widget'ının ürettiği TUTAR eleniyor, aynı widget'ın
-        ürettiği ORAN geçiyordu:
-
-            Kâr Oranı | %1.00 |
-            Toplam Geri Ödenen | 66.066,24 TL |
-
-        Üstelik %1,00 makullük aralığının içinde olduğu için sınır da
-        yakalamıyordu. Aynı hatayı bir alanda eleyip diğerinde geçirmek.
-      ↳ Vetolar isimli kavram kümelerine ayrıldı — `HESAP_ARACI_CIKTISI`,
-        `ORNEK_TABLO`, `MEVDUAT_URUNU`, `VERGI_VE_MEVZUAT` — ve alan-bağımsız
-        olanlar `SAYISAL_ALAN_VETOLARI` altında **tüm sayısal alanlara**
-        uygulandı. `vade_ay_max` 0,756 → 0,791.
-      ↳ Ay adları üç ayrı regex'te tekrar ediyordu (`D_TARIH` + iki tarih
-        aralığı deseni). Tek `AYLAR` kaynağına indirildi; yeni bir biçim
-        eklemek artık tek yeri değiştirmek.
-      ↳ `tests/test_kural_tutarlilik.py` — davranış değil SÖZLEŞME testleri:
-        her sayısal alan ortak vetoları taşımalı, vetolar normalize biçimde
-        yazılmalı (şapkalı yazılan veto sessizce hiç eşleşmez), her ay hem
-        `D_TARIH` hem aralık denetimleriyle tanınmalı.
-        **Bu testler yazılır yazılmaz üç alan daha yakaladı** —
-        `taksit_sayisi`, `indirim_orani`, `alisveris_puani` ortak korumaları
-        almıyordu. Altın sette ölçülmedikleri için hiçbir ölçüm oraya
-        götürmezdi.
-      ↳ Veto ifadeleri derlemde tarandı: 25 ifadenin 4'ü şüpheliydi.
-        `ornek hesaplama` ve `vergi kesil` **hiçbir kayıtta geçmiyordu** —
-        ikincisi "gelir vergiSİ kesilmesini" metnine bitişik eşleşmediği
-        için hiç çalışmamıştı. `konut hissesi`/`hisseli` tek kayıttaydı ve
-        ölçümde yük taşımıyordu (o kaydı `bsmv` yakalıyor). Dördü de
-        kaldırıldı, makro-F1 değişmedi. Artık bir test, derlemde ikiden az
-        kayıtta geçen ortak veto eklenmesini engelliyor.
+- [ ] **S-12** 🔴 `make eval` tam metrik takımı · 📅 **22 Ağu**
+      ⛔ **Önce bitmeli:** H-01 (Herkes)
+      ↳ Bitti sayılır: alan bazlı doğruluk, F1, makro-F1, halüsinasyon oranı
+        `docs/SONUCLAR.md`'de otomatik dolduruluyor
+      ↳ İskelet hazır (`eval/calistir.py`), altın set gelince aktifleşiyor
 
 - [ ] **S-13** 🔴 **ABLASYON TABLOSU** · 📅 **22 Ağu**
       ⛔ **Önce bitmeli:** S-12 (Samet)
@@ -776,12 +640,6 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         `make extract && make eval`
       ↳ **Sunumun en güçlü slaydı.** Jürinin "neden sadece LLM kullanmadınız?"
         sorusunun hazır cevabı. ~3 saat.
-      ↳ ⚠️ **`docs/SONUCLAR.md` şu an BAYAT** — ama artık bunu KENDİSİ söylüyor.
-        Raporun başında kırmızı bir bant var; `make eval` çıkarımın ne zaman
-        ve hangi kodla koştuğunu veritabanından okuyup güncel kodla
-        karşılaştırıyor (16 Ağu'da eklendi). Elle takip gerekmiyor.
-        Buradaki üç ablasyon koşusu tam çıkarım yapacağı için bant bu görevde
-        kendiliğinden yeşile döner.
 
 - [ ] **S-14** Hata analizi — en çok hangi alan yanlış? · 📅 23 Ağu
       ⛔ **Önce bitmeli:** S-12 (Samet)
@@ -808,8 +666,6 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır: Metrik tablosu + ablasyon + halüsinasyon oranı tek slaytta,
         45 saniyede anlatılacak şekilde prova edildi
       ↳ Sayıları `docs/SONUCLAR.md`'den kopyala — elle yazma, hata kaynağı
-      ↳ ⚠️ Kopyalamadan önce raporun başındaki üretim tarihine bak: S-13'ün
-        ablasyon koşularından **eski** ise sayılar bayattır (bkz. S-13 notu).
 
 ### ✅ Samet — bitenler (Sprint 0)
 
@@ -826,20 +682,20 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **G-01** 🔴 EFT/BDDK kodlarını doğrula · 📅 **11 Ağu ⏰ GECİKMİŞ (1 gün)**
+- [X] **G-01** 🔴 EFT/BDDK kodlarını doğrula · 📅 **11 Ağu ⏰ GECİKMİŞ (1 gün)**
       ↳ `data/banks.yaml`'da `kod_dogrulandi: false` olan **4 faal banka**
         *(12 Ağu denetiminde sayıldı — eski notta "3" yazıyordu, yanlıştı)*:
         Albaraka Türk, Hayat Finans, T.O.M. Katılım, Dünya Katılım
       ↳ Bitti sayılır: hepsi BDDK/TBB kaynağından teyit, `kod_dogrulandi: true`
       ↳ Yanlış kod çıkarımı bozmaz ama yayınlanan veri setinde hata olur
 
-- [ ] **G-02** 🔴 BDDK listesini resmî kaynaktan tamamla + ekran görüntüsü · 📅 **11 Ağu ⏰ GECİKTİ**
+- [X] **G-02** 🔴 BDDK listesini resmî kaynaktan tamamla + ekran görüntüsü · 📅 **11 Ağu ⏰ GECİKTİ**
       ↳ ⚠️ 12 Ağu denetimi: `docs/kanit/` klasörü henüz oluşturulmadı
       ↳ Bitti sayılır: `docs/kanit/bddk-liste.png` var, `banks.yaml` BDDK ile birebir
       ↳ BDDK robots.txt otomatik erişimi engelliyor → **elle al** (şartname izin veriyor)
       ↳ Faaliyete geçmemiş bankaları da listede tut, `durum` ile işaretle
 
-- [ ] **G-03** T.O.M. Katılım kampanya sayfasını bul · 📅 12 Ağu ⏰ bugün son gün
+- [X] **G-03** T.O.M. Katılım kampanya sayfasını bul · 📅 12 Ağu ⏰ bugün son gün
       ↳ 9 Ağu sondajında ana sayfada kampanya bağlantısı bulunamadı (JS render olabilir)
       ↳ Bitti sayılır: `seed_urls` dolduruldu VEYA "kampanya yayınlamıyor" notu düşüldü
       ↳ Bulunamazsa manuel toplama yedeği kullan

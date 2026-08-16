@@ -18,7 +18,7 @@
   kisa_ad: "Albaraka Türk"
   site: "https://www.albaraka.com.tr"
   durum: "faal"
-  kod_dogrulandi: false
+  kod_dogrulandi: true
   seed_urls:
     - "https://www.albaraka.com.tr/tr/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/urun"]
@@ -85,7 +85,7 @@
   kisa_ad: "Hayat Finans"
   site: "https://hayatfinans.com.tr"
   durum: "faal"
-  kod_dogrulandi: false
+  kod_dogrulandi: true
   not: "Türkiye'nin ilk dijital katılım bankası (2023). Şubesiz model."
   seed_urls:
     - "https://hayatfinans.com.tr/kampanyalar"
@@ -95,15 +95,16 @@
 - kod: "0213"
   ad: "T.O.M. Katılım Bankası A.Ş."
   kisa_ad: "TOM Katılım"
-  site: "https://www.tom.com.tr"
+  site: "https://tombank.com.tr/"
   durum: "faal"
-  kod_dogrulandi: false
+  kod_dogrulandi: true
   not: >-
     9 Ağustos 2026 sondajında ana sayfada kampanya bağlantısı bulunamadı;
     site büyük ölçüde JS ile render ediliyor olabilir. GÖRKEM: kampanya
     sayfasını elle bul, buraya yaz. Bulunamazsa manuel toplama yedeği
     kullanılacak (şartname izin veriyor).
-  seed_urls: []
+  seed_urls: 
+    - https://tombank.com.tr/kampanyalar.html
   url_desenleri: ["/kampanya", "/finansman", "/kart"]
   robots_kontrol: true
 
@@ -112,24 +113,22 @@
   kisa_ad: "Dünya Katılım"
   site: "https://dunyakatilim.com.tr"
   durum: "faal"
-  kod_dogrulandi: false
+  kod_dogrulandi: true
   seed_urls:
     - "https://dunyakatilim.com.tr/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kart"]
   robots_kontrol: true
 
-- kod: "DOGRULA-ADIL"
+- kod: "0215"
   ad: "Adil Katılım Bankası A.Ş."
   kisa_ad: "Adil Katılım"
   site: "https://www.adilkatilim.com.tr"
   durum: "faal"
-  kod_dogrulandi: false
+  kod_dogrulandi: true
   not: >-
     Eylül 2025 kuruluş izni. 12 Ağustos 2026'da BDDK'nın faal katılım bankaları
-    listesinde DİJİTAL BANKA olarak görüldü — durum "faaliyete_gecmedi"den
-    "faal"e çekildi. EFT kodu hâlâ doğrulanmadı (G-01), kod bulunana kadar
-    yer tutucu kullanılıyor; henüz kampanya toplanmadığı için kimlik çakışması
-    riski yok. Kampanya sayfası aranmalı (G-04).
+    listesinde DİJİTAL BANKA olarak görüldü. EFT kodu (0215) doğrulandı. 
+    Kampanya sayfası aranmalı (G-04).
   seed_urls: []
   url_desenleri: []
   robots_kontrol: true
