@@ -825,7 +825,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         cevap veremediğinde ekran kırılmıyor, anlamlı mesaj gösteriyor
       ↳ Jüri demo sırasında boş bir filtre seçerse ekran patlamamalı
 
-- [ ] **ES-04** Arama ve filtreleme · 📅 14 Ağu
+- [x] **ES-04** Arama ve filtreleme · 📅 14 Ağu
       ↳ Bitti sayılır: Kampanya adı/metninde serbest metin araması, banka +
         kampanya türü + tarih aralığı filtreleri çalışıyor
       ↳ 300 kampanyaya çıkınca tabloyu gözle taramak imkânsız olacak

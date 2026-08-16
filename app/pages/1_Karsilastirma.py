@@ -25,7 +25,7 @@ from src.comparison.karsilastirma import (  # noqa: E402
     uyarilar,
 )
 from src.depolama import tum_kayitlar  # noqa: E402
-from src.schema import Kampanya  # noqa: E402
+from src.schema import Kampanya, HedefKitle  # noqa: E402
 
 st.set_page_config(page_title="Karşılaştırma", page_icon="⚖️", layout="wide")
 st.title("⚖️ Bankalar Arası Karşılaştırma")
@@ -39,6 +39,8 @@ if not kayitlar:
 # Süzgeçler
 # ---------------------------------------------------------------------------
 
+import datetime
+
 f1, f2 = st.columns([2, 3])
 
 with f1:
@@ -49,11 +51,74 @@ with f2:
     bankalar = sorted({k.banka_adi for k in kayitlar})
     secili_bankalar = st.multiselect("Bankalar", bankalar, default=bankalar)
 
-suzulmus = [
-    k for k in kayitlar
-    if (secili_tur == "(tümü)" or k.kampanya_turu == secili_tur)
-    and k.banka_adi in secili_bankalar
-]
+with st.expander("Gelişmiş Filtreler (Yapay Zeka Komuta Merkezi)", expanded=False):
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        arama_metni = st.text_input("Serbest Metin Arama (Ad, içerik, avantaj)")
+        
+        hedef_kitleler = [h.value for h in HedefKitle]
+        secili_hedef_kitle = st.multiselect("Hedef Kitle (Kapsam İzolasyonu)", hedef_kitleler)
+    with c2:
+        tarih_filtresi = st.date_input("Geçerlilik Tarihi (Bu tarihten önce bitenleri gizle)", value=datetime.date.today())
+        
+        min_guven = st.slider("Minimum Yapay Zeka Güven Skoru", 0.0, 1.0, 0.0, 0.05, help="Modelin çıkardığı verilere olan güvenini filtreler. %100 doğru çalışma için yüksek tutun.")
+    with c3:
+        sadece_masrafsiz = st.toggle("Yalnızca Masrafsız (Dosya masrafı yok)")
+        tam_dolu_mu = st.toggle("Veri Bütünlüğü (Kritik alanları eksiksiz olanlar)", help="Kâr payı, vade gibi temel bilgileri 'Belirtilmemiş' olan kampanyaları gizler.")
+
+suzulmus = []
+for k in kayitlar:
+    if secili_tur != "(tümü)" and k.kampanya_turu != secili_tur:
+        continue
+    if k.banka_adi not in secili_bankalar:
+        continue
+        
+    # 1. Yeni: Hedef Kitle Filtresi
+    if secili_hedef_kitle and k.hedef_kitle not in secili_hedef_kitle:
+        continue
+        
+    # 2. Yeni: Minimum Güven Skoru
+    if k.ortalama_guven < min_guven:
+        continue
+        
+    # 3. Yeni: Veri Bütünlüğü (Kritik Alanlar Dolu Mu?)
+    if tam_dolu_mu:
+        # kar_payi ve vade gibi temel sayısal alanların var olup olmadığı depolama katmanında
+        # direkt alan değerinin None olmamasıyla kontrol edilebilir.
+        if k.kar_payi_orani is None or k.vade_ay_max is None:
+            continue
+            
+    if sadece_masrafsiz:
+        masrafsiz = k.masrafsiz_mi
+        is_masrafsiz = (masrafsiz.deger is True) if hasattr(masrafsiz, "var_mi") and masrafsiz.var_mi else (masrafsiz is True)
+        if not is_masrafsiz:
+            continue
+    if arama_metni:
+        urun = k.urun_turu if hasattr(k, "urun_turu") and k.urun_turu else ""
+        hedef = k.hedef_kitle if hasattr(k, "hedef_kitle") and k.hedef_kitle else ""
+        arama_alani = f"{k.banka_adi} {urun} {hedef} {k.ham_metin}".lower()
+        if arama_metni.lower() not in arama_alani:
+            continue
+    if tarih_filtresi:
+        bitis = k.kampanya_bitis
+        deger = bitis.deger if hasattr(bitis, "var_mi") and bitis.var_mi else bitis if not hasattr(bitis, "var_mi") else None
+        
+        if deger:
+            try:
+                if isinstance(deger, datetime.date):
+                    bitis_tarihi = deger
+                else:
+                    bitis_str = str(deger).strip()
+                    if len(bitis_str) >= 10:
+                        bitis_tarihi = datetime.datetime.strptime(bitis_str[:10], "%Y-%m-%d").date()
+                    else:
+                        bitis_tarihi = None
+                
+                if bitis_tarihi and bitis_tarihi < tarih_filtresi:
+                    continue # Tarihi geçmiş, gösterme
+            except Exception:
+                pass # Parse edilemeyen tarihleri sakla (False Negative olmasın)
+    suzulmus.append(k)
 
 if not suzulmus:
     st.info("Seçime uyan kampanya yok.")
