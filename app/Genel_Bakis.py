@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.collector.toplayici import bankalari_yukle  # noqa: E402
 from src.depolama import istatistikler, tum_kayitlar  # noqa: E402
+from app.ui_utils import format_bank_name  # noqa: E402
 
 st.set_page_config(
     page_title="Katılım Bankacılığı Kampanya Analizi",
@@ -46,14 +47,23 @@ st.caption(
     "Takım SVARTAL"
 )
 
-kayitlar, ozet = _veri()
-bankalar = _bankalar()
+try:
+    with st.status("⏳ Sistem verileri hazırlanıyor...", expanded=False) as status:
+        st.write("Orkestratör veritabanını tarıyor...")
+        kayitlar, ozet = _veri()
+        st.write("Banka kayıt defteri yükleniyor...")
+        bankalar = _bankalar()
+        status.update(label="✅ Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
+except Exception as e:
+    st.error("Sayısal Doğrulama Kalkanı: Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
+    with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
+        st.write("Veritabanı bağlantısı reddedildi veya tablo şeması eksik.")
+        st.code(str(e))
+    st.stop()
 
 if not kayitlar:
-    st.warning(
-        "Veritabanı boş. Önce veri toplayın ve çıkarım yapın:\n\n"
-        "```bash\nmake crawl\nmake extract\n```"
-    )
+    st.info("Veri ambarı şu an boş. Orkestratör ajanı çalıştırarak katılım bankalarından veri toplayın.")
+    st.code("make crawl\nmake extract", language="bash")
     st.stop()
 
 # ---------------------------------------------------------------------------
@@ -85,10 +95,15 @@ with sol:
         cerceve = pd.DataFrame(
             {"Tür": list(dagilim.keys()), "Adet": list(dagilim.values())}
         )
+        dinamik_yukseklik_bar = max(380, len(cerceve) * 35)
         grafik = px.bar(cerceve, x="Adet", y="Tür", orientation="h", text="Adet")
-        grafik.update_layout(height=380, margin={"l": 0, "r": 0, "t": 10, "b": 0})
-        grafik.update_traces(textposition="outside")
-        st.plotly_chart(grafik, use_container_width=True)
+        grafik.update_layout(height=dinamik_yukseklik_bar, margin={"l": 0, "r": 0, "t": 10, "b": 0})
+        grafik.update_traces(
+            textposition="outside",
+            hovertemplate="<b>%{y}</b><br>Adet: %{x}<extra></extra>"
+        )
+        with st.container(height=min(500, dinamik_yukseklik_bar + 20)):
+            st.plotly_chart(grafik, use_container_width=True)
     else:
         st.info("Henüz sınıflandırma verisi yok.")
 
@@ -97,7 +112,7 @@ with sag:
     tablo = pd.DataFrame(
         [
             {
-                "Banka": k.banka_adi.replace(" Katılım Bankası A.Ş.", ""),
+                "Banka": format_bank_name(k.banka_adi),
                 "Tür": k.kampanya_turu or "belirtilmemiş",
             }
             for k in kayitlar
@@ -105,9 +120,14 @@ with sag:
     )
     capraz = pd.crosstab(tablo["Banka"], tablo["Tür"])
     if not capraz.empty:
+        dinamik_yukseklik_isi = max(380, len(capraz) * 35)
         isi = px.imshow(capraz, text_auto=True, aspect="auto", color_continuous_scale="Blues")
-        isi.update_layout(height=380, margin={"l": 0, "r": 0, "t": 10, "b": 0})
-        st.plotly_chart(isi, use_container_width=True)
+        isi.update_layout(height=dinamik_yukseklik_isi, margin={"l": 0, "r": 0, "t": 10, "b": 0})
+        isi.update_traces(
+            hovertemplate="Banka: <b>%{y}</b><br>Tür: %{x}<br>Adet: %{z}<extra></extra>"
+        )
+        with st.container(height=min(500, dinamik_yukseklik_isi + 20)):
+            st.plotly_chart(isi, use_container_width=True)
 
 st.divider()
 

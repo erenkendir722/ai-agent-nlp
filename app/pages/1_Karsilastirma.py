@@ -111,6 +111,14 @@ def _gorunum(deger, birim: str = "") -> str:
         return f"{deger:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + birim
     return f"{deger}{birim}"
 
+if not sirali:
+    st.warning("Seçili kriterlere (Vade, Kar Payı vb.) uygun kampanya bulunamadı.")
+    if st.button("Filtreleri Sıfırla"):
+        # Yalnızca rerun atıp filtreleri manuel temizlemesini önermek de bir seçenektir,
+        # ancak Session State kullanmadığı için bu aşamada st.rerun() Streamlit <= 1.26'da st.experimental_rerun()
+        # Streamlit 1.27+ için st.rerun() kullanılır.
+        st.info("Sol taraftaki filtreleri gevşetip tekrar deneyebilirsiniz.")
+    st.stop()
 
 tablo = pd.DataFrame(
     [
@@ -128,7 +136,47 @@ tablo = pd.DataFrame(
         for k in sirali
     ]
 )
-st.dataframe(tablo, use_container_width=True, hide_index=True)
+
+def _renklendir_guven(val):
+    if val == "Belirtilmemiş" or pd.isna(val):
+        return ""
+    try:
+        v = float(str(val).replace(",", "."))
+        if v >= 0.90:
+            return "background-color: rgba(39, 174, 96, 0.2)"
+        elif v >= 0.70:
+            return "background-color: rgba(241, 196, 15, 0.2)"
+        else:
+            return "background-color: rgba(231, 76, 60, 0.2)"
+    except Exception:
+        return ""
+
+def _renklendir_kar(val):
+    if val == "Belirtilmemiş" or pd.isna(val):
+        return ""
+    try:
+        v = float(str(val).replace(",", "."))
+        if v < 1.50:
+            return "background-color: rgba(173, 216, 230, 0.4)" # LightBlue
+        elif v < 2.50:
+            return "background-color: rgba(135, 206, 235, 0.5)" # SkyBlue
+        elif v < 3.50:
+            return "background-color: rgba(70, 130, 180, 0.6)" # SteelBlue
+        else:
+            return "background-color: rgba(25, 25, 112, 0.5); color: white" # MidnightBlue
+    except Exception:
+        return ""
+
+# pandas >= 2.1 için map, eski sürümler için applymap
+styler = tablo.style
+if hasattr(styler, "map"):
+    styled_tablo = styler.map(_renklendir_guven, subset=["Güven"]) \
+                         .map(_renklendir_kar, subset=["Kâr payı (aylık %)"])
+else:
+    styled_tablo = styler.applymap(_renklendir_guven, subset=["Güven"]) \
+                         .applymap(_renklendir_kar, subset=["Kâr payı (aylık %)"])
+
+st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
 
 # ---------------------------------------------------------------------------
 # Avantaj skorunun dökümü
