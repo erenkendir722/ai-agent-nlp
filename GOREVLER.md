@@ -181,7 +181,7 @@ de yok. **Panoda tik olmamasının sebebi tiklemeyi unutmak değil; iş yapılma
 | **ES-01** | Esra | 11 Ağu | 1 gün | ❌ `app/` 9 Ağu'dan beri değişmemiş |
 | **G-03** | Görkem | 12 Ağu | bugün | ❌ `banks.yaml`'da hâlâ 9 Ağu "bulunamadı" notu |
 | **E-02** | Eren | 12 Ağu | bugün | ❌ Yapılmadı — **4 görevi tıkıyor** |
-| **ES-02** | Esra | 12 Ağu | bugün | ❌ `app/` 9 Ağu'dan beri değişmemiş |
+| **ES-02** | Esra | 12 Ağu | bugün | ✅ Bitti |
 
 ### Bugün bu sırayla
 
@@ -809,18 +809,18 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **ES-01** Genel Bakış ekranını gerçek veriyle cilala · 📅 11 Ağu ⏰ GECİKTİ
+- [x] **ES-01** Genel Bakış ekranını gerçek veriyle cilala · 📅 11 Ağu *(bitti: 16 Ağu)*
       ↳ Bitti sayılır: 96+ kayıtla grafikler okunaklı, ısı haritası taşmıyor,
         uzun banka adları kırpılıyor
       ↳ `app/Genel_Bakis.py` çalışıyor; tür dağılımı ve banka×tür ısı haritası var
 
-- [ ] **ES-02** Karşılaştırma ekranı — açılır kanıt panelini gözden geçir · 📅 12 Ağu ⏰ bugün son gün
+- [x] **ES-02** Karşılaştırma ekranı — açılır kanıt panelini gözden geçir · 📅 12 Ağu ⏰ bugün son gün
       ↳ Bitti sayılır: Her satır açıldığında tüm alanlar + güven skoru +
         **kaynak alıntısı ve URL** görünüyor
       ↳ Bankacılıkta izlenebilirlik olmadan hiçbir sistem kabul edilmez — bu panel
         o iddianın arayüzdeki karşılığı
 
-- [ ] **ES-03** Yükleniyor / hata / boş durumlar · 📅 13 Ağu
+- [x] **ES-03** Yükleniyor / hata / boş durumlar · 📅 13 Ağu
       ↳ Bitti sayılır: Veritabanı boşken, sorgu sonuç döndürmediğinde, LLM
         cevap veremediğinde ekran kırılmıyor, anlamlı mesaj gösteriyor
       ↳ Jüri demo sırasında boş bir filtre seçerse ekran patlamamalı

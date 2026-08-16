@@ -45,9 +45,21 @@ def _kampanyalar():
     return list(kampanyalari_oku())
 
 
-kampanyalar = _kampanyalar()
+try:
+    with st.status("⏳ Sistem verileri hazırlanıyor...", expanded=False) as status:
+        st.write("Orkestratör veritabanını tarıyor...")
+        kampanyalar = _kampanyalar()
+        status.update(label="✅ Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
+except Exception as e:
+    st.error("Sayısal Doğrulama Kalkanı: Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
+    with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
+        st.write("Veritabanı bağlantısı reddedildi veya tablo şeması eksik.")
+        st.code(str(e))
+    st.stop()
+
 if not kampanyalar:
-    st.warning("Veritabanı boş. `make crawl && make extract` çalıştırın.")
+    st.info("Veri ambarı şu an boş. Orkestratör ajanı çalıştırarak katılım bankalarından veri toplayın.")
+    st.code("make crawl\nmake extract", language="bash")
     st.stop()
 
 MUSTERI_TIPI_ETIKETLERI = {

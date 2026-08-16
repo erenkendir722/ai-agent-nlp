@@ -87,10 +87,27 @@ if soru:
 
     with st.chat_message("assistant"):
         with st.spinner("Yapısal veri sorgulanıyor…"):
-            cevap = sor(soru, kayitlar)
+            import requests
+            import time
+            baslangic = time.time()
+            try:
+                cevap = sor(soru, kayitlar)
+                gecen_sure = time.time() - baslangic
+            except requests.exceptions.ConnectionError as e:
+                st.error("Sayısal Doğrulama Kalkanı: Yerel dil modeli sunucusuna (Ollama) şu anda erişilemiyor.")
+                with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
+                    st.write("Bağlantı reddedildi. Docker container'ların veya yerel Ollama servisinin çalıştığından emin olun.")
+                    st.code(str(e))
+                st.stop()
+            except Exception as e:
+                st.error("Bilinmeyen bir hata oluştu.")
+                with st.expander("Teknik Teşhis"):
+                    st.code(str(e))
+                st.stop()
 
         simge, etiket, aciklama = NIYET_ETIKETLERI[cevap.niyet]
         st.caption(f"{simge} **{etiket}** — {aciklama}")
+        st.caption(f"⏱️ Yanıt {gecen_sure:.1f} saniyede üretildi | Model: Yerel Qwen (Ollama) | Donanım: Yerel CPU/GPU")
 
         st.markdown(cevap.metin)
 
