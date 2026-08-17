@@ -32,7 +32,9 @@ PANO = KOK / "GOREVLER.md"
 
 SAHIPLER = {"E": "Eren", "S": "Samet", "G": "Görkem", "ES": "Esra", "H": "Herkes"}
 
-_GOREV = re.compile(r"^- \[( |x)\] \*\*((?:ES|E|S|G|H)-\d{2})\*\*\s*(.*)$")
+# Büyük `[X]` de kabul edilir: 16 Ağustos'ta elle atılan üç `[X]` üç görevi
+# panodan tamamen düşürdü ve onlara bağlı beş görev "tanımsız referans" verdi.
+_GOREV = re.compile(r"^- \[([ xX])\] \*\*((?:ES|E|S|G|H)-\d{2})\*\*\s*(.*)$")
 _ONCE = re.compile(r"^\s+⛔ \*\*Önce bitmeli:\*\*\s*(.+)$")
 _KOD = re.compile(r"(ES|E|S|G|H)-\d{2}")
 _TARIH = re.compile(r"📅\s*\*{0,2}([^·*\n]+?)\*{0,2}\s*$")
@@ -73,7 +75,7 @@ def panoyu_oku(yol: Path = PANO) -> dict[str, Gorev]:
                 kod=kod,
                 sahip=SAHIPLER[onek],
                 baslik=baslik or temiz,
-                bitti=(durum == "x"),
+                bitti=(durum.lower() == "x"),
                 kritik="🔴" in kalan,
                 son_tarih=tarih_m.group(1).strip() if tarih_m else "",
                 satir_no=no,
