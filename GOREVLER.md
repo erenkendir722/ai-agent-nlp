@@ -827,12 +827,35 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         kümesi (bkz. S-12b notu) — görülmemiş metinde bu sayı düşer.
       ↳ 🔓 **E-19, S-17, ES-13 artık açık.**
 
-- [ ] **S-14** Hata analizi — en çok hangi alan yanlış? · 📅 23 Ağu
-      ⛔ **Önce bitmeli:** S-12 (Samet)
-      ↳ Bitti sayılır: `docs/HATA_ANALIZI.md` — altın sete göre en çok hatalı
-        3 alan, sebepleri ve alınan aksiyon
-      ↳ "Neyi bilmiyoruz"u bilmek, jüriye olgunluk sinyali verir. Ayrıca
-        dokümantasyon başlığı 8'in malzemesi.
+- [x] **S-14** ✅ **Hata analizi — 17 Ağu'da bitti** (hedef 23 Ağu)
+      ↳ `docs/HATA_ANALIZI.md`. En hatalı üç alan, kökleri ve aksiyonlar.
+      ↳ 🔴 **`finansman_tutari_max` (F1 0,400) — KARAR GEREKİYOR, kod değil.**
+        Beş hatanın hepsi dilim tablosundan. Etiketleme kılavuzu (satır
+        158-161) *"kademeli tabloda değer × oran hesapla, en büyüğünü yaz"*
+        diyor; 800.000×%50 = 400.000 → altın setteki değer bu, yani
+        **etiketleyiciler kılavuzu doğru uygulamış.** Ama bu depoda her
+        sayısal alanın `ham_ifade`'si ham metinde BİREBİR geçmek zorunda —
+        hesapla üretilen 400.000'in metinde karşılığı yok. Kılavuz ile
+        `kanit_denetimi` çelişiyor; alan bu sözleşme altında tanım gereği
+        yüksek F1 alamaz. İki seçenek `docs/HATA_ANALIZI.md`'de, biri
+        seçilip **ADR yazılmalı**. Önerilen: kılavuzu daraltmak (8 gün var,
+        şema donmuş ve diğer seçenek dördünün işini birden etkiler).
+      ↳ ✅ **`odul_miktari` 0,400 → 0,667** — veto yan hasarı kapatıldı.
+        `"toplamda"` jenerik sözcüğü *"maksimum nakit ödül tutarı toplamda
+        300 TL'dir"* cümlesindeki gerçek ödülü eliyordu. Veto `"kisi icin"`e
+        daraltıldı (asıl toplam imleci bu). Vetoyu tamamen kaldırmak da
+        ölçüldü (F1 0,571) ama **reddedildi**: sessizliği yanlış bir 10.000
+        ile takas ediyordu. Daraltma yeni yanlış pozitif üretmiyor.
+        `odul_miktari`'nda kalan 1 hata (eşik/ödül karışması, *"en az 1.000
+        TL ... ödül kazanırsınız"*) **bilinçli açık** — N=3'te tek kayda
+        bakarak veto yazmak yeni hata açar.
+      ↳ **`kampanya_turu` (F1 0,567, N=60) — en sağlam ölçülen alan.**
+        26/60 yanlış. İki mod 15 vakayı açıklıyor: (a) genel/özel karışması,
+        `konut/ihtiyac/tasit_finansmani` → `finansman` (6 vaka; sistem
+        kategoride haklı, özgüllükte eksik — düz F1 bunu tam hata sayıyor),
+        (b) `alisveris_puani` aşırı ateşlemesi (9 vaka).
+        ⚠️ Bir kısmı model değil **veri** sorunu → önce **G-05**, sonra S-03.
+      ↳ ⚠️ Kural kodu değişti; `make extract && make eval` yeniden koşuldu.
 
 - [ ] **S-15** Model boyutu karşılaştırması (4B / 9B / 27B) · 📅 23 Ağu
       ⛔ **Önce bitmeli:** S-01 (Samet) · S-12 (Samet)

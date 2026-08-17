@@ -373,6 +373,24 @@ class TestOdulMiktariSecimi:
         ).get("odul_miktari")
         assert odul != pytest.approx(10_000.0)
 
+    def test_toplamda_gecen_gercek_odul_elenmez(self) -> None:
+        """17 Ağu (S-14) — vetonun yan hasarı kapatıldı.
+
+        Veto "toplamda" sözcüğüne bakıyordu ve şu cümlede 300 TL'yi eliyordu:
+        *"kazanılabilecek maksimum nakit ödül tutarı TOPLAMDA 300 TL'dir"*.
+        Burada 300 TL gerçek ödül tutarıdır — kişi sayısına bölünmüş bir
+        havuz değil. Toplamı işaret eden asıl imleç `kisi icin`.
+
+        Ölçüm (yalnız kural, altın set): F1 0,400 → 0,667, yeni yanlış
+        pozitif yok. Vetoyu tamamen kaldırmak (F1 0,571) reddedildi: o,
+        sessizliği yanlış bir 10.000 ile takas ediyordu.
+        """
+        odul = cikar(
+            "Her iki karttan yapılacak dijital üyelik ödemeleri kapsamınca "
+            "kazanılabilecek maksimum nakit ödül tutarı toplamda 300 TL’dir."
+        ).get("odul_miktari")
+        assert odul == pytest.approx(300.0)
+
     @pytest.mark.parametrize(
         "metin",
         [

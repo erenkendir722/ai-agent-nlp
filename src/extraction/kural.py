@@ -380,7 +380,21 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             # Ders: bu bir ELEME değil SIRALAMA sorunu. Aday eleyerek
             # çözülmüyor; `secim="en_yuksek"` ödül alanı için yanlış ölçüt.
             # Doğru çözüm seçim katmanında — S-14'e bırakıldı.
-            "toplamda",
+            #
+            # 17 Ağu (S-14) — VETO DARALTILDI: "toplamda" → "kisi icin".
+            # "toplamda" jenerik bir sözcük ve yan hasar veriyordu: Hayat
+            # Finans'ın *"kazanılabilecek maksimum nakit ödül tutarı TOPLAMDA
+            # 300 TL'dir"* cümlesinde 300 TL gerçek ödül tutarı olduğu hâlde
+            # eleniyordu. Toplamı işaret eden asıl imleç "toplamda" değil,
+            # kişi sayısına bölünmüş ifade: *"5 KİŞİ İÇİN maksimum 10.000 TL"*.
+            # Ölçüm (yalnız kural, altın set): F1 0,400 → 0,667, DP 1→2 ve
+            # YENİ YANLIŞ POZİTİF YOK. Vetoyu tamamen kaldırmak da denendi
+            # (F1 0,571) ama o, 2.000'i bulamadığı yerde 10.000 ÜRETİYOR —
+            # sessiz kalmayı yanlış sayıyla takas ediyor. Bu depoda yanlış
+            # değer, eksik değerden pahalıdır; o yüzden daraltma seçildi.
+            # ⚠️ N=3: bu alanın F1'i üç hücreye dayanıyor, tek başına
+            # alıntılanmamalı (bkz. docs/HATA_ANALIZI.md).
+            "kisi icin",
             # "ÖRNEĞİN 1.000 TL banka kartı harcamanızda 10 TL nakit ödül" —
             # burada veto DOĞRU araç: cümledeki sayıların hiçbiri ödül tutarı
             # değil, ikisi de örneğin parçası.
