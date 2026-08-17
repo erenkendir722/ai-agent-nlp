@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
@@ -160,7 +161,9 @@ def _f1(dogru_pozitif: int, yanlis_pozitif: int, yanlis_negatif: int) -> dict[st
     }
 
 
-def altin_set_metrikleri(kampanyalar: list[Kampanya]) -> dict[str, Any] | None:
+def altin_set_metrikleri(
+    kampanyalar: list[Kampanya], altin: list[dict[str, Any]] | None = None
+) -> dict[str, Any] | None:
     """Altın sete karşı alan bazlı doğruluk, F1 ve makro-F1. Set yoksa None.
 
     NEDEN F1 DE ÖLÇÜLÜYOR — doğruluk tek başına yanıltıyor:
@@ -181,7 +184,11 @@ def altin_set_metrikleri(kampanyalar: list[Kampanya]) -> dict[str, Any] | None:
         Yanlış değer hem YP hem YN sayılır: hem uydurulmuş bir değerdir hem de
         doğru cevap kaçırılmıştır. Tek sayaca yazmak ikisinden birini gizlerdi.
     """
-    altin = altin_seti_yukle()
+    # `altin` dışarıdan verilebilir: önyükleme (bootstrap) güven aralığı aynı
+    # ölçüm yolunu yeniden örneklenmiş altın setle koşar. Ayrı bir hesap yolu
+    # yazmak, aralığın ölçtüğü şeyin raporlanan sayı olmadığı anlamına gelirdi.
+    if altin is None:
+        altin = altin_seti_yukle()
     if not altin:
         return None
 
@@ -267,6 +274,53 @@ HEDEFLER = {
 }
 
 
+def makro_f1_guven_araligi(
+    kampanyalar: list[Kampanya],
+    altin: list[dict[str, Any]] | None = None,
+    tekrar: int = 400,
+    tohum: int = 20260817,
+) -> tuple[float, float] | None:
+    """Makro-F1 için %95 önyükleme (bootstrap) güven aralığı.
+
+    NEDEN GEREKLİ — altın set 60 örnek ve alanların yarısı 7'den az dolu
+    hücreye sahip (`odul_miktari` 3, `finansman_tutari_max` 5). Böyle bir
+    tabanda tek bir kaydın düzelmesi alan F1'ini 20-33 puan oynatır.
+    Aralıksız bir makro-F1, jürinin ilk sorusunda («kaç örnek üzerinde?»)
+    savunulamaz hâle gelir. Aralık, sayının ne kadarının ölçüm ne kadarının
+    gürültü olduğunu gösterir.
+
+    NEDEN ÖNYÜKLEME — makro-F1 bir oran değil, oranların ortalaması;
+    Wilson gibi oran aralıkları uygulanamaz. Kayıtları yerine koyarak
+    yeniden örneklemek, dağılım varsayımı yapmadan aralığı verir.
+
+    Yeniden örnekleme KAYIT düzeyinde yapılır, hücre düzeyinde değil: altın
+    setin belirsizliği hangi kampanyaların seçildiğinden gelir.
+
+    `tohum` sabittir — aynı veri aynı aralığı vermeli, yoksa rapor her
+    koşuda oynar ve kimse hangi sayının doğru olduğunu bilemez.
+    """
+    if altin is None:
+        altin = altin_seti_yukle()
+    if not altin:
+        return None
+
+    rastgele = random.Random(tohum)
+    n = len(altin)
+    ornekler: list[float] = []
+    for _ in range(tekrar):
+        secim = [altin[rastgele.randrange(n)] for _ in range(n)]
+        olcum = altin_set_metrikleri(kampanyalar, secim)
+        if olcum and olcum["makro_f1"] is not None:
+            ornekler.append(olcum["makro_f1"])
+
+    if len(ornekler) < 2:
+        return None
+    ornekler.sort()
+    alt = ornekler[int(0.025 * len(ornekler))]
+    ust = ornekler[min(int(0.975 * len(ornekler)), len(ornekler) - 1)]
+    return alt, ust
+
+
 def _oran(deger: float | None) -> str:
     return "ölçülmedi" if deger is None else f"{deger:.3f}"
 
@@ -315,6 +369,7 @@ def rapor_yaz(
     altin: dict[str, Any] | None,
     doluluk: dict[str, float],
     kokenlik: dict[str, Any] | None = None,
+    aralik: tuple[float, float] | None = None,
 ) -> str:
     s: list[str] = [
         "# Değerlendirme Sonuçları",
@@ -386,12 +441,25 @@ def rapor_yaz(
             f"{_durum('sayisal_dogruluk', altin['sayisal_dogruluk'])} |",
             f"| Metinsel alan doğruluğu | {_oran(altin['metinsel_dogruluk'])} | ≥ 0,78 | "
             f"{_durum('metinsel_dogruluk', altin['metinsel_dogruluk'])} |",
-            f"| **Makro-F1** | {_oran(altin['makro_f1'])} | ≥ 0,78 | "
-            f"{_durum('makro_f1', altin['makro_f1'])} |",
+            f"| **Makro-F1** | {_oran(altin['makro_f1'])}"
+            f"{'' if aralik is None else f' _(%95 GA: {aralik[0]:.3f}–{aralik[1]:.3f})_'}"
+            f" | ≥ 0,78 | {_durum('makro_f1', altin['makro_f1'])} |",
             "",
             "> Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM "
             "katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.",
             "",
+        ]
+        if aralik is not None:
+            s += [
+                f"> 📏 **Güven aralığı {altin['altin_set_boyutu']} örnek üzerinden "
+                "önyükleme (bootstrap) ile hesaplandı** — kayıtlar yerine konarak "
+                "400 kez yeniden örneklendi. Aralık genişse sebebi modelin "
+                "kararsızlığı değil, altın setin küçüklüğüdür. **Sunumda makro-F1 "
+                "tek başına değil, aralığıyla ve örnek sayısıyla söylenmelidir** — "
+                "aynı disiplin H-02'de etiketleyici uyumu için de uygulandı.",
+                "",
+            ]
+        s += [
             "### Alan bazlı doğruluk ve F1",
             "",
             "> **Doğruluk sütununu tek başına okumayın.** Altın setin çoğu hücresi "
@@ -401,21 +469,32 @@ def rapor_yaz(
             "hiçbir şey yapmamaktan daha kötüdür. F1 doğru negatifi saymaz, "
             "bu yüzden gerçek başarıyı gösterir.",
             "",
-            "| Alan | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |",
-            "|---|---|---|---|---|---|---|",
+            "> **N sütunu, F1 sütunu kadar önemlidir.** N, altın sette o alanın "
+            "DOLU olduğu hücre sayısıdır (DP+YN). N=3 olan bir alanda tek bir "
+            "kaydın düzelmesi F1'i 33 puan oynatır; oradaki 0,900 ile N=60 olan "
+            "bir alandaki 0,900 aynı şey değildir. Küçük N'li satırları tek "
+            "başına alıntılamayın.",
+            "",
+            "| Alan | N | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |",
+            "|---|---|---|---|---|---|---|---|",
         ]
         for ad, deger in altin["alan_bazli"].items():
             olcum = altin["alan_f1"][ad]
             sayim = altin["sayimlar"][ad]
             taban = altin["hep_bos_tabani"][ad]
+            # N = altın sette o alanın dolu hücre sayısı = doğru bulunan + ıskalanan
+            n_altin = sayim["dp"] + sayim["yn"]
             # Tabanın altına düşen alan, aşırı çıkarım yapıyor demektir.
             isaret = (
                 " ⚠️"
                 if deger is not None and taban is not None and deger < taban
                 else ""
             )
+            # N ≤ 7 olan satır tek başına alıntılanacak kadar sağlam değil.
+            n_isaret = " 🔸" if 0 < n_altin <= 7 else ""
             s.append(
-                f"| `{ad}` | {'—' if deger is None else f'{deger:.3f}'}{isaret} "
+                f"| `{ad}` | {n_altin}{n_isaret} "
+                f"| {'—' if deger is None else f'{deger:.3f}'}{isaret} "
                 f"| {'—' if taban is None else f'{taban:.3f}'} "
                 f"| {_oran(olcum['kesinlik'])} | {_oran(olcum['duyarlilik'])} "
                 f"| **{_oran(olcum['f1'])}** "
@@ -449,7 +528,9 @@ def calistir(ablasyon: bool = False) -> int:
 
     ablasyon_kaydet(temel, altin, kokenlik)
 
-    icerik = rapor_yaz(temel, altin, doluluk, kokenlik)
+    aralik = makro_f1_guven_araligi(kampanyalar) if altin else None
+
+    icerik = rapor_yaz(temel, altin, doluluk, kokenlik, aralik)
     if ablasyon:
         icerik += _ablasyon_notu()
 
@@ -468,7 +549,9 @@ def calistir(ablasyon: bool = False) -> int:
     else:
         print(
             f"   Sayısal doğruluk: {_oran(altin['sayisal_dogruluk'])} (hedef ≥ 0,90) · "
-            f"Makro-F1: {_oran(altin['makro_f1'])} (hedef ≥ 0,78)"
+            f"Makro-F1: {_oran(altin['makro_f1'])}"
+            f"{'' if aralik is None else f' [%95 GA {aralik[0]:.3f}–{aralik[1]:.3f}]'}"
+            f" (hedef ≥ 0,78)"
         )
         zayif = [
             ad

@@ -646,6 +646,21 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         Baskın hata aşırı çıkarım — boş kalması gereken hücrelere değer
         yazılıyor. Sunumda «doğruluk 0,857» demek savunulamaz.
       ↳ ⚠️ Rapordaki sayılar **bayat veritabanından** (bkz. S-13 notu).
+      ↳ ✅ **17 Ağu — S-12e: her sayı artık belirsizliğiyle raporlanıyor.**
+        Makro-F1'in yanında **%95 önyükleme (bootstrap) güven aralığı** var
+        ve alan tablosuna **N sütunu** (altın sette dolu hücre sayısı) eklendi.
+        İlk ölçüm: **makro-F1 0,699, %95 GA 0,578–0,781.**
+        🔴 **Aralığın genişliği 0,20 — bu, hedef tartışmasının cevabı.**
+        Sekiz ölçülen alanın dördünde N ≤ 7 (`odul_miktari` **3**,
+        `finansman_tutari_max` 5, `tahsis_ucreti` 5, `masrafsiz_mi` 7).
+        N=3'te tek kaydın düzelmesi F1'i 33 puan oynatır; oradaki 0,909 ile
+        N=60 olan `kampanya_turu`'ndaki 0,567 aynı sağlamlıkta değil.
+        **Bu altın sette 0,85-0,90 hedeflemek ölçüm değil ezber olur** —
+        ~10 kaydı ezberlemeye denk. Yol: G-04 ile korpusu büyüt, seyrek
+        alanlara hedefli katmanlı örneklem, altın seti büyüt.
+        N ≤ 7 satırlar raporda 🔸 ile işaretli — tek başına alıntılanmamalı.
+        Aynı disiplin H-02'de etiketleyici uyumu için de uygulanmıştı.
+        `tests/test_guven_araligi.py` — 6 test.
 
 - [x] **S-12b** ✅ Aşırı çıkarım düzeltmesi + köken takibi — **16 Ağu**
       ↳ S-12'nin ortaya çıkardığı yanlış pozitifler kapatıldı. Kural katmanı

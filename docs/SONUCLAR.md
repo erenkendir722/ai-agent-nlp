@@ -1,6 +1,6 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 17.08.2026 15:54 · `make eval`_
+_Otomatik üretildi: 17.08.2026 16:30 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
@@ -58,51 +58,37 @@ _Otomatik üretildi: 17.08.2026 15:54 · `make eval`_
 |---|---|---|---|
 | Sayısal alan doğruluğu | 0.930 | ≥ 0,90 | ✅ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.699 | ≥ 0,78 | ❌ |
+| **Makro-F1** | 0.699 _(%95 GA: 0.578–0.781)_ | ≥ 0,78 | ❌ |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
+
+> 📏 **Güven aralığı 60 örnek üzerinden önyükleme (bootstrap) ile hesaplandı** — kayıtlar yerine konarak 400 kez yeniden örneklendi. Aralık genişse sebebi modelin kararsızlığı değil, altın setin küçüklüğüdür. **Sunumda makro-F1 tek başına değil, aralığıyla ve örnek sayısıyla söylenmelidir** — aynı disiplin H-02'de etiketleyici uyumu için de uygulandı.
 
 ### Alan bazlı doğruluk ve F1
 
 > **Doğruluk sütununu tek başına okumayın.** Altın setin çoğu hücresi boş, dolayısıyla «iki taraf da boş» hücreler doğruluğu şişiriyor. *Hep boş* sütunu, hiçbir şey çıkarmayan bir sistemin alacağı doğruluktur: doğruluk o sütunun altındaysa, sistem o alanda hiçbir şey yapmamaktan daha kötüdür. F1 doğru negatifi saymaz, bu yüzden gerçek başarıyı gösterir.
 
-| Alan | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |
-|---|---|---|---|---|---|---|
-| `kampanya_turu` | 0.567 | 0.000 | 0.567 | 0.567 | **0.567** | 34/26/26 |
-| `urun_turu` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `hedef_kitle` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `kar_payi_orani` | 0.950 | 0.833 | 0.889 | 0.800 | **0.842** | 8/1/2 |
-| `finansman_tutari_max` | 0.900 ⚠️ | 0.917 | 0.400 | 0.400 | **0.400** | 2/3/3 |
-| `vade_ay_max` | 0.867 | 0.667 | 0.739 | 0.850 | **0.791** | 17/6/3 |
-| `taksit_sayisi` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `tahsis_ucreti` | 0.983 | 0.917 | 0.833 | 1.000 | **0.909** | 5/1/0 |
-| `masraf_bilgisi` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `masrafsiz_mi` | 0.933 | 0.883 | 0.714 | 0.714 | **0.714** | 5/2/2 |
-| `odul_miktari` | 0.950 | 0.950 | 0.500 | 0.333 | **0.400** | 1/1/2 |
-| `indirim_orani` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `alisveris_puani` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `kampanya_avantaji` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `kampanya_bitis` | 0.983 | 0.767 | 0.933 | 1.000 | **0.966** | 14/1/0 |
-| `kampanya_kosullari` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+> **N sütunu, F1 sütunu kadar önemlidir.** N, altın sette o alanın DOLU olduğu hücre sayısıdır (DP+YN). N=3 olan bir alanda tek bir kaydın düzelmesi F1'i 33 puan oynatır; oradaki 0,900 ile N=60 olan bir alandaki 0,900 aynı şey değildir. Küçük N'li satırları tek başına alıntılamayın.
+
+| Alan | N | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |
+|---|---|---|---|---|---|---|---|
+| `kampanya_turu` | 60 | 0.567 | 0.000 | 0.567 | 0.567 | **0.567** | 34/26/26 |
+| `urun_turu` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+| `hedef_kitle` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+| `kar_payi_orani` | 10 | 0.950 | 0.833 | 0.889 | 0.800 | **0.842** | 8/1/2 |
+| `finansman_tutari_max` | 5 🔸 | 0.900 ⚠️ | 0.917 | 0.400 | 0.400 | **0.400** | 2/3/3 |
+| `vade_ay_max` | 20 | 0.867 | 0.667 | 0.739 | 0.850 | **0.791** | 17/6/3 |
+| `taksit_sayisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+| `tahsis_ucreti` | 5 🔸 | 0.983 | 0.917 | 0.833 | 1.000 | **0.909** | 5/1/0 |
+| `masraf_bilgisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+| `masrafsiz_mi` | 7 🔸 | 0.933 | 0.883 | 0.714 | 0.714 | **0.714** | 5/2/2 |
+| `odul_miktari` | 3 🔸 | 0.950 | 0.950 | 0.500 | 0.333 | **0.400** | 1/1/2 |
+| `indirim_orani` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+| `alisveris_puani` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+| `kampanya_avantaji` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
+| `kampanya_bitis` | 14 | 0.983 | 0.767 | 0.933 | 1.000 | **0.966** | 14/1/0 |
+| `kampanya_kosullari` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 
 > ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem boş olması gereken hücrelere değer yazıyor (yanlış pozitif); önce kesinliği düzeltmek gerekir.
 
 > **DP/YP/YN** — doğru pozitif / yanlış pozitif / yanlış negatif. Yanlış değer hem YP hem YN sayılır: uydurulmuş bir değerdir ve aynı anda doğru cevap kaçırılmıştır.
-
-## Ablasyon tablosu
-
-Üç yapılandırma **aynı kod yolundan** koşulur; yalnız katman bayrakları değişir.
-Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.
-
-```bash
-make extract-kural && make eval   # yalnız kural
-make extract-llm   && make eval   # yalnız LLM
-make extract       && make eval   # hibrit
-```
-
-| Yapılandırma | Kâr payı F1 | Vade F1 | Makro-F1 | Halüsinasyon | Doluluk |
-|---|---|---|---|---|---|
-| Yalnız kural (regex) | 0.842 | 0.791 | **0.628** | %0.00 | %7.3 |
-| Yalnız LLM (şema kısıtlı) | 0.000 | 0.000 | **0.176** | %0.48 | %13.7 |
-| **Hibrit (bizim)** | 0.842 | 0.791 | **0.699** | %0.00 | %19.7 |
-
