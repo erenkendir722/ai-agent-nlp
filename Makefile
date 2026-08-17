@@ -38,7 +38,7 @@ test:  ## testleri koş
 	$(PYTHON) -m doctest src/preprocessing/normalizasyon.py -v | tail -1
 
 lint:  ## kod denetimi
-	$(PYTHON) -m ruff check src app tests
+	$(PYTHON) -m ruff check src app tests eval tools
 
 eval:  ## metrikleri hesapla -> docs/SONUCLAR.md
 	$(PYTHON) -m eval.calistir

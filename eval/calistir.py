@@ -41,6 +41,14 @@ from src.schema import ALAN_ADLARI, METINSEL_ALANLAR, SAYISAL_ALANLAR, Kampanya
 KOK = Path(__file__).resolve().parents[1]
 ALTIN_SET = KOK / "data" / "gold" / "altin_set.jsonl"
 SONUC_DOSYASI = KOK / "docs" / "SONUCLAR.md"
+ABLASYON_DOSYASI = KOK / "data" / "ablasyon.json"
+
+ABLASYON_SIRASI: tuple[tuple[str, str], ...] = (
+    ("kural", "Yalnız kural (regex)"),
+    ("llm", "Yalnız LLM (şema kısıtlı)"),
+    ("hibrit", "**Hibrit (bizim)**"),
+)
+"""Ablasyon tablosunun satır sırası — `CikarimKosusu.yapilandirma` değerleri."""
 
 
 # ---------------------------------------------------------------------------
@@ -439,6 +447,8 @@ def calistir(ablasyon: bool = False) -> int:
     doluluk = alan_bazli_doluluk(kampanyalar)
     kokenlik = cikarim_durumu()
 
+    ablasyon_kaydet(temel, altin, kokenlik)
+
     icerik = rapor_yaz(temel, altin, doluluk, kokenlik)
     if ablasyon:
         icerik += _ablasyon_notu()
@@ -472,23 +482,111 @@ def calistir(ablasyon: bool = False) -> int:
     return 0
 
 
-def _ablasyon_notu() -> str:
-    return (
-        "\n## Ablasyon tablosu\n\n"
-        "Üç yapılandırma **aynı kod yolundan** koşulur; yalnız katman bayrakları değişir.\n"
-        "Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.\n\n"
-        "```bash\n"
-        "make extract-kural && make eval   # yalnız kural\n"
-        "make extract-llm   && make eval   # yalnız LLM\n"
-        "make extract       && make eval   # hibrit\n"
-        "```\n\n"
-        "| Yapılandırma | Kâr payı | Vade | Makro-F1 | Halüsinasyon |\n"
-        "|---|---|---|---|---|\n"
-        "| Yalnız kural (regex) | ? | ? | — | %0 |\n"
-        "| Yalnız LLM (şema kısıtlı) | ? | ? | ? | ? |\n"
-        "| **Hibrit (bizim)** | ? | ? | ? | ? |\n\n"
-        "_Tablo altın set hazır olduğunda (16 Ağustos sonrası) doldurulacak._\n"
+def ablasyon_kaydet(
+    temel: dict[str, Any],
+    altin: dict[str, Any] | None,
+    kokenlik: dict[str, Any],
+) -> None:
+    """Bu koşunun metriklerini yapılandırma adına yazar (`data/ablasyon.json`).
+
+    Ablasyon tablosunun sayıları ELLE kopyalanmaz: her `make eval` hangi
+    yapılandırmayı ölçtüğünü veritabanının koşu kaydından okur ve kendi
+    satırını doldurur. Üç koşu bittiğinde tablo kendiliğinden tamamlanır.
+    Elle kopyalama, üç koşunun sırası karıştığında sessizce yanlış sayı
+    üretirdi — sunuma yanlış rakam gitmesi metriğin kendisinden pahalıdır.
+    """
+    kosu = kokenlik.get("kosu")
+    if not kosu or not kosu.get("yapilandirma"):
+        return  # koşu kaydı yok — hangi yapılandırma olduğu bilinmiyor
+
+    kayitlar: dict[str, Any] = {}
+    if ABLASYON_DOSYASI.exists():
+        try:
+            kayitlar = json.loads(ABLASYON_DOSYASI.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            kayitlar = {}
+
+    kayitlar[str(kosu["yapilandirma"])] = {
+        "zaman": kosu["zaman"].isoformat() if hasattr(kosu["zaman"], "isoformat") else str(kosu["zaman"]),
+        "kod_parmak_izi": kosu["kod_parmak_izi"],
+        "kampanya_sayisi": temel["kampanya_sayisi"],
+        "alan_dolulugu": temel["alan_dolulugu"],
+        "halusinasyon_orani": temel["halusinasyon_orani"],
+        "makro_f1": altin["makro_f1"] if altin else None,
+        "sayisal_dogruluk": altin["sayisal_dogruluk"] if altin else None,
+        "alan_f1": {a: d["f1"] for a, d in altin["alan_f1"].items()} if altin else {},
+    }
+
+    ABLASYON_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
+    ABLASYON_DOSYASI.write_text(
+        json.dumps(kayitlar, indent=2, ensure_ascii=False), encoding="utf-8"
     )
+
+
+def _ablasyon_notu() -> str:
+    kayitlar: dict[str, Any] = {}
+    if ABLASYON_DOSYASI.exists():
+        try:
+            kayitlar = json.loads(ABLASYON_DOSYASI.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            kayitlar = {}
+
+    s = [
+        "\n## Ablasyon tablosu",
+        "",
+        "Üç yapılandırma **aynı kod yolundan** koşulur; yalnız katman bayrakları değişir.",
+        "Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.",
+        "",
+        "```bash",
+        "make extract-kural && make eval   # yalnız kural",
+        "make extract-llm   && make eval   # yalnız LLM",
+        "make extract       && make eval   # hibrit",
+        "```",
+        "",
+        "| Yapılandırma | Kâr payı F1 | Vade F1 | Makro-F1 | Halüsinasyon | Doluluk |",
+        "|---|---|---|---|---|---|",
+    ]
+
+    for anahtar, etiket in ABLASYON_SIRASI:
+        k = kayitlar.get(anahtar)
+        if not k:
+            s.append(f"| {etiket} | ? | ? | ? | ? | ? |")
+            continue
+        alan_f1 = k.get("alan_f1") or {}
+        s.append(
+            f"| {etiket} | {_oran(alan_f1.get('kar_payi_orani'))} "
+            f"| {_oran(alan_f1.get('vade_ay_max'))} "
+            f"| **{_oran(k.get('makro_f1'))}** "
+            f"| %{(k.get('halusinasyon_orani') or 0) * 100:.2f} "
+            f"| %{(k.get('alan_dolulugu') or 0) * 100:.1f} |"
+        )
+
+    s.append("")
+
+    eksik = [etiket for anahtar, etiket in ABLASYON_SIRASI if anahtar not in kayitlar]
+    if eksik:
+        s += [
+            f"> ⏳ Henüz koşulmayan yapılandırma: {', '.join(eksik)}.",
+            "> Yukarıdaki üç komut sırayla koşulunca tablo kendiliğinden dolar.",
+            "",
+        ]
+    else:
+        izler = {k["kod_parmak_izi"] for k in kayitlar.values() if k.get("kod_parmak_izi")}
+        if len(izler) > 1:
+            s += [
+                "> 🔴 **Satırlar KARŞILAŞTIRILAMAZ** — farklı kod sürümleriyle koşulmuşlar "
+                f"({', '.join(sorted(izler))}). Üçünü de aynı kodla yeniden koşun.",
+                "",
+            ]
+        sayilar = {k["kampanya_sayisi"] for k in kayitlar.values()}
+        if len(sayilar) > 1:
+            s += [
+                "> 🔴 **Satırlar KARŞILAŞTIRILAMAZ** — farklı korpus büyüklükleri "
+                f"({', '.join(str(x) for x in sorted(sayilar))} kampanya).",
+                "",
+            ]
+
+    return "\n".join(s) + "\n"
 
 
 def main() -> int:
