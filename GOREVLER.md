@@ -574,14 +574,29 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 1 hafta sonu (15–16 Ağustos)
 
-- [ ] **S-07** Dayanıklılık seti üreteci — **kodla üret, elle yazma** · 📅 16 Ağu
-      ⛔ **Önce bitmeli:** H-01 (Herkes)
-      ↳ Bitti sayılır: `make eval-robust` çalışıyor, ~400 bozuk varyant üretiliyor
-      ↳ Bozma fonksiyonları: format değiştir (`%1,89` → `1.89 %`), para birimi
-        değiştir, alan sil, dolaylı ifadeye çevir, boşluk ekle, tamamı büyük harf
-      ↳ ~2 saatlik kod, elle 400 örnek yazmaya göre 20 saat tasarruf
-      ↳ Şartnamenin *"eksik veya farklı yazılmış bilgiler karşısında doğru sonuç"*
-        kriterini **doğrudan** ölçer
+- [x] **S-07** ✅ **Dayanıklılık seti üreteci — 17 Ağu'da bitti** (hedef 16 Ağu)
+      ↳ `make eval-robust` → `docs/DAYANIKLILIK.md`. **369 bozuk varyant** kodla
+        üretiliyor: `yuzde_bicimi`, `ondalik_ayraci`, `bosluk_ekle`, `buyuk_harf`,
+        `para_birimi`, `satir_karistir` + `alan_sil`.
+      ↳ **Biçim bozmada %100 korunuyor** (318 varyant). Normalizasyon katmanı
+        işini yapıyor: `%1,89`→`1,89 %`, `1,89`→`1.89`, `TL`→`₺`, tamamı büyük
+        harf — hiçbiri değeri kaybettirmiyor.
+      ↳ 🔑 **Alan silindiğinde `uydurdu` = 0.** Değeri taşıyan cümleler
+        silindiğinde 51 vakanın 27'sinde sistem doğru şekilde SUSUYOR, 24'ünde
+        sayfadaki başka bir sayıya kayıyor — ama **hiçbirinde kanıtsız değer
+        üretmiyor**. Kanıt zinciri ölçümle doğrulandı; kalan kusur uydurma
+        değil **seçim** kusuru → doğrudan S-14'ün malzemesi.
+      ↳ ⚠️ **İki metodolojik tuzak ölçüm sırasında yakalandı ve kapatıldı:**
+        (1) İlk sürüm tek geçişi siliyordu; banka sayfaları aynı sayıyı
+        başlık/tablo/dipnotta tekrarladığı için 53 vakanın 21'inde değer
+        metinde kalıyordu — sistem HAKLIYKEN "halüsinasyon" sayılıyordu.
+        (2) "kaydı" ile "uydurdu" tek orana katılırsa kanıt zinciri iddiası
+        ölçülemez hâle geliyordu. İkisi ayrıldı.
+      ↳ Ölçüm aracı kontrol bozmasıyla doğrulandı: tüm rakamlar silindiğinde
+        53 değerin 48'i düşüyor, hayatta kalan 5'i `masrafsiz_mi` (sözcükten
+        türer, rakamdan değil). `tests/test_dayaniklilik.py` — 14 test.
+      ↳ ⚠️ Yalnız KURAL katmanı ölçülüyor. 369 varyantı LLM ile koşmak ~2,5 saat
+        sürer ve ölçüm tekrarlanamaz hâle gelir. LLM'in biçim duyarlılığı ayrı soru.
 
 - [ ] **S-08** Dolaylı ifade testi (şartname 5.2) · 📅 16 Ağu
       ↳ Şartname dört ifadeyi açıkça sayıyor: *"%2,05 kâr payı oranı"*,

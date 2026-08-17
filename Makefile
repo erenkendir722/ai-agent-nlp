@@ -46,6 +46,9 @@ eval:  ## metrikleri hesapla -> docs/SONUCLAR.md
 eval-ablation:  ## ablasyon tablosu (kural / LLM / hibrit)
 	$(PYTHON) -m eval.calistir --ablasyon
 
+eval-robust:  ## dayanıklılık ölçümü (şartname 5.2) -> docs/DAYANIKLILIK.md
+	$(PYTHON) -m eval.dayaniklilik
+
 lisanslar:  ## bağımlılık lisans raporu (şartname 5.10 kanıtı)
 	$(PYTHON) -m eval.lisanslar
 	@echo "✅ docs/LISANSLAR.md güncellendi"
