@@ -1,0 +1,56 @@
+{
+  "llm": {
+    "zaman": "2026-08-17T15:19:49.150336",
+    "kod_parmak_izi": "f797dd3f69630cfc",
+    "kampanya_sayisi": 96,
+    "alan_dolulugu": 0.13671875,
+    "halusinasyon_orani": 0.004761904761904762,
+    "makro_f1": 0.1762061403508772,
+    "sayisal_dogruluk": 0.8533333333333334,
+    "alan_f1": {
+      "kampanya_turu": 0.55,
+      "urun_turu": null,
+      "hedef_kitle": null,
+      "kar_payi_orani": 0.0,
+      "finansman_tutari_max": 0.0,
+      "vade_ay_max": 0.0,
+      "taksit_sayisi": null,
+      "tahsis_ucreti": 0.33333333333333337,
+      "masraf_bilgisi": null,
+      "masrafsiz_mi": 0.0,
+      "odul_miktari": 0.0,
+      "indirim_orani": null,
+      "alisveris_puani": null,
+      "kampanya_avantaji": null,
+      "kampanya_bitis": 0.5263157894736842,
+      "kampanya_kosullari": null
+    }
+  },
+  "kural": {
+    "zaman": "2026-08-17T15:20:15.810400",
+    "kod_parmak_izi": "f797dd3f69630cfc",
+    "kampanya_sayisi": 96,
+    "alan_dolulugu": 0.07291666666666667,
+    "halusinasyon_orani": 0.0,
+    "makro_f1": 0.6277121002915541,
+    "sayisal_dogruluk": 0.93,
+    "alan_f1": {
+      "kampanya_turu": 0.0,
+      "urun_turu": null,
+      "hedef_kitle": null,
+      "kar_payi_orani": 0.8421052631578948,
+      "finansman_tutari_max": 0.4000000000000001,
+      "vade_ay_max": 0.7906976744186046,
+      "taksit_sayisi": null,
+      "tahsis_ucreti": 0.9090909090909091,
+      "masraf_bilgisi": null,
+      "masrafsiz_mi": 0.7142857142857143,
+      "odul_miktari": 0.4,
+      "indirim_orani": null,
+      "alisveris_puani": null,
+      "kampanya_avantaji": null,
+      "kampanya_bitis": 0.9655172413793104,
+      "kampanya_kosullari": null
+    }
+  }
+}
