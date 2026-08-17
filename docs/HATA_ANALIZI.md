@@ -170,6 +170,28 @@ Yani buradaki kusur da **seçim** kusuru, uydurma değil. Üç alanın analizi d
 aynı yere çıkıyor: **sistemin sorunu değer uydurmak değil, doğru adayı
 seçmek.**
 
+### ⚠️ Tek istisna: LLM'in serbest metin özetleri
+
+`odul_miktari` düzeltmesinden sonraki koşuda kanıt denetimi **bir** ihlal
+buldu ve yeri anlamlı:
+
+```
+0210-963c04bc483b · Vakıf Katılım
+kampanya_kosullari: özette geçen '28' sayısı ham metinde yok
+```
+
+**Sayısal ve tarihsel alanların hiçbirinde ihlal yok (0).** İhlal, LLM'in
+özetlediği serbest metin alanında. Şema bunu bilerek farklı ölçüyor
+(`kanit_denetimi` üçüncü sınıf): model özetleyebilir, birebir kopyalaması
+gerekmez — ama **özetin içindeki sayılar** metinde bulunmak zorundadır.
+Denetim tam da bu yüzden var ve çalıştı.
+
+Bu ihlal kural katmanındaki değişiklikten gelmiyor; iki koşu arasındaki
+LLM belirsizliğinden geliyor. Aynı sebeple `kampanya_turu` 0,567 → 0,600
+oynadı — o da düzeltmenin değil, koşu farkının sonucu. **Sunumda
+"halüsinasyon %0" demek yerine "sayısal alanlarda %0, serbest metin
+özetlerinde koşuya göre 0-1 vaka" demek doğru olur.**
+
 ---
 
 ## Ne YAPILMAMALI
