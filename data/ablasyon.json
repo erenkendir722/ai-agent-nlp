@@ -52,5 +52,32 @@
       "kampanya_bitis": 0.9655172413793104,
       "kampanya_kosullari": null
     }
+  },
+  "hibrit": {
+    "zaman": "2026-08-17T15:54:36.482995",
+    "kod_parmak_izi": "f797dd3f69630cfc",
+    "kampanya_sayisi": 96,
+    "alan_dolulugu": 0.19661458333333334,
+    "halusinasyon_orani": 0.0,
+    "makro_f1": 0.6985454336248875,
+    "sayisal_dogruluk": 0.93,
+    "alan_f1": {
+      "kampanya_turu": 0.5666666666666667,
+      "urun_turu": null,
+      "hedef_kitle": null,
+      "kar_payi_orani": 0.8421052631578948,
+      "finansman_tutari_max": 0.4000000000000001,
+      "vade_ay_max": 0.7906976744186046,
+      "taksit_sayisi": null,
+      "tahsis_ucreti": 0.9090909090909091,
+      "masraf_bilgisi": null,
+      "masrafsiz_mi": 0.7142857142857143,
+      "odul_miktari": 0.4,
+      "indirim_orani": null,
+      "alisveris_puani": null,
+      "kampanya_avantaji": null,
+      "kampanya_bitis": 0.9655172413793104,
+      "kampanya_kosullari": null
+    }
   }
 }

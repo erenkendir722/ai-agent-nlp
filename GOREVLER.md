@@ -769,19 +769,33 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         kaldırıldı, makro-F1 değişmedi. Artık bir test, derlemde ikiden az
         kayıtta geçen ortak veto eklenmesini engelliyor.
 
-- [ ] **S-13** 🔴 **ABLASYON TABLOSU** · 📅 **22 Ağu**
-      ⛔ **Önce bitmeli:** S-12 (Samet)
-      ↳ Bitti sayılır: üç yapılandırma koşuldu ve tablo doldu:
-        `make extract-kural && make eval` / `make extract-llm && make eval` /
-        `make extract && make eval`
-      ↳ **Sunumun en güçlü slaydı.** Jürinin "neden sadece LLM kullanmadınız?"
-        sorusunun hazır cevabı. ~3 saat.
-      ↳ ⚠️ **`docs/SONUCLAR.md` şu an BAYAT** — ama artık bunu KENDİSİ söylüyor.
-        Raporun başında kırmızı bir bant var; `make eval` çıkarımın ne zaman
-        ve hangi kodla koştuğunu veritabanından okuyup güncel kodla
-        karşılaştırıyor (16 Ağu'da eklendi). Elle takip gerekmiyor.
-        Buradaki üç ablasyon koşusu tam çıkarım yapacağı için bant bu görevde
-        kendiliğinden yeşile döner.
+- [x] **S-13** ✅ **ABLASYON TABLOSU — 17 Ağu'da bitti** (hedef 22 Ağu)
+      ↳ Üç yapılandırma da aynı kod parmak iziyle, 96 kayıt üzerinde koştu.
+        Sayılar `docs/SONUCLAR.md`'ye ELLE yazılmıyor: her `make eval`
+        veritabanının koşu kaydından yapılandırmayı okuyup kendi satırını
+        `data/ablasyon.json`'a yazıyor (bkz. `tests/test_ablasyon.py`).
+
+        | Yapılandırma | Kâr payı F1 | Vade F1 | Makro-F1 | Halüsinasyon | Doluluk |
+        |---|---|---|---|---|---|
+        | Yalnız kural | 0,842 | 0,791 | **0,628** | %0,00 | %7,3 |
+        | Yalnız LLM | 0,000 | 0,000 | **0,176** | %0,48 | %13,7 |
+        | **Hibrit** | 0,842 | 0,791 | **0,699** | %0,00 | %19,7 |
+
+      ↳ 🔴 **Jüri cevabı burada — iki katman RAKİP DEĞİL, tamamlayıcı.**
+        LLM tek başına sayısal alanların HEPSİNDE sıfır çekiyor: `kar_payi_orani`,
+        `vade_ay_max`, `masrafsiz_mi`, `odul_miktari`, `finansman_tutari_max`
+        → F1 = 0,000. Buna karşılık `kampanya_turu`'nda kural sıfır (0,000),
+        LLM 0,550. Yani **kural sayıyı bulur, LLM sınıflandırır.** Hibrit
+        kuralın sayısal skorlarını birebir korurken sınıflandırmayı 0,567'ye
+        çıkarıyor ve doluluğu ikisinin de üstüne (%19,7) taşıyor.
+      ↳ Hibritte 2 çelişki çıktı, 15 alan iki katmandan birden geldi.
+        Uzlaştırıcının makullük kapısı çalışıyor: LLM tek başına %0,48
+        halüsinasyon üretirken hibritte oran **%0,00** ve kanıt denetimi
+        tüm değerleri ham metinde doğruladı.
+      ↳ ⚠️ **Sunumda söylenmesi gereken iki kayıt:** (1) makro-F1 0,699,
+        hedef olan 0,78'in ALTINDA. (2) Altın set hem geliştirme hem ölçüm
+        kümesi (bkz. S-12b notu) — görülmemiş metinde bu sayı düşer.
+      ↳ 🔓 **E-19, S-17, ES-13 artık açık.**
 
 - [ ] **S-14** Hata analizi — en çok hangi alan yanlış? · 📅 23 Ağu
       ⛔ **Önce bitmeli:** S-12 (Samet)

@@ -1,16 +1,16 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 17.08.2026 15:20 · `make eval`_
+_Otomatik üretildi: 17.08.2026 15:54 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 17.08.2026 15:20'de `kural` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 17.08.2026 15:54'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
 - İşlenen kampanya: **96**
 - Banka sayısı: **8**
-- Toplam alan: 1536 · Dolu: 112
+- Toplam alan: 1536 · Dolu: 302
 
 ## Altın set gerektirmeyen metrikler
 
@@ -18,19 +18,24 @@ _Otomatik üretildi: 17.08.2026 15:20 · `make eval`_
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
 | **Halüsinasyon oranı** | %0.00 | ≤ %3 | ✅ |
-| Alan doluluğu | %7.3 | — | — |
-| Ortalama güven | 0.871 | — | — |
+| Alan doluluğu | %19.7 | — | — |
+| Ortalama güven | 0.799 | — | — |
 
 ## Yöntem dağılımı (ablasyonun temeli)
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `kural` | 112 |
+| `llm` | 191 |
+| `kural` | 96 |
+| `hibrit` | 15 |
 
 ## Alan bazlı doluluk
 
 | Alan | Doluluk |
 |---|---|
+| `kampanya_turu` | %100 |
+| `kampanya_kosullari` | %53 |
+| `kampanya_avantaji` | %39 |
 | `vade_ay_max` | %32 |
 | `kampanya_bitis` | %24 |
 | `masrafsiz_mi` | %16 |
@@ -39,14 +44,11 @@ _Otomatik üretildi: 17.08.2026 15:20 · `make eval`_
 | `taksit_sayisi` | %7 |
 | `tahsis_ucreti` | %6 |
 | `indirim_orani` | %6 |
+| `hedef_kitle` | %4 |
 | `odul_miktari` | %4 |
+| `masraf_bilgisi` | %2 |
 | `alisveris_puani` | %1 |
-| `kampanya_turu` | %0 |
 | `urun_turu` | %0 |
-| `hedef_kitle` | %0 |
-| `masraf_bilgisi` | %0 |
-| `kampanya_avantaji` | %0 |
-| `kampanya_kosullari` | %0 |
 
 ## Altın set metrikleri
 
@@ -56,7 +58,7 @@ _Otomatik üretildi: 17.08.2026 15:20 · `make eval`_
 |---|---|---|---|
 | Sayısal alan doğruluğu | 0.930 | ≥ 0,90 | ✅ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.628 | ≥ 0,78 | ❌ |
+| **Makro-F1** | 0.699 | ≥ 0,78 | ❌ |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
 
@@ -66,7 +68,7 @@ _Otomatik üretildi: 17.08.2026 15:20 · `make eval`_
 
 | Alan | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |
 |---|---|---|---|---|---|---|
-| `kampanya_turu` | 0.000 | 0.000 | 0.000 | 0.000 | **0.000** | 0/0/60 |
+| `kampanya_turu` | 0.567 | 0.000 | 0.567 | 0.567 | **0.567** | 34/26/26 |
 | `urun_turu` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `hedef_kitle` | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `kar_payi_orani` | 0.950 | 0.833 | 0.889 | 0.800 | **0.842** | 8/1/2 |
@@ -86,3 +88,21 @@ _Otomatik üretildi: 17.08.2026 15:20 · `make eval`_
 > ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem boş olması gereken hücrelere değer yazıyor (yanlış pozitif); önce kesinliği düzeltmek gerekir.
 
 > **DP/YP/YN** — doğru pozitif / yanlış pozitif / yanlış negatif. Yanlış değer hem YP hem YN sayılır: uydurulmuş bir değerdir ve aynı anda doğru cevap kaçırılmıştır.
+
+## Ablasyon tablosu
+
+Üç yapılandırma **aynı kod yolundan** koşulur; yalnız katman bayrakları değişir.
+Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.
+
+```bash
+make extract-kural && make eval   # yalnız kural
+make extract-llm   && make eval   # yalnız LLM
+make extract       && make eval   # hibrit
+```
+
+| Yapılandırma | Kâr payı F1 | Vade F1 | Makro-F1 | Halüsinasyon | Doluluk |
+|---|---|---|---|---|---|
+| Yalnız kural (regex) | 0.842 | 0.791 | **0.628** | %0.00 | %7.3 |
+| Yalnız LLM (şema kısıtlı) | 0.000 | 0.000 | **0.176** | %0.48 | %13.7 |
+| **Hibrit (bizim)** | 0.842 | 0.791 | **0.699** | %0.00 | %19.7 |
+
