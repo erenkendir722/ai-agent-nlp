@@ -1,43 +1,53 @@
-def format_bank_name(bank_name: str) -> str:
+"""Arayüz yardımcıları — grafik ve tablo etiketleri.
+
+Banka kısa adları `data/banks.yaml`'daki `kisa_ad` alanından okunur. Burada
+ikinci bir sözlük TUTULMAZ: elle yazılan kopya 16 Ağustos'ta kayıt defteriyle
+yedi bankada ayrışmıştı ("Türkiye Emlak Katılım Bankası A.Ş." kayıt defterinde
+"Emlak Katılım", kopyada hiç eşleşmiyordu). Kayıt defteri tek doğruluk kaynağı.
+"""
+
+from __future__ import annotations
+
+from functools import lru_cache
+
+from src.collector.toplayici import bankalari_yukle
+
+# Kayıt defterinde olmayan bir banka için başlığı kısaltırken atılan ekler.
+_EKLER = (
+    " Katılım Bankası A.Ş.",
+    " Bankası A.Ş.",
+    " Katılım A.Ş.",
+    " A.Ş.",
+    " Anonim Şirketi",
+)
+
+_AZAMI_UZUNLUK = 15
+
+
+@lru_cache(maxsize=1)
+def _kisa_adlar() -> dict[str, str]:
+    """banks.yaml'daki tam ad -> kısa ad eşlemesi (bir kez okunur)."""
+    return {b.ad: b.kisa_ad for b in bankalari_yukle()}
+
+
+def format_bank_name(bank_name: str | None) -> str:
     """Banka adını grafiklerde göstermek için standartlaştırır."""
     if not bank_name:
         return "Belirtilmemiş"
 
-# Öncelikli sözlük eşleştirmesi (Modül seviyesi sabit)
-BANK_DICT = {
-    "T.O.M. Katılım Bankası A.Ş.": "TOM Katılım",
-    "Kuveyt Türk Katılım Bankası A.Ş.": "Kuveyt Türk",
-    "Albaraka Türk Katılım Bankası A.Ş.": "Albaraka Türk",
-    "Türkiye Finans Katılım Bankası A.Ş.": "Türkiye Finans",
-    "Ziraat Katılım Bankası A.Ş.": "Ziraat Katılım",
-    "Vakıf Katılım Bankası A.Ş.": "Vakıf Katılım",
-    "Emlak Katılım Bankası A.Ş.": "Emlak Katılım",
-    "Hayat Finans Katılım Bankası A.Ş.": "Hayat Finans",
-    "Dünya Katılım Bankası A.Ş.": "Dünya Katılım"
-}
+    temiz_girdi = bank_name.strip()
 
-def format_bank_name(bank_name: str) -> str:
-    """Banka adını grafiklerde göstermek için standartlaştırır."""
-    if not bank_name:
-        return "Belirtilmemiş"
+    kisa = _kisa_adlar().get(temiz_girdi)
+    if kisa:
+        return kisa
 
-    # Güvenlik: Boşlukları temizle
-    clean_input = bank_name.strip()
+    # Kayıt defterinde yoksa (yeni banka, serbest metinden gelen ad) ekleri at.
+    kisaltilmis = temiz_girdi
+    for ek in _EKLER:
+        kisaltilmis = kisaltilmis.replace(ek, "")
+    kisaltilmis = kisaltilmis.strip()
 
-    if clean_input in BANK_DICT:
-        return BANK_DICT[clean_input]
+    if len(kisaltilmis) > _AZAMI_UZUNLUK:
+        return kisaltilmis[:_AZAMI_UZUNLUK] + "..."
 
-    # Sözlükte yoksa fallback olarak agresif temizlik yap
-    cleaned = (
-        clean_input.replace(" Katılım Bankası A.Ş.", "")
-        .replace(" Bankası A.Ş.", "")
-        .replace(" Katılım A.Ş.", "")
-        .replace(" A.Ş.", "")
-        .replace(" Anonim Şirketi", "")
-        .strip()
-    )
-
-    if len(cleaned) > 15:
-        return cleaned[:15] + "..."
-    
-    return cleaned
+    return kisaltilmis

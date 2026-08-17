@@ -55,7 +55,7 @@ try:
         bankalar = _bankalar()
         status.update(label="✅ Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
 except Exception as e:
-    st.error("Sayısal Doğrulama Kalkanı: Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
+    st.error("Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
     with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
         st.write("Veritabanı bağlantısı reddedildi veya tablo şeması eksik.")
         st.code(str(e))

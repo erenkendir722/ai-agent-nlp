@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 
 import streamlit as st
@@ -87,14 +88,14 @@ if soru:
 
     with st.chat_message("assistant"):
         with st.spinner("Yapısal veri sorgulanıyor…"):
-            import requests
-            import time
             baslangic = time.time()
             try:
                 cevap = sor(soru, kayitlar)
                 gecen_sure = time.time() - baslangic
-            except requests.exceptions.ConnectionError as e:
-                st.error("Sayısal Doğrulama Kalkanı: Yerel dil modeli sunucusuna (Ollama) şu anda erişilemiyor.")
+            # `ollama` paketi yerleşik ConnectionError fırlatır, requests'inkini
+            # DEĞİL — requests ile yakalamak bu dalı sessizce ölü bırakıyordu.
+            except ConnectionError as e:
+                st.error("Yerel dil modeli sunucusuna (Ollama) şu anda erişilemiyor.")
                 with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
                     st.write("Bağlantı reddedildi. Docker container'ların veya yerel Ollama servisinin çalıştığından emin olun.")
                     st.code(str(e))

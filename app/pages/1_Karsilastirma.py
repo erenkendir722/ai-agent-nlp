@@ -7,6 +7,7 @@ bu panel o izlenebilirliğin arayüzdeki karşılığıdır.
 
 from __future__ import annotations
 
+import datetime
 import sys
 from pathlib import Path
 
@@ -38,8 +39,6 @@ if not kayitlar:
 # ---------------------------------------------------------------------------
 # Süzgeçler
 # ---------------------------------------------------------------------------
-
-import datetime
 
 f1, f2 = st.columns([2, 3])
 
