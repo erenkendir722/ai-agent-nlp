@@ -1,38 +1,37 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 18.08.2026 22:52 · `make eval`_
+_Otomatik üretildi: 18.08.2026 23:45 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 18.08.2026 22:52'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 18.08.2026 23:36'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
 - İşlenen kampanya: **96**
 - Banka sayısı: **8**
-- Toplam alan: 1536 · Dolu: 312
+- Toplam alan: 1536 · Dolu: 316
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.96 | ≤ %3 | ✅ |
-| Alan doluluğu | %20.3 | — | — |
-| Ortalama güven | 0.797 | — | — |
+| **Halüsinasyon oranı** | %0.32 | ≤ %3 | ✅ |
+| Alan doluluğu | %20.6 | — | — |
+| Ortalama güven | 0.799 | — | — |
 
 ## Yöntem dağılımı (ablasyonun temeli)
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 196 |
+| `llm` | 197 |
 | `kural` | 103 |
-| `hibrit` | 13 |
+| `hibrit` | 16 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
-- `kampanya_kosullari: özette geçen '1.89' sayısı ham metinde yok`
-- `kampanya_kosullari: özette geçen '1.89' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '1,5' sayısı ham metinde yok`
 
 ## Alan bazlı doluluk
 
@@ -40,12 +39,12 @@ _Otomatik üretildi: 18.08.2026 22:52 · `make eval`_
 |---|---|
 | `kampanya_turu` | %100 |
 | `kampanya_kosullari` | %61 |
-| `kampanya_avantaji` | %38 |
+| `kampanya_avantaji` | %39 |
 | `vade_ay_max` | %32 |
 | `kampanya_bitis` | %24 |
 | `masrafsiz_mi` | %16 |
 | `kar_payi_orani` | %11 |
-| `finansman_tutari_max` | %8 |
+| `finansman_tutari_max` | %11 |
 | `odul_miktari` | %8 |
 | `taksit_sayisi` | %7 |
 | `tahsis_ucreti` | %6 |
@@ -61,9 +60,9 @@ _Otomatik üretildi: 18.08.2026 22:52 · `make eval`_
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Sayısal alan doğruluğu | 0.933 | ≥ 0,90 | ✅ |
+| Sayısal alan doğruluğu | 0.937 | ≥ 0,90 | ✅ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.757 _(%95 GA: 0.628–0.835)_ | ≥ 0,78 | ❌ |
+| **Makro-F1** | 0.778 _(%95 GA: 0.645–0.847)_ | ≥ 0,78 | ❌ |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
 
@@ -77,11 +76,11 @@ _Otomatik üretildi: 18.08.2026 22:52 · `make eval`_
 
 | Alan | N | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |
 |---|---|---|---|---|---|---|---|
-| `kampanya_turu` | 60 | 0.767 | 0.000 | 0.767 | 0.767 | **0.767** | 46/14/14 |
+| `kampanya_turu` | 60 | 0.717 | 0.000 | 0.717 | 0.717 | **0.717** | 43/17/17 |
 | `urun_turu` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `hedef_kitle` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `kar_payi_orani` | 10 | 0.950 | 0.833 | 0.889 | 0.800 | **0.842** | 8/1/2 |
-| `finansman_tutari_max` | 5 🔸 | 0.900 ⚠️ | 0.917 | 0.400 | 0.400 | **0.400** | 2/3/3 |
+| `finansman_tutari_max` | 5 🔸 | 0.917 | 0.917 | 0.500 | 0.800 | **0.615** | 4/4/1 |
 | `vade_ay_max` | 20 | 0.867 | 0.667 | 0.739 | 0.850 | **0.791** | 17/6/3 |
 | `taksit_sayisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `tahsis_ucreti` | 5 🔸 | 0.983 | 0.917 | 0.833 | 1.000 | **0.909** | 5/1/0 |
