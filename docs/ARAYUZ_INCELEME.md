@@ -188,15 +188,39 @@ hâlâ eski yöntemi kullanıyor.
 
 ---
 
-## 🟠 K5 — "Eleştirmen Ajan" o kod yolunda yok
+## 🟠 K5 — "Eleştirmen Ajan" chatbot'ta yok (ama çıkarımda VAR)
 
-**Nerede:** `app/pages/2_Chatbot.py:88`, `app/Genel_Bakis.py:149`
+> 🔁 **18 Ağu akşamı düzeltildi.** İlk yazdığımda "eleştirmen ajanı hiç
+> çalışmıyor" demiştim — bu yanlıştı. E-02 Docker testinde ajan gözümün önünde
+> devreye girdi. Doğrusu aşağıda.
 
-`src/rag/chatbot.py` `src/ajanlar/elestirmen.py`'yi **import etmiyor**.
-Sayıları reddeden `sayisal_dogrulama` kalkanı. Jüri "eleştirmen ajanı çalışırken
-gösterin" derse gösterilecek şey yok.
+Ajan **iki kod yolundan yalnız birinde** var:
 
-**Yapılacak:** "Sayısal Doğrulama Kalkanı" de. Kalkan zaten daha özgün bir iddia.
+| Kod yolu | Eleştirmen ajanı | Kanıt |
+|---|---|---|
+| **Çıkarım** (`boru_hatti` → `extraction/llm.py`) | ✅ **çalışıyor** | `boru_hatti.py:104` · `llm.py:212` |
+| **Chatbot** (`rag/chatbot.py`) | ❌ yok | `grep ElestirmenAjani src/rag/chatbot.py` → 0 |
+
+Çıkarım hattında gerçekten iş yapıyor. 18 Ağustos'ta konteynerde koşan `seed`
+çıktısından, canlı:
+
+```
+INFO src.extraction.llm: masrafsiz_mi reddedildi: kararı destekleyen cümle yok
+                         (https://ornek.test/kampanya/kart)
+```
+
+**Dolayısıyla iki yer farklı muamele görmeli:**
+
+- `app/pages/2_Chatbot.py:88` — **yanlış, düzelt.** Chatbot'ta sayıları reddeden
+  `sayisal_dogrulama` kalkanıdır, eleştirmen ajanı değil. "Sayısal Doğrulama
+  Kalkanı devreye girdi" yaz.
+- `app/Genel_Bakis.py:149` — "Eleştirmen Ajan Aktif" ifadesi **savunulabilir**,
+  çünkü çıkarım hattı gerçekten onu kullanıyor. Buradaki sorun ajanın adı değil,
+  yanındaki **uydurma sayılar** (bkz. K3).
+
+**Bonus:** Jüri "eleştirmen ajanını çalışırken gösterin" derse artık gösterilecek
+şey var — `python -m src.boru_hatti -v seed` çıktısındaki ret satırı. Bu ES-15
+(model çıktı örnekleri) için de birinci sınıf malzeme.
 
 ---
 

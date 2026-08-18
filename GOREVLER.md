@@ -394,15 +394,26 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ ⚠️ Private depo + eksik `BilisimVadisi2026` etiketi =
         **değerlendirmeye alınmama riski.** Toplam 5 dakikalık iş.
 
-- [ ] **E-02** 🔴 Docker'ı gerçekten test et · 📅 **12 Ağu ⏰ bugün son gün**
-      ↳ Bitti sayılır: `docker compose up -d` çalışıyor, Streamlit :8501'de açılıyor,
-        API :8000/docs'ta açılıyor, `docker compose exec` ile crawl+extract koşuyor
-      ↳ ⚠️ `Dockerfile` ve `docker-compose.yml` YAZILDI ama **hiç çalıştırılmadı**.
-        On-prem puanının merkezi bu ve **arkasında 4 görev bekliyor**.
-      ↳ ✅ **12 Ağu düzeltmesi:** Eski not "makinede Docker kurulu değil" diyordu,
-        bu artık doğru değil — Docker **kurulu** (`/usr/local/bin/docker`),
-        yalnızca daemon kapalı. **Docker Desktop'ı başlat, mazeret kalmadı.**
-      ↳ Hata çıkarsa düzelt, `docs/KURULUM.md`'yi gerçek çıktıya göre güncelle
+- [x] **E-02** 🔴 Docker'ı gerçekten test et · 📅 12 Ağu *(bitti: 18 Ağu)*
+      ↳ ✅ **18 Ağu: koşuldu ve çalışıyor.** İmaj ilk denemede derlendi, üç
+        konteyner de healthy: Streamlit :8501 (200), API :8000/docs (200),
+        `/saglik` → 96 kampanya · `dis_bagimlilik: false`.
+      ↳ ✅ Konteynerler arası ağ (`uygulama` → `ollama:11434`) · LLM konteyner
+        içinde çıkarım yaptı (19,1 sn, `qwen3.5:4b-q4_K_M`) · `exec` ile
+        `durum`, `crawl` ve `seed` koştu.
+      ↳ ✅ `seed` 1 dk 36 sn: hibrit çıkarım, 0 çelişki, kanıt denetimi temiz.
+        **Eleştirmen ajanı konteynerde devreye girdi** — `masrafsiz_mi reddedildi`.
+      ↳ Tam çıktı: `docs/KURULUM.md` «Doğrulanmış çalıştırma — 18 Ağustos 2026»
+      ↳ 📌 **`extract` yerine `seed` kullanıldı** (aynı kod yolu, ağsız, altın
+        setin dayandığı 9 Ağu ham verisine dokunmuyor). Tam `crawl`+`extract`
+        koşusu veri setini değiştireceği için G-04 ile birlikte planlanmalı.
+      ↳ 📌 **Yol boyunca çıkan bulgu (G-04 için):** yarım kalan crawl, 9 Ağu
+        setinde olmayan **138 yeni kampanya sayfası** buldu — üstelik 8 bankanın
+        yalnız 3'ünden. 96 → 234 demek. G-04'ün 300+ hedefi ulaşılabilir;
+        toplayıcıda sorun yok, sadece yeniden koşturulması gerekiyor.
+      ↳ 📌 `docs/KURULUM.md`'de iki hata düzeltildi: `cd katilim-lens` (depo adı
+        `ai-agent-nlp`) ve "model ilk çalıştırmada iner" (inmiyor, `ollama pull`
+        zorunlu). Jüri talimatı birebir izlese ikinci komutta duruyordu.
 
 - [ ] **E-03** Haftalık GitHub güncellemesi + sürüm etiketi · 📅 **10, 16, 23 Ağu ⏰ ilki GECİKTİ**
       ⛔ **Önce bitmeli:** E-01 (Eren)

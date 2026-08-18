@@ -17,26 +17,70 @@
 ### Adımlar
 
 ```bash
-git clone <depo-adresi>
-cd katilim-lens
+git clone https://github.com/erenkendir722/ai-agent-nlp.git
+cd ai-agent-nlp
 
 docker compose up -d
 ```
 
-İlk çalıştırmada Ollama modeli indirilir (~3,4 GB). Sonrasında:
+Üç servis ayağa kalkar: `katilim-ollama`, `katilim-uygulama`, `katilim-api`.
+`uygulama` ve `api`, `ollama` sağlıklı olana kadar bekler (`depends_on`).
+
+**Model otomatik inmez** — bir kez elle çekilir (~3,4 GB):
 
 ```bash
-docker compose exec ollama ollama pull qwen3.5:4b-q4_K_M   # bir kez
-docker compose exec uygulama python -m src.boru_hatti crawl
+docker compose exec ollama ollama pull qwen3.5:4b-q4_K_M
+```
+
+Model adlandırılmış hacimde (`ollama-modelleri`) durur; `docker compose down`
+sonrası da kalır, tekrar indirilmez.
+
+Sonra boru hattı:
+
+```bash
+docker compose exec uygulama python -m src.boru_hatti durum     # veritabanı özeti
+docker compose exec uygulama python -m src.boru_hatti crawl     # ağ gerekir
+docker compose exec uygulama python -m src.boru_hatti seed      # ağ GEREKMEZ
 docker compose exec uygulama python -m src.boru_hatti extract
 ```
 
-| Servis | Adres |
-|---|---|
-| Streamlit arayüzü | <http://localhost:8501> |
-| REST API (Swagger) | <http://localhost:8000/docs> |
+| Servis | Adres | Sağlık ucu |
+|---|---|---|
+| Streamlit arayüzü | <http://localhost:8501> | `/_stcore/health` |
+| REST API (Swagger) | <http://localhost:8000/docs> | `/saglik` |
 
-Durdurma: `docker compose down`
+Durdurma: `docker compose down` · Hacimlerle birlikte: `docker compose down -v`
+
+> ⚠️ **`down -v` modeli de siler.** Air-gap ortamında tekrar indiremezsiniz.
+
+### Doğrulanmış çalıştırma — 18 Ağustos 2026
+
+E-02 kapsamında gerçekten koşuldu (Apple M1, 8 GB RAM, Docker 29.7.2, 5,8 GB
+konteyner belleği, aarch64):
+
+| Adım | Sonuç |
+|---|---|
+| `docker compose build` | ✅ ilk denemede, hatasız (`svartal-uygulama`, `svartal-api`) |
+| `docker compose up -d` | ✅ üç konteyner de **healthy** |
+| Streamlit `:8501` | ✅ HTTP 200 · `/_stcore/health` 200 |
+| API `:8000/docs` | ✅ HTTP 200 · `/saglik` → `{"durum":"ayakta","kampanya_sayisi":96,"dis_bagimlilik":false}` |
+| `/compare?kriter=en_uzun_vade` | ✅ 96 sonuç + 3 finansal uyarı |
+| Konteynerler arası ağ | ✅ `uygulama` → `http://ollama:11434` |
+| Konteynerde LLM çıkarımı | ✅ 19,1 sn (soğuk başlangıç, CPU) · `qwen3.5:4b-q4_K_M` |
+| `exec … boru_hatti durum` | ✅ 96 kampanya, 8 banka |
+| `exec … boru_hatti crawl` | ✅ ham kayıtları yeniden çekti (bağlı hacme yazıyor) |
+| `exec … boru_hatti seed` | ✅ **1 dk 36 sn** · hibrit çıkarım: kuraldan 10 alan, LLM'den 6 alan, 0 çelişki · «✅ Kanıt denetimi: tüm değerler ham metinde doğrulandı» |
+| Eleştirmen ajanı (konteynerde) | ✅ devreye girdi: `masrafsiz_mi reddedildi: kararı destekleyen cümle yok` |
+
+> **`seed` neden `extract` yerine kullanıldı:** ikisi de aynı `_cikar_ve_kaydet`
+> yolunu (kural + LLM + eleştirmen) koşar; `seed` ağ gerektirmez ve altın setin
+> dayandığı 9 Ağustos ham verisine dokunmaz. Kanıt değeri aynı, yan etkisi yok.
+
+**Bellek:** `ollama` tek başına 4,36 GB, `uygulama` 175 MB, `api` 64 MB —
+toplam ~4,6 GB. 8 GB makinede çalışır ama **yerel Ollama ve Streamlit'i kapatın**,
+yoksa takas başlar.
+
+**Kaynak kullanımını görmek için:** `docker stats --no-stream`
 
 ---
 

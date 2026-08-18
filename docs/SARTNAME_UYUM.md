@@ -1,6 +1,6 @@
 # Şartname Uyum Takibi
 
-**Görev:** E-12 · **Sorumlu:** Eren · **Son denetim:** 15 Ağustos 2026
+**Görev:** E-12 · **Sorumlu:** Eren · **Son denetim:** 18 Ağustos 2026 (E-02 Docker · arayüz K1–K7)
 **Kaynak:** `2026_TYDA_SARTNAME_Ikinci_Senaryo_TR_1_1IAJb.pdf` (20 sayfa, 2. Senaryo)
 
 Jüri bu şartnameye göre puanlıyor. Bu dosya her maddeyi tek tek satır olarak
@@ -21,7 +21,7 @@ tutar; unutulan bir gereklilik yüzünden puan kaybetmenin panzehiri budur.
 | 1 | **10 faal bankanın 2'sinde veri yok** | Madde 5.1: veri seti BDDK listesindeki kuruluşların **tümünü** içermeli | Görkem (G-03, G-04) |
 | 2 | **Demo videosu yok (5 dk *ve* 1 dk)** | Madde 6 ve madde 10 ayrı ayrı zorunlu tutuyor | Esra (ES-17, ES-18) |
 | 3 | **Sunum materyali yok (PDF + PPTX)** | Madde 6 ikisini birden istiyor; `sunum/` klasörü boş | Esra (ES-13) |
-| 4 | **Docker hiç çalıştırılmadı** | %20'lik On-Prem kriterinin tek somut kanıtı | Eren (E-02) |
+| 4 | ~~Docker hiç çalıştırılmadı~~ → **18 Ağu'da koşuldu, çalışıyor** | %20'lik On-Prem kriterinin tek somut kanıtı — artık kanıt var, `docs/KURULUM.md` «Doğrulanmış çalıştırma» | Eren (E-02) |
 | 5 | **Teslim tarihi belirsiz — aşağıya bak** | Şartname kendi içinde çelişiyor | Eren — **sor** |
 
 ### ✅ 15 Ağustos'ta kapandığı doğrulanan maddeler
@@ -83,7 +83,7 @@ Planımız 25 Ağustos hedefiyle devam ediyor; erken bitirmek her iki okumada da
 | 5.7 | Ürünlerin karşılaştırılabilir hale getirilmesi | ✅ | `src/comparison/karsilastirma.py` | Eren |
 | 5.7 | 5 karşılaştırma kriteri (en düşük kâr payı, en yüksek ödül, en uzun vade, en düşük masraf, en avantajlı) | ✅ | Beşi de kodda | Eren |
 | 5.8 | Veri ön işleme adımları | ✅ | `src/preprocessing/normalizasyon.py` | Samet |
-| 5.9 | Kurum içi sunucularda çalışabilirlik | 🟠 | `Dockerfile` yazıldı, **hiç çalıştırılmadı** | Eren (E-02) |
+| 5.9 | Kurum içi sunucularda çalışabilirlik | ✅ | **18 Ağu: `docker compose up -d` koşuldu.** 3 konteyner healthy · Streamlit :8501 ve API :8000/docs 200 · LLM konteyner içinde çıkarım yaptı (19,1 sn) · `exec` ile boru hattı koştu. Kanıt: `docs/KURULUM.md` | Eren (E-02) |
 | 5.9 | Veri güvenliği · müşteri verisi kurum dışına çıkmamalı | ✅ | `tests/test_sizinti_yok.py` (6 test) | Eren |
 | 5.9 | Dış servislere bağımlı olmadan çalışabilme | 🟠 | Yerel Ollama; hava boşluğu testi yapılmadı | Eren (E-07) |
 | 5.10 | Tüm kodlar açık kaynak teknolojilerle | ✅ | `docs/LISANSLAR.md` — 72 paket temiz | Görkem |
