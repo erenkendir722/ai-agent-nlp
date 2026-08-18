@@ -5,6 +5,14 @@
 PYTHON ?= .venv/bin/python
 STREAMLIT ?= .venv/bin/streamlit
 
+# PyArrow'un varsayılan mimalloc ayırıcısı macOS/arm64'te thread yeniden
+# başlatılırken çöküyor (SIGSEGV, mi_thread_init). Streamlit her sayfa
+# geçişinde yeni ScriptRunner thread'i açtığı için, `st.dataframe` olan bir
+# sayfadan çıkınca uygulama komple ölüyor — 18 Ağustos'ta sayfa geçişinde
+# yaşandı. Sistem ayırıcısı bu yolu kapatır.
+# Ayrıntı: docs/ARAYUZ_INCELEME.md — «Ortam» bölümü.
+ARROW_HAVUZ ?= ARROW_DEFAULT_MEMORY_POOL=system
+
 help:  ## bu yardım metnini göster
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 	  | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
@@ -28,7 +36,7 @@ durum:  ## veritabanı özeti
 	$(PYTHON) -m src.boru_hatti durum
 
 run:  ## Streamlit arayüzünü başlat
-	$(STREAMLIT) run app/Genel_Bakis.py
+	$(ARROW_HAVUZ) $(STREAMLIT) run app/Genel_Bakis.py
 
 api:  ## REST API'yi başlat (3 uç nokta)
 	$(PYTHON) -m uvicorn src.api.sunucu:uygulama --host 0.0.0.0 --port 8000
