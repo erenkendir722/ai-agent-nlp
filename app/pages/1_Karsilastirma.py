@@ -128,6 +128,9 @@ if not suzulmus:
 # ---------------------------------------------------------------------------
 
 with st.sidebar:
+    st.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+    st.markdown("---")
+    
     st.header("Skor ağırlıkları")
     st.caption(
         "«En Avantajlı» sıralaması bu ağırlıklarla hesaplanır. "
@@ -304,9 +307,7 @@ for kayit in sirali[:20]:
 
 st.divider()
 
-# Sidebar: Geliştirici Modu
-st.sidebar.markdown("---")
-st.sidebar.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+st.divider()
 
 if st.session_state.get("dev_mode", False):
     st.subheader("Geliştirici Entegrasyonu (B2B API)")

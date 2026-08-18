@@ -29,6 +29,10 @@ st.set_page_config(
     layout="wide",
 )
 
+with st.sidebar:
+    st.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+    st.markdown("---")
+
 
 @st.cache_data(ttl=60)
 def _veri():
@@ -193,9 +197,7 @@ with q2:
 
 st.divider()
 
-# Sidebar: Geliştirici Modu (Tüm sayfalarda kullanılacak şekilde session_state e ekliyoruz)
-st.sidebar.markdown("---")
-st.sidebar.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+# Sidebar: Geliştirici Modu taşındı
 
 # ---------------------------------------------------------------------------
 # Banka kayıt defteri — şartname 5.1 kanıtı

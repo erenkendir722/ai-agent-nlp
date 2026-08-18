@@ -31,6 +31,11 @@ from src.rag.chatbot import YASAL_UYARI  # noqa: E402
 from src.schema import HedefKitle  # noqa: E402
 
 st.set_page_config(page_title="Müşteri Profili", page_icon="👤", layout="wide")
+
+with st.sidebar:
+    st.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+    st.markdown("---")
+
 st.title("👤 Müşteri Profiline Göre Uygunluk")
 
 st.caption(
