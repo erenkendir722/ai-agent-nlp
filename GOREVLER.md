@@ -460,10 +460,26 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Okul 3090'ını finale götüremezsin; uzaktan bağlanmak da olmaz (on-prem
         iddian çöker + etkinlik Wi-Fi'ı güvenilmez)
 
-- [ ] **E-09** Egress + telemetri sertleştirmesini tamamla · 📅 22 Ağu
-      ⛔ **Önce bitmeli:** E-02 (Eren)
-      ↳ `tests/test_sizinti_yok.py` yazıldı ve geçiyor (6 test)
-      ↳ Kalan: Docker içinde de doğrula, `.env` değerlerini teyit et
+- [x] **E-09** Egress + telemetri sertleştirmesini tamamla · 📅 22 Ağu *(bitti: 18 Ağu)*
+      ↳ ✅ `tests/test_sizinti_yok.py` **Docker içinde koştu: 6/6 geçti** (iç ağda).
+        Tüm takım da koştu: **357 test geçti** (`tools/` imajda olmadığı için
+        3 dosya hariç — altın set, görev panosu, şema; onlar geliştirme aracı).
+      ↳ ✅ **`.env` teyidi:** 9 değişkenin hepsi iki konteynerde de doğru —
+        `HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`, `ANONYMIZED_TELEMETRY`,
+        `DO_NOT_TRACK`, `STREAMLIT_BROWSER_GATHER_USAGE_STATS`,
+        `ARROW_DEFAULT_MEMORY_POOL`, `OLLAMA_HOST`, `OLLAMA_MODEL`, `VERITABANI_URL`.
+      ↳ ✅ **`make hava-boslugu`** eklendi (`tools/hava_boslugu.py`) — egress
+        durumu artık tek komutla, tekrar edilebilir biçimde ölçülüyor.
+      ↳ 🔬 **Araç kendi hatasını yakaladı.** İlk sürüm `sh -c 'echo > /dev/tcp/…'`
+        kullanıyordu; `/dev/tcp` bir **bash** özelliği, `sh` (dash) desteklemiyor —
+        prob her zaman «engellendi» diyordu. Yani ölçüm değil, bozuk prob.
+        `bash`'e geçildi ve **pozitif kontrol** eklendi: ulaşılması gereken bir
+        hedef kapalı görünüyorsa ölçüm geçersiz sayılıyor.
+        **Ders: ölçüm aracı test edilmeden ölçüme güvenilmez.**
+      ↳ ⚠️ Kalan bilinen sınır (E-07'de belgelendi): `uygulama` ve `api` port
+        yayını için `sunum` ağında ve oradan çıkabiliyorlar. Tam kapatmak
+        ters vekil (reverse proxy) gerektirir — yeni bağımlılık, 5 gün kala
+        yapılmadı. Sunumda dürüst cümle `make hava-boslugu` çıktısında yazıyor.
 
 - [ ] **E-10** Kurumsal entegrasyon mimarisi diyagramı · 📅 23 Ağu
       ↳ Bitti sayılır: `docs/KURUMSAL_ENTEGRASYON.md` — LDAP/AD kimlik, kurumsal

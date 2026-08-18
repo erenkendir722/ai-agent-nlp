@@ -92,7 +92,13 @@ olarak olmasın**, ama arayüz tarayıcıdan açılabilsin.
 | `ic-ag` | ✅ **true** | ollama, uygulama, api | Konteynerler arası; dışarı çıkış YOK |
 | `sunum` | false | uygulama, api | Yalnız 8501/8000'in host'a yayınlanması |
 
-`ollama` **yalnız `ic-ag`'de**. Ölçüm (konteyner içinden):
+`ollama` **yalnız `ic-ag`'de**. Ölçüm tek komutla tekrarlanabilir:
+
+```bash
+make hava-boslugu
+```
+
+Çıktı (konteyner içinden):
 
 ```
 ✅ engellendi: 8.8.8.8:53
@@ -103,6 +109,17 @@ olarak olmasın**, ama arayüz tarayıcıdan açılabilsin.
 Hepsi **anında** başarısız — zaman aşımı değil, *rota yok*. Bu bir vaat değil,
 altyapı kısıtı: uygulama kodu değiştirilse bile model sunucusundan paket
 dışarı çıkamaz.
+
+> 🔬 **Ölçüm neden güvenilir — pozitif kontrol.** «Engellendi» sonucu ancak
+> probun çalıştığı kanıtlanırsa anlamlıdır. `make hava-boslugu` her servis
+> için önce **ulaşılması gereken** bir hedefe bağlanır (ollama kendi
+> `127.0.0.1:11434`'üne, diğerleri `ollama:11434`'e); o başarısızsa ölçümü
+> geçersiz sayar ve sonuç raporlamaz.
+>
+> Bu kontrol gerçek bir hatayı yakaladı: ilk ölçüm `sh -c 'echo > /dev/tcp/…'`
+> kullanıyordu, ama **`/dev/tcp` bir bash özelliği** ve `sh` (dash) onu
+> desteklemiyor — prob her zaman «engellendi» diyordu. `bash`'e geçildi.
+> Ölçüm aracının kendisi test edilmeden ölçüme güvenilmez.
 
 Ve bu haldeyken sistem tam çalışıyor:
 

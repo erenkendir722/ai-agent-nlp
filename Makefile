@@ -1,6 +1,6 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
         altin-ornekle altin-denetle altin-uyum altin-derle \
-        gorev gorev-dogrula git-kontrol
+        gorev gorev-dogrula git-kontrol hava-boslugu
 
 PYTHON ?= .venv/bin/python
 STREAMLIT ?= .venv/bin/streamlit
@@ -72,6 +72,9 @@ extract-llm:  ## ablasyon: yalnız LLM katmanı
 docker-up:  ## tek komut kurulum (on-prem kanıtı)
 	docker compose up -d
 	@echo "✅ Arayüz: http://localhost:8501"
+
+hava-boslugu:  ## hava boşluğu ölçümü — konteynerden dışarı çıkılabiliyor mu (şartname 5.9)
+	$(PYTHON) tools/hava_boslugu.py
 
 docker-down:
 	docker compose down
