@@ -628,7 +628,8 @@ def test_tasit_dilim_tablosundan_deger_carpi_oran() -> None:
 0-400.000 TL | %70 | 48
 400.001 - 800.000 TL | %50 | 36
 800.001 - 1.200.000 TL | %30 | 24"""
-    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
     assert tutar == 400_000.0, sebep
 
 
@@ -641,7 +642,7 @@ def test_ayni_tablo_hucreleri_ayrik_bicimde_de_okunur() -> None:
     from src.extraction.kural import dilim_tablosundan_azami_finansman
 
     metin = "kasko değeri\n| 0 TL – 400.000 TL 70% 48 | 400.001 TL – 800.000 TL 50% 36 |"
-    tutar, _ = dilim_tablosundan_azami_finansman(metin)
+    tutar = dilim_tablosundan_azami_finansman(metin).tutar
     assert tutar == 400_000.0
 
 
@@ -653,7 +654,8 @@ def test_ust_dilim_sinirsizsa_azami_uretilmez() -> None:
 125.000 TL'ye kadar olan finansmanlarda 36 ay
 125.000 - 250.000 TL arası 24 ay
 250.000 TL ve üzeri 12 ay"""
-    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
     assert tutar is None
     assert "sınırsız" in sebep
 
@@ -671,7 +673,8 @@ def test_mevduat_oran_tablosu_finansman_sanilmaz() -> None:
 0 - 50.000 TL | %30 | 32
 50.001 - 500.000 TL | %35 | 32
 500.001 TL ve üzeri | %37 | 32"""
-    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
     assert tutar is None, f"mevduat tablosundan finansman üretildi: {tutar}"
     assert "işaret" in sebep
 
@@ -681,6 +684,7 @@ def test_makul_olmayan_kucuk_sonuc_elenir() -> None:
     from src.extraction.kural import dilim_tablosundan_azami_finansman
 
     metin = "kasko\n1.000 TL %1 12\n2.000 TL %1 6"
-    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
     assert tutar is None
     assert "makul" in sebep

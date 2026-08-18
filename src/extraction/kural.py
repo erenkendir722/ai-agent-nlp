@@ -989,6 +989,29 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
     if (masrafsiz := _masrafsizlik(metin, url, cekim_tarihi)) is not None:
         sonuc["masrafsiz_mi"] = masrafsiz
 
+    # Dilim tablosu, tek tek sayı yakalayan regex kuralından DAHA GÜÇLÜ kanıttır:
+    # tabloyu bütün olarak okur ve kılavuzun insana yaptırdığı hesabı (değer ×
+    # oran, en büyüğü) yapar. Bu yüzden ürettiğinde `finansman_tutari_max`
+    # kuralının sonucunu EZER. Çekimser kaldığında (`tutar is None`) mevcut
+    # değere dokunmaz — "bilmiyorum" ile "yanlış" farklı şeylerdir.
+    dilim = dilim_tablosundan_azami_finansman(metin)
+    if dilim.tutar is not None:
+        bas = metin.find(dilim.kanit)
+        bit = bas + len(dilim.kanit) if bas >= 0 else 0
+        sonuc["finansman_tutari_max"] = Alan(
+            deger=dilim.tutar,
+            ham_ifade=dilim.kanit,
+            kaynak=Kaynak(
+                url=url,
+                cekim_tarihi=cekim_tarihi,
+                alinti=dilim.kanit,
+                karakter_baslangic=max(bas, 0),
+                karakter_bitis=max(bit, 0),
+            ),
+            guven=0.85,
+            yontem="kural",
+        )
+
     return sonuc
 
 
@@ -1161,6 +1184,14 @@ class _DilimSatiri:
     tutarlar: tuple[float, ...]
     oran: float | None
     sinirsiz: bool
+    ham: str
+    """Satırın BİREBİR metni — kanıt zinciri için.
+
+    `deger` hesaplanmıştır (değer × oran) ve metinde geçmeyebilir; kanıt
+    denetimi `ham_ifade`'ye bakar (`schema.kanit_denetimi`). Bu yüzden
+    kazanan satırın kendi metni saklanır: hem denetimden geçer hem de
+    kullanıcı sayının hangi satırdan çıktığını görür.
+    """
 
 
 def _dilim_satirlarini_ayristir(metin: str) -> list[_DilimSatiri]:
@@ -1197,7 +1228,12 @@ def _tek_bicimde_ayristir(metin: str, ayirici: re.Pattern[str]) -> list[_DilimSa
         m = _ORAN_ISARETLI.search(parca)
         oran = float(m.group(1) or m.group(2)) if m else None
         satirlar.append(
-            _DilimSatiri(tutarlar=tutarlar, oran=oran, sinirsiz=bool(_SINIRSIZ.search(parca)))
+            _DilimSatiri(
+                tutarlar=tutarlar,
+                oran=oran,
+                sinirsiz=bool(_SINIRSIZ.search(parca)),
+                ham=parca,
+            )
         )
     return satirlar
 
@@ -1227,32 +1263,48 @@ tablo başlığı söyler: finansmanda «taşıt değerine oranı», mevduatta �
 """
 
 
-def dilim_tablosundan_azami_finansman(metin: str) -> tuple[float | None, str]:
+@dataclass(frozen=True)
+class DilimSonucu:
+    """Dilim tablosu ayrıştırma sonucu.
+
+    `kanit`, hesabın çıktığı tablo satırının BİREBİR metnidir. `tutar`
+    hesaplanmıştır (değer × oran) ve metinde geçmeyebilir; kanıt denetimi
+    `ham_ifade`'ye baktığı için (`schema.kanit_denetimi`) kanıt olarak bu
+    satır taşınır — hem denetimden geçer hem de sayının kaynağını gösterir.
+    """
+
+    tutar: float | None
+    sebep: str
+    kanit: str = ""
+
+
+def dilim_tablosundan_azami_finansman(metin: str) -> DilimSonucu:
     """Dilim tablosundan azami FİNANSMAN tutarını çıkarır.
 
-    `None` "bu metinden çıkarılamaz" demektir ve bilinçli bir cevaptır.
+    `tutar is None` "bu metinden çıkarılamaz" demektir ve bilinçli bir cevaptır.
     """
     if not _KREDIYE_ESAS_DEGER.search(metin or ""):
-        return None, "finansman tablosu işareti yok (kasko / değerine oranı vb.)"
+        return DilimSonucu(None, "finansman tablosu işareti yok (kasko / değerine oranı vb.)")
 
     satirlar = _dilim_satirlarini_ayristir(metin)
     if len(satirlar) < 2:
-        return None, "dilim tablosu yok (en az 2 satır gerekir)"
+        return DilimSonucu(None, "dilim tablosu yok (en az 2 satır gerekir)")
 
     oranli = [s for s in satirlar if s.oran is not None and 0 < s.oran <= 100]
 
     # BİÇİM A — oran sütunu var: değer × oran, en büyüğü
     if len(oranli) >= 2:
-        adaylar = [max(s.tutarlar) * s.oran / 100.0 for s in oranli]
-        en_buyuk = max(adaylar)
+        eslesme = {max(s.tutarlar) * s.oran / 100.0: s for s in oranli}
+        en_buyuk = max(eslesme)
+        kazanan = eslesme[en_buyuk].ham
         # Sonuç eşiği: hesabın kendisi doğru olsa da girdi tablo olmayabilir.
         # 1.000 × %1 = 10 TL gibi bir "finansman" gerçek değildir.
         if en_buyuk < _ASGARI_FINANSMAN:
-            return None, f"hesaplanan tutar makul değil ({en_buyuk:,.0f} TL)"
-        return en_buyuk, f"biçim A: {len(oranli)} oranlı satır, değer × oran"
+            return DilimSonucu(None, f"hesaplanan tutar makul değil ({en_buyuk:,.0f} TL)")
+        return DilimSonucu(en_buyuk, f"biçim A: {len(oranli)} oranlı satır, değer × oran", kazanan)
 
     # BİÇİM B — oransız: sayılar zaten finansman tutarı
     if any(s.sinirsiz for s in satirlar):
-        return None, "biçim B: üst dilim sınırsız ('ve üzeri') — azami belirsiz"
+        return DilimSonucu(None, "biçim B: üst dilim sınırsız ('ve üzeri') — azami belirsiz")
 
-    return None, "oran sütunu yok ve üst sınır kapalı değil — çıkarılamıyor"
+    return DilimSonucu(None, "oran sütunu yok ve üst sınır kapalı değil — çıkarılamıyor")
