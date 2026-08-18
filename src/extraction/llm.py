@@ -277,6 +277,19 @@ class LLMCikarici:
 
         # 1) Sınıflandırma alanları — enum doğrulaması yeter, metinde aranmaz
         if alan_adi == "kampanya_turu":
+            # Altın setin yakaladığı iki hata biçimi burada düzeltilir:
+            # genel «finansman» URL'deki alt türle özelleştirilir ve kanıtsız
+            # «alisveris_puani» düşürülür. Gerekçe ve ölçüm:
+            # `kural.kampanya_turunu_duzelt`.
+            from src.extraction.kural import kampanya_turunu_duzelt
+
+            duzeltilmis, sebep = kampanya_turunu_duzelt(ham_ifade, url, metin)
+            if sebep:
+                log.info(
+                    "kampanya_turu düzeltildi: %s -> %s (%s) %s",
+                    ham_ifade, duzeltilmis, sebep, url,
+                )
+                ham_ifade = duzeltilmis
             return self._enum_alani(KampanyaTuru, ham_ifade, url, cekim_tarihi, metin)
         if alan_adi == "hedef_kitle":
             return self._enum_alani(HedefKitle, ham_ifade, url, cekim_tarihi, metin)

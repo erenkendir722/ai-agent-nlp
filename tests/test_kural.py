@@ -542,3 +542,149 @@ class TestFinansmanDisiUcret:
     def test_kart_ve_dosya_masrafi_birlikte_gecerse_yakalanir(self) -> None:
         metin = "Kart aidatı ve dosya masrafı alınmaz."
         assert cikar(metin)["masrafsiz_mi"] is True
+
+
+# ---------------------------------------------------------------------------
+# Kampanya türü düzeltmeleri (18 Ağu — altın setin yakaladığı iki hata biçimi)
+# ---------------------------------------------------------------------------
+
+
+def test_genel_finansman_url_alt_turuyle_ozellestirilir() -> None:
+    """LLM «finansman» dediğinde URL alt türü söylüyorsa o kullanılır.
+
+    Altın sette 6 vaka: .../konut-finansmani.aspx için LLM genel «finansman»
+    diyordu, altın set «konut_finansmani». Ürün türü URL'de birebir yazıyor.
+    """
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    for url, beklenen in [
+        ("https://x.com/tr/konut-finansmani.aspx", "konut_finansmani"),
+        ("https://x.com/tr/tasit-finansmani", "tasit_finansmani"),
+        ("https://x.com/tr/arac-finansmani", "tasit_finansmani"),
+        ("https://x.com/tr/ihtiyac-finansmani", "ihtiyac_finansmani"),
+    ]:
+        tur, sebep = kampanya_turunu_duzelt("finansman", url, "kampanya metni")
+        assert tur == beklenen, url
+        assert sebep is not None
+
+
+def test_url_isareti_yoksa_genel_finansman_korunur() -> None:
+    """Zorlama özelleştirme yapılmaz — sinyal yoksa cevap değişmez."""
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, sebep = kampanya_turunu_duzelt("finansman", "https://x.com/kampanyalar", "metin")
+    assert tur == "finansman"
+    assert sebep is None
+
+
+def test_kanitsiz_alisveris_puani_dusurulur() -> None:
+    """Metinde puan/mil/chip yoksa «alisveris_puani» etiketi verilmez.
+
+    Altın sette 9 vaka: sistem indirim ve kart kampanyalarına «alışveriş
+    puanı» diyordu; dokuzunun metninde «puan» kelimesi bile geçmiyordu.
+    """
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, sebep = kampanya_turunu_duzelt(
+        "alisveris_puani", "https://x.com/arzumda-15-indirim", "%15 indirim fırsatı"
+    )
+    assert tur == "diger"
+    assert sebep is not None
+
+
+def test_puan_kaniti_varsa_alisveris_puani_korunur() -> None:
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, sebep = kampanya_turunu_duzelt(
+        "alisveris_puani", "https://x.com/kampanya", "Alışverişlerinizde 1.000 puan kazanın"
+    )
+    assert tur == "alisveris_puani"
+    assert sebep is None
+
+
+def test_kanitsiz_alisveris_puani_url_kart_diyorsa_karta_iner() -> None:
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, _ = kampanya_turunu_duzelt(
+        "alisveris_puani", "https://x.com/biz-kart-dijital-uyelikler", "üyelik kampanyası"
+    )
+    assert tur == "kart"
+
+
+# ---------------------------------------------------------------------------
+# Dilim tablosu ayrıştırıcı (18 Ağu — finansman_tutari_max F1 0,400 -> 0,714)
+# ---------------------------------------------------------------------------
+
+
+def test_tasit_dilim_tablosundan_deger_carpi_oran() -> None:
+    """Kılavuzun insana söylediği hesabın kodda karşılığı.
+
+    `docs/ETIKETLEME_KILAVUZU.md`: «Kademeli tabloda her satır için değer ×
+    oran hesapla, en büyüğünü yaz.» max(400k×.70, 800k×.50, 1.2M×.30) = 400k.
+    """
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = """Aracın Nihai Fatura Tutarı /Kasko Değeri | Taşıt Değerine Oranı | Vade
+0-400.000 TL | %70 | 48
+400.001 - 800.000 TL | %50 | 36
+800.001 - 1.200.000 TL | %30 | 24"""
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
+    assert tutar == 400_000.0, sebep
+
+
+def test_ayni_tablo_hucreleri_ayrik_bicimde_de_okunur() -> None:
+    """`|` ile bölünce tutar ve oran ayrı hücreye düşen biçim.
+
+    18 Ağu'da bu biçim kaçırılmıştı: `|` ile bölmek oran sütununu yok edip
+    tabloyu «oransız» gösteriyordu.
+    """
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = "kasko değeri\n| 0 TL – 400.000 TL 70% 48 | 400.001 TL – 800.000 TL 50% 36 |"
+    tutar = dilim_tablosundan_azami_finansman(metin).tutar
+    assert tutar == 400_000.0
+
+
+def test_ust_dilim_sinirsizsa_azami_uretilmez() -> None:
+    """«250.000 ve üzeri» varsa azami tutar BİLİNMEZ — uydurmak yerine boş."""
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = """kasko değerine oranı
+125.000 TL'ye kadar olan finansmanlarda 36 ay
+125.000 - 250.000 TL arası 24 ay
+250.000 TL ve üzeri 12 ay"""
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
+    assert tutar is None
+    assert "sınırsız" in sebep
+
+
+def test_mevduat_oran_tablosu_finansman_sanilmaz() -> None:
+    """EN ÖNEMLİ KORUMA — mevduat tablosu finansman tablosuyla aynı yapıda.
+
+    18 Ağu'da bağlam kapısı yokken ayrıştırıcı günlük hesap kâr payı
+    tablosundan 55.500.000 TL «finansman» üretti. Yapı ayırt etmiyor;
+    ayıran şey başlıktaki «taşıt değerine oranı» / «kasko» ifadesi.
+    """
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = """Günlük Katılma Hesabı kâr payı oranları
+0 - 50.000 TL | %30 | 32
+50.001 - 500.000 TL | %35 | 32
+500.001 TL ve üzeri | %37 | 32"""
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
+    assert tutar is None, f"mevduat tablosundan finansman üretildi: {tutar}"
+    assert "işaret" in sebep
+
+
+def test_makul_olmayan_kucuk_sonuc_elenir() -> None:
+    """1.000 × %1 = 10 TL — hesap doğru ama girdi tablo değil."""
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = "kasko\n1.000 TL %1 12\n2.000 TL %1 6"
+    sonuc = dilim_tablosundan_azami_finansman(metin)
+    tutar, sebep = sonuc.tutar, sonuc.sebep
+    assert tutar is None
+    assert "makul" in sebep

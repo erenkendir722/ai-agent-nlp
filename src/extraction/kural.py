@@ -989,6 +989,29 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
     if (masrafsiz := _masrafsizlik(metin, url, cekim_tarihi)) is not None:
         sonuc["masrafsiz_mi"] = masrafsiz
 
+    # Dilim tablosu, tek tek sayı yakalayan regex kuralından DAHA GÜÇLÜ kanıttır:
+    # tabloyu bütün olarak okur ve kılavuzun insana yaptırdığı hesabı (değer ×
+    # oran, en büyüğü) yapar. Bu yüzden ürettiğinde `finansman_tutari_max`
+    # kuralının sonucunu EZER. Çekimser kaldığında (`tutar is None`) mevcut
+    # değere dokunmaz — "bilmiyorum" ile "yanlış" farklı şeylerdir.
+    dilim = dilim_tablosundan_azami_finansman(metin)
+    if dilim.tutar is not None:
+        bas = metin.find(dilim.kanit)
+        bit = bas + len(dilim.kanit) if bas >= 0 else 0
+        sonuc["finansman_tutari_max"] = Alan(
+            deger=dilim.tutar,
+            ham_ifade=dilim.kanit,
+            kaynak=Kaynak(
+                url=url,
+                cekim_tarihi=cekim_tarihi,
+                alinti=dilim.kanit,
+                karakter_baslangic=max(bas, 0),
+                karakter_bitis=max(bit, 0),
+            ),
+            guven=0.85,
+            yontem="kural",
+        )
+
     return sonuc
 
 
@@ -1019,3 +1042,269 @@ def _masrafsizlik(metin: str, url: str, cekim_tarihi: datetime) -> Alan | None:
 
 
 __all__ = ["KURALLAR", "KuralTanimi", "kurallarla_cikar"]
+
+
+# ---------------------------------------------------------------------------
+# Kampanya türü düzeltmeleri — altın setin yakaladığı iki hata biçimi
+# ---------------------------------------------------------------------------
+#
+# 18 Ağustos 2026 ölçümü: `kampanya_turu` F1 = 0,600 (N=60, altın setteki EN
+# BÜYÜK örneklem — yani en güvenilir ve en kötü skor). 24 hatanın 15'i iki
+# desende toplanmıştı:
+#
+#   DESEN 1 (6 vaka) — LLM genel "finansman" diyor, altın set özel alt tür:
+#       .../konut-finansmani.aspx   → altın konut_finansmani,  LLM finansman
+#       .../tasit-finansmani        → altın tasit_finansmani,  LLM finansman
+#       .../ihtiyac-finansmani.aspx → altın ihtiyac_finansmani, LLM finansman
+#     Ürün türü URL'de BİREBİR yazıyor ama kimse okumuyordu.
+#
+#   DESEN 2 (9 vaka) — LLM "alisveris_puani" diyor, altın set başka:
+#       .../arzumda-15-indirim         → altın diger  (indirim, puan değil)
+#       .../biz-kart-dijital-uyelikler → altın kart
+#       .../alisveris-finansmanlari    → altın ihtiyac_finansmani
+#     Dokuzunun metninde "puan" kelimesi bile geçmiyordu (biri hariç).
+#     Sınıflandırma alanları `KANIT_ZORUNLU_ALANLAR` dışında (bilinçli: enum
+#     etiketleri metinde geçmez). Ama `alisveris_puani` istisnadır — ADI bir
+#     metin sinyali vaat ediyor. Kanıt yoksa bu etiket verilmemeli.
+
+_URL_TUR_ISARETLERI: tuple[tuple[str, str], ...] = (
+    # Sıra önemli: özel olan genel olandan ÖNCE denenir.
+    ("konut", "konut_finansmani"),
+    ("mortgage", "konut_finansmani"),
+    ("tasit", "tasit_finansmani"),
+    ("taşıt", "tasit_finansmani"),
+    ("arac", "tasit_finansmani"),
+    ("araç", "tasit_finansmani"),
+    ("otomobil", "tasit_finansmani"),
+    ("ihtiyac", "ihtiyac_finansmani"),
+    ("ihtiyaç", "ihtiyac_finansmani"),
+)
+
+_PUAN_KANITI = re.compile(
+    r"\b(puan|mil|chip[- ]?para|world|bonus|para[- ]?puan|maxipuan|bankkart lira)\b",
+    re.IGNORECASE,
+)
+
+
+def turu_urlden_cikar(url: str) -> str | None:
+    """URL parçasından kampanya alt türünü okur.
+
+    Yalnız FİNANSMAN alt türleri için kullanılır: banka siteleri ürün türünü
+    yol parçasında neredeyse her zaman açıkça yazar (`/konut-finansmani`).
+    Bu, LLM'in tahminine göre çok daha güçlü bir sinyaldir.
+    """
+    if not url:
+        return None
+    yol = url.lower()
+    for isaret, tur in _URL_TUR_ISARETLERI:
+        if isaret in yol:
+            return tur
+    return None
+
+
+def puan_kaniti_var_mi(metin: str) -> bool:
+    """Metinde alışveriş PUANI iddiasını destekleyen bir kelime var mı?
+
+    "alışveriş" tek başına yetmez — indirim kampanyaları da alışverişle
+    ilgilidir. Aranan şey puan/mil/chip gibi somut bir ödül birimi.
+    """
+    return bool(_PUAN_KANITI.search(metin or ""))
+
+
+def kampanya_turunu_duzelt(tur: str, url: str, metin: str) -> tuple[str, str | None]:
+    """Sınıflandırmayı URL ve metin kanıtıyla düzeltir.
+
+    Döner: (düzeltilmiş_tür, düzeltme_sebebi | None)
+
+    İki müdahale yapar, ikisi de KANITA dayanır:
+      1. Genel `finansman` → URL özel alt tür söylüyorsa onu kullan (özelleştirme;
+         LLM ile çelişmez, cevabını inceltir).
+      2. `alisveris_puani` → metinde puan kanıtı yoksa etiketi düşür; URL bir
+         tür söylüyorsa ona, söylemiyorsa `diger`'e in.
+    """
+    url_turu = turu_urlden_cikar(url)
+
+    if tur == "finansman" and url_turu:
+        return url_turu, f"URL alt türü söylüyor ({url_turu})"
+
+    if tur == "alisveris_puani" and not puan_kaniti_var_mi(metin):
+        if "kart" in (url or "").lower():
+            return "kart", "puan kanıtı yok, URL 'kart' diyor"
+        if url_turu:
+            return url_turu, f"puan kanıtı yok, URL '{url_turu}' diyor"
+        return "diger", "metinde puan/mil/chip kanıtı yok"
+
+    return tur, None
+
+
+
+# ---------------------------------------------------------------------------
+# Dilim tablosu ayrıştırıcı — finansman_tutari_max
+# ---------------------------------------------------------------------------
+#
+# NEDEN AYRIŞTIRICI, NEDEN REGEX DEĞİL:
+#   18 Ağustos'ta tek bir regex denendi ve BAŞARISIZ oldu: oran işaretini
+#   isteğe bağlı (`%?`) bıraktığı için `48` vadesini oran sanıp
+#   1.200.000 × %24 = 288.000 gibi değerler üretti. F1'i 0,400 → 0,200
+#   düşürdü, geri alındı. Ders: tabloyu tablo olarak ayrıştır, metinde
+#   sayı avlama.
+#
+# İKİ TABLO BİÇİMİ VAR VE ZIT ANLAMA GELİYOR:
+#
+#   BİÇİM A — taşıt: (araç değeri aralığı, ORAN, vade)
+#       0-400.000 TL      %70   48
+#       400.001-800.000   %50   36
+#     Sayılar ARACIN değeri. `docs/ETIKETLEME_KILAVUZU.md` insana şunu
+#     söylüyor: her satır için değer × oran, en büyüğünü al.
+#     max(400k×.70, 800k×.50, 1.2M×.30, 2M×.20) = 400.000 — altın setle birebir.
+#
+#   BİÇİM B — ihtiyaç: (finansman tutarı aralığı, vade)
+#       125.000 TL'ye kadar    36 ay
+#       250.000 TL ve üzeri    12 ay
+#     Sayılar zaten finansman tutarı. Ama en üst dilim SINIRSIZ ("ve üzeri"):
+#     azami tutar BİLİNMİYOR. Doğru cevap `None` — uydurmaktan iyidir.
+#
+# Ayırt edici işaret: satırda AÇIKÇA `%` işaretli bir oran var mı.
+
+_PARA = re.compile(r"(\d{1,3}(?:[.,]\d{3})+|\d{4,})\s*(?:TL|₺)?", re.IGNORECASE)
+_ORAN_ISARETLI = re.compile(r"(?:%\s*(\d{1,3})|(\d{1,3})\s*%)")
+_SINIRSIZ = re.compile(r"ve\s+üzeri|üzerinde|ve\s+ustu|ve\s+üstü", re.IGNORECASE)
+_SATIR_AYIRICI = re.compile(r"[|\n]")
+_SATIR_SADECE_YENI_SATIR = re.compile(r"\n")
+
+_ASGARI_FINANSMAN = 10_000.0
+"""Bir finansman kampanyası bundan azını duyurmaz — sonuç makullük tabanı."""
+
+_ASGARI_DILIM_TUTARI = 1000.0
+"""Bundan küçük sayılar dilim sınırı sayılmaz — tarih, adet, vade gürültüsü."""
+
+
+@dataclass(frozen=True)
+class _DilimSatiri:
+    tutarlar: tuple[float, ...]
+    oran: float | None
+    sinirsiz: bool
+    ham: str
+    """Satırın BİREBİR metni — kanıt zinciri için.
+
+    `deger` hesaplanmıştır (değer × oran) ve metinde geçmeyebilir; kanıt
+    denetimi `ham_ifade`'ye bakar (`schema.kanit_denetimi`). Bu yüzden
+    kazanan satırın kendi metni saklanır: hem denetimden geçer hem de
+    kullanıcı sayının hangi satırdan çıktığını görür.
+    """
+
+
+def _dilim_satirlarini_ayristir(metin: str) -> list[_DilimSatiri]:
+    """Tabloyu satırlara böler — İKİ bölme biçimi denenir.
+
+    NEDEN İKİSİ BİRDEN: aynı tablo iki farklı biçimde geliyor.
+        `| 0 TL – 400.000 TL 70% 48 |`   → tutar ve oran AYNI hücrede
+        `| 0-400.000 TL | %70 | 48 |`    → tutar ve oran AYRI hücrelerde
+    İkincisinde `|` ile bölmek satırı parçalar ve oran sütunu kaybolur;
+    tablo oransız sanılıp yanlışlıkla «azami belirsiz» denir. 18 Ağu'da
+    `.../tasit-finansmani` tam bu yüzden kaçırıldı.
+
+    Çözüm: her iki bölmeyi de dene, oranlı satırı ÇOK olan yorumu kullan.
+    """
+    adaylar = [
+        _tek_bicimde_ayristir(metin, _SATIR_AYIRICI),
+        _tek_bicimde_ayristir(metin, _SATIR_SADECE_YENI_SATIR),
+    ]
+    return max(adaylar, key=lambda ss: sum(1 for s in ss if s.oran is not None))
+
+
+def _tek_bicimde_ayristir(metin: str, ayirici: re.Pattern[str]) -> list[_DilimSatiri]:
+    satirlar: list[_DilimSatiri] = []
+    for ham in ayirici.split(metin or ""):
+        parca = ham.strip()
+        if not parca or len(parca) > 200:
+            continue
+        tutarlar = tuple(
+            t for p in _PARA.findall(parca)
+            if (t := _sayiya_cevir(p)) is not None and t >= _ASGARI_DILIM_TUTARI
+        )
+        if not tutarlar:
+            continue
+        m = _ORAN_ISARETLI.search(parca)
+        oran = float(m.group(1) or m.group(2)) if m else None
+        satirlar.append(
+            _DilimSatiri(
+                tutarlar=tutarlar,
+                oran=oran,
+                sinirsiz=bool(_SINIRSIZ.search(parca)),
+                ham=parca,
+            )
+        )
+    return satirlar
+
+
+def _sayiya_cevir(s: str) -> float | None:
+    """'400.000' / '1,200,000' -> float. Binlik ayırıcı iki biçimde de gelir."""
+    t = re.sub(r"[.,](?=\d{3}\b)", "", s.strip())
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+_KREDIYE_ESAS_DEGER = re.compile(
+    r"(kasko|nihai fatura|fatura (?:tutar|değer|bedel)|"
+    r"(?:taşıt|araç|konut|teminat) değerine oran|"
+    r"değerine oranı|kredi(?:ye)? esas değer|azami (?:finansman|kredi) oran)",
+    re.IGNORECASE,
+)
+"""Tablonun FİNANSMAN tablosu olduğunu gösteren başlık ifadeleri.
+
+NEDEN ŞART: mevduat (günlük/katılma hesabı) kâr payı tablosu, taşıt finansmanı
+dilim tablosuyla YAPISAL OLARAK BİREBİR AYNI — ikisi de (tutar aralığı, %, vade).
+Yapıya bakarak ayırt edilemez. 18 Ağu'da bu kapı yokken ayrıştırıcı günlük
+hesap tablosundan 55.500.000 TL «finansman» üretti. Oranın NE olduğunu ancak
+tablo başlığı söyler: finansmanda «taşıt değerine oranı», mevduatta «kâr payı».
+"""
+
+
+@dataclass(frozen=True)
+class DilimSonucu:
+    """Dilim tablosu ayrıştırma sonucu.
+
+    `kanit`, hesabın çıktığı tablo satırının BİREBİR metnidir. `tutar`
+    hesaplanmıştır (değer × oran) ve metinde geçmeyebilir; kanıt denetimi
+    `ham_ifade`'ye baktığı için (`schema.kanit_denetimi`) kanıt olarak bu
+    satır taşınır — hem denetimden geçer hem de sayının kaynağını gösterir.
+    """
+
+    tutar: float | None
+    sebep: str
+    kanit: str = ""
+
+
+def dilim_tablosundan_azami_finansman(metin: str) -> DilimSonucu:
+    """Dilim tablosundan azami FİNANSMAN tutarını çıkarır.
+
+    `tutar is None` "bu metinden çıkarılamaz" demektir ve bilinçli bir cevaptır.
+    """
+    if not _KREDIYE_ESAS_DEGER.search(metin or ""):
+        return DilimSonucu(None, "finansman tablosu işareti yok (kasko / değerine oranı vb.)")
+
+    satirlar = _dilim_satirlarini_ayristir(metin)
+    if len(satirlar) < 2:
+        return DilimSonucu(None, "dilim tablosu yok (en az 2 satır gerekir)")
+
+    oranli = [s for s in satirlar if s.oran is not None and 0 < s.oran <= 100]
+
+    # BİÇİM A — oran sütunu var: değer × oran, en büyüğü
+    if len(oranli) >= 2:
+        eslesme = {max(s.tutarlar) * s.oran / 100.0: s for s in oranli}
+        en_buyuk = max(eslesme)
+        kazanan = eslesme[en_buyuk].ham
+        # Sonuç eşiği: hesabın kendisi doğru olsa da girdi tablo olmayabilir.
+        # 1.000 × %1 = 10 TL gibi bir "finansman" gerçek değildir.
+        if en_buyuk < _ASGARI_FINANSMAN:
+            return DilimSonucu(None, f"hesaplanan tutar makul değil ({en_buyuk:,.0f} TL)")
+        return DilimSonucu(en_buyuk, f"biçim A: {len(oranli)} oranlı satır, değer × oran", kazanan)
+
+    # BİÇİM B — oransız: sayılar zaten finansman tutarı
+    if any(s.sinirsiz for s in satirlar):
+        return DilimSonucu(None, "biçim B: üst dilim sınırsız ('ve üzeri') — azami belirsiz")
+
+    return DilimSonucu(None, "oran sütunu yok ve üst sınır kapalı değil — çıkarılamıyor")
