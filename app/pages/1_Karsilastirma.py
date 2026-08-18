@@ -291,8 +291,35 @@ for kayit in sirali[:20]:
         bos = [ad for ad, a in kampanya.cikarilan_alanlar().items() if not a.var_mi]
         if bos:
             st.caption(f"**Belirtilmemiş alanlar:** {', '.join(bos)}")
+        
+        # Geliştirici Modu açıksa, o kampanyanın ham JSON halini göster
+        if st.session_state.get("dev_mode", False):
+            st.markdown("---")
+            st.caption("🛠️ **API Yanıtı (JSON)**")
+            st.json(kampanya.model_dump())
 
 st.divider()
+
+# Sidebar: Geliştirici Modu
+st.sidebar.markdown("---")
+st.sidebar.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+
+if st.session_state.get("dev_mode", False):
+    st.subheader("Geliştirici Entegrasyonu (B2B API)")
+    st.markdown("Aşağıdaki cURL komutuyla bu sayfadaki filtrelenmiş sonuçları doğrudan kendi sisteminize entegre edebilirsiniz:")
+    
+    # Basit bir cURL örneği
+    curl_cmd = f"""curl -X POST "https://api.svartal.bank/v1/karsilastirma" \\
+     -H "Authorization: Bearer YOUR_API_KEY" \\
+     -H "Content-Type: application/json" \\
+     -d '{{
+           "kriter": "{secili_kriter.value}",
+           "bankalar": {str(secili_bankalar).replace("'", '"')},
+           "limit": 10
+         }}'
+"""
+    st.code(curl_cmd, language="bash")
+    st.divider()
 
 # ---------------------------------------------------------------------------
 # Toplam maliyet hesaplayıcı

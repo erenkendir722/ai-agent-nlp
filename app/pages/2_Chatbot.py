@@ -68,6 +68,8 @@ Soru
 ```
         """
     )
+    st.markdown("---")
+    st.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
 
 if "gecmis" not in st.session_state:
     st.session_state.gecmis = []
@@ -107,6 +109,17 @@ if soru:
                 st.stop()
 
         simge, etiket, aciklama = NIYET_ETIKETLERI[cevap.niyet]
+        
+        # ES-05 Ajan Düşünce Süreci (Agent Trace)
+        with st.expander("🤖 Ajanın Düşünce Süreci (Loglar)", expanded=False):
+            st.caption(f"**Log 1:** Niyet anlaşıldı: `{etiket}` ({aciklama})")
+            kaynak_sayisi = len(cevap.kaynaklar) if cevap.kaynaklar else 0
+            st.caption(f"**Log 2:** SQLite veritabanından RAG bağlamı için {kaynak_sayisi} ilgili kayıt filtrelendi...")
+            if cevap.dogrulama_gecti:
+                st.caption("**Log 3:** Sayısal Doğrulama Kalkanından geçildi (Halüsinasyon tespit edilmedi). Yanıt üretiliyor...")
+            else:
+                st.caption(f"**Log 3:** Eleştirmen Ajan devreye girdi! Hatalı sayılar ({', '.join(cevap.reddedilen_sayilar)}) RAG bağlamı ile eşleşmediği için reddedildi.")
+            
         st.caption(f"{simge} **{etiket}** — {aciklama}")
         st.caption(f"⏱️ Yanıt {gecen_sure:.1f} saniyede üretildi | Model: Yerel Qwen (Ollama) | Donanım: Yerel CPU/GPU")
 
@@ -136,5 +149,28 @@ if soru:
                     if kaynak.alinti:
                         st.markdown(f"> {kaynak.alinti}")
             st.caption(f"_{YASAL_UYARI}_")
+            
+        # Geliştirici Modu (API)
+        if st.session_state.get("dev_mode", False):
+            st.markdown("---")
+            st.subheader("Geliştirici Entegrasyonu (Chatbot API)")
+            st.caption("🤖 **API Yanıt Özeti (JSON)**")
+            st.json({
+                "niyet": cevap.niyet,
+                "metin": cevap.metin,
+                "dogrulama_gecti": cevap.dogrulama_gecti,
+                "reddedilen_sayilar": cevap.reddedilen_sayilar,
+                "kaynak_sayisi": len(cevap.kaynaklar) if cevap.kaynaklar else 0
+            })
+            st.markdown("Aşağıdaki cURL komutuyla bu asistanı API olarak sorgulayabilirsiniz:")
+            curl_cmd = f"""curl -X POST "https://api.svartal.bank/v1/chatbot/sor" \\
+ -H "Authorization: Bearer YOUR_API_KEY" \\
+ -H "Content-Type: application/json" \\
+ -d '{{
+       "soru": "{soru}",
+       "session_id": "auto"
+     }}'
+"""
+            st.code(curl_cmd, language="bash")
 
     st.session_state.gecmis.append({"soru": soru, "cevap": cevap.tam_metin()})
