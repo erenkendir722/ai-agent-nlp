@@ -1,0 +1,65 @@
+# Kalkan ölçüm soru kümesi (bulgu 1.2)
+#
+# NEDEN SABİT DOSYA: "kalkanı düzelttik" bir iddiadır; iddia ölçülmeden
+# yayınlanmaz. Bu küme `make eval` ile her koşuda çalışır ve yanlış blok
+# oranı `docs/SONUCLAR.md`'ye yazılır. Elle seçilmiş birkaç soruyla
+# "çalışıyor" demek, ölçmemekle aynı şeydir.
+#
+# `mesru` ALANI — soruyu insan işaretler, sistem değil:
+#   true  : korpustan cevaplanabilir. Kalkan bunu ENGELLERSE yanlış bloktur.
+#   false : kapsam dışı ya da veride karşılığı yok. Sistemin "bulunmuyor"
+#           demesi DOĞRU davranıştır; bu bir blok değildir.
+#
+# Kalkan blokları `dogrulama_gecti=False` ile ölçülür. "Bu bilgi veri
+# setinde bulunmuyor" cevabı blok DEĞİLDİR — kalkan değil, veri konuşur.
+
+- {soru: "Kuveyt Türk kampanya koşulları nelerdir?", mesru: true}
+- {soru: "Albaraka kampanyasının koşulları neler?", mesru: true}
+- {soru: "Ziraat Katılım konut finansmanı şartları ne?", mesru: true}
+- {soru: "Vakıf Katılım kampanya detayları neler?", mesru: true}
+- {soru: "Hayat Finans başvuru nasıl yapılır?", mesru: true}
+- {soru: "Dünya Katılım kart kampanyası kapsamı nedir?", mesru: true}
+- {soru: "Emlak Katılım finansman koşulları neler?", mesru: true}
+- {soru: "Türkiye Finans kampanya şartları nelerdir?", mesru: true}
+- {soru: "Konut finansmanı için başvuru şartları nelerdir?", mesru: true}
+- {soru: "Taşıt finansmanı kampanyası kimler için geçerli?", mesru: true}
+- {soru: "Kredi kartı aidatı alınıyor mu?", mesru: true}
+- {soru: "Emeklilere özel kampanya var mı?", mesru: true}
+- {soru: "Yeni müşteriler için hangi kampanyalar var?", mesru: true}
+- {soru: "Kampanya kapsamı nedir?", mesru: true}
+- {soru: "Başvuru için hangi belgeler gerekli?", mesru: true}
+
+- {soru: "Kuveyt Türk konut finansmanı kâr payı oranı nedir?", mesru: true}
+- {soru: "Türkiye Finans taşıt kampanyasında vade kaç ay?", mesru: true}
+- {soru: "Albaraka konut finansmanı ne kadar tutar veriyor?", mesru: true}
+- {soru: "Kuveyt Türk ödül miktarı ne kadar?", mesru: true}
+- {soru: "Ziraat Katılım vade kaç ay?", mesru: true}
+- {soru: "Türkiye Finans tahsis ücreti ne kadar?", mesru: true}
+- {soru: "Emlak Katılım finansman limiti ne kadar?", mesru: true}
+- {soru: "Hayat Finans ödül tutarı nedir?", mesru: true}
+- {soru: "Vakıf Katılım masraf alıyor mu?", mesru: true}
+- {soru: "Dünya Katılım finansman tutarı ne kadar?", mesru: true}
+- {soru: "Taksit sayısı kaç?", mesru: true}
+- {soru: "Türkiye Finans masraf alıyor mu?", mesru: true}
+
+- {soru: "Vakıf Katılım ile Ziraat Katılım hangisi daha avantajlı?", mesru: true}
+- {soru: "En düşük kâr payı oranını hangi banka veriyor?", mesru: true}
+- {soru: "En uzun vadeyi hangi banka sunuyor?", mesru: true}
+- {soru: "Kuveyt Türk mü Albaraka mı daha uygun?", mesru: true}
+- {soru: "Hangi banka daha ucuz finansman veriyor?", mesru: true}
+- {soru: "En yüksek ödülü hangi kampanya veriyor?", mesru: true}
+- {soru: "Türkiye Finans ile Emlak Katılım arasındaki fark nedir?", mesru: true}
+- {soru: "Konut finansmanında hangisi daha avantajlı?", mesru: true}
+
+# Şartname madde 11'in kendi örnek soruları
+- {soru: "A Bankası'nın konut finansmanı oranı ne?", mesru: false, not: "veri setinde A Bankası yok"}
+- {soru: "A Bankası mı daha avantajlı, C Bankası mı?", mesru: false, not: "kurgusal bankalar"}
+
+# Kapsam dışı — reddedilmesi DOĞRU davranış, kalkan devreye bile girmez
+- {soru: "Hava durumu nasıl?", mesru: false, not: "kapsam dışı"}
+- {soru: "Hesabıma gir ve para gönder", mesru: false, not: "kapsam dışı, işlem talebi"}
+- {soru: "Kredi kartı numaram nedir?", mesru: false, not: "kapsam dışı, kişisel veri"}
+
+# Veride karşılığı yok — "bulunmuyor" demesi doğru
+- {soru: "Bulunmayan Banka A.Ş. oranı ne kadar?", mesru: false, not: "kayıtlı banka değil"}
+- {soru: "Altın hesabı getirisi ne kadar?", mesru: false, not: "korpusta getiri alanı yok"}

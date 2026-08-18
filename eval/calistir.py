@@ -36,6 +36,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from eval.kalkan import olc as kalkani_olc
 from src.depolama import cikarim_durumu, kampanyalari_oku
 from src.schema import ALAN_ADLARI, METINSEL_ALANLAR, SAYISAL_ALANLAR, Kampanya
 
@@ -271,7 +272,19 @@ HEDEFLER = {
     # F1 hedefi şemadan geliyor (`METINSEL_ALANLAR` açıklaması: «alan bazlı F1
     # ile ölçülür, hedef ≥0,78»). Makro-F1 aynı çıtayı tüm alanlara uygular.
     "makro_f1": 0.78,
+    # Kalkanın YANLIŞ BLOK oranı — meşru cevabı engelleme sıklığı.
+    # Hedef sıfır: kalkanın sıkı olması gerekir ama meşru cevabı engellemesi
+    # kusurdur, tercih değil. 18 Ağu ölçümü %14,3 idi (5/35); köken tipli
+    # doğrulamayla sıfıra indi (bulgu 1.2).
+    "kalkan_yanlis_blok_orani": 0.0,
+    # Miras `metin=` sözleşmesinden gelen, kalkanın atladığı parça oranı.
+    "denetimsiz_parca_orani": 0.0,
 }
+
+# Küçük olması iyi olan metrikler — `_durum` karşılaştırma yönünü buradan okur.
+DUSUK_IYI = frozenset({
+    "halusinasyon_orani", "kalkan_yanlis_blok_orani", "denetimsiz_parca_orani",
+})
 
 
 def makro_f1_guven_araligi(
@@ -331,7 +344,7 @@ def _durum(ad: str, deger: float | None) -> str:
     hedef = HEDEFLER.get(ad)
     if hedef is None:
         return "—"
-    if ad == "halusinasyon_orani":
+    if ad in DUSUK_IYI:
         return "✅" if deger <= hedef else "❌"
     return "✅" if deger >= hedef else "❌"
 
@@ -370,6 +383,7 @@ def rapor_yaz(
     doluluk: dict[str, float],
     kokenlik: dict[str, Any] | None = None,
     aralik: tuple[float, float] | None = None,
+    kalkan: dict[str, Any] | None = None,
 ) -> str:
     s: list[str] = [
         "# Değerlendirme Sonuçları",
@@ -404,7 +418,62 @@ def rapor_yaz(
     )
     s.append(f"| Alan doluluğu | %{temel.get('alan_dolulugu', 0) * 100:.1f} | — | — |")
     s.append(f"| Ortalama güven | {temel.get('ortalama_guven', 0):.3f} | — | — |")
+    if kalkan:
+        yb = kalkan["yanlis_blok_orani"]
+        s.append(
+            f"| **Kalkan yanlış blok oranı** | %{yb * 100:.1f} | %0 | "
+            f"{_durum('kalkan_yanlis_blok_orani', yb)} |"
+        )
+        dp = kalkan["denetimsiz_parca_orani"]
+        s.append(
+            f"| Denetimsiz cevap parçası | %{dp * 100:.1f} | %0 | "
+            f"{_durum('denetimsiz_parca_orani', dp)} |"
+        )
     s.append("")
+
+    if kalkan:
+        s += [
+            "## Sayısal doğrulama kalkanı (köken tipli)",
+            "",
+            "Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:",
+            "",
+            f"- **Yanlış blok** — meşru cevabı engelleme: "
+            f"**{kalkan['yanlis_blok_sayisi']}/{kalkan['mesru_soru_sayisi']}** "
+            f"(`eval/sorular.yaml`, {kalkan['soru_sayisi']} soru)",
+            "- **Gevşeme** — uydurma sayıyı geçirme: eşik değil ikili doğruluk; "
+            "`tests/test_kalkan_kokenli.py` koruyor",
+            "",
+            "| Parça kökeni | Sayı | Doğrulama ölçütü |",
+            "|---|---|---|",
+        ]
+        olcutler = {
+            "yapisal": "yapısal kayıtta birebir karşılığı olmalı",
+            "alinti": "kaynak metnin alt dizesi + sayıları alıntının içinde",
+            "sistem": "sayılar `hesap` girdilerinden yeniden üretilebilmeli",
+            "duz": "sayı içeremez (yapıcıda denetlenir)",
+            "denetimsiz": "**miras yol — atlanır ama sayılır**",
+        }
+        for koken, olcut in olcutler.items():
+            s.append(f"| `{koken}` | {kalkan['koken_dagilimi'].get(koken, 0)} | {olcut} |")
+        s.append("")
+        if kalkan["yanlis_blok_ornekleri"]:
+            s += ["**Yanlış bloklanan sorular:**", ""]
+            s += [
+                f"- `{b['soru']}` → reddedilen: {b['reddedilen']}"
+                for b in kalkan["yanlis_blok_ornekleri"]
+            ]
+            s.append("")
+        else:
+            s += [
+                "> ✅ **Meşru soruların hiçbiri engellenmedi.** 18 Ağustos ölçümünde "
+                "bu oran %14,3'tü (35 meşru sorunun 5'i): bankanın kendi metnindeki "
+                "sayılar — bir vaka **6698 sayılı KVKK kanun numarası** — yapısal "
+                "alanda karşılığı olmadığı için «uydurma» sayılıyordu. Kalkan "
+                "gevşetilmedi; parçaların kökeni bildirildi ve alıntılar KAYNAĞINA "
+                "karşı denetlenir oldu. Aynı değişiklik, hesap bölümündeki kör "
+                "noktayı da kapattı (skor ve ağırlıklar artık yeniden üretiliyor).",
+                "",
+            ]
 
     s += ["## Yöntem dağılımı (ablasyonun temeli)", "", "| Yöntem | Alan sayısı |", "|---|---|"]
     for yontem, sayi in sorted(temel.get("yontem_dagilimi", {}).items(), key=lambda x: -x[1]):
@@ -529,8 +598,9 @@ def calistir(ablasyon: bool = False) -> int:
     ablasyon_kaydet(temel, altin, kokenlik)
 
     aralik = makro_f1_guven_araligi(kampanyalar) if altin else None
+    kalkan = kalkani_olc()
 
-    icerik = rapor_yaz(temel, altin, doluluk, kokenlik, aralik)
+    icerik = rapor_yaz(temel, altin, doluluk, kokenlik, aralik, kalkan)
     if ablasyon:
         icerik += _ablasyon_notu()
 
@@ -544,6 +614,13 @@ def calistir(ablasyon: bool = False) -> int:
     print(f"   Kampanya: {temel['kampanya_sayisi']} · Banka: {temel['banka_sayisi']}")
     print(f"   Halüsinasyon oranı: %{temel['halusinasyon_orani'] * 100:.2f} (hedef ≤ %3)")
     print(f"   Alan doluluğu: %{temel['alan_dolulugu'] * 100:.1f}")
+    if kalkan:
+        print(
+            f"   Kalkan yanlış blok: {kalkan['yanlis_blok_sayisi']}"
+            f"/{kalkan['mesru_soru_sayisi']} "
+            f"(%{kalkan['yanlis_blok_orani'] * 100:.1f}, hedef %0) · "
+            f"denetimsiz parça: {kalkan['denetimsiz_parca']}"
+        )
     if altin is None:
         print("   ⏳ Altın set yok — doğruluk metrikleri beklemede (son tarih 16 Ağustos)")
     else:

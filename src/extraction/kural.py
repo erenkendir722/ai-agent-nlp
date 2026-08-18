@@ -24,6 +24,7 @@ from src.preprocessing.normalizasyon import (
     masrafsiz_mi,
     olumsuzlanmis_mi,
     oran_ayristir,
+    birim_belirle,
     para_ayristir,
     tarih_ayristir,
     vade_ayristir,
@@ -984,6 +985,9 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
             ),
             guven=round(min(secilen.guven, 1.0), 3),
             yontem="kural",
+            # Birim, değerin YANINDA taşınır. Tek birimli alanlarda sözleşmeden,
+            # çok birimlide ham ifadeden çözülür — `birim_belirle` tek yol.
+            birim=birim_belirle(secilen.ham_ifade, kural.alan),
         )
 
     if (masrafsiz := _masrafsizlik(metin, url, cekim_tarihi)) is not None:
@@ -1010,6 +1014,7 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
             ),
             guven=0.85,
             yontem="kural",
+            birim=birim_belirle(dilim.kanit, "finansman_tutari_max"),
         )
 
     return sonuc

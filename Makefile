@@ -1,4 +1,5 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
+        birim-goc \
         altin-ornekle altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol hava-boslugu
 
@@ -96,6 +97,9 @@ altin-uyum:  ## etiketleyiciler arası uyum oranı
 
 altin-derle:  ## doldurulmuş CSV'ler -> data/gold/altin_set.jsonl
 	@$(PYTHON) tools/altin_set.py derle
+
+birim-goc:  ## eski veritabanına birim ekler (şema v1.1.0 -> v1.2.0)
+	$(PYTHON) tools/birim_goc.py $(if $(deneme),--deneme)
 
 # --- görev panosu ---
 gorev:  ## görev durumu (ad=Esra ile kişiye özel)

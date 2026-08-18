@@ -14,6 +14,8 @@ import re
 import unicodedata
 from datetime import date
 
+from src.schema import ALAN_BOYUTLARI, TEK_BIRIMLI_ALANLAR, Birim
+
 # ---------------------------------------------------------------------------
 # TUZAK 1 — İ/I/ı/i sorunu
 # ---------------------------------------------------------------------------
@@ -534,9 +536,63 @@ def masrafsiz_mi(parca: str) -> bool | None:
     return None
 
 
+# ---------------------------------------------------------------------------
+# Birim çözümleme (şema sözleşmesi: `schema.ALAN_BOYUTLARI`)
+# ---------------------------------------------------------------------------
+
+
+def birim_belirle(ham_ifade: str | None, alan_adi: str) -> Birim | None:
+    """Bir değerin BOYUTUNU çözer. Tek çözümleyici — çıkarım da göç de bunu çağırır.
+
+    İki aşamalı, çünkü sorunun iki hâli var:
+
+    1. TEK BİRİMLİ ALAN — cevabı sözleşme veriyor. `kar_payi_orani` her zaman
+       yüzdedir; metne bakmaya gerek yok, bakmak gereksiz risk olurdu.
+
+    2. ÇOK BİRİMLİ ALAN — cevabı yalnız ham ifade veriyor. `tahsis_ucreti`
+       hem «500 TL» hem «%0,50» olabilir ve bunları ayıran tek şey yazılıştır.
+       Bilgi tam burada kayboluyordu:
+
+           ayristirici=lambda s: para_ayristir(s, ...) or oran_ayristir(s)
+
+       O `or`, hangisinin tuttuğunu çağırana söylemiyordu.
+
+    TEK FONKSİYON OLMASI ÖNEMLİ: aynı çözümleme hem yeni çıkarımda hem eski
+    kayıtların göçünde kullanılır. İki ayrı uygulama, iki ayrı gerçeklik
+    üretir ve göç edilmiş kayıtla yeni kayıt sessizce ayrışırdı.
+
+    >>> birim_belirle("%1,89", "kar_payi_orani").value
+    'yuzde'
+    >>> birim_belirle("120 aya kadar", "vade_ay_max").value
+    'ay'
+    >>> birim_belirle("0,50%", "tahsis_ucreti").value
+    'yuzde'
+    >>> birim_belirle("500 TL", "tahsis_ucreti").value
+    'tl'
+    >>> birim_belirle("belirsiz", "tahsis_ucreti") is None
+    True
+    """
+    ima_edilen = TEK_BIRIMLI_ALANLAR.get(alan_adi)
+    if ima_edilen is not None:
+        return ima_edilen
+
+    izinli = ALAN_BOYUTLARI.get(alan_adi)
+    if not izinli or not ham_ifade:
+        return None
+
+    # Yüzde işareti TL'den önce sınanır: «%0,50 TL» gibi karma yazımda
+    # belirleyici olan oran işaretidir (maliyet tablolarında görülüyor).
+    if Birim.YUZDE in izinli and ("%" in ham_ifade or _YUZDE_SOZCUGU.search(ham_ifade)):
+        return Birim.YUZDE
+    if Birim.TL in izinli and _PARA_BIRIMI.search(ham_ifade):
+        return Birim.TL
+    return None
+
+
 __all__ = [
     "MASRAF_SOZCUKLERI",
     "arama_anahtari",
+    "birim_belirle",
     "bosluk_duzelt",
     "masrafsiz_mi",
     "olumsuzlanmis_mi",

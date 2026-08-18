@@ -21,6 +21,7 @@ from enum import StrEnum
 from typing import Literal
 
 from src.depolama import KampanyaKaydi
+from src.schema import ALAN_BOYUTLARI, Birim
 
 Yon = Literal["dusuk_iyi", "yuksek_iyi"]
 
@@ -50,6 +51,60 @@ _SIRALAMA_ALANLARI: dict[Kriter, tuple[str, Yon]] = {
     Kriter.EN_UZUN_VADE: ("vade_ay_max", "yuksek_iyi"),
     Kriter.EN_DUSUK_MASRAF: ("tahsis_ucreti", "dusuk_iyi"),
 }
+
+
+@dataclass(frozen=True)
+class Senaryo:
+    """Karşılaştırmanın ORTAK TABANI — farklı birimleri kıyaslanabilir kılar.
+
+    NEDEN GEREKLİ (bulgu 1.1):
+        `tahsis_ucreti` alanı hem TL hem yüzde taşır; bankalar ikisini de
+        kullanıyor. 18 Ağustos'a kadar bu değerler ortak birimmiş gibi
+        min-maks normalize ediliyordu:
+
+            {0,5 (%0,50) · 75,0 (%75) · 500,0 (500 TL)}
+
+        Sonuç, %0,50'lik ücretin "en ucuz", 500 TL'nin "en pahalı" görünmesiydi.
+        Oysa 100.000 TL'lik bir finansmanda **ikisi de 500 TL'dir** — yani
+        eşittirler. Sıralama, birim karışıklığı yüzünden tersine dönüyordu.
+
+    Senaryo verilmezse yüzde değerler TL'ye indirgenemez ve
+    `karsilastirilabilirlik` düşer; kullanıcı uyarı görür. Sessizce yanlış
+    sıralamaktansa "bu kriteri ortak tabana indiremedim" demek doğrudur.
+    """
+
+    anapara: float
+    vade_ay: int
+
+
+def ortak_tabana_indir(
+    kayit: KampanyaKaydi, alan_adi: str, senaryo: Senaryo | None
+) -> float | None:
+    """Alan değerini karşılaştırılabilir ortak tabana indirger. Olmuyorsa None.
+
+    TEK BİRİMLİ alanlar zaten ortak tabandadır (`kar_payi_orani` hep yüzde,
+    `vade_ay_max` hep ay) — dokunulmaz. Yalnız ÇOK BİRİMLİ alanlar
+    indirgenir, çünkü karışım yalnız orada mümkündür.
+
+    `None` dönmek bir hata değil, bir BEYANDIR: "bu değeri diğerleriyle
+    aynı tabana getiremiyorum". Çağıran bunu eksik veri gibi işler ve
+    karşılaştırılabilirlik oranına yansıtır.
+    """
+    deger = getattr(kayit, alan_adi, None)
+    if deger is None:
+        return None
+
+    izinli = ALAN_BOYUTLARI.get(alan_adi)
+    if izinli is None or len(izinli) == 1:
+        return float(deger)
+
+    birim = kayit.birim(alan_adi)
+    if birim is Birim.TL:
+        return float(deger)
+    if birim is Birim.YUZDE and senaryo is not None:
+        # %0,50 × 100.000 TL = 500 TL — artık 500 TL'lik ücretle EŞİT.
+        return senaryo.anapara * float(deger) / 100.0
+    return None
 
 
 @dataclass(frozen=True)
@@ -123,7 +178,9 @@ ne kötü yapar. Ayrıca `karsilastirilabilirlik` ile kullanıcıya bildirilir."
 
 
 def avantaj_skorla(
-    kayitlar: list[KampanyaKaydi], agirliklar: Agirliklar | None = None
+    kayitlar: list[KampanyaKaydi],
+    agirliklar: Agirliklar | None = None,
+    senaryo: Senaryo | None = None,
 ) -> list[SkorDetayi]:
     """"En avantajlı" sıralaması — şeffaf ağırlıklı skor.
 
@@ -144,10 +201,10 @@ def avantaj_skorla(
 
     normalize_edilmis: dict[str, list[float | None]] = {}
     for ad, alan, yon, _ in bilesen_tanimlari:
-        ham = [
-            float(v) if (v := getattr(kayit, alan)) is not None else None
-            for kayit in kayitlar
-        ]
+        # Ham değer DEĞİL, ortak tabana indirgenmiş değer normalize edilir.
+        # Farklı birimleri aynı min-maks ölçeğine sokmak, bulgu 1.1'in ta
+        # kendisiydi.
+        ham = [ortak_tabana_indir(kayit, alan, senaryo) for kayit in kayitlar]
         normalize_edilmis[ad] = _min_maks_normalize(ham, yon)
 
     sonuclar: list[SkorDetayi] = []
@@ -192,6 +249,7 @@ def sirala(
     kayitlar: list[KampanyaKaydi],
     kriter: Kriter,
     agirliklar: Agirliklar | None = None,
+    senaryo: Senaryo | None = None,
 ) -> list[KampanyaKaydi]:
     """Şartname 5.7'deki beş kriterden birine göre sıralar.
 
@@ -199,16 +257,22 @@ def sirala(
     gibi görünmemeli.
     """
     if kriter == Kriter.EN_AVANTAJLI:
-        sira = {d.kampanya_id: i for i, d in enumerate(avantaj_skorla(kayitlar, agirliklar))}
+        sira = {
+            d.kampanya_id: i
+            for i, d in enumerate(avantaj_skorla(kayitlar, agirliklar, senaryo))
+        }
         return sorted(kayitlar, key=lambda k: sira.get(k.kampanya_id, len(sira)))
 
     alan, yon = _SIRALAMA_ALANLARI[kriter]
 
     def anahtar(kayit: KampanyaKaydi) -> tuple[int, float]:
-        deger = getattr(kayit, alan)
+        # Ortak tabana indirgenemeyen değer de "eksik" sayılır ve sona gider:
+        # yanlış tabanda sıralanmış bir sayı, hiç sıralanmamış olmaktan
+        # kötüdür.
+        deger = ortak_tabana_indir(kayit, alan, senaryo)
         if deger is None:
-            return (1, 0.0)  # eksikler sona
-        return (0, float(deger) if yon == "dusuk_iyi" else -float(deger))
+            return (1, 0.0)
+        return (0, deger if yon == "dusuk_iyi" else -deger)
 
     return sorted(kayitlar, key=anahtar)
 
@@ -227,6 +291,23 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
     mesajlar: list[str] = []
     if len(kayitlar) < 2:
         return mesajlar
+
+    # BİRİM KARIŞIMI — sessizce sıralamaktansa beyan etmek.
+    for alan_adi in ALAN_BOYUTLARI:
+        if len(ALAN_BOYUTLARI[alan_adi]) == 1:
+            continue
+        birimler = {
+            k.birim(alan_adi)
+            for k in kayitlar
+            if getattr(k, alan_adi, None) is not None and k.birim(alan_adi)
+        }
+        if len(birimler) > 1:
+            adlar = ", ".join(sorted(b.value for b in birimler))
+            mesajlar.append(
+                f"⚠️ `{alan_adi}` alanı farklı birimlerde ({adlar}). Ortak tabana "
+                "indirmek için bir senaryo (anapara, vade) gerekir; senaryo "
+                "verilmeden bu kriter sıralamaya KATILMAZ."
+            )
 
     vadeler = {k.vade_ay_max for k in kayitlar if k.vade_ay_max is not None}
     if len(vadeler) > 1:

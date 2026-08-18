@@ -39,7 +39,22 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
-from src.schema import SAYISAL_ALANLAR, Kampanya
+from src.schema import (
+    ALAN_BOYUTLARI,
+    SAYISAL_ALANLAR,
+    TEK_BIRIMLI_ALANLAR,
+    Birim,
+    Kampanya,
+)
+
+COK_BIRIMLI_ALANLAR: tuple[str, ...] = tuple(
+    ad for ad in ALAN_BOYUTLARI if ad not in TEK_BIRIMLI_ALANLAR
+)
+"""Boyutu sözleşmeden çıkarılamayan alanlar — sütun taşımak zorundalar.
+
+Sözleşmeden TÜRETİLİR, elle yazılmaz: `ALAN_BOYUTLARI`'na üçüncü bir çok
+birimli alan eklendiğinde bu demet kendiliğinden büyür ve
+`tests/test_boyut_sozlesmesi.py` sütununun da eklendiğini denetler."""
 
 KOK = Path(__file__).resolve().parents[1]
 VARSAYILAN_VERITABANI = f"sqlite:///{KOK / 'data' / 'katilim.db'}"
@@ -92,6 +107,13 @@ class KampanyaKaydi(Temel):
     masrafsiz_mi: Mapped[bool | None] = mapped_column(Boolean)
     kampanya_bitis: Mapped[date | None] = mapped_column(Date)
 
+    # -- Boyut (şema v1.2.0) --
+    # Yalnız ÇOK BİRİMLİ alanlar sütun taşır: tek birimli alanların boyutu
+    # `schema.TEK_BIRIMLI_ALANLAR` sözleşmesinden okunur, sütunda tekrar
+    # etmek iki doğruluk kaynağı yaratırdı. `birim_of()` bu ayrımı gizler.
+    tahsis_ucreti_birim: Mapped[str | None] = mapped_column(String(16))
+    alisveris_puani_birim: Mapped[str | None] = mapped_column(String(16))
+
     # -- Kalite göstergeleri --
     ortalama_guven: Mapped[float] = mapped_column(Float, default=0.0)
     doluluk_orani: Mapped[float] = mapped_column(Float, default=0.0)
@@ -99,6 +121,18 @@ class KampanyaKaydi(Temel):
     # -- Kanıt zinciri ve köken --
     tam_kayit: Mapped[dict] = mapped_column(JSON)
     ham_metin: Mapped[str] = mapped_column(Text, default="")
+
+    def birim(self, alan_adi: str) -> Birim | None:
+        """Bir alanın boyutu. Tek birimlide sözleşmeden, çok birimlide sütundan.
+
+        Çağıran, alanın kaç birimli olduğunu BİLMEK ZORUNDA DEĞİL — gösterim
+        ve karşılaştırma tek bir soruyla ("bu alanın birimi ne?") ilerler.
+        """
+        ima_edilen = TEK_BIRIMLI_ALANLAR.get(alan_adi)
+        if ima_edilen is not None:
+            return ima_edilen
+        ham = getattr(self, f"{alan_adi}_birim", None)
+        return Birim(ham) if ham else None
 
     def kampanyaya_cevir(self) -> Kampanya:
         """JSON sütunundan tam kanıt zincirli nesneyi geri kurar."""
@@ -194,6 +228,11 @@ def kaydet(kampanyalar: Kampanya | list[Kampanya], url: str = VERITABANI_URL) ->
             duz: dict[str, object] = {ad: _duz_deger(kampanya, ad) for ad in SAYISAL_ALANLAR}
             duz["masrafsiz_mi"] = _duz_deger(kampanya, "masrafsiz_mi")
             duz["kampanya_bitis"] = _duz_deger(kampanya, "kampanya_bitis")
+
+            for alan_adi in COK_BIRIMLI_ALANLAR:
+                alan = getattr(kampanya, alan_adi, None)
+                birim = getattr(alan, "birim", None) if alan is not None else None
+                duz[f"{alan_adi}_birim"] = birim.value if birim else None
 
             tur = _duz_deger(kampanya, "kampanya_turu")
             kitle = _duz_deger(kampanya, "hedef_kitle")

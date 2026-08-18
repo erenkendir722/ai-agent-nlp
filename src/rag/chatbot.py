@@ -24,11 +24,14 @@ from enum import StrEnum
 from src.comparison.karsilastirma import Agirliklar, avantaj_skorla, uyarilar
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
-from src.schema import SAYISAL_ALANLAR
+from src.schema import BIRIM_GOSTERIMLERI, SAYISAL_ALANLAR, Birim
 
 log = logging.getLogger(__name__)
 
 YASAL_UYARI = "Bağlayıcı teklif niteliği taşımaz."
+
+_SAYI_DESENI = re.compile(r"\d[\d.,]*")
+"""Metindeki sayı adayları. Köken denetiminin de, kalkanın da tek tarayıcısı."""
 
 
 class Niyet(StrEnum):
@@ -46,38 +49,148 @@ class Kaynakca:
     alinti: str = ""
 
 
+class Koken(StrEnum):
+    """Bir cevap parçasındaki sayıların NEREDEN geldiği.
+
+    Kalkan her parçayı kökenine göre farklı ölçütle denetler. Tek bir
+    ölçüt dayatmak iki hatayı birden üretiyordu (ölçüldü, 18 Ağustos):
+
+      * ALINTI parçalar yapısal alana karşı denetleniyordu; bankanın kendi
+        metnindeki sayı "doğrulanamadı" diye MEŞRU CEVAP ENGELLENİYORDU.
+        10 doğal soruda 2 yanlış blok (%20).
+      * SISTEM parçalar `dogrulanacak_metin` ile tümüyle MUAF tutuluyordu;
+        skor ve ağırlık bölümüne istenen sayı yazılabiliyordu — kalkanın
+        kör noktası.
+
+    Köken bilgisi kalkanı gevşetmez, ona eksik olan tip bilgisini verir.
+    """
+
+    YAPISAL = "yapisal"
+    """Yapısal alandan gelen veri iddiası. Ölçüt: kayıtta birebir karşılığı olmalı."""
+
+    ALINTI = "alinti"
+    """Kaynak metinden birebir alınmış parça. Ölçüt: alıntı ham metnin ALT DİZESİ
+    olmalı ve parçadaki her sayı alıntının içinde geçmeli."""
+
+    SISTEM = "sistem"
+    """Bizim hesabımız (ağırlık, skor). Ölçüt: sayılar `hesap` sözlüğünden
+    YENİDEN ÜRETİLEBİLMELİ. Muafiyet değil, farklı bir doğrulama."""
+
+    DUZ = "duz"
+    """Sabit bağlaç metni. Sayı İÇEREMEZ — bu kısıt yapıcıda denetlenir."""
+
+    DENETIMSIZ = "denetimsiz"
+    """MİRAS YOL — henüz köken tipine geçirilmemiş üretici.
+
+    Kalkan bu parçayı atlar ama SAYAR. Görünmez bir muafiyet yerine ölçülen
+    bir borç: `eval` bunu `denetimsiz_parca_orani` olarak raporlar ve hedef
+    sıfırdır. `src/rag/chatbot.py` üreticileri bu kökeni kullanamaz
+    (`tests/test_kalkan_kokenli.py` denetler)."""
+
+
+@dataclass(frozen=True)
+class CevapParcasi:
+    """Cevabın, tek bir kökene sahip en küçük parçası."""
+
+    metin: str
+    koken: Koken
+    kayit_id: str | None = None
+    """ALINTI için ZORUNLU: alıntının hangi kayıttan geldiği."""
+    alinti: str = ""
+    """ALINTI için ZORUNLU: kaynak metinden alınan ham parça (gösterim
+    sarmalayıcısı olmadan). Bütünlük denetimi buna uygulanır."""
+    hesap: dict[str, float] | None = None
+    """SISTEM için ZORUNLU: metindeki sayıların üretildiği girdiler."""
+
+    def __post_init__(self) -> None:
+        """Köken sözleşmesi yapıcıda denetlenir.
+
+        `Alan._kanit_zinciri` ile aynı refleks: eksik kanıtla nesne
+        KURULAMAZ. Doğrulamayı çağrı yerine bırakmak, unutulabilir bir
+        disiplin olurdu; buraya koymak imkânsız kılar.
+        """
+        if self.koken is Koken.ALINTI:
+            if not self.kayit_id:
+                raise ValueError("ALINTI parçası kayit_id taşımak zorundadır")
+            if not self.alinti:
+                raise ValueError("ALINTI parçası ham alıntıyı taşımak zorundadır")
+        if self.koken is Koken.SISTEM and self.hesap is None:
+            raise ValueError(
+                "SISTEM parçası `hesap` taşımak zorundadır: sayıları yeniden "
+                "üretilemeyen bir hesap, denetlenemeyen bir iddiadır"
+            )
+        if self.koken is Koken.DUZ and _SAYI_DESENI.search(self.metin):
+            raise ValueError(
+                f"DUZ parçası sayı içeremez: {self.metin[:60]!r}. Sayı taşıyan "
+                "metnin kökeni YAPISAL, ALINTI ya da SISTEM olmalıdır."
+            )
+
+
 @dataclass
 class Cevap:
-    metin: str
-    niyet: Niyet
+    parcalar: list[CevapParcasi] = field(default_factory=list)
+    niyet: Niyet = Niyet.KOSUL_SORGUSU
     kaynaklar: list[Kaynakca] = field(default_factory=list)
     kullanilan_kayitlar: list[KampanyaKaydi] = field(default_factory=list)
     uyarilar: list[str] = field(default_factory=list)
     dogrulama_gecti: bool = True
     reddedilen_sayilar: list[str] = field(default_factory=list)
 
-    dogrulanacak_metin: str | None = None
-    """Sayısal doğrulama kalkanının denetleyeceği bölüm. None ise `metin`.
+    def __init__(
+        self,
+        parcalar: list[CevapParcasi] | None = None,
+        niyet: Niyet = Niyet.KOSUL_SORGUSU,
+        kaynaklar: list[Kaynakca] | None = None,
+        kullanilan_kayitlar: list[KampanyaKaydi] | None = None,
+        uyarilar: list[str] | None = None,
+        dogrulama_gecti: bool = True,
+        reddedilen_sayilar: list[str] | None = None,
+        *,
+        metin: str | None = None,
+        dogrulanacak_metin: str | None = None,
+    ) -> None:
+        """`metin=` / `dogrulanacak_metin=` MİRAS yoldur — bkz. `Koken.DENETIMSIZ`.
 
-    NEDEN AYRI BİR ALAN:
-        Kalkan, cevaptaki her sayının yapısal kayıtta karşılığı olmasını arar.
-        Ama bir cevap iki tür sayı içerir:
+        Geçiş sırasında iki sözleşme birlikte yaşar. Miras çağrı, bugünkü
+        anlamı BİREBİR korur: denetlenen bölüm YAPISAL, muaf tutulan bölüm
+        DENETIMSIZ parça olur. Yani davranış değişmez, ama muafiyet artık
+        görünür ve sayılabilir.
+        """
+        if parcalar is None:
+            parcalar = _miras_parcalar(metin or "", dogrulanacak_metin)
+        elif metin is not None:
+            raise ValueError("`parcalar` ile `metin` birlikte verilemez")
 
-          1. VERİ İDDİASI  — "kâr payı oranı %1,89'dur"  → doğrulanmalı
-          2. SİSTEM AÇIKLAMASI — "ağırlıklar: kâr payı %40, masraf %25",
-             "skor 0,625"                                 → doğrulanamaz, çünkü
-             bunlar veriden gelmiyor, bizim hesabımız.
+        self.parcalar = parcalar
+        self.niyet = niyet
+        self.kaynaklar = kaynaklar if kaynaklar is not None else []
+        self.kullanilan_kayitlar = (
+            kullanilan_kayitlar if kullanilan_kayitlar is not None else []
+        )
+        self.uyarilar = uyarilar if uyarilar is not None else []
+        self.dogrulama_gecti = dogrulama_gecti
+        self.reddedilen_sayilar = (
+            reddedilen_sayilar if reddedilen_sayilar is not None else []
+        )
 
-        İkisini ayırmazsak kalkan kendi açıklamamızı halüsinasyon sanıp geçerli
-        bir cevabı engeller. 9 Ağustos'ta karşılaştırma cevabı tam olarak bu
-        yüzden bloke oldu (reddedilenler: 40, 25, 20, 15, 0.625).
-
-        Kalkanı gevşetmek yanlış çözüm olurdu — asıl iş onun sıkı kalması.
-        Doğru çözüm, denetlenecek metni doğru seçmek.
-    """
+    @property
+    def metin(self) -> str:
+        """Gösterilecek tam gövde — parçaların sırayla birleşimi."""
+        return "\n".join(p.metin for p in self.parcalar)
 
     def denetlenecek(self) -> str:
-        return self.dogrulanacak_metin if self.dogrulanacak_metin is not None else self.metin
+        """MİRAS: kalkanın denetleyeceği bölüm, düz metin olarak.
+
+        Yeni yol `kalkandan_gecir()`. Bu yardımcı, parça sözleşmesine
+        geçmemiş çağrı yerleri ve mevcut testler için korunuyor.
+        """
+        return "\n".join(
+            p.metin for p in self.parcalar if p.koken is not Koken.DENETIMSIZ
+        )
+
+    def denetimsiz_parca_sayisi(self) -> int:
+        """Ölçülen teknik borç: kaç parça hâlâ miras yoldan geliyor."""
+        return sum(1 for p in self.parcalar if p.koken is Koken.DENETIMSIZ)
 
     def tam_metin(self) -> str:
         parcalar = [self.metin]
@@ -91,6 +204,21 @@ class Cevap:
                 )
             parcalar.append(f"\n_{YASAL_UYARI}_")
         return "\n".join(parcalar)
+
+
+def _miras_parcalar(metin: str, dogrulanacak: str | None) -> list[CevapParcasi]:
+    """Miras `metin=` çağrısını parça listesine çevirir. Anlamı KORUR."""
+    if not metin:
+        return []
+    if dogrulanacak is None:
+        return [CevapParcasi(metin, Koken.YAPISAL)]
+    if not dogrulanacak:
+        return [CevapParcasi(metin, Koken.DENETIMSIZ)]
+    kalan = metin[len(dogrulanacak):] if metin.startswith(dogrulanacak) else ""
+    parcalar = [CevapParcasi(dogrulanacak, Koken.YAPISAL)]
+    if kalan.strip():
+        parcalar.append(CevapParcasi(kalan, Koken.DENETIMSIZ))
+    return parcalar
 
 
 # ---------------------------------------------------------------------------
@@ -182,29 +310,32 @@ def _urun_filtrele(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
 # SAYISAL DOĞRULAMA KALKANI
 # ---------------------------------------------------------------------------
 
-_SAYI_DESENI = re.compile(r"\d[\d.,]*")
+def _sayi_varyantlari(sayi: float) -> set[str]:
+    """Bir sayının metinde geçebileceği yazımları üretir.
 
-
-def sayisal_dogrulama(cevap_metni: str, kayitlar: list[KampanyaKaydi]) -> tuple[bool, list[str]]:
-    """Cevaptaki her sayının getirilen yapısal kayıtta karşılığı var mı?
-
-    Yoksa cevap reddedilir. Bu, chatbot'un uydurma oran söylemesini KOD ile
-    engeller — istem mühendisliğiyle değil. Sistemin en özgün parçası budur.
-
-    Dönen: (geçti_mi, reddedilen_sayılar)
+    Tek yerde toplandı: hem yapısal alanların hem `hesap` sözlüğünün izin
+    listesi buradan doğuyor. İki ayrı liste tutmak, birinde düzeltilen bir
+    yazım biçiminin diğerinde eksik kalması demekti.
     """
+    return {
+        f"{sayi:g}",
+        f"{sayi:.0f}",
+        f"{sayi:.2f}".rstrip("0").rstrip("."),
+        f"{sayi:.2f}".replace(".", ","),
+        f"{sayi:,.0f}".replace(",", "."),  # 50.000
+        f"{sayi:.3f}",  # skor gösterimi: 0.625
+    }
+
+
+def _izinli_sayilar(kayitlar: list[KampanyaKaydi]) -> set[str]:
+    """Yapısal kayıtlardan doğan izin listesi."""
     izinli: set[str] = set()
     for kayit in kayitlar:
         for alan in (*SAYISAL_ALANLAR, "taksit_sayisi"):
             deger = getattr(kayit, alan, None)
             if deger is None:
                 continue
-            sayi = float(deger)
-            izinli.add(f"{sayi:g}")
-            izinli.add(f"{sayi:.0f}")
-            izinli.add(f"{sayi:.2f}".rstrip("0").rstrip("."))
-            izinli.add(f"{sayi:.2f}".replace(".", ","))
-            izinli.add(f"{sayi:,.0f}".replace(",", "."))  # 50.000
+            izinli |= _sayi_varyantlari(float(deger))
         if kayit.kampanya_bitis:
             izinli.update({
                 str(kayit.kampanya_bitis.year),
@@ -212,21 +343,117 @@ def sayisal_dogrulama(cevap_metni: str, kayitlar: list[KampanyaKaydi]) -> tuple[
                 str(kayit.kampanya_bitis.day),
                 str(kayit.kampanya_bitis.month),
             })
+    return izinli
 
-    reddedilen: list[str] = []
-    for eslesme in _SAYI_DESENI.finditer(cevap_metni):
+
+def _metindeki_sayilar(metin: str) -> list[tuple[str, float]]:
+    """(ham yazım, sayısal değer) çiftleri. Tek haneliler atlanır."""
+    bulunan: list[tuple[str, float]] = []
+    for eslesme in _SAYI_DESENI.finditer(metin):
         ham = eslesme.group(0).strip(".,")
         if not ham or len(ham) <= 1:
             continue  # tek haneli sayılar madde numarası olabilir
-        normalize = ham.replace(".", "").replace(",", ".")
         try:
-            deger = float(normalize)
+            deger = float(ham.replace(".", "").replace(",", "."))
         except ValueError:
             continue
-        adaylar = {ham, f"{deger:g}", f"{deger:.0f}"}
-        if not (adaylar & izinli):
-            reddedilen.append(ham)
+        bulunan.append((ham, deger))
+    return bulunan
 
+
+def sayisal_dogrulama(cevap_metni: str, kayitlar: list[KampanyaKaydi]) -> tuple[bool, list[str]]:
+    """Cevaptaki her sayının getirilen yapısal kayıtta karşılığı var mı?
+
+    YAPISAL kökenli parçaların ölçütü budur ve DEĞİŞMEDİ: kayıtta karşılığı
+    olmayan sayı cevaba giremez. Chatbot'un uydurma oran söylemesini KOD ile
+    engelleyen kısıt hâlâ burada.
+
+    Dönen: (geçti_mi, reddedilen_sayılar)
+    """
+    izinli = _izinli_sayilar(kayitlar)
+    reddedilen = [
+        ham
+        for ham, deger in _metindeki_sayilar(cevap_metni)
+        if not ({ham, f"{deger:g}", f"{deger:.0f}"} & izinli)
+    ]
+    return (not reddedilen), reddedilen
+
+
+def _alinti_dogrula(parca: CevapParcasi, kayitlar: list[KampanyaKaydi]) -> list[str]:
+    """ALINTI parçası: bütünlük + sayı denetimi.
+
+    İKİ ŞART, İKİSİ DE BUGÜN YOK:
+
+    1. BÜTÜNLÜK — alıntı, gösterildiği kaydın ham metninin ALT DİZESİ olmalı.
+       Bugün hiçbir yerde denetlenmiyor: cevaba "alıntı" diye uydurulmuş bir
+       cümle konabilir. Bu şart, kalkana YENİ bir garanti ekler.
+
+    2. SAYI — parçadaki her sayı ya alıntının içinde geçmeli ya da yapısal
+       izin listesinde olmalı. Bankanın kendi metnindeki sayı artık meşrudur;
+       ama alıntının dışına eklenmiş bir sayı hâlâ reddedilir.
+    """
+    kayit = next((k for k in kayitlar if k.kampanya_id == parca.kayit_id), None)
+    if kayit is None:
+        return [f"alıntının kaydı bulunamadı: {parca.kayit_id}"]
+
+    if parca.alinti.strip() not in (kayit.ham_metin or ""):
+        return [f"alıntı kaynak metinde yok: {parca.alinti[:40]!r}"]
+
+    izinli = _izinli_sayilar([kayit])
+    return [
+        ham
+        for ham, deger in _metindeki_sayilar(parca.metin)
+        if ham not in parca.alinti and not ({ham, f"{deger:g}", f"{deger:.0f}"} & izinli)
+    ]
+
+
+def _sistem_dogrula(parca: CevapParcasi) -> list[str]:
+    """SISTEM parçası: sayılar `hesap` girdilerinden YENİDEN ÜRETİLEBİLMELİ.
+
+    Bu, `dogrulanacak_metin` muafiyetinin yerine geçer. Muafiyet kör noktaydı:
+    ağırlık/skor bölümüne yazılan hiçbir sayı denetlenmiyordu. Artık cevapta
+    görünen her sayının, o cevabı üreten hesabın girdilerinden biri olması
+    gerekiyor — açıklama metnine elle yazılmış bir skor yakalanır.
+    """
+    izinli: set[str] = set()
+    for deger in (parca.hesap or {}).values():
+        izinli |= _sayi_varyantlari(float(deger))
+    return [
+        ham
+        for ham, deger in _metindeki_sayilar(parca.metin)
+        if not ({ham, f"{deger:g}", f"{deger:.0f}", f"{deger:.3f}"} & izinli)
+    ]
+
+
+def kalkandan_gecir(
+    cevap: Cevap, kayitlar: list[KampanyaKaydi]
+) -> tuple[bool, list[str]]:
+    """KÖKEN TİPLİ SAYISAL DOĞRULAMA KALKANI — sistemin en özgün parçası.
+
+    Her parça KÖKENİNE göre denetlenir; tek ölçüt dayatılmaz:
+
+        YAPISAL     -> yapısal kayıtta birebir karşılığı olmalı  (değişmedi)
+        ALINTI      -> kaynak metnin alt dizesi + sayıları alıntının içinde
+        SISTEM      -> sayılar `hesap` girdilerinden yeniden üretilebilmeli
+        DUZ         -> sayı içeremez (yapıcıda zaten denetlendi)
+        DENETIMSIZ  -> atlanır ama SAYILIR (miras yol, hedef sıfır)
+
+    Bu kalkanı GEVŞETMEZ, sertleştirir: alıntı bütünlüğü ve hesap
+    doğrulaması bugün hiç yok. Gevşeyen tek şey, bankanın kendi metnindeki
+    sayının "uydurma" sayılması hatasıydı.
+    """
+    reddedilen: list[str] = []
+    for parca in cevap.parcalar:
+        match parca.koken:
+            case Koken.YAPISAL:
+                _, red = sayisal_dogrulama(parca.metin, kayitlar)
+                reddedilen += red
+            case Koken.ALINTI:
+                reddedilen += _alinti_dogrula(parca, kayitlar)
+            case Koken.SISTEM:
+                reddedilen += _sistem_dogrula(parca)
+            case Koken.DUZ | Koken.DENETIMSIZ:
+                pass
     return (not reddedilen), reddedilen
 
 
@@ -269,21 +496,52 @@ def _kaynakca(kayit: KampanyaKaydi) -> Kaynakca:
 
 
 _ALAN_ETIKETLERI = {
-    "kar_payi_orani": ("Kâr payı oranı", "aylık %{}"),
-    "vade_ay_max": ("Azami vade", "{} ay"),
-    "finansman_tutari_max": ("Azami finansman tutarı", "{} TL"),
-    "taksit_sayisi": ("Taksit sayısı", "{}"),
-    "tahsis_ucreti": ("Tahsis ücreti", "{} TL"),
-    "odul_miktari": ("Ödül miktarı", "{} TL"),
-    "indirim_orani": ("İndirim oranı", "%{}"),
+    "kar_payi_orani": "Kâr payı oranı",
+    "vade_ay_max": "Azami vade",
+    "finansman_tutari_max": "Azami finansman tutarı",
+    "taksit_sayisi": "Taksit sayısı",
+    "tahsis_ucreti": "Tahsis ücreti",
+    "odul_miktari": "Ödül miktarı",
+    "indirim_orani": "İndirim oranı",
 }
+"""Alan -> ETİKET. Biçim burada YOK; biçim birimden türer.
+
+Eskiden her alanın yanında sabit bir şablon duruyordu:
+
+    "tahsis_ucreti": ("Tahsis ücreti", "{} TL")
+
+Alan başına sabitlenmiş şablon, çok birimli bir alanda zorunlu olarak yanlış
+yazar: `%0,50` olarak çıkarılmış bir ücret ekranda «0,50 TL» görünüyordu
+(bulgu 1.1). Sabit şablonu silmek, hatayı düzeltmez — hatayı MÜMKÜN OLMAKTAN
+çıkarır."""
+
+_KAR_PAYI_ONEKI = {"kar_payi_orani": "aylık "}
+"""Alanın anlamına ait niteleme — birime değil, alana aittir."""
+
+
+def alan_goster(alan_adi: str, deger: float | int, birim: Birim | None) -> str:
+    """Bir alan değerini BİRİMİNE göre yazar.
+
+    >>> alan_goster("tahsis_ucreti", 500.0, Birim.TL)
+    '500 TL'
+    >>> alan_goster("tahsis_ucreti", 0.5, Birim.YUZDE)
+    '%0,50'
+    >>> alan_goster("vade_ay_max", 60, Birim.AY)
+    '60 ay'
+    """
+    gosterim = sayi_goster(deger) if isinstance(deger, float) else str(deger)
+    kalip = BIRIM_GOSTERIMLERI.get(birim, "{}") if birim else "{}"
+    return _KAR_PAYI_ONEKI.get(alan_adi, "") + kalip.format(gosterim)
 
 
 def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     if not kayitlar:
         return Cevap(
-            metin="Bu bilgi veri setinde bulunmuyor. Sorduğunuz bankaya ait "
-                  "kampanya kaydı toplanmamış olabilir.",
+            parcalar=[CevapParcasi(
+                "Bu bilgi veri setinde bulunmuyor. Sorduğunuz bankaya ait "
+                "kampanya kaydı toplanmamış olabilir.",
+                Koken.DUZ,
+            )],
             niyet=Niyet.TEKIL_SORGU,
         )
 
@@ -291,12 +549,11 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     satirlar = [f"**{kayit.banka_adi}** — {kayit.urun_turu or kayit.kampanya_turu or 'kampanya'}:"]
 
     bulunan = 0
-    for alan, (etiket, bicim) in _ALAN_ETIKETLERI.items():
+    for alan, etiket in _ALAN_ETIKETLERI.items():
         deger = getattr(kayit, alan, None)
         if deger is None:
             continue
-        gosterim = sayi_goster(deger) if isinstance(deger, float) else str(deger)
-        satirlar.append(f"- {etiket}: {bicim.format(gosterim)}")
+        satirlar.append(f"- {etiket}: {alan_goster(alan, deger, kayit.birim(alan))}")
         bulunan += 1
 
     if kayit.masrafsiz_mi is not None:
@@ -306,8 +563,9 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     if bulunan == 0:
         satirlar.append("- Bu kampanya için sayısal bilgi **Belirtilmemiş**.")
 
+    # Tüm satırlar yapısal alanlardan geliyor: tek YAPISAL parça yeterli.
     return Cevap(
-        metin="\n".join(satirlar),
+        parcalar=[CevapParcasi("\n".join(satirlar), Koken.YAPISAL)],
         niyet=Niyet.TEKIL_SORGU,
         kaynaklar=[_kaynakca(kayit)],
         kullanilan_kayitlar=[kayit],
@@ -317,8 +575,11 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
 def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     if len(kayitlar) < 2:
         return Cevap(
-            metin="Karşılaştırma için en az iki bankanın kaydı gerekiyor; "
-                  "veri setinde yeterli kayıt bulunamadı.",
+            parcalar=[CevapParcasi(
+                "Karşılaştırma için en az iki bankanın kaydı gerekiyor; "
+                "veri setinde yeterli kayıt bulunamadı.",
+                Koken.DUZ,
+            )],
             niyet=Niyet.KARSILASTIRMA,
         )
 
@@ -329,11 +590,11 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # kriter kriter, hangi bankanın neden öne çıktığı gerekçesiyle birlikte.
     satirlar = ["Bu kampanyalar farklı avantajlar sunmaktadır.", ""]
 
-    for etiket, alan, yon, bicim in (
-        ("Kâr payı oranı", "kar_payi_orani", "dusuk", "oran %{}'dir"),
-        ("Vade", "vade_ay_max", "yuksek", "{} ay vade sunmaktadır"),
-        ("Finansman tutarı", "finansman_tutari_max", "yuksek", "{} TL'ye kadar finansman sağlamaktadır"),
-        ("Ek ödül", "odul_miktari", "yuksek", "{} TL ödül vermektedir"),
+    for etiket, alan, yon, kalip in (
+        ("Kâr payı oranı", "kar_payi_orani", "dusuk", "oran {}'dir"),
+        ("Vade", "vade_ay_max", "yuksek", "{} vade sunmaktadır"),
+        ("Finansman tutarı", "finansman_tutari_max", "yuksek", "{}'ye kadar finansman sağlamaktadır"),
+        ("Ek ödül", "odul_miktari", "yuksek", "{} ödül vermektedir"),
     ):
         adaylar = [k for k in kayitlar if getattr(k, alan) is not None]
         if not adaylar:
@@ -343,10 +604,9 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         kazanan = min(adaylar, key=lambda k: getattr(k, alan)) if yon == "dusuk" \
             else max(adaylar, key=lambda k: getattr(k, alan))
         deger = getattr(kazanan, alan)
-        gosterim = sayi_goster(deger) if isinstance(deger, float) else str(deger)
         satirlar.append(
             f"- **{etiket}** açısından **{kazanan.banka_adi}** daha avantajlıdır, "
-            f"çünkü {bicim.format(gosterim)}."
+            f"çünkü {kalip.format(alan_goster(alan, deger, kazanan.birim(alan)))}."
         )
 
     masrafsizlar = [k for k in kayitlar if k.masrafsiz_mi]
@@ -354,20 +614,36 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         adlar = ", ".join(sorted({k.banka_adi for k in masrafsizlar}))
         satirlar.append(f"- **Masraf** açısından **{adlar}** öne çıkmaktadır, çünkü masraf alınmamaktadır.")
 
-    # Buraya kadarki satırlar VERİ İDDİASIDIR; kalkan bunları denetler.
+    # Buraya kadarki satırlar VERİ İDDİASIDIR; kalkan bunları yapısal kayda
+    # karşı denetler.
     veri_bolumu = "\n".join(satirlar)
 
     en_iyi = kimlik_kayit[skorlar[0].kampanya_id]
+    agirliklar = Agirliklar().normalize()
+    hesap = {
+        "agirlik_kar_payi": agirliklar.kar_payi * 100,
+        "agirlik_masraf": agirliklar.masraf * 100,
+        "agirlik_vade": agirliklar.vade * 100,
+        "agirlik_odul": agirliklar.odul * 100,
+        "skor": skorlar[0].toplam_skor,
+    }
     aciklama = (
-        f"\n**Genel değerlendirme:** Varsayılan ağırlıklarla (kâr payı %40, masraf %25, "
-        f"vade %20, ödül %15) **{en_iyi.banka_adi}** en yüksek skoru almaktadır "
+        f"\n**Genel değerlendirme:** Varsayılan ağırlıklarla "
+        f"(kâr payı %{hesap['agirlik_kar_payi']:g}, masraf %{hesap['agirlik_masraf']:g}, "
+        f"vade %{hesap['agirlik_vade']:g}, ödül %{hesap['agirlik_odul']:g}) "
+        f"**{en_iyi.banka_adi}** en yüksek skoru almaktadır "
         f"({skorlar[0].toplam_skor:.3f}). Ağırlıklar Karşılaştırma ekranından "
         f"değiştirilebilir; sıralama kara kutu değildir."
     )
 
     return Cevap(
-        metin=veri_bolumu + "\n" + aciklama,
-        dogrulanacak_metin=veri_bolumu,  # ağırlık ve skor sayıları veri iddiası değil
+        parcalar=[
+            CevapParcasi(veri_bolumu, Koken.YAPISAL),
+            # Ağırlık ve skor veri iddiası DEĞİL, bizim hesabımız. Muaf
+            # tutulmuyor: `hesap` girdilerinden yeniden üretilebilmeleri
+            # şart. Açıklamaya elle yazılmış bir skor burada yakalanır.
+            CevapParcasi(aciklama, Koken.SISTEM, hesap=hesap),
+        ],
         niyet=Niyet.KARSILASTIRMA,
         kaynaklar=[_kaynakca(kimlik_kayit[d.kampanya_id]) for d in skorlar[:5]],
         kullanilan_kayitlar=kayitlar,
@@ -383,7 +659,10 @@ def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     aynı kalacağı için değişim yerel olacak.
     """
     if not kayitlar:
-        return Cevap(metin="Bu bilgi veri setinde bulunmuyor.", niyet=Niyet.KOSUL_SORGUSU)
+        return Cevap(
+            parcalar=[CevapParcasi("Bu bilgi veri setinde bulunmuyor.", Koken.DUZ)],
+            niyet=Niyet.KOSUL_SORGUSU,
+        )
 
     soru_sozcukleri = set(arama_anahtari(soru).split()) - {"ne", "nedir", "mi", "mu", "icin"}
 
@@ -400,22 +679,41 @@ def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     puanli.sort(key=lambda x: -x[0])
     if not puanli:
         return Cevap(
-            metin="Bu konuda veri setinde bilgi bulamadım. Sorunuzu "
-                  "kampanya koşulları veya ürün özellikleri hakkında sorabilirsiniz.",
+            parcalar=[CevapParcasi(
+                "Bu konuda veri setinde bilgi bulamadım. Sorunuzu "
+                "kampanya koşulları veya ürün özellikleri hakkında sorabilirsiniz.",
+                Koken.DUZ,
+            )],
             niyet=Niyet.KOSUL_SORGUSU,
         )
 
-    satirlar = ["Veri setinde bulunan ilgili bilgiler:", ""]
+    # HER PARAGRAF AYRI BİR ALINTI PARÇASIDIR.
+    #
+    # Eskiden hepsi tek metne birleşip YAPISAL ölçütle denetleniyordu: bankanın
+    # kendi metnindeki sayı yapısal alanda bulunamayınca meşru cevap
+    # engelleniyordu (10 doğal soruda 2 blok). Kalkanı gevşetmek yanlış çözüm
+    # olurdu; doğru çözüm parçanın kökenini bildirmek — alıntı, KAYNAĞINA
+    # karşı denetlenir.
+    parcalar: list[CevapParcasi] = [
+        CevapParcasi("Veri setinde bulunan ilgili bilgiler:", Koken.DUZ)
+    ]
     kaynaklar: list[Kaynakca] = []
     for _, kayit, paragraf in puanli[:3]:
-        satirlar.append(f"**{kayit.banka_adi}:** {paragraf.strip()[:400]}")
-        satirlar.append("")
+        alinti = paragraf.strip()[:400]
+        parcalar.append(
+            CevapParcasi(
+                f"\n**{kayit.banka_adi}:** {alinti}",
+                Koken.ALINTI,
+                kayit_id=kayit.kampanya_id,
+                alinti=alinti,
+            )
+        )
         kaynak = _kaynakca(kayit)
         kaynak.alinti = paragraf.strip()[:200]
         kaynaklar.append(kaynak)
 
     return Cevap(
-        metin="\n".join(satirlar),
+        parcalar=parcalar,
         niyet=Niyet.KOSUL_SORGUSU,
         kaynaklar=kaynaklar,
         kullanilan_kayitlar=[k for _, k, _ in puanli[:3]],
@@ -434,9 +732,12 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
 
     if niyet == Niyet.KAPSAM_DISI:
         return Cevap(
-            metin="Bu soru sistemin kapsamı dışında. Ben yalnızca Türkiye'deki "
-                  "katılım bankalarının kampanya ve ürün bilgileri hakkında "
-                  "toplanmış veriye dayanarak cevap verebiliyorum.",
+            parcalar=[CevapParcasi(
+                "Bu soru sistemin kapsamı dışında. Ben yalnızca Türkiye'deki "
+                "katılım bankalarının kampanya ve ürün bilgileri hakkında "
+                "toplanmış veriye dayanarak cevap verebiliyorum.",
+                Koken.DUZ,
+            )],
             niyet=Niyet.KAPSAM_DISI,
         )
 
@@ -450,16 +751,19 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     else:
         cevap = _kosul_cevabi(soru, ilgili)
 
-    # --- SAYISAL DOĞRULAMA KALKANI ---
-    gecti, reddedilen = sayisal_dogrulama(cevap.denetlenecek(), cevap.kullanilan_kayitlar)
+    # --- KÖKEN TİPLİ SAYISAL DOĞRULAMA KALKANI ---
+    gecti, reddedilen = kalkandan_gecir(cevap, cevap.kullanilan_kayitlar)
     cevap.dogrulama_gecti = gecti
     cevap.reddedilen_sayilar = reddedilen
     if not gecti:
         log.warning("Sayısal doğrulama başarısız, cevap engellendi: %s", reddedilen)
         return Cevap(
-            metin="Cevabı üretirken doğrulayamadığım sayısal değerler oluştu, "
-                  "bu yüzden cevabı vermiyorum. Bu bilgi veri setinde "
-                  "doğrulanabilir biçimde bulunmuyor.",
+            parcalar=[CevapParcasi(
+                "Cevabı üretirken doğrulayamadığım sayısal değerler oluştu, "
+                "bu yüzden cevabı vermiyorum. Bu bilgi veri setinde "
+                "doğrulanabilir biçimde bulunmuyor.",
+                Koken.DUZ,
+            )],
             niyet=cevap.niyet,
             dogrulama_gecti=False,
             reddedilen_sayilar=reddedilen,
@@ -468,4 +772,15 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     return cevap
 
 
-__all__ = ["Cevap", "Kaynakca", "Niyet", "niyet_belirle", "sayisal_dogrulama", "sor"]
+__all__ = [
+    "Cevap",
+    "CevapParcasi",
+    "Kaynakca",
+    "Koken",
+    "alan_goster",
+    "Niyet",
+    "kalkandan_gecir",
+    "niyet_belirle",
+    "sayisal_dogrulama",
+    "sor",
+]

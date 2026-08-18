@@ -27,6 +27,7 @@ import ollama
 
 from src.ajanlar.elestirmen import ElestirmenAjani
 from src.preprocessing.normalizasyon import (
+    birim_belirle,
     masrafsiz_mi,
     oran_ayristir,
     para_ayristir,
@@ -364,6 +365,7 @@ class LLMCikarici:
             ),
             guven=0.75,
             yontem="llm",
+            birim=birim_belirle(ham_ifade, alan_adi),
         )
 
     def _enum_alani(

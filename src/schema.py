@@ -22,7 +22,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-SEMA_SURUMU = "1.1.0"
+SEMA_SURUMU = "1.2.0"
 """1.0.0 (9 Ağu) -> 1.1.0 (14 Ağu): `Kampanya.uygunluk` eklendi.
 
 Toplama değişikliği — alan opsiyonel ve `Alan` tipinde olmadığı için mevcut
@@ -125,6 +125,50 @@ class Kaynak(BaseModel):
         return self
 
 
+class Birim(StrEnum):
+    """Bir sayının BOYUTU. Değerin kendisi kadar veridir.
+
+    NEDEN VAR — ölçülmüş hata (18 Ağustos):
+        `tahsis_ucreti` sütununda `0.5` ve `500.0` yan yana duruyordu. İlki
+        bir maliyet tablosundaki «%0,50», ikincisi «500 TL». Ayrıştırıcılar
+        birimi GÖRÜYOR ama atıyordu:
+
+            ayristirici=lambda s: para_ayristir(s, ...) or oran_ayristir(s)
+
+        Bu satır "önce TL dene, olmazsa yüzde dene" diyor ve hangisinin
+        tuttuğunu çağırana SÖYLEMİYOR. Sonucu iki yerde birden görünüyordu:
+
+          * Arayüzde «Tahsis ücreti: 0,50 TL» yazıyordu.
+          * «En düşük masraf» sıralaması {0,5 · 75 · 500} kümesini ortak
+            birimmiş gibi normalize edip %0,50'lik ücreti «en ucuz»,
+            500 TL'yi «en pahalı» gösteriyordu. Oysa 100.000 TL'lik bir
+            finansmanda ikisi EŞİTTİR.
+
+    Şemanın ilkesi «kanıtsız değer üretilemez»di; bu enum onun bir seviye
+    derini: **birimsiz sayı taşınamaz.**
+    """
+
+    TL = "tl"
+    YUZDE = "yuzde"
+    AY = "ay"
+    ADET = "adet"
+    PUAN = "puan"
+
+
+BIRIM_GOSTERIMLERI: dict[Birim, str] = {
+    Birim.TL: "{} TL",
+    Birim.YUZDE: "%{}",
+    Birim.AY: "{} ay",
+    Birim.ADET: "{}",
+    Birim.PUAN: "{} puan",
+}
+"""Gösterim biçimi BİRİMDEN türer, alan adından değil.
+
+Eskiden `chatbot._ALAN_ETIKETLERI` her alan için sabit bir şablon tutuyordu
+(`"tahsis_ucreti": ("Tahsis ücreti", "{} TL")`). Alan başına sabitlenmiş
+şablon, çok birimli bir alanda zorunlu olarak yanlış yazar."""
+
+
 class Alan(BaseModel):
     """Tek bir çıkarılmış alan — değer + kanıt + güven + yöntem.
 
@@ -140,6 +184,13 @@ class Alan(BaseModel):
     kaynak: Kaynak | None = None
     guven: float = Field(default=0.0, ge=0.0, le=1.0)
     yontem: Yontem = "belirtilmemis"
+    birim: Birim | None = None
+    """Sayısal değerin boyutu. `guven` ve `yontem` gibi bir KÖKEN bilgisidir.
+
+    Neden `deger`'in içinde değil de `Alan` üzerinde: `deger` sıralama,
+    depolama ve metrik yollarında çıplak sayı olarak kullanılıyor. Boyutu
+    değere gömmek o yolların hepsini kırardı; `Alan` ise zaten "değer +
+    kanıt + güven + yöntem" taşıyıcısı — birim aynı ailedendir."""
 
     @model_validator(mode="after")
     def _kanit_zinciri(self) -> Alan:
@@ -242,6 +293,39 @@ class UygunlukKosullari(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+ALAN_BOYUTLARI: dict[str, frozenset[Birim]] = {
+    "kar_payi_orani": frozenset({Birim.YUZDE}),
+    "finansman_tutari_max": frozenset({Birim.TL}),
+    "vade_ay_max": frozenset({Birim.AY}),
+    "taksit_sayisi": frozenset({Birim.ADET}),
+    # ÇOK BİRİMLİ — bankalar tahsis ücretini hem TL hem oran olarak yazıyor.
+    # Bu bir veri kirliliği değil, alanın gerçeğidir; şema onu gizlemek
+    # yerine beyan eder.
+    "tahsis_ucreti": frozenset({Birim.TL, Birim.YUZDE}),
+    "odul_miktari": frozenset({Birim.TL}),
+    "indirim_orani": frozenset({Birim.YUZDE}),
+    "alisveris_puani": frozenset({Birim.TL, Birim.PUAN}),
+}
+"""Hangi alan hangi boyutu kabul eder — tek doğruluk kaynağı.
+
+Kural motorundan ve LLM katmanından BAĞIMSIZ olarak burada durur: değerin
+hangi katmandan geldiği önemsizdir, alanın boyutu alanın özelliğidir.
+(`kural.deger_makul_mu`'nun gerekçesiyle aynı: denetim ALANIN özelliğidir.)
+"""
+
+TEK_BIRIMLI_ALANLAR: dict[str, Birim] = {
+    ad: next(iter(birimler))
+    for ad, birimler in ALAN_BOYUTLARI.items()
+    if len(birimler) == 1
+}
+"""Boyutu sözleşmeden ÇIKARILABİLEN alanlar — tespit gerekmez.
+
+`kar_payi_orani` her zaman yüzdedir, `vade_ay_max` her zaman aydır. Bu
+alanlarda birim tespiti yapmak gereksiz risk olurdu; sözleşme zaten söylüyor.
+Tespit yalnız çok birimli alanlarda gerekir ve bilgi tam orada kayboluyordu.
+"""
+
+
 class Kampanya(BaseModel):
     """Tek bir kampanyanın kanonik gösterimi (şartname 5.3 + 5.4 + 5.6).
 
@@ -332,6 +416,45 @@ class Kampanya(BaseModel):
         if not alanlar:
             return 0.0
         return sum(1 for a in alanlar.values() if a.var_mi) / len(alanlar)
+
+    @model_validator(mode="after")
+    def _boyut_sozlesmesi(self) -> Kampanya:
+        """Sayısal alanlar birimsiz TAŞINAMAZ.
+
+        İki iş yapar:
+
+        1. TEK BİRİMLİ alanların birimini SÖZLEŞMEDEN DOLDURUR. `kar_payi_orani`
+           her zaman yüzdedir; bunu her çıkarım yolunda ayrıca yazmak, bir yolda
+           unutulmasını garanti ederdi. Sözleşme zaten biliyor, o söylesin.
+
+        2. ÇOK BİRİMLİ alanlarda birimi ZORUNLU tutar. Bilgi tam burada
+           kayboluyordu (`para_ayristir(...) or oran_ayristir(...)`), dolayısıyla
+           denetim de tam burada olmalı. Birimsiz bir `tahsis_ucreti` artık
+           `Kampanya` nesnesi olarak KURULAMAZ.
+
+        Kabul edilmeyen bir birim de reddedilir: `odul_miktari` yüzde olamaz.
+        Bu, «hangi alan hangi boyutu kabul eder» sorusunu tek yerde
+        cevaplar — `deger_makul_mu`'nun alan-düzeyi denetim gerekçesiyle aynı.
+        """
+        for alan_adi, izinli in ALAN_BOYUTLARI.items():
+            alan = getattr(self, alan_adi, None)
+            if alan is None or not alan.var_mi:
+                continue
+            if alan.birim is None:
+                ima_edilen = TEK_BIRIMLI_ALANLAR.get(alan_adi)
+                if ima_edilen is None:
+                    raise ValueError(
+                        f"{alan_adi}: çok birimli alan birim beyan etmeden "
+                        f"taşınamaz (değer={alan.deger!r}, ham={alan.ham_ifade!r}). "
+                        f"İzinli birimler: {sorted(b.value for b in izinli)}"
+                    )
+                object.__setattr__(alan, "birim", ima_edilen)
+            elif alan.birim not in izinli:
+                raise ValueError(
+                    f"{alan_adi}: {alan.birim.value} birimi bu alan için geçersiz. "
+                    f"İzinli: {sorted(b.value for b in izinli)}"
+                )
+        return self
 
     def ortalama_guven(self) -> float:
         dolu = [a.guven for a in self.cikarilan_alanlar().values() if a.var_mi]
@@ -556,9 +679,13 @@ def ollama_json_semasi() -> dict[str, Any]:
 
 __all__ = [
     "AYLIK_KAR_PAYI_ALT_SINIRI",
+    "Birim",
     "AYLIK_KAR_PAYI_UST_SINIRI",
     "EN_AZ_FINANSMAN_TUTARI",
+    "ALAN_BOYUTLARI",
+    "BIRIM_GOSTERIMLERI",
     "SEMA_SURUMU",
+    "TEK_BIRIMLI_ALANLAR",
     "ALAN_ADLARI",
     "SAYISAL_ALANLAR",
     "METINSEL_ALANLAR",

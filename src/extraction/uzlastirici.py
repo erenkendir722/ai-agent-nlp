@@ -26,7 +26,7 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from src.schema import ALAN_ADLARI, SAYISAL_ALANLAR, Alan, HamKayit, Kampanya
+from src.schema import ALAN_ADLARI, ALAN_BOYUTLARI, SAYISAL_ALANLAR, Alan, HamKayit, Kampanya
 
 log = logging.getLogger(__name__)
 
@@ -143,7 +143,25 @@ def _makul_mu(alan_adi: str, alan: Alan, metin: str) -> bool:
     """
     from src.extraction.kural import deger_makul_mu  # döngüsel içe aktarımı önler
 
-    if not alan.var_mi or alan.kaynak is None:
+    if not alan.var_mi:
+        return True
+
+    # BOYUT KAPISI (şema v1.2.0) — çok birimli alanda birim çözülemediyse değer
+    # düşer. Şema zaten birimsiz değeri reddediyor; buradaki kapı olmadan o red
+    # `Kampanya` kurulurken patlar ve boru hattının kayıt düzeyindeki
+    # `except` bloğu KAYDIN TAMAMINI düşürür — bir alanın birimsizliği yüzünden
+    # on beş alan birden kaybolurdu. Aynı sessiz veri kaybı `llm.py`'deki
+    # `_kismi_json_kurtar` yorumunda anlatılıyor; çözüm de aynı: alanı düşür,
+    # kaydı yaşat.
+    if alan_adi in ALAN_BOYUTLARI and len(ALAN_BOYUTLARI[alan_adi]) > 1:
+        if alan.birim is None:
+            log.info(
+                "%s düşürüldü: çok birimli alanın birimi ham ifadeden "
+                "çözülemedi (%r)", alan_adi, alan.ham_ifade,
+            )
+            return False
+
+    if alan.kaynak is None:
         return True
 
     bas, bit = alan.kaynak.karakter_baslangic, alan.kaynak.karakter_bitis

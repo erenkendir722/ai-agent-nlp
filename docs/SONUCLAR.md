@@ -1,10 +1,13 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 18.08.2026 23:45 · `make eval`_
+_Otomatik üretildi: 19.08.2026 01:58 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 18.08.2026 23:36'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> 🔴 **BAYAT — bu sayıları sunuma kopyalamayın.**
+> Çıkarım 18.08.2026 23:36'de koştu; çıkarım kodu o tarihten sonra değişti (f835ccc2f7e8d116 → f7d364355ee5631e).
+> Kayıtlı koşu: `hibrit` yapılandırması, 96 kayıt.
+> Düzeltmek için: `make extract && make eval`.
 
 ## Veri kapsamı
 
@@ -20,6 +23,25 @@ _Otomatik üretildi: 18.08.2026 23:45 · `make eval`_
 | **Halüsinasyon oranı** | %0.32 | ≤ %3 | ✅ |
 | Alan doluluğu | %20.6 | — | — |
 | Ortalama güven | 0.799 | — | — |
+| **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
+| Denetimsiz cevap parçası | %0.0 | %0 | ✅ |
+
+## Sayısal doğrulama kalkanı (köken tipli)
+
+Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
+
+- **Yanlış blok** — meşru cevabı engelleme: **0/35** (`eval/sorular.yaml`, 42 soru)
+- **Gevşeme** — uydurma sayıyı geçirme: eşik değil ikili doğruluk; `tests/test_kalkan_kokenli.py` koruyor
+
+| Parça kökeni | Sayı | Doğrulama ölçütü |
+|---|---|---|
+| `yapisal` | 24 | yapısal kayıtta birebir karşılığı olmalı |
+| `alinti` | 42 | kaynak metnin alt dizesi + sayıları alıntının içinde |
+| `sistem` | 9 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
+| `duz` | 18 | sayı içeremez (yapıcıda denetlenir) |
+| `denetimsiz` | 0 | **miras yol — atlanır ama sayılır** |
+
+> ✅ **Meşru soruların hiçbiri engellenmedi.** 18 Ağustos ölçümünde bu oran %14,3'tü (35 meşru sorunun 5'i): bankanın kendi metnindeki sayılar — bir vaka **6698 sayılı KVKK kanun numarası** — yapısal alanda karşılığı olmadığı için «uydurma» sayılıyordu. Kalkan gevşetilmedi; parçaların kökeni bildirildi ve alıntılar KAYNAĞINA karşı denetlenir oldu. Aynı değişiklik, hesap bölümündeki kör noktayı da kapattı (skor ve ağırlıklar artık yeniden üretiliyor).
 
 ## Yöntem dağılımı (ablasyonun temeli)
 

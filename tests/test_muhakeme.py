@@ -16,7 +16,7 @@ import pytest
 
 from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili, UygunlukSonucu
 from src.comparison.karsilastirma import toplam_maliyet
-from src.schema import Alan, HedefKitle, Kampanya, UygunlukKosullari
+from src.schema import Alan, Birim, HedefKitle, Kampanya, UygunlukKosullari
 
 
 def _kampanya(
@@ -38,7 +38,16 @@ def _kampanya(
             else Alan.yok()
         ),
         tahsis_ucreti=(
-            Alan(deger=tahsis, ham_ifade=f"{tahsis} TL", guven=0.9, yontem="kural")
+            # `tahsis_ucreti` ÇOK BİRİMLİ (TL ya da yüzde); şema birim beyanı
+            # olmadan kaydı reddeder. Fikstür de sözleşmeye uymak zorundadır —
+            # bu kısıtın işini yaptığının kanıtı.
+            Alan(
+                deger=tahsis,
+                ham_ifade=f"{tahsis} TL",
+                guven=0.9,
+                yontem="kural",
+                birim=Birim.TL,
+            )
             if tahsis is not None
             else Alan.yok()
         ),
