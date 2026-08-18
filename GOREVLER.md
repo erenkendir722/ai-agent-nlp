@@ -437,12 +437,22 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 ### Sprint 3 — ölçüm ve sertleştirme (22–23 Ağustos)
 
 - [ ] **E-07** 🔴 **Hava boşluğu (air-gap) testi** · 📅 **23 Ağu**
-      ⛔ **Önce bitmeli:** E-02 (Eren)
-      ↳ Bitti sayılır: Ağ kesikken tam senaryo koşuyor, **video kaydı alındı**
-      ↳ Adımlar: `docker compose up -d` → Wi-Fi kapat (ekranda görünsün) →
-        `ping 8.8.8.8` başarısız → dashboard + chatbot çalışmaya devam ediyor
-      ↳ `docker-compose.yml`'deki `internal: true` satırını aç
-      ↳ **20 saniyelik gösteri, ~15 puan. Planın en yüksek getirili işi.**
+      ↳ ✅ **18 Ağu: teknik kısım BİTTİ ve ölçüldü.** Kalan tek şey **video kaydı**.
+      ↳ `ic-ag` ağı `internal: true` yapıldı; ollama **yalnız** orada.
+        Konteynerden 8.8.8.8, 1.1.1.1 ve DNS **anında** engellendi (rota yok).
+        Bu haldeyken: Streamlit + 3 alt sayfa 200, API 200, LLM çıkarımı
+        **24,4 sn**, chatbot kaynak göstererek cevap verdi.
+      ↳ 🔴 **ÖNEMLİ — tek ağ yapmayın.** İlk denemede `internal: true` tek ağda
+        açıldı ve Docker **`ports:` yayınını da düşürdü**: konteynerler sağlıklı,
+        içeriden 200, ama host'tan 8501/8000 **erişilemez**. Jüri demosunda ekran
+        kararırdı. Çözüm iki ağ (`ic-ag` internal + `sunum` bridge) — uygulandı.
+      ↳ ⚠️ **Dürüst sınır:** uygulama ve api port yayını için `sunum` ağında da
+        ve oradan dışarı çıkabiliyorlar (ölçüldü). Altyapı kısıtı **model
+        katmanında** var; uygulama katmanının kanıtı `tests/test_sizinti_yok.py`.
+        **Sunumda bunu doğru söyleyin** — "hiçbir konteyner dışarı çıkamıyor"
+        demeyin, jüri `docker network inspect` ile bakabilir.
+      ↳ 📹 **Kalan iş:** demo adımlarını (`docs/KURULUM.md` «Demo adımları»)
+        Wi-Fi kapalıyken ekran kaydına al. **20 saniyelik gösteri, ~15 puan.**
 
 - [ ] **E-08** 🔴 **Profil C testi — final laptopunda Qwen3.5-4B** · 📅 **23 Ağu**
       ⛔ **Önce bitmeli:** E-02 (Eren)

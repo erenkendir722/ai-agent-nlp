@@ -85,7 +85,7 @@ Planımız 25 Ağustos hedefiyle devam ediyor; erken bitirmek her iki okumada da
 | 5.8 | Veri ön işleme adımları | ✅ | `src/preprocessing/normalizasyon.py` | Samet |
 | 5.9 | Kurum içi sunucularda çalışabilirlik | ✅ | **18 Ağu: `docker compose up -d` koşuldu.** 3 konteyner healthy · Streamlit :8501 ve API :8000/docs 200 · LLM konteyner içinde çıkarım yaptı (19,1 sn) · `exec` ile boru hattı koştu. Kanıt: `docs/KURULUM.md` | Eren (E-02) |
 | 5.9 | Veri güvenliği · müşteri verisi kurum dışına çıkmamalı | ✅ | `tests/test_sizinti_yok.py` (6 test) | Eren |
-| 5.9 | Dış servislere bağımlı olmadan çalışabilme | 🟠 | Yerel Ollama; hava boşluğu testi yapılmadı | Eren (E-07) |
+| 5.9 | Dış servislere bağımlı olmadan çalışabilme | ✅ | **18 Ağu: hava boşluğu ölçüldü.** `ic-ag` ağı `internal: true`; ollama yalnız orada → 8.8.8.8/1.1.1.1/DNS **anında engellendi** (rota yok). Bu haldeyken LLM çıkarımı 24,4 sn'de koştu, chatbot kaynak gösterdi. Sınır: uygulama/api port yayını için `sunum` ağında da, oradan çıkış var — kanıtı `tests/test_sizinti_yok.py`. Ayrıntı: `docs/KURULUM.md` | Eren (E-07) |
 | 5.10 | Tüm kodlar açık kaynak teknolojilerle | ✅ | `docs/LISANSLAR.md` — 72 paket temiz | Görkem |
 | 5.10 | Lisans problemi çıkarabilecek çözüm kullanılmamalı | ✅ | Llama / Gemma türevi **yok**, yalnız Apache-2.0 / MIT | Görkem |
 | 5.10 | Model ölçeklenebilir konumlandırılmalı | ⬜ | 4B/9B/27B ölçüm tablosu | Samet (S-15) |

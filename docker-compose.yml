@@ -16,7 +16,7 @@ services:
     volumes:
       - ollama-modelleri:/root/.ollama
     networks:
-      - ic-ag
+      - ic-ag          # YALNIZ burada: model sunucusunun disariya rotasi YOK
     environment:
       OLLAMA_KEEP_ALIVE: "10m"
       OLLAMA_HOST: "0.0.0.0"
@@ -39,7 +39,8 @@ services:
       - ./data:/uygulama/data
       - ./docs:/uygulama/docs
     networks:
-      - ic-ag
+      - ic-ag          # ollama'ya erisim
+      - sunum          # yalnizca 8501'in host'a yayinlanmasi icin
     environment:
       OLLAMA_HOST: "http://ollama:11434"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:4b-q4_K_M}"
@@ -71,7 +72,8 @@ services:
     volumes:
       - ./data:/uygulama/data
     networks:
-      - ic-ag
+      - ic-ag          # ollama'ya erisim
+      - sunum          # yalnizca 8000'in host'a yayinlanmasi icin
     environment:
       OLLAMA_HOST: "http://ollama:11434"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:4b-q4_K_M}"
@@ -90,11 +92,38 @@ services:
     restart: unless-stopped
 
 networks:
+  # ---------------------------------------------------------------------
+  # HAVA BOŞLUĞU — E-07, 18 Ağustos 2026'da ölçüldü
+  #
+  # `internal: true`, Docker'a bu ağ için dışarı çıkış (NAT) kuralı
+  # KURMAMASINI söyler. Bir vaat değil, altyapı kısıtı: uygulama kodu
+  # değiştirilse bile paket dışarı çıkamaz.
+  #
+  # ⚠️ ÖĞRENİLEN DERS — bunu tek ağ yapmayın:
+  # `internal: true` olan bir ağda Docker `ports:` yayınını da DÜŞÜRÜR.
+  # 18 Ağu'da tek ağla denendi: konteynerler sağlıklıydı, içeriden 200
+  # dönüyorlardı, ama host'tan 8501 ve 8000 ERİŞİLEMEZ oldu. Jüri
+  # demosunda bu ekranın kararması demekti.
+  #
+  # Çözüm iki ağ:
+  #   ic-ag  (internal)  — ollama BURADA ve YALNIZ burada. Model
+  #                        sunucusunun internete rotası fiziksel olarak yok.
+  #   sunum  (bridge)    — yalnız 8501/8000'in host'a yayınlanması için.
+  #                        uygulama ve api ikisinde birden.
+  #
+  # Uygulama katmanının dış çağrı yapmadığı ayrıca test edilir:
+  # `tests/test_sizinti_yok.py` (6 test). Yani model tarafında altyapı
+  # kısıtı, uygulama tarafında test kanıtı var.
+  #
+  # Tam kapalı gösterim için ayrıca host'un Wi-Fi'ını kapatın — o zaman
+  # `sunum` ağının da gidecek yeri kalmaz (E-07 demo adımı).
+  # ---------------------------------------------------------------------
   ic-ag:
     driver: bridge
-    # NOT: Model ilk indirmesi için bu satır geçici olarak yorumlanır,
-    # indirme bitince açılır. Air-gap demosunda AÇIK olmalıdır.
-    # internal: true
+    internal: true
+
+  sunum:
+    driver: bridge
 
 volumes:
   ollama-modelleri:

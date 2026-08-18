@@ -82,6 +82,74 @@ yoksa takas başlar.
 
 **Kaynak kullanımını görmek için:** `docker stats --no-stream`
 
+### Hava boşluğu (air-gap) — E-07, 18 Ağustos 2026
+
+Yığın iki ağa ayrıldı. Amaç: **model sunucusunun internete rotası fiziksel
+olarak olmasın**, ama arayüz tarayıcıdan açılabilsin.
+
+| Ağ | `internal` | Kim var | Ne için |
+|---|---|---|---|
+| `ic-ag` | ✅ **true** | ollama, uygulama, api | Konteynerler arası; dışarı çıkış YOK |
+| `sunum` | false | uygulama, api | Yalnız 8501/8000'in host'a yayınlanması |
+
+`ollama` **yalnız `ic-ag`'de**. Ölçüm (konteyner içinden):
+
+```
+✅ engellendi: 8.8.8.8:53
+✅ engellendi: 1.1.1.1:443
+✅ engellendi: DNS huggingface.co
+```
+
+Hepsi **anında** başarısız — zaman aşımı değil, *rota yok*. Bu bir vaat değil,
+altyapı kısıtı: uygulama kodu değiştirilse bile model sunucusundan paket
+dışarı çıkamaz.
+
+Ve bu haldeyken sistem tam çalışıyor:
+
+| Kontrol | Sonuç |
+|---|---|
+| Streamlit + 3 alt sayfa | ✅ 200 |
+| API `/docs`, `/saglik` | ✅ 200 · `dis_bagimlilik: false` |
+| `uygulama` → `ollama` | ✅ 200, model listeleniyor |
+| **LLM çıkarımı** | ✅ **24,4 sn** · `qwen3.5:4b-q4_K_M` |
+| Chatbot `/ask` | ✅ kaynak göstererek cevap verdi |
+
+#### ⚠️ Dürüst sınır — fazla iddia etmeyin
+
+`uygulama` ve `api`, port yayını için `sunum` ağında da olmak zorunda ve
+**o ağ üzerinden dışarı çıkabiliyorlar** (ölçüldü: 8.8.8.8'e ulaştılar).
+Yani altyapı kısıtı **model katmanında** var, uygulama katmanında yok.
+
+Uygulama katmanının dış çağrı yapmadığının kanıtı testtir:
+`tests/test_sizinti_yok.py` (6 test) — kural katmanı, normalizasyon,
+karşılaştırma motoru ve chatbot'un yapısal sorgu yolu ağ kullanmıyor,
+sabit kodlanmış dış API ucu yok, LLM yalnız yerel Ollama'ya bağlanıyor.
+
+**Tam kapalı gösterim için host'un Wi-Fi'ını kapatın.** O zaman `sunum` ağının
+da gidecek yeri kalmaz ve iddia eksiksiz olur.
+
+#### 🔴 Tek ağ yapmayın — 18 Ağu'da öğrenildi
+
+İlk denemede `ic-ag` tek ağdı ve `internal: true` açıldı. Sonuç:
+
+```
+önce:  0.0.0.0:8501->8501/tcp        sonra:  8501/tcp
+```
+
+`internal: true` olan bir ağda Docker **`ports:` yayınını da düşürüyor**.
+Konteynerler sağlıklıydı, içeriden 200 dönüyorlardı, ama host'tan 8501 ve
+8000 **erişilemez** oldu. Jüri demosunda bu, ekranın kararması demekti.
+
+#### Demo adımları (E-07)
+
+```bash
+docker compose up -d
+docker compose exec ollama sh -c 'timeout 4 sh -c "echo > /dev/tcp/8.8.8.8/53"' \
+  || echo "model sunucusunun internete cikisi YOK"
+# Wi-Fi'ı kapat (ekranda görünsün)
+# Dashboard ve chatbot çalışmaya devam ediyor
+```
+
 ---
 
 ## Yol 2 — Yerel kurulum
