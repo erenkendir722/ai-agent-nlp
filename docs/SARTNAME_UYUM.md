@@ -54,10 +54,24 @@ Bu iki ifade bağdaşmıyor: 12 Temmuz, çevrimiçi sürecin *başlangıcından*
 metin. Bağlayıcı takvim madde 3'teki tablodur (26 Ağustos) — 12 Temmuz gerçek
 teslim tarihi olsaydı yarışma zaten bir ay önce bitmiş olurdu.
 
-**Yine de bu bir varsayım ve teslim tarihi üzerine varsayım yapılmaz.**
-Madde 13'teki resmî kanaldan (`iletisim@teknofest.org` ve yarışma e-posta grubu)
-**bugün yazılı olarak sorulmalı**, cevap bu dosyaya eklenmeli.
-Planımız 25 Ağustos hedefiyle devam ediyor; erken bitirmek her iki okumada da güvenli.
+**✅ 18 Ağustos'ta büyük ölçüde çözüldü.** Takım fiziki finalde **27 Ağustos**'ta
+Bilişim Vadisi Kocaeli Kampüsü'nde olacak (madde 10'un «son 24 saat fiziki»
+maddesi). Bu, madde 9'daki 12.07.2026'nın **bayat metin olduğunu doğruluyor**:
+fiziki final 27 Ağustos'taysa, teslim 12 Temmuz olamaz.
+
+**Bağlayıcı takvim madde 3'teki tablodur.** Kesinleşen zaman çizelgesi:
+
+| Tarih | Ne |
+|---|---|
+| **25 Ağu 20:00** | TESLİM — her şey GitHub'da, `v1.0` etiketi (E-18) |
+| 26 Ağu | Jüri soru-cevap provası (E-19) · çevrimiçi sürecin son günü |
+| **27 Ağu** | **FİZİKİ SUNUM** — Bilişim Vadisi Kocaeli |
+
+⚠️ **Yine de resmî teyit alınmadı.** Madde 13'teki kanaldan
+(`iletisim@teknofest.org`) saatin ve yerin yazılı teyidi hâlâ istenmeli —
+özellikle **sunum saati** ve **salonda hangi donanımın bulunacağı**
+(projeksiyon bağlantısı, internet, priz). Profil C testi (E-08) bu cevaba göre
+planlanmalı.
 
 ---
 

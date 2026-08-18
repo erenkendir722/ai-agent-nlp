@@ -453,6 +453,8 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         demeyin, jüri `docker network inspect` ile bakabilir.
       ↳ 📹 **Kalan iş:** demo adımlarını (`docs/KURULUM.md` «Demo adımları»)
         Wi-Fi kapalıyken ekran kaydına al. **20 saniyelik gösteri, ~15 puan.**
+      ↳ ⏰ Bu kayıt ES-17'nin (demo videosu) içine girecek, yani **24 Ağu
+        akşamına kadar** alınmalı — teslim 25 Ağu 20:00.
 
 - [ ] **E-08** 🔴 **Profil C testi — final laptopunda Qwen3.5-4B** · 📅 **23 Ağu**
       ⛔ **Önce bitmeli:** E-02 (Eren)
@@ -1226,6 +1228,12 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 - [ ] **ES-17** 🔴 **DEMO VİDEOSU — maks. 5 dakika** · 📅 **25 Ağu**
       ⛔ **Önce bitmeli:** ES-12 (Esra) · E-07 (Eren)
+      ↳ 🔴 **«Son gün çekeriz» OLMAZ — teslim edilecek bir dosya bu.**
+        Madde 6 videoyu **GitHub'a yüklenecek teslimat** sayıyor; E-18 TESLİM
+        **25 Ağu 20:00**. Fiziki sunum 27 Ağu ama repo o tarihten **iki gün
+        önce** kapanıyor. 27'sinde çekilen video teslime yetişmez.
+      ↳ Ayrıca ES-18 (1 dk) bunun içinden kesiliyor — ES-17 gecikirse ikisi
+        birden kaybedilir. **Gerçekçi son tarih: 24 Ağu akşamı.**
       ↳ Şartname madde 6 zorunlu. **Altı unsur da görünmeli:** kullanıcı arayüzü,
         dashboard, chatbot, metin girdisi, yapılandırılmış çıktı, karşılaştırma sonuçları
       ↳ 2 saat: OBS ile ekran kaydı, tek çekimde, sesli anlatımla. **Kurgu yapma.**
