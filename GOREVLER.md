@@ -1054,6 +1054,11 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         ve `Belirtilmemiş` sayıları görünüyor
       ↳ Bu ekran banka çalışanına "hangi veriye ne kadar güvenebilirim" der.
         Veriyi olduğundan iyi göstermemek jüriye dürüstlük sinyali verir.
+      ↳ 🔴 **18 Ağu incelemesi — bkz. `docs/ARAYUZ_INCELEME.md` K3.** Paneldeki
+        üç metrik kartı (%14 düzeltme oranı, 42 halüsinasyon, GPT-4 tasarrufu)
+        ölçüm karşılığı olmayan uydurma sayılar. Gerçekleri `docs/SONUCLAR.md`'de
+        ve daha etkileyici (halüsinasyon %0,32 · sayısal doğruluk 0,933).
+        Doluluk grafiği ve histogram DOĞRU, onlar kalsın.
 
 ### Sprint 2 — zekâ katmanı arayüzü (17–21 Ağustos)
 
@@ -1061,11 +1066,62 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ İskelet hazır (`app/pages/2_Chatbot.py`)
       ↳ Bitti sayılır: Her cevapta niyet etiketi, ✅/⛔ doğrulama rozeti ve
         kaynak kartları görünüyor; sohbet geçmişi korunuyor
+      ↳ ✅ **18 Ağu incelemesi: işlevsel olarak bitti.** `cevap_renderla`
+        refaktörü temiz, geçmişte kartlar ve rozet korunuyor.
+      ↳ 🟠 Kapatmadan önce iki küçük iş — bkz. `docs/ARAYUZ_INCELEME.md` K5, K7:
+        "Eleştirmen Ajan" ifadesi yanlış (o kod yolunda yok, `sayisal_dogrulama`
+        var) · reddedilen sayılar tekrarlı basılıyor.
 
 - [ ] **ES-07** Ağırlık kaydırıcıları + vade farkı uyarısı · 📅 19 Ağu
       ↳ Kenar çubuğunda kaydırıcılar var; gerçek veriyle test et
       ↳ Jüri "en avantajlıyı nasıl belirliyorsunuz?" diye **kesin soracak** —
         cevap: "kullanıcı ağırlıkları belirliyor, formül dokümantasyonda"
+      ↳ 🔴 **18 Ağu incelemesi — bkz. `docs/ARAYUZ_INCELEME.md` K1 ve K2.**
+        Eklenen "vade farkı" metni kodun TERSİNİ söylüyor: motor `yuksek_iyi`
+        kullanıyor, uzun vade skoru YÜKSELTİYOR (3 ay → 0,0 · 120 ay → 0,20).
+        Ayrıca "eşitlikte güven skoru yüksek olan üste çıkar" diye bir kural
+        `sirala()`'da YOK. Gerçek vade farkı uyarısı zaten `uyarilar()`'dan
+        geliyor ve zaten ekranda (satır 166) — o kısım aslında bitmişti.
+
+- [ ] **ES-19** 🔴 **Arayüz doğruluk düzeltmeleri (K1–K7)** · 📅 **19 Ağu**
+      ↳ Tam gerekçe ve her madde için doğrulama komutu: **`docs/ARAYUZ_INCELEME.md`**
+      ↳ Bitti sayılır: aşağıdaki yedi maddenin hepsi kapandı ve `make test` yeşil
+
+      **🔴 Jüri riski — önce bunlar (~30 dk):**
+      - [ ] **K1** `1_Karsilastirma.py:146` ve `:260` — "uzun vade skoru düşürülür"
+            metni kodun TERSİ. Motor `yuksek_iyi` (3 ay → 0,0 · 120 ay → 0,20).
+            Gerçek vade farkı uyarısı zaten `uyarilar()`'dan geliyor (satır 166).
+      - [ ] **K2** `1_Karsilastirma.py:276` — "eşitlikte güven skoru yüksek olan
+            üste çıkar" kuralı `sirala()`'da YOK. Ya metni çıkar, ya motora
+            gerçekten ekle (o zaman Eren'e haber ver, E-06 alanı).
+      - [ ] **K3** `Genel_Bakis.py:149,153-155` — üç metrik kartı uydurma
+            (%14 · 42 halüsinasyon · GPT-4 tasarrufu). `docs/SONUCLAR.md`'den besle:
+            halüsinasyon **%0,32** · sayısal doğruluk **0,933** · şema geçerliliği **1,00**.
+            Makro-F1'i güven aralığıyla yaz: **0,736 (%95 GA: 0,610–0,810), n=60**.
+
+      **🟠 Sonra (~45 dk):**
+      - [ ] **K4** `1_Karsilastirma.py:195` — ham `.replace()` yerine
+            `format_bank_name()`. 8 bankanın 4'ü iki sayfada farklı görünüyor
+            (Ziraat Katılım/Ziraat · Vakıf Katılım/Vakıf · Dünya Katılım/Dünya ·
+            Emlak Katılım/Türkiye Emlak). *Bu satır Sprint 0'dan kalma (`ec313d8`),
+            Esra'nın commit'lerinden gelmiyor — ama sayfa onun alanı.*
+      - [ ] **K5** `2_Chatbot.py:88` + `Genel_Bakis.py:149` — "Eleştirmen Ajan"
+            o kod yolunda yok; `sayisal_dogrulama` kalkanı yapıyor. Adını düzelt.
+      - [ ] **K6** `1_Karsilastirma.py:329`, `2_Chatbot.py:169` — hayali
+            `api.svartal.bank` yerine gerçek uçlar: `GET /compare`, `POST /ask`
+            (`src/api/sunucu.py`, `make api` ile 8000 portunda). Jüri önünde
+            canlı çalıştırılabilir olmalı.
+      - [ ] **K7** `2_Chatbot.py:46` — "Kampanya koşulları neler?" örneği kalkanı
+            tetikliyor, jürinin ilk tıkladığı butonda kırmızı ⛔ çıkıyor. Ya çıkar,
+            ya "🛡️ Kalkan gösterimi" etiketiyle kasıtlı demo hamlesine çevir.
+            Ayrıca reddedilen sayılar tekrarlı basılıyor — tekilleştir.
+
+      ↳ **Neden 🔴:** ES-12 (demo senaryosu), ES-13 (sunum) ve ES-17 (video) bu
+        ekranları kaydediyor. Yanlış iddialar düzeltilmeden prova edilirse üçü de
+        baştan çekilir. Jüri K1 veya K2'yi 30 saniyede çürütebilir — bir tanesi
+        yakalanırsa doğru olan her şeyin güvenilirliği gider.
+      ↳ Küçük temizlik listesi (ölü kod, çift `st.divider()`, ölü yorumlar) da
+        `docs/ARAYUZ_INCELEME.md` sonunda — bunlar acil değil, sırası gelince.
 
 - [ ] **ES-08** **Yan yana karşılaştırma + toplam maliyet** · 📅 20 Ağu
       ⛔ **Önce bitmeli:** E-06 (Eren)
@@ -1082,6 +1138,10 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 - [ ] **ES-10** Chatbot örnek soru seti + **kullanıcı testi** · 📅 21 Ağu
       ⛔ **Önce bitmeli:** ES-06 (Esra)
+      ↳ 🟠 **18 Ağu incelemesi — bkz. `docs/ARAYUZ_INCELEME.md` K7.** Mevcut
+        örneklerden "Kampanya koşulları neler?" kalkanı tetikliyor ve jürinin
+        ilk tıkladığı butonda kırmızı ⛔ kutu çıkıyor. Ya çıkar, ya da
+        "🛡️ Kalkan gösterimi" etiketiyle **kasıtlı** demo hamlesine çevir.
       ↳ Bitti sayılır: Arayüzde hazır örnek sorular var; **projeyi hiç bilmeyen
         birine kullandırıp** takıldığı yerleri not ettin
       ↳ Samet'in 30 soruluk test setiyle (S-10) karıştırma: o doğruluk ölçer,
@@ -1096,7 +1156,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         hiçbir şey ifade etmiyor
 
 - [ ] **ES-12** 🔴 Demo senaryosu — yaz, prova et, süre tut · 📅 **22 Ağu**
-      ⛔ **Önce bitmeli:** ES-06 (Esra) · ES-08 (Esra) · ES-09 (Esra)
+      ⛔ **Önce bitmeli:** ES-06 (Esra) · ES-08 (Esra) · ES-09 (Esra) · ES-19 (Esra)
       ↳ Bitti sayılır: `sunum/DEMO_SENARYOSU.md` — hangi ekran, hangi tıklama,
         hangi sırayla, hangi saniyede. 3 kez prova edildi.
       ↳ Canlı demo doğaçlama yapılmaz; tek bir yanlış tıklama 4 dakikayı yakar
