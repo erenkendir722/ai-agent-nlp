@@ -1019,3 +1019,97 @@ def _masrafsizlik(metin: str, url: str, cekim_tarihi: datetime) -> Alan | None:
 
 
 __all__ = ["KURALLAR", "KuralTanimi", "kurallarla_cikar"]
+
+
+# ---------------------------------------------------------------------------
+# Kampanya türü düzeltmeleri — altın setin yakaladığı iki hata biçimi
+# ---------------------------------------------------------------------------
+#
+# 18 Ağustos 2026 ölçümü: `kampanya_turu` F1 = 0,600 (N=60, altın setteki EN
+# BÜYÜK örneklem — yani en güvenilir ve en kötü skor). 24 hatanın 15'i iki
+# desende toplanmıştı:
+#
+#   DESEN 1 (6 vaka) — LLM genel "finansman" diyor, altın set özel alt tür:
+#       .../konut-finansmani.aspx   → altın konut_finansmani,  LLM finansman
+#       .../tasit-finansmani        → altın tasit_finansmani,  LLM finansman
+#       .../ihtiyac-finansmani.aspx → altın ihtiyac_finansmani, LLM finansman
+#     Ürün türü URL'de BİREBİR yazıyor ama kimse okumuyordu.
+#
+#   DESEN 2 (9 vaka) — LLM "alisveris_puani" diyor, altın set başka:
+#       .../arzumda-15-indirim         → altın diger  (indirim, puan değil)
+#       .../biz-kart-dijital-uyelikler → altın kart
+#       .../alisveris-finansmanlari    → altın ihtiyac_finansmani
+#     Dokuzunun metninde "puan" kelimesi bile geçmiyordu (biri hariç).
+#     Sınıflandırma alanları `KANIT_ZORUNLU_ALANLAR` dışında (bilinçli: enum
+#     etiketleri metinde geçmez). Ama `alisveris_puani` istisnadır — ADI bir
+#     metin sinyali vaat ediyor. Kanıt yoksa bu etiket verilmemeli.
+
+_URL_TUR_ISARETLERI: tuple[tuple[str, str], ...] = (
+    # Sıra önemli: özel olan genel olandan ÖNCE denenir.
+    ("konut", "konut_finansmani"),
+    ("mortgage", "konut_finansmani"),
+    ("tasit", "tasit_finansmani"),
+    ("taşıt", "tasit_finansmani"),
+    ("arac", "tasit_finansmani"),
+    ("araç", "tasit_finansmani"),
+    ("otomobil", "tasit_finansmani"),
+    ("ihtiyac", "ihtiyac_finansmani"),
+    ("ihtiyaç", "ihtiyac_finansmani"),
+)
+
+_PUAN_KANITI = re.compile(
+    r"\b(puan|mil|chip[- ]?para|world|bonus|para[- ]?puan|maxipuan|bankkart lira)\b",
+    re.IGNORECASE,
+)
+
+
+def turu_urlden_cikar(url: str) -> str | None:
+    """URL parçasından kampanya alt türünü okur.
+
+    Yalnız FİNANSMAN alt türleri için kullanılır: banka siteleri ürün türünü
+    yol parçasında neredeyse her zaman açıkça yazar (`/konut-finansmani`).
+    Bu, LLM'in tahminine göre çok daha güçlü bir sinyaldir.
+    """
+    if not url:
+        return None
+    yol = url.lower()
+    for isaret, tur in _URL_TUR_ISARETLERI:
+        if isaret in yol:
+            return tur
+    return None
+
+
+def puan_kaniti_var_mi(metin: str) -> bool:
+    """Metinde alışveriş PUANI iddiasını destekleyen bir kelime var mı?
+
+    "alışveriş" tek başına yetmez — indirim kampanyaları da alışverişle
+    ilgilidir. Aranan şey puan/mil/chip gibi somut bir ödül birimi.
+    """
+    return bool(_PUAN_KANITI.search(metin or ""))
+
+
+def kampanya_turunu_duzelt(tur: str, url: str, metin: str) -> tuple[str, str | None]:
+    """Sınıflandırmayı URL ve metin kanıtıyla düzeltir.
+
+    Döner: (düzeltilmiş_tür, düzeltme_sebebi | None)
+
+    İki müdahale yapar, ikisi de KANITA dayanır:
+      1. Genel `finansman` → URL özel alt tür söylüyorsa onu kullan (özelleştirme;
+         LLM ile çelişmez, cevabını inceltir).
+      2. `alisveris_puani` → metinde puan kanıtı yoksa etiketi düşür; URL bir
+         tür söylüyorsa ona, söylemiyorsa `diger`'e in.
+    """
+    url_turu = turu_urlden_cikar(url)
+
+    if tur == "finansman" and url_turu:
+        return url_turu, f"URL alt türü söylüyor ({url_turu})"
+
+    if tur == "alisveris_puani" and not puan_kaniti_var_mi(metin):
+        if "kart" in (url or "").lower():
+            return "kart", "puan kanıtı yok, URL 'kart' diyor"
+        if url_turu:
+            return url_turu, f"puan kanıtı yok, URL '{url_turu}' diyor"
+        return "diger", "metinde puan/mil/chip kanıtı yok"
+
+    return tur, None
+

@@ -542,3 +542,70 @@ class TestFinansmanDisiUcret:
     def test_kart_ve_dosya_masrafi_birlikte_gecerse_yakalanir(self) -> None:
         metin = "Kart aidatı ve dosya masrafı alınmaz."
         assert cikar(metin)["masrafsiz_mi"] is True
+
+
+# ---------------------------------------------------------------------------
+# Kampanya türü düzeltmeleri (18 Ağu — altın setin yakaladığı iki hata biçimi)
+# ---------------------------------------------------------------------------
+
+
+def test_genel_finansman_url_alt_turuyle_ozellestirilir() -> None:
+    """LLM «finansman» dediğinde URL alt türü söylüyorsa o kullanılır.
+
+    Altın sette 6 vaka: .../konut-finansmani.aspx için LLM genel «finansman»
+    diyordu, altın set «konut_finansmani». Ürün türü URL'de birebir yazıyor.
+    """
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    for url, beklenen in [
+        ("https://x.com/tr/konut-finansmani.aspx", "konut_finansmani"),
+        ("https://x.com/tr/tasit-finansmani", "tasit_finansmani"),
+        ("https://x.com/tr/arac-finansmani", "tasit_finansmani"),
+        ("https://x.com/tr/ihtiyac-finansmani", "ihtiyac_finansmani"),
+    ]:
+        tur, sebep = kampanya_turunu_duzelt("finansman", url, "kampanya metni")
+        assert tur == beklenen, url
+        assert sebep is not None
+
+
+def test_url_isareti_yoksa_genel_finansman_korunur() -> None:
+    """Zorlama özelleştirme yapılmaz — sinyal yoksa cevap değişmez."""
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, sebep = kampanya_turunu_duzelt("finansman", "https://x.com/kampanyalar", "metin")
+    assert tur == "finansman"
+    assert sebep is None
+
+
+def test_kanitsiz_alisveris_puani_dusurulur() -> None:
+    """Metinde puan/mil/chip yoksa «alisveris_puani» etiketi verilmez.
+
+    Altın sette 9 vaka: sistem indirim ve kart kampanyalarına «alışveriş
+    puanı» diyordu; dokuzunun metninde «puan» kelimesi bile geçmiyordu.
+    """
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, sebep = kampanya_turunu_duzelt(
+        "alisveris_puani", "https://x.com/arzumda-15-indirim", "%15 indirim fırsatı"
+    )
+    assert tur == "diger"
+    assert sebep is not None
+
+
+def test_puan_kaniti_varsa_alisveris_puani_korunur() -> None:
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, sebep = kampanya_turunu_duzelt(
+        "alisveris_puani", "https://x.com/kampanya", "Alışverişlerinizde 1.000 puan kazanın"
+    )
+    assert tur == "alisveris_puani"
+    assert sebep is None
+
+
+def test_kanitsiz_alisveris_puani_url_kart_diyorsa_karta_iner() -> None:
+    from src.extraction.kural import kampanya_turunu_duzelt
+
+    tur, _ = kampanya_turunu_duzelt(
+        "alisveris_puani", "https://x.com/biz-kart-dijital-uyelikler", "üyelik kampanyası"
+    )
+    assert tur == "kart"
