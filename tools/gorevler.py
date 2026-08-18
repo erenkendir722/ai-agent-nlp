@@ -30,7 +30,19 @@ from pathlib import Path
 KOK = Path(__file__).resolve().parents[1]
 PANO = KOK / "GOREVLER.md"
 
-SAHIPLER = {"E": "Eren", "S": "Samet", "G": "Görkem", "ES": "Esra", "H": "Herkes"}
+_ASIL_SAHIPLER = {"E": "Eren", "S": "Samet", "G": "Görkem", "ES": "Esra", "H": "Herkes"}
+
+# DEVREDİLEN GÖREVLER
+#
+# 18 Ağustos 2026: Samet çalışamaz durumda; `S-*` görevlerinin tamamı Eren'e
+# devredildi. Görev KODLARI değiştirilmedi — `S-02`, `S-13` gibi kodlar
+# `⛔ Önce bitmeli:` satırlarında, commit mesajlarında ve `docs/` içinde
+# geçiyor; yeniden adlandırmak o referansların hepsini kırardı.
+#
+# Devir geri alınacaksa bu sözlükten ilgili satırı silmek yeterlidir.
+DEVIR = {"S": "Eren"}
+
+SAHIPLER = {onek: DEVIR.get(onek, ad) for onek, ad in _ASIL_SAHIPLER.items()}
 
 # Büyük `[X]` de kabul edilir: 16 Ağustos'ta elle atılan üç `[X]` üç görevi
 # panodan tamamen düşürdü ve onlara bağlı beş görev "tanımsız referans" verdi.
@@ -231,7 +243,7 @@ def genel_rapor(gorevler: dict[str, Gorev]) -> None:
     print(f"  {'Kişi':<10}{'Açık':>6}{'Hazır':>7}{'Bloke':>7}{'Tikli':>7}   Sıradaki")
     print(f"  {'-' * 72}")
 
-    for ad in ("Eren", "Samet", "Görkem", "Esra", "Herkes"):
+    for ad in ("Eren", "Görkem", "Esra", "Herkes"):
         benim = [g for g in gorevler.values() if g.sahip == ad]
         acik = [g for g in benim if not g.bitti]
         hazir = [g for g in acik if not engelleyenler(g, gorevler)]

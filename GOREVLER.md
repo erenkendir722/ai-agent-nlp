@@ -569,9 +569,18 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ---
 
-# 🧪 SAMET — çıkarım motoru, LLM, değerlendirme
+# 🧪 SAMET → EREN — çıkarım motoru, LLM, değerlendirme
 
-> **Senin işin projenin %30'luk kriterinin tamamı.** En yüksek ağırlıklı kalem.
+> 🔄 **18 Ağustos 2026: bu bölümün tamamı Eren'e devredildi.** Samet çalışamaz
+> durumda. `make gorev ad=Eren` bu görevleri de listeler.
+>
+> **Görev kodları `S-*` olarak BIRAKILDI.** `S-02`, `S-13` gibi kodlar
+> `⛔ Önce bitmeli:` satırlarında, commit mesajlarında ve `docs/` içinde
+> geçiyor; yeniden adlandırmak o referansların hepsini kırardı. Devir
+> `tools/gorevler.py` içindeki `DEVIR` sözlüğünde tutuluyor — Samet dönerse
+> tek satır silinerek geri alınır.
+
+> **Bu bölüm projenin %30'luk kriterinin tamamı.** En yüksek ağırlıklı kalem.
 
 ### Hemen (10–14 Ağustos)
 
