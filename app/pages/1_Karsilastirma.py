@@ -265,6 +265,18 @@ if secili_kriter == Kriter.EN_AVANTAJLI:
                 f"**{detay.banka_adi}** — {detay.aciklama()}  \n"
                 f"Karşılaştırılabilirlik: {detay.karsilastirilabilirlik:.2f}"
             )
+else:
+    with st.expander(f"«{KRITER_ETIKETLERI[secili_kriter]}» sıralaması nasıl yapıldı?"):
+        st.markdown(
+            "Bu sıralama, bankaların sağladığı spesifik veri alanı üzerinden "
+            "saf matematiksel büyüklük/küçüklük kuralı (deterministik karşılaştırma motoru) "
+            "kullanılarak yapılmıştır. Yapay zeka halüsinasyon riski tamamen sıfırlanmıştır.\n\n"
+            "- **Kural 1 (Şeffaflık):** İlgili veriyi eksik ('Belirtilmemiş') sunan bankalar, "
+            "karşılaştırılamaz oldukları için doğrudan **en alta** itilir.\n"
+            "- **Kural 2 (Güven Skoru):** Eğer iki bankanın sayısal değeri tamamen aynıysa, "
+            "Yapay Zekanın çıkarım yaparken hesapladığı **Güven Skoru** daha yüksek olan (daha kesin bilgi) "
+            "üste çıkar."
+        )
 
 st.divider()
 
