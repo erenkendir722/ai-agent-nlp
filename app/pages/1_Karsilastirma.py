@@ -139,6 +139,8 @@ with st.sidebar:
     a_odul = st.slider("Ödül", 0.0, 1.0, 0.15, 0.05)
     agirliklar = Agirliklar(a_kar, a_masraf, a_vade, a_odul)
     st.caption(f"Ağırlık toplamı {agirliklar.toplam():.2f} — otomatik normalize edilir.")
+    
+    st.info("**⚠️ Jüri Bilgilendirmesi:** Vade uzadıkça bankaların uyguladığı vade farkı maliyeti artar. Bu nedenle algoritmamız, uzun vadeli kampanyaların skorunu vade farkı riskini gözeterek daha düşük hesaplar.")
 
 # ---------------------------------------------------------------------------
 # Kriter butonları (şartname 5.7)
@@ -251,7 +253,9 @@ if secili_kriter == Kriter.EN_AVANTAJLI:
         st.markdown(
             "Her kriter kendi içinde 0–1 aralığına ölçeklenir (min-maks "
             "normalizasyon), sonra yukarıdaki ağırlıklarla toplanır. "
-            "Eksik veri nötr (0,5) sayılır ve *karşılaştırılabilirlik* oranı düşer."
+            "Eksik veri nötr (0,5) sayılır ve *karşılaştırılabilirlik* oranı düşer.\n\n"
+            "**Not (Vade Farkı):** Vadesi uzun olan kampanyalar, finansal açıdan daha yüksek vade farkı "
+            "maliyetine yol açtığından avantaj skorları kademeli olarak düşürülür."
         )
         for detay in avantaj_skorla(sirali, agirliklar):
             st.markdown(
