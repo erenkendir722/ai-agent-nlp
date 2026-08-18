@@ -74,11 +74,56 @@ Soru
 if "gecmis" not in st.session_state:
     st.session_state.gecmis = []
 
+def cevap_renderla(cevap, gecen_sure=None):
+    simge, etiket, aciklama = NIYET_ETIKETLERI[cevap.niyet]
+    
+    # ES-05 Ajan Düşünce Süreci (Agent Trace)
+    with st.expander("🤖 Ajanın Düşünce Süreci (Loglar)", expanded=False):
+        st.caption(f"**Log 1:** Niyet anlaşıldı: `{etiket}` ({aciklama})")
+        kaynak_sayisi = len(cevap.kaynaklar) if cevap.kaynaklar else 0
+        st.caption(f"**Log 2:** SQLite veritabanından RAG bağlamı için {kaynak_sayisi} ilgili kayıt filtrelendi...")
+        if cevap.dogrulama_gecti:
+            st.caption("**Log 3:** Sayısal Doğrulama Kalkanından geçildi (Halüsinasyon tespit edilmedi). Yanıt üretiliyor...")
+        else:
+            st.caption(f"**Log 3:** Eleştirmen Ajan devreye girdi! Hatalı sayılar ({', '.join(cevap.reddedilen_sayilar)}) RAG bağlamı ile eşleşmediği için reddedildi.")
+        
+    st.caption(f"{simge} **{etiket}** — {aciklama}")
+    if gecen_sure is not None:
+        st.caption(f"⏱️ Yanıt {gecen_sure:.1f} saniyede üretildi | Model: Yerel Qwen (Ollama) | Donanım: Yerel CPU/GPU")
+
+    st.markdown(cevap.metin)
+
+    for mesaj in cevap.uyarilar:
+        st.warning(mesaj)
+
+    if cevap.dogrulama_gecti:
+        st.success(
+            "✅ Sayısal doğrulama geçti — cevaptaki her sayının yapısal "
+            "kayıtta karşılığı var."
+        )
+    else:
+        st.error(
+            f"⛔ Sayısal doğrulama başarısız. Doğrulanamayan değerler: "
+            f"{', '.join(cevap.reddedilen_sayilar)}. Cevap verilmedi."
+        )
+
+    if cevap.kaynaklar:
+        st.markdown("**Kaynaklar**")
+        for kaynak in cevap.kaynaklar:
+            with st.container(border=True):
+                st.markdown(f"**{kaynak.banka_adi}**")
+                st.caption(f"{kaynak.url}")
+                st.caption(f"Çekim tarihi: {kaynak.cekim_tarihi}")
+                if kaynak.alinti:
+                    st.markdown(f"> {kaynak.alinti}")
+        st.caption(f"_{YASAL_UYARI}_")
+
+
 for girdi in st.session_state.gecmis:
     with st.chat_message("user"):
         st.markdown(girdi["soru"])
     with st.chat_message("assistant"):
-        st.markdown(girdi["cevap"])
+        cevap_renderla(girdi["cevap"], girdi.get("gecen_sure"))
 
 soru = st.chat_input("Kampanyalar hakkında bir soru sorun…")
 if not soru and (bekleyen := st.session_state.pop("bekleyen_soru", None)):
@@ -94,8 +139,6 @@ if soru:
             try:
                 cevap = sor(soru, kayitlar)
                 gecen_sure = time.time() - baslangic
-            # `ollama` paketi yerleşik ConnectionError fırlatır, requests'inkini
-            # DEĞİL — requests ile yakalamak bu dalı sessizce ölü bırakıyordu.
             except ConnectionError as e:
                 st.error("Yerel dil modeli sunucusuna (Ollama) şu anda erişilemiyor.")
                 with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
@@ -108,47 +151,7 @@ if soru:
                     st.code(str(e))
                 st.stop()
 
-        simge, etiket, aciklama = NIYET_ETIKETLERI[cevap.niyet]
-        
-        # ES-05 Ajan Düşünce Süreci (Agent Trace)
-        with st.expander("🤖 Ajanın Düşünce Süreci (Loglar)", expanded=False):
-            st.caption(f"**Log 1:** Niyet anlaşıldı: `{etiket}` ({aciklama})")
-            kaynak_sayisi = len(cevap.kaynaklar) if cevap.kaynaklar else 0
-            st.caption(f"**Log 2:** SQLite veritabanından RAG bağlamı için {kaynak_sayisi} ilgili kayıt filtrelendi...")
-            if cevap.dogrulama_gecti:
-                st.caption("**Log 3:** Sayısal Doğrulama Kalkanından geçildi (Halüsinasyon tespit edilmedi). Yanıt üretiliyor...")
-            else:
-                st.caption(f"**Log 3:** Eleştirmen Ajan devreye girdi! Hatalı sayılar ({', '.join(cevap.reddedilen_sayilar)}) RAG bağlamı ile eşleşmediği için reddedildi.")
-            
-        st.caption(f"{simge} **{etiket}** — {aciklama}")
-        st.caption(f"⏱️ Yanıt {gecen_sure:.1f} saniyede üretildi | Model: Yerel Qwen (Ollama) | Donanım: Yerel CPU/GPU")
-
-        st.markdown(cevap.metin)
-
-        for mesaj in cevap.uyarilar:
-            st.warning(mesaj)
-
-        if cevap.dogrulama_gecti:
-            st.success(
-                "✅ Sayısal doğrulama geçti — cevaptaki her sayının yapısal "
-                "kayıtta karşılığı var."
-            )
-        else:
-            st.error(
-                f"⛔ Sayısal doğrulama başarısız. Doğrulanamayan değerler: "
-                f"{', '.join(cevap.reddedilen_sayilar)}. Cevap verilmedi."
-            )
-
-        if cevap.kaynaklar:
-            st.markdown("**Kaynaklar**")
-            for kaynak in cevap.kaynaklar:
-                with st.container(border=True):
-                    st.markdown(f"**{kaynak.banka_adi}**")
-                    st.caption(f"{kaynak.url}")
-                    st.caption(f"Çekim tarihi: {kaynak.cekim_tarihi}")
-                    if kaynak.alinti:
-                        st.markdown(f"> {kaynak.alinti}")
-            st.caption(f"_{YASAL_UYARI}_")
+        cevap_renderla(cevap, gecen_sure)
             
         # Geliştirici Modu (API)
         if st.session_state.get("dev_mode", False):
@@ -173,4 +176,4 @@ if soru:
 """
             st.code(curl_cmd, language="bash")
 
-    st.session_state.gecmis.append({"soru": soru, "cevap": cevap.tam_metin()})
+    st.session_state.gecmis.append({"soru": soru, "cevap": cevap, "gecen_sure": gecen_sure})
