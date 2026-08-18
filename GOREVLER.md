@@ -615,6 +615,22 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         doğruladığı durum az; bu, güven skorunun kalibrasyonunu zayıflatıyor.
       ↳ Bitti sayılır: hibrit alan sayısı ≥ 50
 
+- [ ] **S-20** 🔴 **Çıkarımı deterministik yap** (`temperature=0` + sabit seed) · 📅 20 Ağu
+      ↳ **Sorun ölçüldü:** `llm.py:231` `temperature=0.1`, sabit seed yok.
+        Aynı kodla iki koşu arasında **6/96 kayıtta** sınıflandırma değişti,
+        4'ü altın sette, 3'ü doğrudan yanlışa döndü. Tek başına bedeli
+        **−0,006 makro-F1** — hedefe olan farktan (0,0024) büyük.
+      ↳ Bitti sayılır: `make extract` iki kez koşulduğunda **birebir aynı**
+        veritabanını üretiyor
+      ↳ **Üç kazanç birden:**
+        1. Ölçüm gürültüsü sıfırlanır, sayılar kararlı olur
+        2. Ablasyon tablosu gerçekten karşılaştırılabilir olur —
+           `docs/SONUCLAR.md`'deki 🔴 uyarının yarısı bu yüzden
+        3. «Her koşuda aynı sayı» demek jüri karşısında bilimsel erdem
+      ↳ Yapılandırılmış çıkarımda `temperature=0` standarttır ve genelde
+        kaliteyi düşürmez, artırır.
+      ↳ ⏱️ Değişiklik 1 dakika, doğrulama koşusu ~40 dk (96 kayıt, CPU).
+
 - [ ] **S-06** Deney kaydı tut · 📅 sürekli
       ↳ Bitti sayılır: `docs/DENEYLER.md` — tarih, model/ayar, metrik, sonuç, commit
       ↳ İstemi 5 kez değiştirip hangisinin işe yaradığını hatırlamamak, aynı işi
