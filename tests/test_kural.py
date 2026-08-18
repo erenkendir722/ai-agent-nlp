@@ -609,3 +609,78 @@ def test_kanitsiz_alisveris_puani_url_kart_diyorsa_karta_iner() -> None:
         "alisveris_puani", "https://x.com/biz-kart-dijital-uyelikler", "üyelik kampanyası"
     )
     assert tur == "kart"
+
+
+# ---------------------------------------------------------------------------
+# Dilim tablosu ayrıştırıcı (18 Ağu — finansman_tutari_max F1 0,400 -> 0,714)
+# ---------------------------------------------------------------------------
+
+
+def test_tasit_dilim_tablosundan_deger_carpi_oran() -> None:
+    """Kılavuzun insana söylediği hesabın kodda karşılığı.
+
+    `docs/ETIKETLEME_KILAVUZU.md`: «Kademeli tabloda her satır için değer ×
+    oran hesapla, en büyüğünü yaz.» max(400k×.70, 800k×.50, 1.2M×.30) = 400k.
+    """
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = """Aracın Nihai Fatura Tutarı /Kasko Değeri | Taşıt Değerine Oranı | Vade
+0-400.000 TL | %70 | 48
+400.001 - 800.000 TL | %50 | 36
+800.001 - 1.200.000 TL | %30 | 24"""
+    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    assert tutar == 400_000.0, sebep
+
+
+def test_ayni_tablo_hucreleri_ayrik_bicimde_de_okunur() -> None:
+    """`|` ile bölünce tutar ve oran ayrı hücreye düşen biçim.
+
+    18 Ağu'da bu biçim kaçırılmıştı: `|` ile bölmek oran sütununu yok edip
+    tabloyu «oransız» gösteriyordu.
+    """
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = "kasko değeri\n| 0 TL – 400.000 TL 70% 48 | 400.001 TL – 800.000 TL 50% 36 |"
+    tutar, _ = dilim_tablosundan_azami_finansman(metin)
+    assert tutar == 400_000.0
+
+
+def test_ust_dilim_sinirsizsa_azami_uretilmez() -> None:
+    """«250.000 ve üzeri» varsa azami tutar BİLİNMEZ — uydurmak yerine boş."""
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = """kasko değerine oranı
+125.000 TL'ye kadar olan finansmanlarda 36 ay
+125.000 - 250.000 TL arası 24 ay
+250.000 TL ve üzeri 12 ay"""
+    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    assert tutar is None
+    assert "sınırsız" in sebep
+
+
+def test_mevduat_oran_tablosu_finansman_sanilmaz() -> None:
+    """EN ÖNEMLİ KORUMA — mevduat tablosu finansman tablosuyla aynı yapıda.
+
+    18 Ağu'da bağlam kapısı yokken ayrıştırıcı günlük hesap kâr payı
+    tablosundan 55.500.000 TL «finansman» üretti. Yapı ayırt etmiyor;
+    ayıran şey başlıktaki «taşıt değerine oranı» / «kasko» ifadesi.
+    """
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = """Günlük Katılma Hesabı kâr payı oranları
+0 - 50.000 TL | %30 | 32
+50.001 - 500.000 TL | %35 | 32
+500.001 TL ve üzeri | %37 | 32"""
+    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    assert tutar is None, f"mevduat tablosundan finansman üretildi: {tutar}"
+    assert "işaret" in sebep
+
+
+def test_makul_olmayan_kucuk_sonuc_elenir() -> None:
+    """1.000 × %1 = 10 TL — hesap doğru ama girdi tablo değil."""
+    from src.extraction.kural import dilim_tablosundan_azami_finansman
+
+    metin = "kasko\n1.000 TL %1 12\n2.000 TL %1 6"
+    tutar, sebep = dilim_tablosundan_azami_finansman(metin)
+    assert tutar is None
+    assert "makul" in sebep

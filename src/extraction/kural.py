@@ -1113,3 +1113,146 @@ def kampanya_turunu_duzelt(tur: str, url: str, metin: str) -> tuple[str, str | N
 
     return tur, None
 
+
+
+# ---------------------------------------------------------------------------
+# Dilim tablosu ayrıştırıcı — finansman_tutari_max
+# ---------------------------------------------------------------------------
+#
+# NEDEN AYRIŞTIRICI, NEDEN REGEX DEĞİL:
+#   18 Ağustos'ta tek bir regex denendi ve BAŞARISIZ oldu: oran işaretini
+#   isteğe bağlı (`%?`) bıraktığı için `48` vadesini oran sanıp
+#   1.200.000 × %24 = 288.000 gibi değerler üretti. F1'i 0,400 → 0,200
+#   düşürdü, geri alındı. Ders: tabloyu tablo olarak ayrıştır, metinde
+#   sayı avlama.
+#
+# İKİ TABLO BİÇİMİ VAR VE ZIT ANLAMA GELİYOR:
+#
+#   BİÇİM A — taşıt: (araç değeri aralığı, ORAN, vade)
+#       0-400.000 TL      %70   48
+#       400.001-800.000   %50   36
+#     Sayılar ARACIN değeri. `docs/ETIKETLEME_KILAVUZU.md` insana şunu
+#     söylüyor: her satır için değer × oran, en büyüğünü al.
+#     max(400k×.70, 800k×.50, 1.2M×.30, 2M×.20) = 400.000 — altın setle birebir.
+#
+#   BİÇİM B — ihtiyaç: (finansman tutarı aralığı, vade)
+#       125.000 TL'ye kadar    36 ay
+#       250.000 TL ve üzeri    12 ay
+#     Sayılar zaten finansman tutarı. Ama en üst dilim SINIRSIZ ("ve üzeri"):
+#     azami tutar BİLİNMİYOR. Doğru cevap `None` — uydurmaktan iyidir.
+#
+# Ayırt edici işaret: satırda AÇIKÇA `%` işaretli bir oran var mı.
+
+_PARA = re.compile(r"(\d{1,3}(?:[.,]\d{3})+|\d{4,})\s*(?:TL|₺)?", re.IGNORECASE)
+_ORAN_ISARETLI = re.compile(r"(?:%\s*(\d{1,3})|(\d{1,3})\s*%)")
+_SINIRSIZ = re.compile(r"ve\s+üzeri|üzerinde|ve\s+ustu|ve\s+üstü", re.IGNORECASE)
+_SATIR_AYIRICI = re.compile(r"[|\n]")
+_SATIR_SADECE_YENI_SATIR = re.compile(r"\n")
+
+_ASGARI_FINANSMAN = 10_000.0
+"""Bir finansman kampanyası bundan azını duyurmaz — sonuç makullük tabanı."""
+
+_ASGARI_DILIM_TUTARI = 1000.0
+"""Bundan küçük sayılar dilim sınırı sayılmaz — tarih, adet, vade gürültüsü."""
+
+
+@dataclass(frozen=True)
+class _DilimSatiri:
+    tutarlar: tuple[float, ...]
+    oran: float | None
+    sinirsiz: bool
+
+
+def _dilim_satirlarini_ayristir(metin: str) -> list[_DilimSatiri]:
+    """Tabloyu satırlara böler — İKİ bölme biçimi denenir.
+
+    NEDEN İKİSİ BİRDEN: aynı tablo iki farklı biçimde geliyor.
+        `| 0 TL – 400.000 TL 70% 48 |`   → tutar ve oran AYNI hücrede
+        `| 0-400.000 TL | %70 | 48 |`    → tutar ve oran AYRI hücrelerde
+    İkincisinde `|` ile bölmek satırı parçalar ve oran sütunu kaybolur;
+    tablo oransız sanılıp yanlışlıkla «azami belirsiz» denir. 18 Ağu'da
+    `.../tasit-finansmani` tam bu yüzden kaçırıldı.
+
+    Çözüm: her iki bölmeyi de dene, oranlı satırı ÇOK olan yorumu kullan.
+    """
+    adaylar = [
+        _tek_bicimde_ayristir(metin, _SATIR_AYIRICI),
+        _tek_bicimde_ayristir(metin, _SATIR_SADECE_YENI_SATIR),
+    ]
+    return max(adaylar, key=lambda ss: sum(1 for s in ss if s.oran is not None))
+
+
+def _tek_bicimde_ayristir(metin: str, ayirici: re.Pattern[str]) -> list[_DilimSatiri]:
+    satirlar: list[_DilimSatiri] = []
+    for ham in ayirici.split(metin or ""):
+        parca = ham.strip()
+        if not parca or len(parca) > 200:
+            continue
+        tutarlar = tuple(
+            t for p in _PARA.findall(parca)
+            if (t := _sayiya_cevir(p)) is not None and t >= _ASGARI_DILIM_TUTARI
+        )
+        if not tutarlar:
+            continue
+        m = _ORAN_ISARETLI.search(parca)
+        oran = float(m.group(1) or m.group(2)) if m else None
+        satirlar.append(
+            _DilimSatiri(tutarlar=tutarlar, oran=oran, sinirsiz=bool(_SINIRSIZ.search(parca)))
+        )
+    return satirlar
+
+
+def _sayiya_cevir(s: str) -> float | None:
+    """'400.000' / '1,200,000' -> float. Binlik ayırıcı iki biçimde de gelir."""
+    t = re.sub(r"[.,](?=\d{3}\b)", "", s.strip())
+    try:
+        return float(t)
+    except ValueError:
+        return None
+
+
+_KREDIYE_ESAS_DEGER = re.compile(
+    r"(kasko|nihai fatura|fatura (?:tutar|değer|bedel)|"
+    r"(?:taşıt|araç|konut|teminat) değerine oran|"
+    r"değerine oranı|kredi(?:ye)? esas değer|azami (?:finansman|kredi) oran)",
+    re.IGNORECASE,
+)
+"""Tablonun FİNANSMAN tablosu olduğunu gösteren başlık ifadeleri.
+
+NEDEN ŞART: mevduat (günlük/katılma hesabı) kâr payı tablosu, taşıt finansmanı
+dilim tablosuyla YAPISAL OLARAK BİREBİR AYNI — ikisi de (tutar aralığı, %, vade).
+Yapıya bakarak ayırt edilemez. 18 Ağu'da bu kapı yokken ayrıştırıcı günlük
+hesap tablosundan 55.500.000 TL «finansman» üretti. Oranın NE olduğunu ancak
+tablo başlığı söyler: finansmanda «taşıt değerine oranı», mevduatta «kâr payı».
+"""
+
+
+def dilim_tablosundan_azami_finansman(metin: str) -> tuple[float | None, str]:
+    """Dilim tablosundan azami FİNANSMAN tutarını çıkarır.
+
+    `None` "bu metinden çıkarılamaz" demektir ve bilinçli bir cevaptır.
+    """
+    if not _KREDIYE_ESAS_DEGER.search(metin or ""):
+        return None, "finansman tablosu işareti yok (kasko / değerine oranı vb.)"
+
+    satirlar = _dilim_satirlarini_ayristir(metin)
+    if len(satirlar) < 2:
+        return None, "dilim tablosu yok (en az 2 satır gerekir)"
+
+    oranli = [s for s in satirlar if s.oran is not None and 0 < s.oran <= 100]
+
+    # BİÇİM A — oran sütunu var: değer × oran, en büyüğü
+    if len(oranli) >= 2:
+        adaylar = [max(s.tutarlar) * s.oran / 100.0 for s in oranli]
+        en_buyuk = max(adaylar)
+        # Sonuç eşiği: hesabın kendisi doğru olsa da girdi tablo olmayabilir.
+        # 1.000 × %1 = 10 TL gibi bir "finansman" gerçek değildir.
+        if en_buyuk < _ASGARI_FINANSMAN:
+            return None, f"hesaplanan tutar makul değil ({en_buyuk:,.0f} TL)"
+        return en_buyuk, f"biçim A: {len(oranli)} oranlı satır, değer × oran"
+
+    # BİÇİM B — oransız: sayılar zaten finansman tutarı
+    if any(s.sinirsiz for s in satirlar):
+        return None, "biçim B: üst dilim sınırsız ('ve üzeri') — azami belirsiz"
+
+    return None, "oran sütunu yok ve üst sınır kapalı değil — çıkarılamıyor"
