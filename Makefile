@@ -1,5 +1,5 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
-        birim-goc \
+        birim-goc ablasyon \
         altin-ornekle altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol hava-boslugu
 
@@ -62,7 +62,14 @@ lisanslar:  ## bağımlılık lisans raporu (şartname 5.10 kanıtı)
 	$(PYTHON) -m eval.lisanslar
 	@echo "✅ docs/LISANSLAR.md güncellendi"
 
+ablasyon:  ## ATOMİK ablasyon: üç yapılandırma tek süreçte, tek kod izi (hizli=1 ile LLM'siz)
+	$(PYTHON) -m eval.ablasyon $(if $(hizli),--yalniz-kural)
+	@echo "Tablo için: make eval-ablation"
+
 # --- ablasyon yardımcıları ---
+# NOT: Bu iki hedef TEK yapılandırma koşar ve satırların aynı kodla koşulmasını
+# GARANTİ ETMEZ. Ablasyon tablosu için `make ablasyon` kullanın; 18 Ağustos'ta
+# tablo tam olarak bu yüzden karşılaştırılamaz hâle gelmişti.
 extract-kural:  ## ablasyon: yalnız kural katmanı
 	$(PYTHON) -m src.boru_hatti extract --yalniz-kural
 

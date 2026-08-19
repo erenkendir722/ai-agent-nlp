@@ -45,6 +45,15 @@ ALTIN_SET = KOK / "data" / "gold" / "altin_set.jsonl"
 SONUC_DOSYASI = KOK / "docs" / "SONUCLAR.md"
 ABLASYON_DOSYASI = KOK / "data" / "ablasyon.json"
 
+# `make eval` ABLASYON TABLOSUNU YAZMAZ — yalnız okur.
+#
+# Eskiden her `make eval`, veritabanının koşu kaydından yapılandırmayı okuyup
+# `data/ablasyon.json`'a KENDİ SATIRINI yazıyordu. Satırlar böyle birikince
+# farklı zamanlarda, farklı kodlarla koşulmuş üç satır tek tabloda buluşuyordu
+# — 18 Ağustos'ta tam olarak bu oldu (iki ayrı kod parmak izi, bkz. ADR 011).
+#
+# Artık tabloyu YALNIZ `eval/ablasyon.py` yazar: üç yapılandırmayı tek süreçte
+# koşar ve hepsini atomik olarak tek seferde basar. Tek yazıcı, tek gerçeklik.
 ABLASYON_SIRASI: tuple[tuple[str, str], ...] = (
     ("kural", "Yalnız kural (regex)"),
     ("llm", "Yalnız LLM (şema kısıtlı)"),
@@ -595,8 +604,6 @@ def calistir(ablasyon: bool = False) -> int:
     doluluk = alan_bazli_doluluk(kampanyalar)
     kokenlik = cikarim_durumu()
 
-    ablasyon_kaydet(temel, altin, kokenlik)
-
     aralik = makro_f1_guven_araligi(kampanyalar) if altin else None
     kalkan = kalkani_olc()
 
@@ -640,47 +647,6 @@ def calistir(ablasyon: bool = False) -> int:
         if zayif:
             print(f"   ⚠️  «Hep boş» tabanının altındaki alanlar: {', '.join(zayif)}")
     return 0
-
-
-def ablasyon_kaydet(
-    temel: dict[str, Any],
-    altin: dict[str, Any] | None,
-    kokenlik: dict[str, Any],
-) -> None:
-    """Bu koşunun metriklerini yapılandırma adına yazar (`data/ablasyon.json`).
-
-    Ablasyon tablosunun sayıları ELLE kopyalanmaz: her `make eval` hangi
-    yapılandırmayı ölçtüğünü veritabanının koşu kaydından okur ve kendi
-    satırını doldurur. Üç koşu bittiğinde tablo kendiliğinden tamamlanır.
-    Elle kopyalama, üç koşunun sırası karıştığında sessizce yanlış sayı
-    üretirdi — sunuma yanlış rakam gitmesi metriğin kendisinden pahalıdır.
-    """
-    kosu = kokenlik.get("kosu")
-    if not kosu or not kosu.get("yapilandirma"):
-        return  # koşu kaydı yok — hangi yapılandırma olduğu bilinmiyor
-
-    kayitlar: dict[str, Any] = {}
-    if ABLASYON_DOSYASI.exists():
-        try:
-            kayitlar = json.loads(ABLASYON_DOSYASI.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            kayitlar = {}
-
-    kayitlar[str(kosu["yapilandirma"])] = {
-        "zaman": kosu["zaman"].isoformat() if hasattr(kosu["zaman"], "isoformat") else str(kosu["zaman"]),
-        "kod_parmak_izi": kosu["kod_parmak_izi"],
-        "kampanya_sayisi": temel["kampanya_sayisi"],
-        "alan_dolulugu": temel["alan_dolulugu"],
-        "halusinasyon_orani": temel["halusinasyon_orani"],
-        "makro_f1": altin["makro_f1"] if altin else None,
-        "sayisal_dogruluk": altin["sayisal_dogruluk"] if altin else None,
-        "alan_f1": {a: d["f1"] for a, d in altin["alan_f1"].items()} if altin else {},
-    }
-
-    ABLASYON_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
-    ABLASYON_DOSYASI.write_text(
-        json.dumps(kayitlar, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
 
 
 def _ablasyon_notu() -> str:

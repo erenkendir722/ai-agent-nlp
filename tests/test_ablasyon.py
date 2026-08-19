@@ -1,16 +1,25 @@
-"""Ablasyon tablosunun kendi kendini doldurmasını koruyan testler (S-13).
+"""Ablasyon tablosunun SAVUNMA KATMANI (S-13 · ADR 011).
 
-Tablo sunumun en güçlü slaydı ve sayıları ELLE kopyalanmıyor: her `make eval`
-veritabanının koşu kaydından hangi yapılandırmayı ölçtüğünü okuyup kendi
-satırını yazıyor. Buradaki testler o mekanizmanın üç sessiz hata biçimini
-kapatır: yanlış satıra yazmak, önceki koşuları ezmek ve farklı kodla koşulmuş
-satırları karşılaştırılabilir göstermek.
+Tablo sunumun en güçlü slaydı ve sayıları elle kopyalanmıyor.
+
+TARİHÇE — bu testler bir kere yön değiştirdi:
+    İlk sürümde tabloyu `make eval` yazıyordu: her koşu, veritabanının koşu
+    kaydından hangi yapılandırmayı ölçtüğünü okuyup KENDİ SATIRINI ekliyordu.
+    Bu mekanizma, satırların farklı zamanlarda ve farklı kodlarla birikmesine
+    izin veriyordu — 18 Ağustos'ta tablo iki ayrı kod parmak izi taşır hâle
+    geldi ve karşılaştırma geçersizleşti.
+
+    Artık tabloyu YALNIZ `eval/ablasyon.py` yazar (tek süreç, tek parmak izi,
+    atomik yazım — bkz. ADR 011 ve `tests/test_ablasyon_butunlugu.py`).
+
+Buradaki testler yazıcıyı değil, **okuyucunun savunma katmanını** korur:
+`_ablasyon_notu`, bozuk bir tabloyla karşılaşırsa SUSMAMALI. Koşucu garanti
+veriyor diye bu uyarıları kaldırmak, garantinin bozulduğu günü sessiz kılardı.
 """
 
 from __future__ import annotations
 
 import json
-from datetime import datetime
 
 import pytest
 
@@ -25,103 +34,109 @@ def ablasyon_dosyasi(tmp_path, monkeypatch):
     return yol
 
 
-def _temel(kampanya_sayisi: int = 96, halusinasyon: float = 0.0) -> dict:
+def _satir(
+    *,
+    parmak_izi: str = "abc123",
+    kampanya_sayisi: int = 96,
+    makro_f1: float = 0.628,
+) -> dict:
+    """`eval/ablasyon.py`'nin yazdığı satır biçimi."""
     return {
+        "zaman": "2026-08-19T14:30:00",
+        "kod_parmak_izi": parmak_izi,
         "kampanya_sayisi": kampanya_sayisi,
         "alan_dolulugu": 0.073,
-        "halusinasyon_orani": halusinasyon,
-    }
-
-
-def _altin(makro_f1: float = 0.628) -> dict:
-    return {
+        "halusinasyon_orani": 0.0,
         "makro_f1": makro_f1,
         "sayisal_dogruluk": 0.930,
-        "alan_f1": {"kar_payi_orani": {"f1": 0.842}, "vade_ay_max": {"f1": 0.791}},
+        "alan_f1": {"kar_payi_orani": 0.842, "vade_ay_max": 0.791},
     }
 
 
-def _kokenlik(yapilandirma: str, parmak_izi: str = "abc123") -> dict:
-    return {
-        "kosu": {
-            "zaman": datetime(2026, 8, 17, 14, 30),
-            "yapilandirma": yapilandirma,
-            "kayit_sayisi": 96,
-            "kod_parmak_izi": parmak_izi,
-        },
-        "bayat": False,
-        "sebep": "",
-    }
+def _tablo_yaz(yol, **satirlar) -> None:
+    yol.write_text(json.dumps(satirlar, ensure_ascii=False), encoding="utf-8")
 
 
-def test_kosu_kendi_satirina_yazilir(ablasyon_dosyasi) -> None:
-    ec.ablasyon_kaydet(_temel(), _altin(), _kokenlik("kural"))
-
-    kayit = json.loads(ablasyon_dosyasi.read_text(encoding="utf-8"))
-    assert set(kayit) == {"kural"}
-    assert kayit["kural"]["makro_f1"] == 0.628
-    assert kayit["kural"]["alan_f1"]["kar_payi_orani"] == 0.842
+# ---------------------------------------------------------------------------
+# Tek yazıcı ilkesi
+# ---------------------------------------------------------------------------
 
 
-def test_ikinci_kosu_oncekini_ezmez(ablasyon_dosyasi) -> None:
-    """Üç koşu sırayla yapılır; ikincisi birincisinin satırını silmemeli."""
-    ec.ablasyon_kaydet(_temel(), _altin(0.628), _kokenlik("kural"))
-    ec.ablasyon_kaydet(_temel(), _altin(0.755), _kokenlik("llm"))
+def test_eval_ablasyon_tablosunu_yazmaz() -> None:
+    """`make eval` artık tabloya DOKUNMAZ — satır birikmesi böyle önlendi.
 
-    kayit = json.loads(ablasyon_dosyasi.read_text(encoding="utf-8"))
-    assert set(kayit) == {"kural", "llm"}
-    assert kayit["kural"]["makro_f1"] == 0.628
-    assert kayit["llm"]["makro_f1"] == 0.755
+    Bu, 18 Ağustos'ta iki farklı kod parmak izinin aynı tabloda buluşmasının
+    kök nedeniydi: her eval kendi satırını ekliyor, satırlar zamanla ayrışıyordu.
+    """
+    assert not hasattr(ec, "ablasyon_kaydet"), (
+        "artımlı yazıcı geri gelmiş — tablo yalnız eval/ablasyon.py tarafından "
+        "yazılmalı (ADR 011)"
+    )
 
 
-def test_kosu_kaydi_yoksa_yazilmaz(ablasyon_dosyasi) -> None:
-    """Hangi yapılandırma olduğu bilinmiyorsa tahmin ETME — sessiz yanlış satır
-    üretmek, satırı boş bırakmaktan kötüdür."""
-    ec.ablasyon_kaydet(_temel(), _altin(), {"kosu": None, "bayat": True, "sebep": "yok"})
-
-    assert not ablasyon_dosyasi.exists()
+# ---------------------------------------------------------------------------
+# Savunma katmanı — bozuk tabloya susma
+# ---------------------------------------------------------------------------
 
 
 def test_eksik_yapilandirma_soru_isaretiyle_gosterilir(ablasyon_dosyasi) -> None:
-    ec.ablasyon_kaydet(_temel(), _altin(), _kokenlik("kural"))
-
-    not_ = ec._ablasyon_notu()
-    assert "Henüz koşulmayan yapılandırma" in not_
-    assert "Yalnız LLM (şema kısıtlı)" in not_
-    assert "**Hibrit (bizim)**" in not_
+    _tablo_yaz(ablasyon_dosyasi, kural=_satir())
+    metin = ec._ablasyon_notu()
+    assert "?" in metin
+    assert "Henüz koşulmayan" in metin
 
 
 def test_farkli_kodla_kosulan_satirlar_karsilastirilamaz_isaretlenir(
     ablasyon_dosyasi,
 ) -> None:
-    """Üç satır aynı koddan gelmiyorsa tablo yanıltıcıdır; rapor bunu söylemeli."""
-    ec.ablasyon_kaydet(_temel(), _altin(), _kokenlik("kural", "eski111"))
-    ec.ablasyon_kaydet(_temel(), _altin(), _kokenlik("llm", "yeni222"))
-    ec.ablasyon_kaydet(_temel(), _altin(), _kokenlik("hibrit", "yeni222"))
-
-    not_ = ec._ablasyon_notu()
-    assert "KARŞILAŞTIRILAMAZ" in not_
-    assert "eski111" in not_
+    """REGRESYON — 18 Ağustos'un tam senaryosu."""
+    _tablo_yaz(
+        ablasyon_dosyasi,
+        kural=_satir(parmak_izi="f797dd3f69630cfc"),
+        llm=_satir(parmak_izi="f797dd3f69630cfc"),
+        hibrit=_satir(parmak_izi="f835ccc2f7e8d116"),
+    )
+    metin = ec._ablasyon_notu()
+    assert "KARŞILAŞTIRILAMAZ" in metin
+    assert "f797dd3f69630cfc" in metin and "f835ccc2f7e8d116" in metin
 
 
 def test_farkli_korpus_buyuklugu_karsilastirilamaz_isaretlenir(
     ablasyon_dosyasi,
 ) -> None:
-    """96 kayıtta koşan satırla 300 kayıtta koşan satır yan yana konmaz."""
-    ec.ablasyon_kaydet(_temel(96), _altin(), _kokenlik("kural"))
-    ec.ablasyon_kaydet(_temel(96), _altin(), _kokenlik("llm"))
-    ec.ablasyon_kaydet(_temel(300), _altin(), _kokenlik("hibrit"))
+    _tablo_yaz(
+        ablasyon_dosyasi,
+        kural=_satir(kampanya_sayisi=96),
+        llm=_satir(kampanya_sayisi=96),
+        hibrit=_satir(kampanya_sayisi=300),
+    )
+    metin = ec._ablasyon_notu()
+    assert "KARŞILAŞTIRILAMAZ" in metin
+    assert "96" in metin and "300" in metin
 
-    not_ = ec._ablasyon_notu()
-    assert "KARŞILAŞTIRILAMAZ" in not_
-    assert "96" in not_ and "300" in not_
+
+def test_tam_ve_tutarli_tablo_uyari_vermez(ablasyon_dosyasi) -> None:
+    """Koşucunun ürettiği tablo temiz olmalı — uyarı çıkıyorsa arıza var."""
+    _tablo_yaz(
+        ablasyon_dosyasi,
+        kural=_satir(makro_f1=0.628),
+        llm=_satir(makro_f1=0.176),
+        hibrit=_satir(makro_f1=0.778),
+    )
+    metin = ec._ablasyon_notu()
+    assert "KARŞILAŞTIRILAMAZ" not in metin
+    assert "Henüz koşulmayan" not in metin
+    assert "0.778" in metin
 
 
-def test_tam_tablo_uyari_vermez(ablasyon_dosyasi) -> None:
-    for yapilandirma in ("kural", "llm", "hibrit"):
-        ec.ablasyon_kaydet(_temel(), _altin(), _kokenlik(yapilandirma))
+def test_bozuk_json_cokme_uretmez(ablasyon_dosyasi) -> None:
+    ablasyon_dosyasi.write_text("{bozuk", encoding="utf-8")
+    metin = ec._ablasyon_notu()
+    assert "Henüz koşulmayan" in metin
 
-    not_ = ec._ablasyon_notu()
-    assert "Henüz koşulmayan" not in not_
-    assert "KARŞILAŞTIRILAMAZ" not in not_
-    assert "0.842" in not_  # kâr payı F1 tabloya gerçekten girmiş
+
+def test_tablo_yoksa_beklemede_gosterilir(ablasyon_dosyasi) -> None:
+    metin = ec._ablasyon_notu()
+    assert "Henüz koşulmayan" in metin
+    for ad, _ in ec.ABLASYON_SIRASI:
+        assert ad in metin or ad.capitalize() in metin or "Hibrit" in metin

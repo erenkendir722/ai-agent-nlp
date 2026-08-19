@@ -1061,6 +1061,17 @@ ayrılmış test kümesi yoktur; kilit dosyası ve koşu defteri hiç yoktur.
 
 ## 2.2 · Ablasyon: karşılaştırılabilirlik koşumun kendisiyle garanti edilir
 
+> ✅ **UYGULANDI — 19 Ağustos 2026.** ADR 011 · `eval/ablasyon.py` ·
+> `make ablasyon` · `tests/test_ablasyon_butunlugu.py` (9 test).
+> Tablodaki farklı kod izi **2 → 1** (yapısal garanti) · yarım tablo
+> **imkânsız** · elle komut **6 → 1**.
+>
+> **Tasarımda olmayan ikinci bulgu çıktı ve o da kapatıldı:** ablasyon koşusu
+> ÜRETİM veritabanına yazıyordu. `make extract-kural`, demoyu besleyen 96
+> kaydı katman eksik hâlleriyle değiştiriyordu; sonrasında `make extract`
+> koşulmazsa arayüz sessizce bozuk veri gösteriyordu. Artık her yapılandırma
+> kendi veritabanına yazar (`data/ablasyon/{ad}.db`).
+
 ### Kök neden
 
 `data/ablasyon.json`:
@@ -1340,7 +1351,7 @@ Etiketleme gecikirse manşet sayılar gecikir. **İlk başlatılacak iş budur**
 | ~~P0~~ ✅ | ~~1.2 Kalkan köken tipleri~~ **BİTTİ (ADR 010)** | Eren | 4 sa | Demoda %20 yanlış blok; en özgün özellikte |
 | ~~P0~~ ✅ | ~~1.1a `Birim`~~ **BİTTİ (ADR 009)** | Eren | 1 gün | *"0,50 TL"* ekranda; masraf sıralaması yanlış |
 | **P0** | 2.1 Bölünme + kilit + koşu defteri | Eren | 4 sa | En tehlikeli jüri sorusunun cevabı |
-| **P0** | 2.2 Atomik ablasyon + koşu | Eren | 1 sa + 45 dk | Sunumun en güçlü grafiği bugün geçersiz |
+| ~~P0~~ ✅ | ~~2.2 Atomik ablasyon~~ **BİTTİ (ADR 011)** | Eren | 1 sa + koşu | Sunumun en güçlü grafiği bugün geçersiz |
 | **P0** | 2.4+2.5 Belge tazeliği testi | Görkem | 1 sa | Ucuz, görünür, tekrarı engeller |
 | **P1** | 1.6 Zamansal geçerlilik | Görkem | 3 sa | Demoda süresi dolmuş kampanya görünür |
 | **P1** | 1.3b Karşılaştırma sınıfı | Samet | 4 sa | *"oran %0'dır"* cevabı |
@@ -1455,7 +1466,7 @@ Sunumda ve soru-cevapta kullanılacak beş cümle:
 | 1.6 | Süresi dolmuş kampanya aktif | Zaman | `Gecerlilik` + zorunlu `an` | `test_okuma_yolu_kapsamasi.py` |
 | 1.7 | 96 kaydın seçimi belgesiz | Seçim kuralı | `korpus_secimi.yaml` + üretim | `test_korpus_secimi.py` |
 | 2.1 | Altın set ayrılmamış | Bölünme | Belirlenimli bölünme + kilit | `test_bolunme.py` |
-| 2.2 | Ablasyon satırları farklı kodla | Koşu kimliği | Atomik koşucu | `test_ablasyon_butunlugu.py` |
+| 2.2 ✅ | Ablasyon satırları farklı kodla | Koşu kimliği | Atomik koşucu + ayrı veritabanı | `test_ablasyon_butunlugu.py` |
 | 2.3 | Makro-F1 7/16 alan | Kapsam | Alan tipine göre metrik + eşik | `test_kapsam_esigi.py` |
 | 2.4 | Commit ≠ yayınlanan sayı | Türetilmişlik | Commit'te metrik yasak | `test_belge_tazeligi.py` |
 | 2.5 | Bayat belgeler (0,699 / 92 test) | Türetilmişlik | Beyan edilmiş kaynak özeti | `test_belge_tazeligi.py` |

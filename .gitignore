@@ -7,6 +7,8 @@ __pycache__/
 
 # Türetilmiş veri (yeniden üretilebilir)
 data/katilim.db
+# Ablasyon koşularının kendi veritabanları — türetilmiş, `make ablasyon` üretir
+data/ablasyon/
 data/raw/**/*.html
 data/embeddings.npy
 

@@ -21,7 +21,13 @@ from datetime import datetime
 from pathlib import Path
 
 from src.collector.toplayici import bankalari_yukle, ham_kayitlari_oku, topla
-from src.depolama import cikarim_kosusu_yaz, istatistikler, kaydet, semayi_kur
+from src.depolama import (
+    VERITABANI_URL,
+    cikarim_kosusu_yaz,
+    istatistikler,
+    kaydet,
+    semayi_kur,
+)
 from src.extraction.uzlastirici import UzlastirmaRaporu, kampanya_cikar
 from src.schema import HamKayit
 
@@ -93,12 +99,36 @@ def _tohum_kayitlari() -> list[HamKayit]:
     return kayitlar
 
 
-def _cikar_ve_kaydet(kayitlar: list[HamKayit], args: argparse.Namespace) -> int:
+def ablasyon_veritabani(yapilandirma: str) -> str:
+    """Ablasyon koşusunun kendi veritabanı — üretim verisine DOKUNMAZ.
+
+    NEDEN AYRI: `make extract-kural` üretim veritabanının üstüne yazıyordu.
+    Ablasyon ölçmek için koşulan «yalnız kural» yapılandırması, demoyu
+    besleyen kayıtları katman eksik hâlleriyle değiştiriyordu; sonrasında
+    `make extract` koşulmazsa arayüz sessizce bozuk veri gösteriyordu.
+    Ölçüm koşusu, ölçtüğü sistemi bozmamalıdır.
+    """
+    dizin = KOK / "data" / "ablasyon"
+    dizin.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{dizin / f'{yapilandirma}.db'}"
+
+
+def _cikar_ve_kaydet(
+    kayitlar: list[HamKayit],
+    args: argparse.Namespace,
+    url: str | None = None,
+) -> int:
     if not kayitlar:
         log.error("İşlenecek kayıt yok. Önce `make crawl` veya seed.jsonl doldurun.")
         return 1
 
-    semayi_kur()
+    yapilandirma = "kural" if args.yalniz_kural else "llm" if args.yalniz_llm else "hibrit"
+    if url is None:
+        url = VERITABANI_URL if yapilandirma == "hibrit" else ablasyon_veritabani(yapilandirma)
+    if url != VERITABANI_URL:
+        log.info("Ablasyon koşusu — ayrı veritabanı: %s", url)
+
+    semayi_kur(url)
     llm_cikarici = None
     if not args.yalniz_kural:
         from src.ajanlar.elestirmen import ElestirmenAjani
@@ -149,17 +179,16 @@ def _cikar_ve_kaydet(kayitlar: list[HamKayit], args: argparse.Namespace) -> int:
         # bir çökmede tüm işi çöpe atar. Kimlikler deterministik ve yazma
         # upsert olduğu için ara kayıt güvenlidir — koşu tekrarlanabilir.
         if len(bekleyen) >= ARA_KAYIT_ARALIGI:
-            kaydet(bekleyen)
+            kaydet(bekleyen, url)
             log.info("   ↳ %d kayıt veritabanına yazıldı (ara kayıt)", len(bekleyen))
             bekleyen.clear()
 
     if bekleyen:
-        kaydet(bekleyen)
+        kaydet(bekleyen, url)
 
     # Koşuyu kaydet: `make eval` bayat sayı raporlamasın diye. Ara kayıttan
     # SONRA, tek sefer — koşunun tamamlandığı an budur.
-    yapilandirma = "kural" if args.yalniz_kural else "llm" if args.yalniz_llm else "hibrit"
-    cikarim_kosusu_yaz(yapilandirma, len(kampanyalar))
+    cikarim_kosusu_yaz(yapilandirma, len(kampanyalar), url)
 
     print("\n" + "=" * 64)
     print(f"  Yapılandırma         : {yapilandirma}")
