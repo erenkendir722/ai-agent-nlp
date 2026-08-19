@@ -289,8 +289,8 @@ if secili_kriter == Kriter.EN_AVANTAJLI:
             "Her kriter kendi içinde 0–1 aralığına ölçeklenir (min-maks "
             "normalizasyon), sonra yukarıdaki ağırlıklarla toplanır. "
             "Eksik veri nötr (0,5) sayılır ve *karşılaştırılabilirlik* oranı düşer.\n\n"
-            "**Not (Vade Farkı):** Vadesi uzun olan kampanyalar, finansal açıdan daha yüksek vade farkı "
-            "maliyetine yol açtığından avantaj skorları kademeli olarak düşürülür."
+            "**Not:** Vade ağırlığı kullanıcı tarafından belirlenir; uzun vade tek başına avantaj "
+            "sayılır, ama farklı vadeli ürünler için yukarıdaki uyarı çıkar ve karar toplam maliyete bırakılır."
         )
         for detay in avantaj_skorla(sirali, agirliklar):
             st.markdown(
