@@ -54,11 +54,11 @@
     }
   },
   "hibrit": {
-    "zaman": "2026-08-18T23:36:51.986150",
-    "kod_parmak_izi": "f835ccc2f7e8d116",
+    "zaman": "2026-08-19T12:44:08.986208",
+    "kod_parmak_izi": "1e68ded1e4ccf2c7",
     "kampanya_sayisi": 96,
-    "alan_dolulugu": 0.20572916666666666,
-    "halusinasyon_orani": 0.0031645569620253164,
+    "alan_dolulugu": 0.20377604166666666,
+    "halusinasyon_orani": 0.0,
     "makro_f1": 0.7775518438812977,
     "sayisal_dogruluk": 0.9366666666666666,
     "alan_f1": {

@@ -1,27 +1,24 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 19.08.2026 01:58 · `make eval`_
+_Otomatik üretildi: 19.08.2026 12:44 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> 🔴 **BAYAT — bu sayıları sunuma kopyalamayın.**
-> Çıkarım 18.08.2026 23:36'de koştu; çıkarım kodu o tarihten sonra değişti (f835ccc2f7e8d116 → f7d364355ee5631e).
-> Kayıtlı koşu: `hibrit` yapılandırması, 96 kayıt.
-> Düzeltmek için: `make extract && make eval`.
+> ✅ **Güncel.** Çıkarım 19.08.2026 12:44'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
 - İşlenen kampanya: **96**
 - Banka sayısı: **8**
-- Toplam alan: 1536 · Dolu: 316
+- Toplam alan: 1536 · Dolu: 313
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.32 | ≤ %3 | ✅ |
-| Alan doluluğu | %20.6 | — | — |
+| **Halüsinasyon oranı** | %0.00 | ≤ %3 | ✅ |
+| Alan doluluğu | %20.4 | — | — |
 | Ortalama güven | 0.799 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
 | Denetimsiz cevap parçası | %0.0 | %0 | ✅ |
@@ -47,21 +44,17 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 197 |
-| `kural` | 103 |
-| `hibrit` | 16 |
-
-## Halüsinasyon örnekleri (hata analizi)
-
-- `kampanya_kosullari: özette geçen '1,5' sayısı ham metinde yok`
+| `llm` | 194 |
+| `kural` | 106 |
+| `hibrit` | 13 |
 
 ## Alan bazlı doluluk
 
 | Alan | Doluluk |
 |---|---|
 | `kampanya_turu` | %100 |
-| `kampanya_kosullari` | %61 |
-| `kampanya_avantaji` | %39 |
+| `kampanya_kosullari` | %54 |
+| `kampanya_avantaji` | %42 |
 | `vade_ay_max` | %32 |
 | `kampanya_bitis` | %24 |
 | `masrafsiz_mi` | %16 |
@@ -72,7 +65,7 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | `tahsis_ucreti` | %6 |
 | `indirim_orani` | %6 |
 | `hedef_kitle` | %4 |
-| `masraf_bilgisi` | %1 |
+| `masraf_bilgisi` | %2 |
 | `alisveris_puani` | %1 |
 | `urun_turu` | %0 |
 
