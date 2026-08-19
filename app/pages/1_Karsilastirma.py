@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -331,25 +332,90 @@ if st.session_state.get("dev_mode", False):
     st.divider()
 
 # ---------------------------------------------------------------------------
-# Toplam maliyet hesaplayıcı
+# ES-08: Yan Yana Karşılaştırma ve Maliyet
 # ---------------------------------------------------------------------------
 
-st.subheader("Toplam maliyet hesaplayıcı")
+st.subheader("Yan Yana Toplam Maliyet Karşılaştırması")
 st.caption(
     "Eşit taksitli (annüite) ödeme planı. Katılım bankacılığında murabaha ile "
     "satış bedeli baştan sabitlenir; taksit hesabı matematiksel olarak aynıdır."
 )
 
-h1, h2, h3, h4 = st.columns(4)
-anapara = h1.number_input("Finansman tutarı (TL)", min_value=1000.0, value=500_000.0, step=10_000.0)
-oran = h2.number_input("Aylık kâr payı oranı (%)", min_value=0.0, value=2.05, step=0.01)
-vade = h3.number_input("Vade (ay)", min_value=1, value=120, step=6)
-tahsis = h4.number_input("Tahsis ücreti (TL)", min_value=0.0, value=0.0, step=500.0)
+if not sirali:
+    st.info("Karşılaştırılacak kampanya yok.")
+else:
+    # Kampanya Seçimi
+    kampanya_secenekleri = {f"{format_bank_name(k.banka_adi)} - {k.urun_turu or k.kampanya_turu}": k for k in sirali}
+    secilen_adlar = st.multiselect(
+        "Karşılaştırmak istediğiniz kampanyaları seçin (En fazla 3)",
+        options=list(kampanya_secenekleri.keys()),
+        default=list(kampanya_secenekleri.keys())[:2],
+        max_selections=3
+    )
 
-if st.button("Hesapla", type="primary"):
-    sonuc = toplam_maliyet(anapara, oran, int(vade), tahsis)
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Aylık taksit", f"{sonuc['aylik_taksit']:,.2f} TL".replace(",", "."))
-    m2.metric("Toplam geri ödeme", f"{sonuc['toplam_geri_odeme']:,.2f} TL".replace(",", "."))
-    m3.metric("Toplam kâr payı", f"{sonuc['toplam_kar_payi']:,.2f} TL".replace(",", "."))
-    st.caption(f"Toplam maliyet oranı: %{sonuc['toplam_maliyet_orani']:.2f}")
+    if secilen_adlar:
+        h1, h2 = st.columns(2)
+        ortak_anapara = h1.number_input("İhtiyaç Duyulan Finansman (TL)", min_value=1000.0, value=500_000.0, step=10_000.0)
+        ortak_vade = h2.number_input("İstenen Vade (Ay)", min_value=1, value=120, step=6)
+        
+        st.write("") # Boşluk
+        
+        # Kartları yan yana diz
+        cols = st.columns(len(secilen_adlar))
+        
+        maliyet_sonuclari = []
+        for i, ad in enumerate(secilen_adlar):
+            kayit = kampanya_secenekleri[ad]
+            with cols[i]:
+                st.markdown(f"### {format_bank_name(kayit.banka_adi)}")
+                st.caption(kayit.urun_turu or kayit.kampanya_turu or "Kampanya")
+                
+                # Veri eksikliği kontrolü
+                if pd.isna(kayit.kar_payi_orani) or kayit.kar_payi_orani == "Belirtilmemiş":
+                    st.warning("⚠️ Kâr payı verisi eksik olduğu için hesaplanamıyor.")
+                    maliyet_sonuclari.append(float('inf'))
+                    continue
+                    
+                # 1. İş Mantığı Zırhı: Limit Kontrolleri
+                limit_asti_mi = False
+                if kayit.finansman_tutari_max and kayit.finansman_tutari_max != "Belirtilmemiş":
+                    if ortak_anapara > float(kayit.finansman_tutari_max):
+                        st.error(f"⚠️ Bankanın belirlediği azami finansman limitini ({kayit.finansman_tutari_max:,.0f} TL) aşıyor.")
+                        limit_asti_mi = True
+                
+                if kayit.vade_ay_max and kayit.vade_ay_max != "Belirtilmemiş":
+                    if ortak_vade > float(kayit.vade_ay_max):
+                        st.error(f"⚠️ Bankanın belirlediği azami vadeyi ({kayit.vade_ay_max:.0f} ay) aşıyor.")
+                        limit_asti_mi = True
+                        
+                if limit_asti_mi:
+                    maliyet_sonuclari.append(float('inf'))
+                    continue
+                
+                # Limitleri geçti, hesapla
+                tahsis = float(kayit.tahsis_ucreti) if (kayit.tahsis_ucreti and kayit.tahsis_ucreti != "Belirtilmemiş") else 0.0
+                sonuc = toplam_maliyet(ortak_anapara, float(kayit.kar_payi_orani), int(ortak_vade), tahsis)
+                maliyet_sonuclari.append(sonuc['toplam_geri_odeme'])
+                
+                st.metric("Aylık Taksit", f"{sonuc['aylik_taksit']:,.2f} TL".replace(",", "."))
+                st.metric("Toplam Geri Ödeme", f"{sonuc['toplam_geri_odeme']:,.2f} TL".replace(",", "."))
+                
+                # Görsel Maliyet Dağılımı (Plotly Donut)
+                df_donut = pd.DataFrame({
+                    "Kategori": ["Anapara", "Kâr Payı", "Masraflar"],
+                    "Tutar": [ortak_anapara, sonuc['toplam_kar_payi'], tahsis]
+                })
+                fig = px.pie(df_donut, values='Tutar', names='Kategori', hole=0.6, 
+                             color_discrete_sequence=['#1f77b4', '#aec7e8', '#ff7f0e'])
+                fig.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=150)
+                st.plotly_chart(fig, use_container_width=True)
+                
+        # Kazananı Vurgulama
+        gecerli_maliyetler = [m for m in maliyet_sonuclari if m != float('inf')]
+        if gecerli_maliyetler:
+            en_dusuk_maliyet = min(gecerli_maliyetler)
+            for i, ad in enumerate(secilen_adlar):
+                if maliyet_sonuclari[i] == en_dusuk_maliyet:
+                    with cols[i]:
+                        st.success("🏆 **En Uygun Seçenek**")
+                        st.caption("Düşük kâr payı illüzyonuna düşmediniz; gizli masraflar dâhil cebinizden çıkacak en düşük tutar.")
