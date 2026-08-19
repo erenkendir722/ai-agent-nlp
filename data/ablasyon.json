@@ -1,0 +1,83 @@
+{
+  "kural": {
+    "zaman": "2026-08-19T16:19:08.746749",
+    "kod_parmak_izi": "ab5383c91fb6abce",
+    "kampanya_sayisi": 96,
+    "alan_dolulugu": 0.07161458333333333,
+    "halusinasyon_orani": 0.0,
+    "makro_f1": 0.6879685105479644,
+    "sayisal_dogruluk": 0.9366666666666666,
+    "alan_f1": {
+      "kampanya_turu": 0.0,
+      "urun_turu": null,
+      "hedef_kitle": null,
+      "kar_payi_orani": 0.8421052631578948,
+      "finansman_tutari_max": 0.6153846153846154,
+      "vade_ay_max": 0.7906976744186046,
+      "taksit_sayisi": null,
+      "tahsis_ucreti": 0.9090909090909091,
+      "masraf_bilgisi": null,
+      "masrafsiz_mi": 0.7142857142857143,
+      "odul_miktari": 0.6666666666666666,
+      "indirim_orani": null,
+      "alisveris_puani": null,
+      "kampanya_avantaji": null,
+      "kampanya_bitis": 0.9655172413793104,
+      "kampanya_kosullari": null
+    }
+  },
+  "llm": {
+    "zaman": "2026-08-19T17:16:25.069225",
+    "kod_parmak_izi": "ab5383c91fb6abce",
+    "kampanya_sayisi": 96,
+    "alan_dolulugu": 0.13671875,
+    "halusinasyon_orani": 0.004761904761904762,
+    "makro_f1": 0.20537280701754385,
+    "sayisal_dogruluk": 0.8566666666666667,
+    "alan_f1": {
+      "kampanya_turu": 0.7833333333333333,
+      "urun_turu": null,
+      "hedef_kitle": null,
+      "kar_payi_orani": 0.0,
+      "finansman_tutari_max": 0.0,
+      "vade_ay_max": 0.0,
+      "taksit_sayisi": null,
+      "tahsis_ucreti": 0.33333333333333337,
+      "masraf_bilgisi": null,
+      "masrafsiz_mi": 0.0,
+      "odul_miktari": 0.0,
+      "indirim_orani": null,
+      "alisveris_puani": null,
+      "kampanya_avantaji": null,
+      "kampanya_bitis": 0.5263157894736842,
+      "kampanya_kosullari": null
+    }
+  },
+  "hibrit": {
+    "zaman": "2026-08-19T18:06:04.234513",
+    "kod_parmak_izi": "ab5383c91fb6abce",
+    "kampanya_sayisi": 96,
+    "alan_dolulugu": 0.19661458333333334,
+    "halusinasyon_orani": 0.0,
+    "makro_f1": 0.779635177214631,
+    "sayisal_dogruluk": 0.9366666666666666,
+    "alan_f1": {
+      "kampanya_turu": 0.7333333333333333,
+      "urun_turu": null,
+      "hedef_kitle": null,
+      "kar_payi_orani": 0.8421052631578948,
+      "finansman_tutari_max": 0.6153846153846154,
+      "vade_ay_max": 0.7906976744186046,
+      "taksit_sayisi": null,
+      "tahsis_ucreti": 0.9090909090909091,
+      "masraf_bilgisi": null,
+      "masrafsiz_mi": 0.7142857142857143,
+      "odul_miktari": 0.6666666666666666,
+      "indirim_orani": null,
+      "alisveris_puani": null,
+      "kampanya_avantaji": null,
+      "kampanya_bitis": 0.9655172413793104,
+      "kampanya_kosullari": null
+    }
+  }
+}

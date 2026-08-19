@@ -1,25 +1,25 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 19.08.2026 12:44 · `make eval`_
+_Otomatik üretildi: 19.08.2026 18:06 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 19.08.2026 12:44'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 19.08.2026 16:19'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
 - İşlenen kampanya: **96**
 - Banka sayısı: **8**
-- Toplam alan: 1536 · Dolu: 313
+- Toplam alan: 1536 · Dolu: 306
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.00 | ≤ %3 | ✅ |
-| Alan doluluğu | %20.4 | — | — |
-| Ortalama güven | 0.799 | — | — |
+| **Halüsinasyon oranı** | %0.98 | ≤ %3 | ✅ |
+| Alan doluluğu | %19.9 | — | — |
+| Ortalama güven | 0.795 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
 | Denetimsiz cevap parçası | %0.0 | %0 | ✅ |
 
@@ -44,30 +44,35 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 194 |
-| `kural` | 106 |
-| `hibrit` | 13 |
+| `llm` | 197 |
+| `kural` | 95 |
+| `hibrit` | 14 |
+
+## Halüsinasyon örnekleri (hata analizi)
+
+- `kampanya_kosullari: özette geçen '64.48' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '862.50' sayısı ham metinde yok`
 
 ## Alan bazlı doluluk
 
 | Alan | Doluluk |
 |---|---|
 | `kampanya_turu` | %100 |
-| `kampanya_kosullari` | %54 |
-| `kampanya_avantaji` | %42 |
+| `kampanya_kosullari` | %61 |
+| `kampanya_avantaji` | %38 |
 | `vade_ay_max` | %32 |
 | `kampanya_bitis` | %24 |
 | `masrafsiz_mi` | %16 |
 | `kar_payi_orani` | %11 |
 | `finansman_tutari_max` | %11 |
-| `odul_miktari` | %8 |
-| `taksit_sayisi` | %7 |
+| `odul_miktari` | %7 |
 | `tahsis_ucreti` | %6 |
-| `indirim_orani` | %6 |
+| `indirim_orani` | %5 |
 | `hedef_kitle` | %4 |
-| `masraf_bilgisi` | %2 |
+| `masraf_bilgisi` | %1 |
 | `alisveris_puani` | %1 |
 | `urun_turu` | %0 |
+| `taksit_sayisi` | %0 |
 
 ## Altın set metrikleri
 
@@ -111,3 +116,21 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 > ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem boş olması gereken hücrelere değer yazıyor (yanlış pozitif); önce kesinliği düzeltmek gerekir.
 
 > **DP/YP/YN** — doğru pozitif / yanlış pozitif / yanlış negatif. Yanlış değer hem YP hem YN sayılır: uydurulmuş bir değerdir ve aynı anda doğru cevap kaçırılmıştır.
+
+## Ablasyon tablosu
+
+Üç yapılandırma **aynı kod yolundan** koşulur; yalnız katman bayrakları değişir.
+Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.
+
+```bash
+make extract-kural && make eval   # yalnız kural
+make extract-llm   && make eval   # yalnız LLM
+make extract       && make eval   # hibrit
+```
+
+| Yapılandırma | Kâr payı F1 | Vade F1 | Makro-F1 | Halüsinasyon | Doluluk |
+|---|---|---|---|---|---|
+| Yalnız kural (regex) | 0.842 | 0.791 | **0.688** | %0.00 | %7.2 |
+| Yalnız LLM (şema kısıtlı) | 0.000 | 0.000 | **0.205** | %0.48 | %13.7 |
+| **Hibrit (bizim)** | 0.842 | 0.791 | **0.780** | %0.00 | %19.7 |
+
