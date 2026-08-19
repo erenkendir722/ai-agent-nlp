@@ -1,5 +1,5 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
-        birim-goc ablasyon \
+        birim-goc ablasyon eval-gorulmemis \
         altin-ornekle altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol hava-boslugu
 
@@ -54,6 +54,9 @@ eval:  ## metrikleri hesapla -> docs/SONUCLAR.md
 
 eval-ablation:  ## ablasyon tablosu (kural / LLM / hibrit)
 	$(PYTHON) -m eval.calistir --ablasyon
+
+eval-gorulmemis:  ## görülmemiş metin ölçümü (llm=1 ile LLM katmanı da) -> docs/GORULMEMIS_METIN.md
+	$(PYTHON) -m eval.gorulmemis $(if $(llm),--llm)
 
 eval-robust:  ## dayanıklılık ölçümü (şartname 5.2) -> docs/DAYANIKLILIK.md
 	$(PYTHON) -m eval.dayaniklilik

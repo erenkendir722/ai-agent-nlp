@@ -13,6 +13,7 @@ veri olarak durur; yeni bir alan eklemek bir satır eklemektir.
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -36,6 +37,8 @@ from src.schema import (
     Alan,
     Kaynak,
 )
+
+log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Değer desenleri — "metinde şuna benzeyen bir şey var mı?"
@@ -461,6 +464,24 @@ class Aday:
     baslangic: int
     bitis: int
     guven: float
+    mesafe: int = 10**6
+    """Bu span ile kuralın EN YAKIN bağlam sözcüğü arasındaki uzaklık.
+
+    `guven`'den AYRI tutulur çünkü ikisi farklı soruları cevaplar:
+
+        guven  = "bu alan genelde ne kadar güvenilir" (taban) × yakınlık
+        mesafe = "bu SPAN bu alana ne kadar ait" (yalnız kanıt)
+
+    Sahiplik çözümünde (bkz. `_tek_atama`) yalnız `mesafe` kullanılır.
+    Güven kullanılamaz: taban güveni yüksek bir alan, bağlam sözcüğü çok
+    uzakta olsa bile düşük tabanlı bir alanı yener. Ölçülen örnek —
+    «…kâr payı oranı %2,45'ten başlıyor. … Tahsis ücreti %0,75.»
+
+        %0,75 için  kar_payi_orani guven=0,8828  (taban 0,93, sözcük uzak)
+        %0,75 için  tahsis_ucreti  guven=0,8415  (taban 0,85, sözcük bitişik)
+
+    Güvene bakan bir sahiplik kuralı span'ı YANLIŞ alana verirdi. Önsel,
+    bu span hakkında bir kanıt değildir."""
 
 
 _CUMLE_SONU = re.compile(r"[.!?\n]")
@@ -752,8 +773,14 @@ def _aralik_ucu_mu(metin: str, baslangic: int, bitis: int) -> bool:
     return bool(_ORAN_TABLOSU.search(sol_anahtar) or _ORAN_TABLOSU.search(sag_anahtar))
 
 
-def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) -> float | None:
-    """Bağlam sözcüğü yakınlığına göre güven çarpanı. Sözcük yoksa None (=reddet).
+def _baglam_skoru(
+    metin: str, kural: KuralTanimi, baslangic: int, bitis: int
+) -> tuple[float, int] | None:
+    """(güven, mesafe) döner. Bağlam sözcüğü yoksa None (=reddet).
+
+    Mesafe ayrıca döndürülür çünkü SAHİPLİK çözümü onu kullanır: iki alan
+    aynı sayıyı sahiplendiğinde kazanan, bağlam sözcüğü daha yakın olandır
+    (bkz. `Aday.mesafe`, `_tek_atama`).
 
     DIŞLAMA MESAFEYE DUYARLIDIR. Naif yaklaşım — "pencerede dışlayıcı sözcük
     varsa reddet" — gerçek metinlerde yanlış çalışır:
@@ -806,7 +833,10 @@ def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) ->
             return None
         if not any(s in baslik_anahtari for s in kural.baglam_sozcukleri):
             return None  # başka bir kolonun değeri
-        return kural.taban_guven * TABLO_GUVEN_CARPANI
+        # Kolon başlığı hücreyi DOĞRUDAN adlandırır: sahiplik iddiası en güçlü
+        # biçimidir, mesafe sıfırdır. (Tablo yolunda çifte sahiplenme zaten
+        # oluşmuyor — yanlış kolonun kuralı yukarıda eleniyor.)
+        return kural.taban_guven * TABLO_GUVEN_CARPANI, 0
 
     kapsayici = _en_yakin_uzaklik(pencere, kural.baglam_sozcukleri, hedef)
     if kapsayici is None:
@@ -820,7 +850,7 @@ def _baglam_skoru(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) ->
         return None
 
     yakinlik = max(0.0, 1.0 - kapsayici / (2 * kural.baglam_penceresi))
-    return kural.taban_guven * (0.80 + 0.20 * yakinlik)
+    return kural.taban_guven * (0.80 + 0.20 * yakinlik), kapsayici
 
 
 def _adaylari_bul(metin: str, kural: KuralTanimi) -> list[Aday]:
@@ -846,18 +876,22 @@ def _adaylari_bul(metin: str, kural: KuralTanimi) -> list[Aday]:
         if kural.tarih_araligi_sonu_kabul and _tarih_araligi_basi_mu(metin, eslesme.end()):
             continue  # aralığın BAŞI — bitiş tarihi olamaz
 
-        guven = _baglam_skoru(metin, kural, eslesme.start(), eslesme.end())
+        skor = _baglam_skoru(metin, kural, eslesme.start(), eslesme.end())
         if (
-            guven is None
+            skor is None
             and kural.tarih_araligi_sonu_kabul
             and _tarih_araligi_sonu_mu(metin, eslesme.start())
         ):
             # Sözcük yok ama YAPI var: "13 Mart 2026 - 31 Aralık 2026".
-            guven = kural.taban_guven * TARIH_ARALIGI_CARPANI
-        if guven is None:
+            # Bağlam sözcüğü olmadığı için sahiplik iddiası ZAYIF: mesafe
+            # bilinçli olarak büyük bırakılır, sözcükle desteklenen bir
+            # iddiaya karşı kaybetsin.
+            skor = (kural.taban_guven * TARIH_ARALIGI_CARPANI, kural.baglam_penceresi)
+        if skor is None:
             continue
 
-        adaylar.append(Aday(deger, ham, eslesme.start(), eslesme.end(), guven))
+        guven, mesafe = skor
+        adaylar.append(Aday(deger, ham, eslesme.start(), eslesme.end(), guven, mesafe))
     return adaylar
 
 
@@ -941,6 +975,67 @@ def deger_makul_mu(
     return True
 
 
+def _tek_atama(adaylar: dict[str, list[Aday]]) -> dict[str, list[Aday]]:
+    """Bir metin parçasını YALNIZ BİR alan sahiplenebilir.
+
+    NEDEN GEREKLİ — ölçülmüş hata (19 Ağustos, jüri tarzı düz metin):
+
+        "…aylık kâr payı oranı %2,45'ten başlıyor. … Tahsis ücreti %0,75."
+
+        kar_payi_orani = 0.75   span=(138,145)
+        tahsis_ucreti  = 0.75   span=(138,145)   <- AYNI SPAN
+        Doğru cevap %2,45 tümüyle kaçırıldı.
+
+    Her kural metni BAĞIMSIZ tarıyordu ve aynı sayıyı iki alanın birden
+    sahiplenmesini engelleyen hiçbir şey yoktu. `kar_payi_orani` kuralı
+    `secim="en_dusuk"` olduğu için 2,45 yerine 0,75'i seçiyordu.
+
+    Bu tek kaydın ezberi değil, SINIF hatasıdır: tahsis ücreti gerçek hayatta
+    %0,5-1, kâr payı %2-4 seyreder. Yani oranın altında bir ücret yüzdesi
+    olan HER düz metinde kâr payı yanlış çıkardı. Tablolarda oluşmuyordu
+    (kolon başlığı yanlış kolonu zaten eliyor), ama jüri tablo değil düz
+    metin yapıştırır.
+
+    ÇÖZÜM ÖLÇÜTÜ — mesafe, güven DEĞİL:
+        Güven, alanın taban güvenini (bir ÖNSEL) içerir ve o önsel bu span
+        hakkında bir kanıt değildir. Yukarıdaki metinde `kar_payi_orani`
+        %0,75 için 0,8828, `tahsis_ucreti` 0,8415 güven alıyor — güvene
+        bakan bir kural span'ı yanlış alana verirdi. Sahiplik, yalnız bu
+        span'a ait kanıtla çözülür: hangi alanın bağlam sözcüğü daha yakın.
+
+    Eşitlikte `KURALLAR` bildirim sırası karar verir — keyfi ama
+    DETERMİNİSTİK; aynı metin her koşuda aynı sonucu vermelidir.
+
+    Kaybeden alan susmaz: span'ı listesinden düşer ve KALAN adaylarından
+    seçim yapar. Yukarıdaki örnekte `kar_payi_orani` böylece %2,45'e ulaşır.
+    """
+    sira = {kural.alan: i for i, kural in enumerate(KURALLAR)}
+    sahipler: dict[tuple[int, int], str] = {}
+
+    for alan, alan_adaylari in adaylar.items():
+        for aday in alan_adaylari:
+            anahtar = (aday.baslangic, aday.bitis)
+            mevcut = sahipler.get(anahtar)
+            if mevcut is None:
+                sahipler[anahtar] = alan
+                continue
+            mevcut_aday = next(
+                a for a in adaylar[mevcut]
+                if (a.baslangic, a.bitis) == anahtar
+            )
+            if (aday.mesafe, sira[alan]) < (mevcut_aday.mesafe, sira[mevcut]):
+                log.debug(
+                    "span %s: %s -> %s (mesafe %d < %d)",
+                    anahtar, mevcut, alan, aday.mesafe, mevcut_aday.mesafe,
+                )
+                sahipler[anahtar] = alan
+
+    return {
+        alan: [a for a in alan_adaylari if sahipler[(a.baslangic, a.bitis)] == alan]
+        for alan, alan_adaylari in adaylar.items()
+    }
+
+
 def _sec(adaylar: list[Aday], secim: Secim) -> Aday | None:
     if not adaylar:
         return None
@@ -968,8 +1063,14 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
     """
     sonuc: dict[str, Alan] = {}
 
+    # ÖNCE tüm kuralların adayları toplanır, SONRA sahiplik çözülür.
+    # Kurallar tek tek işlenseydi, bir alanın seçimi diğerinin ne
+    # sahiplendiğinden habersiz kalırdı — çifte sahiplenmenin kaynağı buydu.
+    tum_adaylar = {kural.alan: _adaylari_bul(metin, kural) for kural in KURALLAR}
+    sahiplenilmis = _tek_atama(tum_adaylar)
+
     for kural in KURALLAR:
-        secilen = _sec(_adaylari_bul(metin, kural), kural.secim)
+        secilen = _sec(sahiplenilmis[kural.alan], kural.secim)
         if secilen is None:
             continue
         alinti_bas, alinti_bit = _cumle_araligi(metin, secilen.baslangic, secilen.bitis)

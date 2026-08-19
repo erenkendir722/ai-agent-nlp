@@ -1090,6 +1090,101 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 > kriterinin "dokümantasyonun açık ve anlaşılır olması" maddesi senin elinde.
 > Ayrıca **video ve sunum zorunlu teslimat** — bunlar olmadan yarışamayız.
 
+---
+
+## 🔴 ES-19 — METİN YAPIŞTIRMA EKRANI · en acil, 19 Ağu'da eklendi
+
+- [ ] **ES-19** «Metin ver → yapısal çıktı» ekranı · 📅 **21 Ağu** · ⚡ **çift amaçlı**
+
+**NEDEN BİRDEN ACİL OLDU.** 19 Ağustos soru-cevap toplantısında jüri şunu
+söyledi:
+
+> *«Sizin değerlendirme kriterleriniz de önemli ama **o anda jüri kendisi de
+> test verisi verebilir**.»*
+
+Yani sunumda jürinin biri eline bir kampanya metni alıp *"şunu bir çalıştırın"*
+diyebilir. **Bugün böyle bir ekranımız yok.** Elimizde yalnız `POST /extract`
+API ucu var; jüriye Swagger'da JSON göstermek zorunda kalırız — sistemin en
+güçlü iddiasını (kanıt zinciri) en zayıf biçimde sunmuş oluruz.
+
+**İKİNCİ AMAÇ — video zaten bunu istiyor.** Şartname madde 6, demo videosunda
+şunların gösterilmesini şart koşuyor:
+
+> *«…**metin girdisi verilmesi**, **yapılandırılmış çıktı**…»*
+
+Yani ES-17/ES-18 videoları çekilirken bu ekran zaten gerekecek. **Tek iş, iki
+teslimat.** Bu yüzden videodan ÖNCE yapılmalı.
+
+### Bitti sayılır
+
+- [ ] `app/pages/3_Metin_Analizi.py` — Streamlit sayfası
+- [ ] Büyük bir `st.text_area` + «Çıkar» düğmesi
+- [ ] Sonuç tablosu: **alan · değer · birim · güven · yöntem**
+- [ ] Her satır açıldığında **kaynak alıntısı** görünüyor (ES-02'deki panelin
+      aynısı — yeniden yazma, oradaki bileşeni kullan)
+- [ ] Boş metin / çok kısa metin / hiçbir alan bulunamadı durumları kırılmıyor
+      (ES-03 disiplini)
+- [ ] Şartname madde 11'in **kendi örnek metni** hazır bir düğmeyle yüklenebiliyor
+      («Örnek metni dene») — jüri kendi metnini vermezse biz onlarınkini gösteririz
+
+### Kod tarafı hazır — yeni motor yazma
+
+```python
+from src.extraction.uzlastirici import kampanya_cikar
+from src.schema import HamKayit
+
+kayit = HamKayit(
+    banka_kodu="MANUEL", banka_adi="Jüri metni", url="manuel://girdi",
+    cekim_tarihi=datetime.now(), http_durum=200, govde_metin=metin,
+)
+kampanya, rapor = kampanya_cikar(kayit)
+```
+
+`src/api/sunucu.py`'deki `POST /extract` **tam olarak bunu** yapıyor (135.
+satır). Oradan kopyala; iş mantığı yazma, yalnız ekranı kur.
+
+### ⏱️ GECİKME — jüri önünde en büyük risk
+
+| Katman | Süre |
+|---|---|
+| Kural katmanı | **~1 ms** |
+| LLM katmanı | **13–100 saniye** (M1, 8 GB) |
+
+Jüri önünde 90 saniye boş ekran felakettir. **Öneri:** «Çıkar» basılınca önce
+kural katmanının sonucunu **anında** göster, sonra LLM'i `st.spinner` içinde
+koştur ve tabloyu zenginleştir:
+
+```python
+kampanya, _ = kampanya_cikar(kayit, llm_kullan=False)   # anında
+# ekrana bas, sonra:
+with st.spinner("LLM katmanı çalışıyor…"):
+    kampanya, _ = kampanya_cikar(kayit)                  # zenginleştir
+```
+
+Bu aynı zamanda **hibrit mimariyi gözle gösterir**: jüri kural katmanının
+anında geldiğini, LLM'in üstüne ne kattığını canlı görür. Ablasyon tablosunun
+ekrandaki karşılığı.
+
+### ⛔ Önce bitmeli
+
+Yok — bağımsız. **Bugün başlanabilir.**
+
+### 🔓 Bunu bitirince açılan işler
+
+- **ES-17** (5 dk video) — madde 6'nın «metin girdisi + yapılandırılmış çıktı»
+  sahnesi bu ekranla çekilir
+- **ES-12** (demo senaryosu) — «jüri metin verirse» provası bu ekranla yapılır
+
+### 📌 Kanıt zinciri kırılmasın
+
+Sonuç tablosunda **birim sütunu zorunlu**. 19 Ağustos'ta düzeltilen hata tam
+buydu: `tahsis_ucreti` hem TL hem yüzde taşıyor ve ekranda «0,50 TL» yazıyordu
+(doğrusu «%0,50»). Gösterimi kendin biçimlendirme —
+`src.rag.chatbot.alan_goster(alan_adi, deger, birim)` kullan, biçim birimden
+türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
+
+---
+
 ### Hemen (10–14 Ağustos)
 
 - [x] **ES-01** Genel Bakış ekranını gerçek veriyle cilala · 📅 11 Ağu *(bitti: 16 Ağu)*

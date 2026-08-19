@@ -1303,6 +1303,117 @@ getirir. Ve commit mesajı disiplini:
 
 ---
 
+# BÖLÜM 2B — Jürinin cevabından doğan bulgular
+
+_19 Ağustos soru-cevap toplantısı sonrası eklendi._
+
+Jüri şunu söyledi:
+
+> *«Sizin değerlendirme kriterleriniz de önemli ama **o anda jüri kendisi de
+> test verisi verebilir**.»*
+
+Bu, ölçüm sorusunu değiştiriyor. Altın set *«bizim seçtiğimiz 60 örnekte ne
+kadar iyiyiz?»* sorusunu cevaplıyor; jürininki farklı: **«hiç görmediğin bir
+metinde ne oluyor?»** Cevabı aramak iki bulgu ortaya çıkardı.
+
+## 2B.1 · Tek atama: bir sayıyı yalnız bir alan sahiplenebilir ✅
+
+> ✅ **UYGULANDI — 19 Ağustos 2026.** `src/extraction/kural.py::_tek_atama` ·
+> `tests/test_tek_atama.py` (12 test).
+
+### Kök neden
+
+Jüri tarzı **düz metin** denendi:
+
+```
+"…aylık kâr payı oranı %2,45'ten başlıyor. … Tahsis ücreti %0,75."
+
+kar_payi_orani = 0.75   span=(138,145)
+tahsis_ucreti  = 0.75   span=(138,145)   <- AYNI SPAN
+Doğru cevap %2,45 tümüyle kaçırıldı.
+```
+
+Her kural metni **bağımsız** tarıyordu; aynı sayıyı iki alanın sahiplenmesini
+engelleyen hiçbir şey yoktu. `kar_payi_orani` `secim="en_dusuk"` olduğu için
+2,45 yerine 0,75'i seçiyordu.
+
+**Sınıf hatasıdır:** tahsis ücreti gerçek hayatta %0,5–1, kâr payı %2–4 seyreder.
+Yani *oranın altında bir ücret yüzdesi olan her düz metinde* kâr payı yanlış
+çıkardı. Tablolarda oluşmuyordu (kolon başlığı yanlış kolonu eliyor) — **ama
+jüri tablo değil düz metin yapıştırır.**
+
+### Çözüm ölçütü: mesafe, güven DEĞİL
+
+İlk sezgi «en güvenilir alan span'ı alsın» idi. Ölçüm bunu çürüttü:
+
+| Alan | `%0,75` için güven | Bağlam sözcüğü |
+|---|---|---|
+| `kar_payi_orani` | **0,8828** | uzak (taban 0,93) |
+| `tahsis_ucreti` | 0,8415 | **bitişik** (taban 0,85) |
+
+Güven, alanın **taban güvenini** — bir *önseli* — içerir ve o önsel *bu span*
+hakkında bir kanıt değildir. Güvene bakan bir kural span'ı **yanlış alana**
+verirdi.
+
+Sahiplik yalnız bu span'a ait kanıtla çözülür: **hangi alanın bağlam sözcüğü
+daha yakın.** `Aday.mesafe` bu yüzden `guven`'den ayrı taşınır. Eşitlikte
+`KURALLAR` bildirim sırası — keyfi ama deterministik.
+
+Kaybeden alan susmaz: span'ı listesinden düşer ve **kalan** adaylarından seçim
+yapar. Örnekte `kar_payi_orani` böylece `%2,45`'e ulaşır.
+
+## 2B.2 · Görülmemiş metin ölçümü ✅
+
+> ✅ **UYGULANDI — 19 Ağustos 2026.** `eval/gorulmemis.py` ·
+> `make eval-gorulmemis` · `docs/GORULMEMIS_METIN.md` ·
+> `tests/test_gorulmemis.py` (9 test).
+
+### Veri ücretsizdi ve zaten depodaydı
+
+`data/raw` altında **283 HTML ama 96 JSON** var. Aradaki **187 sayfa** 9
+Ağustos taramasında gerçekten çekildi, korpus seçiminde dışarıda kaldı ve
+**geliştirme boyunca hiç görülmedi** — ne kural yazarken bakıldı, ne altın sete
+girdi, ne bir metrik onlara göre ayarlandı. Jürinin vereceği veriye en yakın
+vekil budur ve **etiketleme maliyeti sıfırdır.**
+
+### Etiketsiz ölçülebilenler — kanıt zinciri sayesinde
+
+Sistemin kendi sözleşmesi, doğru cevabı bilmeden ölçüm yapmayı mümkün kılıyor:
+
+| Denetim | 187 sayfada sonuç |
+|---|---|
+| Çöken kayıt | **0** |
+| **Kanıt ihlali (halüsinasyon)** | **0** |
+| Boyut ihlali (birimsiz değer) | **0** |
+| Çözülmemiş span çakışması | **0** |
+| Alan doluluğu | %8,2 (yalnız kural katmanı) |
+
+Ayrıca bir **teşhis**: `_tek_atama` bu 187 sayfada **124 kez** devreye girdi.
+Yani 2B.1'de düzeltilen hata nadir bir uç durum değildi.
+
+### Dürüst sınır — raporun içinde yazılı
+
+Bu ölçüm **doğruluk ölçmez.** Çıkarılan değerin doğru olup olmadığını
+bilmiyoruz; yalnız **kanıtlı** olduğunu biliyoruz. Doğruluk için altın set
+gerekir. İki ölçüm birbirinin yerine geçmez, farklı soruları cevaplar.
+
+> İlk sürüm bu ayrımı kaçırdı: 124 *çözülen* çakışmayı «ihlal» sütununa yazıp
+> ❌ basıyordu. Bir sayının ne anlama geldiğini yanlış etiketlemek, ölçmemekten
+> kötüdür — `test_ham_cakisma_ihlal_olarak_gosterilmez` bunu sabitledi.
+
+## 2B.3 · Metin yapıştırma ekranı ⬜ — Esra (ES-19)
+
+Jüri metin verirse bugün **Swagger'da JSON göstermek** zorundayız; sistemin en
+güçlü iddiasını en zayıf biçimde sunmuş oluruz. Ayrıca şartname madde 6, demo
+videosunda *«metin girdisi verilmesi»* ve *«yapılandırılmış çıktı»* gösterilmesini
+şart koşuyor — **tek iş, iki teslimat.**
+
+Görev `GOREVLER.md`'de **ES-19** olarak, kabul ölçütleri ve gecikme stratejisiyle
+birlikte yazıldı (kural katmanı anında → LLM `spinner` içinde zenginleştirir;
+bu aynı zamanda hibrit mimariyi gözle gösterir).
+
+---
+
 # BÖLÜM 3 — Uygulama planı
 
 ## 3.1 Bağımlılık grafiği
