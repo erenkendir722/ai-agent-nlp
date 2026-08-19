@@ -160,8 +160,38 @@ for sutun, (kriter, etiket) in zip(sutunlar, KRITER_ETIKETLERI.items(), strict=T
     if sutun.button(etiket, use_container_width=True):
         st.session_state.kriter = kriter
 
+def _csv_olustur(kayitlar):
+    df = pd.DataFrame([
+        {
+            "Banka": format_bank_name(k.banka_adi),
+            "Kampanya/Ürün": k.urun_turu or k.kampanya_turu or "—",
+            "Hedef Kitle": k.hedef_kitle or "—",
+            "Kâr Payı Oranı (%)": k.kar_payi_orani if k.kar_payi_orani is not None else "Belirtilmemiş",
+            "Azami Vade (Ay)": k.vade_ay_max if k.vade_ay_max is not None else "Belirtilmemiş",
+            "Azami Tutar (TL)": k.finansman_tutari_max if k.finansman_tutari_max is not None else "Belirtilmemiş",
+            "Tahsis Ücreti": k.tahsis_ucreti if k.tahsis_ucreti is not None else "Belirtilmemiş",
+            "Güven Skoru": f"{k.ortalama_guven:.2f}",
+            "Kaynak URL": k.kaynak_url,
+            "Çekim Tarihi": k.cekim_tarihi.strftime("%Y-%m-%d %H:%M") if k.cekim_tarihi else "—"
+        }
+        for k in kayitlar
+    ])
+    # Türkçe Excel'de sütunların düzgün ayrılması için virgül yerine noktalı virgül (sep=';') kullanıyoruz.
+    return df.to_csv(index=False, sep=';').encode('utf-8-sig')
+
 secili_kriter: Kriter = st.session_state.kriter
-st.caption(f"Sıralama ölçütü: **{KRITER_ETIKETLERI[secili_kriter]}**")
+
+col_c, col_d = st.columns([3, 1])
+with col_c:
+    st.caption(f"Sıralama ölçütü: **{KRITER_ETIKETLERI[secili_kriter]}**")
+with col_d:
+    st.download_button(
+        label="📥 CSV İndir",
+        data=_csv_olustur(sirala(suzulmus, secili_kriter, agirliklar)),
+        file_name="kampanyalar_export.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
 
 sirali = sirala(suzulmus, secili_kriter, agirliklar)
 
