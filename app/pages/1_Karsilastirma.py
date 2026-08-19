@@ -27,6 +27,7 @@ from src.comparison.karsilastirma import (  # noqa: E402
 )
 from src.depolama import tum_kayitlar  # noqa: E402
 from src.schema import Kampanya, HedefKitle  # noqa: E402
+from app.ui_utils import format_bank_name  # noqa: E402
 
 st.set_page_config(page_title="Karşılaştırma", page_icon="⚖️", layout="wide")
 st.title("⚖️ Bankalar Arası Karşılaştırma")
@@ -143,7 +144,7 @@ with st.sidebar:
     agirliklar = Agirliklar(a_kar, a_masraf, a_vade, a_odul)
     st.caption(f"Ağırlık toplamı {agirliklar.toplam():.2f} — otomatik normalize edilir.")
     
-    st.info("**⚠️ Jüri Bilgilendirmesi:** Vade uzadıkça bankaların uyguladığı vade farkı maliyeti artar. Bu nedenle algoritmamız, uzun vadeli kampanyaların skorunu vade farkı riskini gözeterek daha düşük hesaplar.")
+    st.info("**Vade Ağırlığı:** Vade ağırlığı sol kaydırıcıyla kullanıcı tarafından belirlenir. Farklı vadeli kampanyalar karşılaştırıldığında tablonun üzerinde otomatik uyarı çıkar ve karar toplam maliyete bırakılır.")
 
 # ---------------------------------------------------------------------------
 # Kriter butonları (şartname 5.7)
@@ -192,7 +193,7 @@ if not sirali:
 tablo = pd.DataFrame(
     [
         {
-            "Banka": k.banka_adi.replace(" Katılım Bankası A.Ş.", ""),
+            "Banka": format_bank_name(k.banka_adi),
             "Tür": k.kampanya_turu or "—",
             "Kâr payı (aylık %)": _gorunum(k.kar_payi_orani),
             "Azami vade (ay)": _gorunum(k.vade_ay_max),
@@ -273,9 +274,8 @@ else:
             "kullanılarak yapılmıştır. Yapay zeka halüsinasyon riski tamamen sıfırlanmıştır.\n\n"
             "- **Kural 1 (Şeffaflık):** İlgili veriyi eksik ('Belirtilmemiş') sunan bankalar, "
             "karşılaştırılamaz oldukları için doğrudan **en alta** itilir.\n"
-            "- **Kural 2 (Güven Skoru):** Eğer iki bankanın sayısal değeri tamamen aynıysa, "
-            "Yapay Zekanın çıkarım yaparken hesapladığı **Güven Skoru** daha yüksek olan (daha kesin bilgi) "
-            "üste çıkar."
+            "- **Kural 2 (Denge):** Eşit değerli kampanyalarda Python'un kararlı "
+            "sıralama garantisi girdi sırasını korur — öngörülebilir, tekrarlanabilir sonuç."
         )
 
 st.divider()
@@ -288,7 +288,7 @@ st.subheader("Kayıt detayları ve kaynak kanıtı")
 
 for kayit in sirali[:20]:
     baslik = (
-        f"{kayit.banka_adi.replace(' Katılım Bankası A.Ş.', '')} — "
+        f"{format_bank_name(kayit.banka_adi)} — "
         f"{kayit.urun_turu or kayit.kampanya_turu or 'kampanya'} "
         f"(doluluk %{kayit.doluluk_orani * 100:.0f})"
     )
@@ -323,17 +323,9 @@ st.divider()
 
 if st.session_state.get("dev_mode", False):
     st.subheader("Geliştirici Entegrasyonu (B2B API)")
-    st.markdown("Aşağıdaki cURL komutuyla bu sayfadaki filtrelenmiş sonuçları doğrudan kendi sisteminize entegre edebilirsiniz:")
+    st.markdown("Aşağıdaki cURL komutuyla filtrelenmiş sonuçları gerçek API'den çekebilirsiniz (`make api` ile başlatın):")
     
-    # Basit bir cURL örneği
-    curl_cmd = f"""curl -X POST "https://api.svartal.bank/v1/karsilastirma" \\
-     -H "Authorization: Bearer YOUR_API_KEY" \\
-     -H "Content-Type: application/json" \\
-     -d '{{
-           "kriter": "{secili_kriter.value}",
-           "bankalar": {str(secili_bankalar).replace("'", '"')},
-           "limit": 10
-         }}'
+    curl_cmd = f"""curl "http://localhost:8000/compare?kriter={secili_kriter.value}&limit=10"
 """
     st.code(curl_cmd, language="bash")
     st.divider()

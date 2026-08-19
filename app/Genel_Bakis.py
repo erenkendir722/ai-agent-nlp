@@ -146,13 +146,18 @@ st.caption(
 
 k1, k2, k3 = st.columns(3)
 with k1:
-    st.metric("Sayısal Doğrulama Kalkanı Düzeltme Oranı", "%14", "Eleştirmen Ajan Aktif", help="LLM'in yaptığı 42 halüsinasyon/hatayı, Eleştirmen ajanımız kullanıcıya yansımadan arka planda yakalayıp düzeltti.")
+    # Gerçek değer: docs/SONUCLAR.md — halüsinasyon oranı ölçüldü
+    st.metric("Halüsinasyon Oranı", "%0.98", "Hedef ≤%3 ✅",
+              help="96 kampanya × 16 alan = 1536 alan. Sayısal doğrulama kalkanından geçen 0 adet gerçek dışı sayı. "
+                   "Kaynak: docs/SONUCLAR.md, make eval.")
 with k2:
-    st.metric("Buluta Aktarılan Veri", "0 Byte", "Tamamen Yerel Mimarî", delta_color="off", help="Tüm veriler cihazınızda (on-premise) kalır. OpenAI veya başka bir bulut servisine veri gönderilmez.")
+    st.metric("Buluta Aktarılan Veri", "0 Byte", "Tamamen Yerel Mimarî", delta_color="off",
+              help="Tüm veriler cihazınızda (on-premise) kalır. OpenAI veya başka bir bulut servisine veri gönderilmez.")
 with k3:
-    # Sahte ama gerçekçi bir kelime hesabı (kayıt sayısı * 500 kelime * GPT-4 fiyatı vs.)
-    tasarruf = len(kayitlar) * 0.04
-    st.metric("Aylık API Maliyeti", "$0.00", f"GPT-4 Tasarrufu: ~${tasarruf:.2f}", delta_color="inverse", help="Ollama ve Qwen ile %100 yerel çıkarım maliyeti sıfırlar.")
+    # Gerçek değer: docs/SONUCLAR.md — Makro-F1 bootstrap güven aralığıyla
+    st.metric("Makro-F1 (n=60)", "0.778", "%95 GA: 0.645–0.847",
+              help="Altın set üzerinde bootstrap örnekleme ile hesaplandı. Hedef ≥0.78 — sınırda ama "
+                   "güven aralığı hedefi kapsıyor. Kaynak: docs/SONUCLAR.md.")
 
 st.write("") # Boşluk
 q1, q2 = st.columns(2)

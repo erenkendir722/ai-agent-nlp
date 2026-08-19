@@ -43,7 +43,7 @@ ORNEK_SORULAR = [
     "Kuveyt Türk'ün konut finansmanı oranı ne?",
     "Hangi banka daha avantajlı?",
     "En uzun vade hangi bankada?",
-    "Kampanya koşulları neler?",
+    "Taşıt finansmanı sunan bankalar hangileri?",
 ]
 
 with st.sidebar:
@@ -85,7 +85,7 @@ def cevap_renderla(cevap, gecen_sure=None):
         if cevap.dogrulama_gecti:
             st.caption("**Log 3:** Sayısal Doğrulama Kalkanından geçildi (Halüsinasyon tespit edilmedi). Yanıt üretiliyor...")
         else:
-            st.caption(f"**Log 3:** Eleştirmen Ajan devreye girdi! Hatalı sayılar ({', '.join(cevap.reddedilen_sayilar)}) RAG bağlamı ile eşleşmediği için reddedildi.")
+            st.caption(f"**Log 3:** Sayısal Doğrulama Kalkanı devreye girdi! Hatalı sayılar ({', '.join(cevap.reddedilen_sayilar)}) yapısal kayıt ile eşleşmediği için reddedildi.")
         
     st.caption(f"{simge} **{etiket}** — {aciklama}")
     if gecen_sure is not None:
@@ -165,13 +165,11 @@ if soru:
                 "reddedilen_sayilar": cevap.reddedilen_sayilar,
                 "kaynak_sayisi": len(cevap.kaynaklar) if cevap.kaynaklar else 0
             })
-            st.markdown("Aşağıdaki cURL komutuyla bu asistanı API olarak sorgulayabilirsiniz:")
-            curl_cmd = f"""curl -X POST "https://api.svartal.bank/v1/chatbot/sor" \\
- -H "Authorization: Bearer YOUR_API_KEY" \\
+            st.markdown("Aşağıdaki cURL komutuyla bu asistanı gerçek API üzerinden sorgulayabilirsiniz (`make api` ile başlatın):")
+            curl_cmd = f"""curl -X POST "http://localhost:8000/ask" \\
  -H "Content-Type: application/json" \\
  -d '{{
-       "soru": "{soru}",
-       "session_id": "auto"
+       "soru": "{soru}"
      }}'
 """
             st.code(curl_cmd, language="bash")
