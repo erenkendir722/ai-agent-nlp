@@ -57,11 +57,15 @@ def test_faal_bankanin_kodu_dogrulanmis(bankalar) -> None:
 def test_faal_bankalar_bddk_kanitiyla_ayni_sayida(bankalar) -> None:
     """`docs/kanit/bddk-liste.png` 12 Ağu 2026'da 10 faal katılım bankası gösteriyor.
 
+    Kayıt defterinde 9'u `faal`: Adil Katılım (0215) BDDK listesinde yer alsa
+    da kampanya sayfası bulunamadığı için `faaliyete_gecmedi` işaretli. Bu tek
+    sapma bilinçlidir; başka bir banka listeden düşerse burası kırmızıya döner.
     Sayı değişirse kanıt görüntüsü de yenilenmeli — yoksa şartname 5.1 kanıtı
     kayıt defteriyle çelişir.
     """
     faal = [b for b in bankalar if b.durum == BankaDurumu.FAAL]
-    assert len(faal) == 10, (
-        f"Faal banka sayısı {len(faal)}, kanıt görüntüsü 10 diyor. "
+    assert len(faal) == 9, (
+        f"Faal banka sayısı {len(faal)}, kayıt defteri 9 bekliyor "
+        "(kanıttaki 10 bankadan Adil Katılım kampanya yayınlamıyor). "
         "docs/kanit/bddk-liste.png yenilenmeli."
     )

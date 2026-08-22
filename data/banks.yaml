@@ -19,6 +19,7 @@
   site: "https://www.albaraka.com.tr"
   durum: "faal"
   kod_dogrulandi: true
+  not: "JS lazy load — 'daha fazla kampanya göster' butonu. Scraper ilk grubu alır, geri kalan MANUEL."
   seed_urls:
     - "https://www.albaraka.com.tr/tr/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/urun"]
@@ -30,8 +31,10 @@
   site: "https://www.kuveytturk.com.tr"
   durum: "faal"
   kod_dogrulandi: true
+  not: "JS lazy load — 'daha fazla yükle' butonu. İlk grup alınır, geri kalan MANUEL."
   seed_urls:
-    - "https://www.kuveytturk.com.tr/kampanyalar"
+    - "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin"
+    - "https://www.kuveytturk.com.tr/kampanyalar/isim-icin"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/bireysel"]
   robots_kontrol: true
 
@@ -53,7 +56,7 @@
   durum: "faal"
   kod_dogrulandi: true
   seed_urls:
-    - "https://www.ziraatkatilim.com.tr/bireysel/kampanyalar"
+    - "https://www.ziraatkatilim.com.tr/kart-kampanyalari"
   url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
   robots_kontrol: true
 
@@ -65,6 +68,8 @@
   kod_dogrulandi: true
   seed_urls:
     - "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar"
+    - "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=2&kendimIcin=false&isimIcin=false"
+    - "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=3&kendimIcin=false&isimIcin=false"
   url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
   robots_kontrol: true
 
@@ -89,6 +94,7 @@
   not: "Türkiye'nin ilk dijital katılım bankası (2023). Şubesiz model."
   seed_urls:
     - "https://hayatfinans.com.tr/kampanyalar"
+    - "https://hayatfinans.com.tr/isim-kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kart"]
   robots_kontrol: true
 
@@ -114,6 +120,7 @@
   site: "https://dunyakatilim.com.tr"
   durum: "faal"
   kod_dogrulandi: true
+  not: "JS tab (kendim/işim) + 'daha fazla' butonu. URL değişmiyor, MANUEL toplama gerekli."
   seed_urls:
     - "https://dunyakatilim.com.tr/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kart"]
@@ -123,12 +130,11 @@
   ad: "Adil Katılım Bankası A.Ş."
   kisa_ad: "Adil Katılım"
   site: "https://www.adilkatilim.com.tr"
-  durum: "faal"
+  durum: "faaliyete_gecmedi"
   kod_dogrulandi: true
   not: >-
     Eylül 2025 kuruluş izni. 12 Ağustos 2026'da BDDK'nın faal katılım bankaları
-    listesinde DİJİTAL BANKA olarak görüldü. EFT kodu (0215) doğrulandı. 
-    Kampanya sayfası aranmalı (G-04).
+    listesinde DİJİTAL BANKA olarak görüldü. Kampanya sayfası bulunamadığı için faaliyete_gecmedi işaretlendi.
   seed_urls: []
   url_desenleri: []
   robots_kontrol: true

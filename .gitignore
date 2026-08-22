@@ -9,17 +9,15 @@ __pycache__/
 data/katilim.db
 # Ablasyon koşularının kendi veritabanları — türetilmiş, `make ablasyon` üretir
 data/ablasyon/
-data/raw/**/*.html
-data/embeddings.npy
-
 # Ham anlık görüntülerin META VERİSİ repoda kalır (izlenebilirlik kanıtı),
 # ham HTML dosyaları kalmaz (depo şişer + telif riski).
+data/raw/**/*.html
+data/embeddings.npy
 
 # Araç çıktıları
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
-data/raw/**/*.html
 
 # Elle alınmış paylaşım kopyaları — data/gold/ zaten depoda,
 # zip bayatlar ve iki ayrı gerçeklik doğar

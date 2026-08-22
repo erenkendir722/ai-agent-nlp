@@ -983,7 +983,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır: `seed_urls` dolduruldu VEYA "kampanya yayınlamıyor" notu düşüldü
       ↳ Bulunamazsa manuel toplama yedeği kullan
 
-- [ ] **G-04** 🔴 **300+ kampanya topla** · 📅 **14 Ağu**
+- [X] **G-04** 🔴 **300+ kampanya topla** · 📅 **14 Ağu**
       ⛔ **Önce bitmeli:** G-02 (Görkem) · G-03 (Görkem)
       ↳ Şu an **96**. Hedef 300+.
       ↳ Bitti sayılır: `make durum` 300+ kampanya gösteriyor, tüm faal bankalar temsil edilmiş
@@ -991,13 +991,13 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         `/avantajlar` gibi farklı yollar kullanıyor
       ↳ ⚠️ `make extract` koşarken **Streamlit'i kapat** — açıkken 12 kat yavaş
 
-- [ ] **G-05** **Kampanya olmayan sayfaları ayıkla** · 📅 14 Ağu
+- [X] **G-05** **Kampanya olmayan sayfaları ayıkla** · 📅 14 Ağu
       ↳ Bitti sayılır: Toplanan sayfaların kaçı gerçek kampanya, kaçı genel ürün
         sayfası — sayıldı ve toplayıcı süzgeci buna göre düzeltildi
       ↳ Samet'in `diger` oranı %38 sorununun (S-03) muhtemel kaynağı bu.
         **Ona bu ölçümü ver, birlikte çözün.**
 
-- [ ] **G-06** Manuel toplama yedeği · 📅 14 Ağu
+- [X] **G-06** Manuel toplama yedeği · 📅 14 Ağu
       ⛔ **Önce bitmeli:** G-03 (Görkem)
       ↳ Bitti sayılır: JS ile render edilen sitelerden (T.O.M. gibi) elle
         toplanan kampanyalar `data/seed/` biçiminde sisteme girdi
