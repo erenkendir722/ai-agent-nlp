@@ -1,7 +1,7 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
         birim-goc ablasyon eval-gorulmemis \
         altin-ornekle altin-denetle altin-uyum altin-derle \
-        gorev gorev-dogrula git-kontrol hava-boslugu
+        gorev gorev-dogrula git-kontrol hava-boslugu sunum
 
 PYTHON ?= .venv/bin/python
 STREAMLIT ?= .venv/bin/streamlit
@@ -120,3 +120,16 @@ gorev-dogrula:  ## görev panosunun bağımlılıklarını denetle
 
 git-kontrol:  ## GitHub ile senkron mu (pull/push gerekiyor mu)
 	@python3 tools/git_kontrol.py baslangic | $(PYTHON) -c "import json,sys; d=json.load(sys.stdin); print(d.get('systemMessage','✅ Temiz'))"
+
+# --- sunum ---
+# HTML kaynaktan PDF üretir. Carlito fontu docs/sunum/fontlar/ içinde gömülü
+# durur (LibreOffice dağıtımından, SIL Open Font License) — makinede kurulu
+# olmasına gerek yok. Tarayıcı yolu değişirse KROM değişkeniyle geçilebilir.
+KROM ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+
+sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (8 sayfa, 16:9)
+	@"$(KROM)" --headless --disable-gpu --no-sandbox \
+	  --allow-file-access-from-files --no-pdf-header-footer \
+	  --print-to-pdf="$(CURDIR)/docs/sunum/Svartal_Sunum.pdf" \
+	  "file://$(CURDIR)/docs/sunum/sunum.html" 2>/dev/null
+	@echo "✅ docs/sunum/Svartal_Sunum.pdf"

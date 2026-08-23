@@ -1,0 +1,110 @@
+/* SVARTAL — TEKNOFEST 2026 sunum stili.
+   Renk ve tipografi Svartal_TEKNOFEST_Sunum.pdf'ten alındı (Carlito + #15141A/#E85D2A). */
+
+@font-face { font-family: "Carlito"; src: url("fontlar/Carlito-Regular.ttf") format("truetype"); font-weight: 400; }
+@font-face { font-family: "Carlito"; src: url("fontlar/Carlito-Bold.ttf") format("truetype"); font-weight: 700; }
+@font-face { font-family: "Carlito"; src: url("fontlar/Carlito-Italic.ttf") format("truetype"); font-weight: 400; font-style: italic; }
+
+:root{
+  --murekkep:#15141A;
+  --koyu-kart:#212027;
+  --koyu-cizgi:#2E2D35;
+  --krem:#F5F4F0;
+  --krem-kart:#EBE9E3;
+  --krem-cizgi:#DCDAD4;
+  --turuncu:#E85D2A;
+  --turkuaz:#2AA3AE;
+  --gri:#6E6C74;
+  --acik-gri:#9A98A2;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+@page { size: 13.333in 7.5in; margin:0; }
+
+html,body{ background:#888; }
+body{
+  font-family:"Carlito", "Calibri", sans-serif;
+  -webkit-font-smoothing:antialiased;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.sayfa{
+  position:relative;
+  width:1280px; height:720px;
+  overflow:hidden;
+  page-break-after:always;
+  break-after:page;
+  padding:46px 62px 54px;
+  background:var(--krem); color:var(--murekkep);
+}
+.sayfa:last-child{ page-break-after:auto; break-after:auto; }
+.sayfa.koyu{ background:var(--murekkep); color:#fff; }
+
+/* --- başlık --- */
+.baslik{ display:flex; align-items:baseline; gap:18px; margin-bottom:6px; }
+.baslik .no{ font-size:27px; font-weight:700; color:var(--turuncu); letter-spacing:.02em; }
+.baslik h2{ font-size:29px; font-weight:700; letter-spacing:-.01em; }
+.spot{ font-size:14.5px; color:var(--gri); margin-bottom:20px; max-width:1000px; line-height:1.42; }
+.koyu .spot{ color:var(--acik-gri); }
+
+/* --- altbilgi --- */
+.altbilgi{
+  position:absolute; left:62px; right:62px; bottom:24px;
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-size:11px; color:var(--gri);
+  border-top:1px solid var(--krem-cizgi); padding-top:9px;
+}
+.koyu .altbilgi{ color:var(--acik-gri); border-top-color:var(--koyu-cizgi); }
+.altbilgi b{ color:var(--murekkep); font-weight:700; }
+.koyu .altbilgi b{ color:#fff; }
+
+/* --- kartlar --- */
+.kart{ background:var(--krem-kart); border-radius:6px; padding:16px 18px; }
+.koyu .kart{ background:var(--koyu-kart); }
+.kart-baslik{ font-size:12.5px; font-weight:700; letter-spacing:.055em; text-transform:uppercase; color:var(--turuncu); margin-bottom:9px; }
+
+/* --- ızgara --- */
+.satir{ display:flex; gap:16px; }
+.kolon{ flex:1; min-width:0; }
+
+/* --- metin --- */
+p{ font-size:13.5px; line-height:1.5; }
+.kucuk{ font-size:11.8px; line-height:1.45; color:var(--gri); }
+.koyu .kucuk{ color:var(--acik-gri); }
+.turuncu{ color:var(--turuncu); }
+.turkuaz{ color:var(--turkuaz); }
+b,strong{ font-weight:700; }
+.mono{ font-family:"DejaVu Sans Mono","Menlo",monospace; }
+
+/* --- tablo --- */
+table{ width:100%; border-collapse:collapse; font-size:11.6px; }
+th{
+  text-align:left; font-weight:700; font-size:10.2px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--gri);
+  padding:0 9px 6px 0; border-bottom:1px solid var(--krem-cizgi);
+}
+.koyu th{ color:var(--acik-gri); border-bottom-color:var(--koyu-cizgi); }
+td{ padding:var(--td-pad, 6px) 9px var(--td-pad, 6px) 0; border-bottom:1px solid var(--krem-cizgi); vertical-align:top; line-height:1.35; }
+.koyu td{ border-bottom-color:var(--koyu-cizgi); }
+tr:last-child td{ border-bottom:none; }
+tr.vurgu td{ background:rgba(232,93,42,.09); font-weight:700; }
+
+/* --- istatistik --- */
+.rakam{ font-size:38px; font-weight:700; color:var(--turuncu); line-height:1; letter-spacing:-.02em; }
+.rakam-kucuk{ font-size:26px; font-weight:700; color:var(--turuncu); line-height:1; }
+
+/* --- ferah sayfalar: içerik az olduğunda tipografi büyür --- */
+.sayfa.ferah p{ font-size:14.5px; line-height:1.55; }
+.sayfa.ferah .kucuk{ font-size:12.6px; line-height:1.5; }
+.sayfa.ferah table{ font-size:12.4px; }
+.sayfa.ferah th{ font-size:10.6px; padding-bottom:7px; }
+.sayfa.ferah td{ padding:7px 9px 7px 0; }
+.sayfa.ferah .kart{ padding:18px 20px; }
+.sayfa.ferah .kart-baslik{ font-size:13px; }
+.sayfa.ferah .spot{ font-size:15.5px; }
+
+/* --- yoğun sayfalar: taşmayı engelle --- */
+.sayfa.yogun .kucuk{ font-size:11.4px; line-height:1.42; }
+.sayfa.yogun .kart{ padding:14px 16px; }
+.sayfa.yogun .kart-baslik{ font-size:11.8px; margin-bottom:7px; }
