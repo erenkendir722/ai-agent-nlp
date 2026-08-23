@@ -1,10 +1,13 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 19.08.2026 18:06 · `make eval`_
+_Otomatik üretildi: 23.08.2026 12:13 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 19.08.2026 16:19'de `hibrit` yapılandırmasıyla koştu (96 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> 🔴 **BAYAT — bu sayıları sunuma kopyalamayın.**
+> Çıkarım 19.08.2026 16:19'de koştu; çıkarım kodu o tarihten sonra değişti (ab5383c91fb6abce → 4b97831ddbe37f70).
+> Kayıtlı koşu: `hibrit` yapılandırması, 96 kayıt.
+> Düzeltmek için: `make extract && make eval`.
 
 ## Veri kapsamı
 
@@ -116,21 +119,3 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 > ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem boş olması gereken hücrelere değer yazıyor (yanlış pozitif); önce kesinliği düzeltmek gerekir.
 
 > **DP/YP/YN** — doğru pozitif / yanlış pozitif / yanlış negatif. Yanlış değer hem YP hem YN sayılır: uydurulmuş bir değerdir ve aynı anda doğru cevap kaçırılmıştır.
-
-## Ablasyon tablosu
-
-Üç yapılandırma **aynı kod yolundan** koşulur; yalnız katman bayrakları değişir.
-Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.
-
-```bash
-make extract-kural && make eval   # yalnız kural
-make extract-llm   && make eval   # yalnız LLM
-make extract       && make eval   # hibrit
-```
-
-| Yapılandırma | Kâr payı F1 | Vade F1 | Makro-F1 | Halüsinasyon | Doluluk |
-|---|---|---|---|---|---|
-| Yalnız kural (regex) | 0.842 | 0.791 | **0.688** | %0.00 | %7.2 |
-| Yalnız LLM (şema kısıtlı) | 0.000 | 0.000 | **0.205** | %0.48 | %13.7 |
-| **Hibrit (bizim)** | 0.842 | 0.791 | **0.780** | %0.00 | %19.7 |
-

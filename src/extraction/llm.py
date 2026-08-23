@@ -51,6 +51,35 @@ bütçe dolduğunda JSON cümlenin ORTASINDA kesiliyor. Aynı kayıt ikinci dene
 savrulma. Bütçeyi büyütmek bu savrulmaların çoğunu tamamlanmaya bırakır;
 tamamlanmayanları `_kismi_json_kurtar` yakalar."""
 
+SICAKLIK = 0.0
+"""Örnekleme sıcaklığı. 0,1'den sıfıra indirildi (S-20).
+
+ÖLÇÜLEN SORUN: `temperature=0,1` ile aynı kod, aynı girdi ve aynı model iki
+koşu arasında **6/96 kayıtta** farklı sınıflandırma üretiyordu; dördü altın
+sette, üçü doğrudan yanlışa dönüyordu. Tek başına bedeli −0,006 makro-F1 —
+hedefe olan farktan büyük.
+
+Sıfır sıcaklık üretimi açgözlü (greedy) hâle getirir: her adımda en yüksek
+olasılıklı token seçilir, örnekleme devre dışı kalır. Yapılandırılmış
+çıkarımda bu standarttır ve kaliteyi düşürmez; şema kısıtı çıktıyı zaten
+zorluyor, sıcaklığın kattığı tek şey gürültüydü.
+
+Ölçüm tarafındaki karşılığı: ablasyon tablosunun üç satırı ancak koşular
+tekrarlanabilirse karşılaştırılabilir. Aksi hâlde satırlar arasındaki farkın
+ne kadarı yapılandırmadan, ne kadarı gürültüden geliyor ayırt edilemez."""
+
+SABIT_TOHUM = 20260820
+"""Örnekleyici tohumu.
+
+`SICAKLIK = 0` açgözlü üretimde tohuma zaten ihtiyaç bırakmaz — determinizmi
+sağlayan asıl ayar sıcaklıktır. Tohum yine de sabitleniyor: eşit olasılıklı
+iki token'da bağın nasıl çözüldüğü çalıştırma katmanının (llama.cpp) sürümüne
+bağlı bir ayrıntıdır ve varsayılan tohum koşudan koşuya değişir. Sabitlemek
+bu ihtimali de kapatır ve koşunun niyetini kodda görünür kılar.
+
+Değeri anlamlı değildir, sabit olması anlamlıdır. **Değiştirme** — değişirse
+`docs/SONUCLAR.md`'deki sayılar yeniden üretilemez hâle gelir."""
+
 
 def _kismi_json_kurtar(icerik: str) -> dict[str, Any]:
     """Yarıda kesilmiş JSON'dan tamamlanmış alanları kurtarır.
@@ -229,7 +258,11 @@ class LLMCikarici:
             ],
             format=ollama_json_semasi(),
             think=False,
-            options={"temperature": 0.1, "num_predict": AZAMI_URETIM},
+            options={
+                "temperature": SICAKLIK,
+                "seed": SABIT_TOHUM,
+                "num_predict": AZAMI_URETIM,
+            },
         )
         icerik = yanit["message"]["content"]
         try:
