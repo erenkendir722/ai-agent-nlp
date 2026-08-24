@@ -1,5 +1,5 @@
 ﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0206-d2ea9ee0f388,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ihtiyac-finansmani-kampanyasi.aspx,,,,,,,,,"Mobilden Türkiye Finanslı Ol, Kâr Paysız 50.000 TL'ye Varan İhtiyaç Finansmanını Kaçırma!
+0206-d2ea9ee0f388,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ihtiyac-finansmani-kampanyasi.aspx,ihtiyac_finansmani,0,3,50000,0.5,hayır,11000,2026-08-31,"Mobilden Türkiye Finanslı Ol, Kâr Paysız 50.000 TL'ye Varan İhtiyaç Finansmanını Kaçırma!
 Şimdi mobilden Türkiye Finanslı olanlar
 %0 kar payı ile 50.000 TL'ye varan İhtiyaç Finansmanından yararlanıyor.
 Siz de Türkiye Finans Mobil’i hemen indirin, dakikalar içinde müşterimiz olun, hem avantajlı dijital bankacılık dünyası ile tanışın hem de aradığınız nakde kâr payı ödemeden kavuşun.
@@ -62,7 +62,7 @@ Kampanya Hakkında İletişim
 Kampanya hakkında detaylı bilgi almak için bizimle 0850 222 22 44 Müşteri İletişim Merkezimiz üzerinden iletişime geçebilirsiniz.
 Henüz kredi kartı sahibi değilseniz kredi kartı başvurunuzu “Türkiye Finans Mobil > Başvurular > Kredi Kartı Başvurusu” adımlarını takip ederek yapabilirsiniz.
 HEMEN BAŞVUR Bu bağlantı yeni sekmede açılacak."
-0205-5eb79ce53d45,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/dijital-motosiklet-finansmani,,,,,,,,,"Dijital Motosiklet Finansmanı, Kuveyt Türk Mobil üzerinden başvurabileceğiniz, finansman işlemlerinizin hızlıca tamamlanmasına imkan veren bir motosiklet finansmanıdır.
+0205-5eb79ce53d45,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/dijital-motosiklet-finansmani,tasit_finansmani,,48,400000,0.5,hayır,,,"Dijital Motosiklet Finansmanı, Kuveyt Türk Mobil üzerinden başvurabileceğiniz, finansman işlemlerinizin hızlıca tamamlanmasına imkan veren bir motosiklet finansmanıdır.
 Sadece sıfır motosikletler için Dijital Motosiklet Finansmanı başvurusu yapılabilir. Satın almayı planladığınız motosikletin kullanım durumuna bağlı olarak 48 aya kadar vade seçeneklerinden faydalanabilirsiniz.
 Yalnızca birkaç dakikanızı ayırmanız, Kuveyt Türk Mobil üzerinden başvuruda bulunmanız için yeterlidir.
 Kuveyt Türk müşterisi değil misiniz? O halde, uzaktan hesap açılışı ile hızlıca Kuveyt Türk müşterisi olabilirsiniz. Hemen ardından dijitale özel oranlarla, ihtiyacınız olan finansman desteğine kavuşabilirsiniz.
@@ -119,7 +119,7 @@ Dijital Motosiklet Finansmanı tutarı; sıfır araçlarda satış, ikinci elde 
 - Değeri 1.200.001 ila 2.000.000 TL aralığındaki motosikletler için %20
 Dosya Masrafı Nedir?
 Finansman tahsis ücreti finansman tutarının 0,5%’i (binde beş) olacak şekilde hesaplanmaktadır."
-0206-baa959e7ae07,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/ihtiyac-finansmani,,,,,,,,,"İhtiyaç Finansmanı (İhtiyaç Kredisi)*
+0206-baa959e7ae07,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/ihtiyac-finansmani,ihtiyac_finansmani,3.8,36,,0.5,hayır,,,"İhtiyaç Finansmanı (İhtiyaç Kredisi)*
 Herkesin İhtiyacı Farklı, Finansmanı Aynı!
 İhtiyaç finansmanına şubelerden, mobilden, internet şubesinden veya çağrı merkezinden başvur, Türkiye Finans'ın sunduğu avantajlardan sen de yararlan.
 Türkiye Finans İhtiyaç Finansmanı (İhtiyaç Kredisi)* Sizinle!
@@ -169,7 +169,7 @@ Banka gerekli gördüğü durumlarda kefil ve ek belge isteme hakkına sahiptir.
 - Şubenizden yapmış olduğunuz finansman başvurunuzun sonucunu Şubenizden,
 - İnternet/Mobil Şubenizden yapmış olduğunuz başvuru sonucunuzu ""Başvuru İzleme"" seçeneğinden öğrenebilirsiniz.
 - Kurumsal web sitemiz üzerinden ve/veya SMS ile yapacağınız başvurularınızın sonuçları hemen SMS olarak bildirilecektir. Başvurunuzun olumsuz sonuçlandırılması durumunda Banka tarafından sisteme kayıtlı e-mail adresinize veya cep telefonunuza bildirim yapılacaktır."
-0205-d7c603458fb1,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/seyahat-finansmani,,,,,,,,,"Gerek yurt içi gerekse yurt dışı seyahatler için bütçe oluşturmak kimi zaman zorlayıcı olabilmektedir. Böyle bir sorunla karşılaştığınızda, en hızlı çözüm niteliği taşıyan Kuveyt Türk Seyahat Finansmanı’na başvurabilirsiniz. Eğer Kuveyt Türk müşterisi değilseniz, hızlı ve pratik bir şekilde Kuveyt Türk Mobil ile Kuveyt Türk müşterisi olabilirsiniz.
+0205-d7c603458fb1,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/seyahat-finansmani,diger,4.82,36,,0.5,hayır,,,"Gerek yurt içi gerekse yurt dışı seyahatler için bütçe oluşturmak kimi zaman zorlayıcı olabilmektedir. Böyle bir sorunla karşılaştığınızda, en hızlı çözüm niteliği taşıyan Kuveyt Türk Seyahat Finansmanı’na başvurabilirsiniz. Eğer Kuveyt Türk müşterisi değilseniz, hızlı ve pratik bir şekilde Kuveyt Türk Mobil ile Kuveyt Türk müşterisi olabilirsiniz.
 Seyahat Finansmanı Nedir?
 Kuveyt Türk Seyahat Finansmanı, hem iş hem de tatil amaçlı gezileriniz için gereken desteğe kavuşmanızı mümkün kılar. Seyahat acentelerine yapacağınız ödemeleri, söz konusu finansman desteği ile rahatça gerçekleştirebilirsiniz.
 Seyahat Finansmanı’na Nasıl Başvurulur?
@@ -194,7 +194,7 @@ Finansman Tutarı | Vade | Kâr Oranı | Taksit Tutarı | Toplam Masraflar | Ayl
 Seyahat Finansmanı’na Hangi Kanallardan Başvuru Yapılabilir?
 Kuveyt Türk Seyahat Finansmanı’na başvuru için Kuveyt Türk şubelerimizi ziyaret edebilirsiniz.
 Seyahatlerinizi gerçekleştirmek için ihtiyaç duyacağınız finansman desteği için hemen başvurunuzu yapın!"
-0206-4db63f5eca2f,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/hesaplama-araclari/Sayfalar/finansman-odeme-plani.aspx?financeID=1,,,,,,,,,"Finansman Hesaplama Aracı
+0206-4db63f5eca2f,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/hesaplama-araclari/Sayfalar/finansman-odeme-plani.aspx?financeID=1,diger,,,,,,,,"Finansman Hesaplama Aracı
 Finansman(Kâr Oranı: %)
 Finansman Tutarı | Taksit Tutarı | Vade(ay) | Kâr Oranı | Tahsis Ücreti | İpotek Tesis ücreti | Ekspertiz Ücreti | Toplam Geri Ödenen Tutar |
 Dijital İhtiyaç finansmanı örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Ödeme tablosu hesaplamasında yer alan kâr payı oranı; Finansman Güvence Sigortası’nın finansman başvurusu ile birlikte alınması 300.000 TL'ye kadar kullandırılacak finansmanlar için geçerlidir. Kâr Payı Oranları , finansman vadesi ve müşterinin kkb skoruna göre değişiklik gösterebilmektedir Finansman tutarı; 50.000TL’ye kadar olması durumunda maksimum vade 36 ayı 50.000 - 100.000 TL’ye kadar olması durumunda 24 ayı, 100.000 TL’den fazla olması durumunda 12 ayı aşamaz. Tahsis ücreti finansman fiyatlamasının bir parçasıdır. Tahsis ücreti vergiler hariç finansman tutarının binde 5'i oranındadır. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. İnternet Şubesi, Mobil Şube ve kurumsal web sitesi ile yapılan başvurularda geçerli oranlardır. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz.
