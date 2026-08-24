@@ -254,6 +254,26 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         + (
             # "Erken ödeme tazminatı oranı ... % 1'i" — tazminat, kâr payı değil.
             "erken odeme tazminati",
+            # 23 Ağustos, 590 kayıt: kâr payı %5 üstüne çıkan 10 kaydın
+            # HEPSİNDE yüzde başka bir şeye bağlıydı:
+            #   "%10 oranında indirim kazanımı sağlayacaklardır"
+            #   "%10 oranında mil kazanırsınız"
+            #   "%10 oranına varan özel indirimler"
+            # Bunlar DIŞLAYICI sözcükle elenemiyor: "oran" sayının hemen
+            # yanında ("oranında") olduğu için mesafe karşılaştırmasını hep
+            # kazanıyor. Yukarıdaki not zaten bunu söylüyor — varlık ölçüt
+            # olmalı, o yüzden veto.
+            "oraninda indirim",
+            "oraninda mil",
+            "oranina varan ozel indirim",
+            "indirim kazanimi",
+            # "iade" ÖLÇÜLDÜ (23 Ağustos, 590 kayıt): veto olarak 10 kaydı
+            # eliyor ve onunun da HEPSİ nakit iade kampanyası — tek bir meşru
+            # kâr payı kaybı yok. Dolu kâr payı 43'ten 33'e, %5 üstü 3'ten 1'e
+            # iniyor. Dışlayıcı sözcük olarak zaten vardı ama yetmiyordu:
+            # "%7,5 yerine %15 iade" gibi cümlelerde bağlam sözcüğü sayıya
+            # daha yakın kalıp mesafe karşılaştırmasını kazanıyordu.
+            "iade",
         ),
         # NOT: "konut hissesi" / "hisseli" de denendi (mülkiyet payı yüzdesi)
         # ama ÖLÇÜMDE hiçbir şey katmadı — o kaydı ortak tabandaki "bsmv"
@@ -344,13 +364,33 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # "5.000.000 TL'ye kadar finansman. Dosya masrafı alınmaz." cümlesinde
         # her iki kural da aynı sayıya talip olur. Mesafe kuralı sayesinde
         # "finansman" daha yakın olduğu için tahsis ücreti reddedilir.
-        dislayici_sozcukler=("finansman", "limit", "odul", "hediye", "iade"),
+        # 23 Ağustos ölçümü: masrafsız işaretli 3 kayıtta tahsis ücreti de
+        # doluydu — üçünde de alan alakasız bir tutarı toplamıştı:
+        #   "5.000.000 TL ve üzerinde işlem hacmi"   -> hacim eşiği
+        #   "10.000 TL'ye kadar para çekebilir"      -> ATM limiti
+        #   "Blokesiz %0.99 Komisyon"                -> POS komisyon oranı
+        # Son ikisi "komisyon" bağlam sözcüğüyle geldiği için sözcüğü
+        # kaldırmak çözüm değil (gerçek tahsis ücretlerini de elerdi);
+        # ayırt edici olan hacim/ATM/POS bağlamıdır.
+        dislayici_sozcukler=(
+            "finansman", "limit", "odul", "hediye", "iade",
+            "islem hacmi", "para cek", "atm", "bloke",
+        ),
         # Ortak taban burada ÖLÇÜMDE nötr (0,909 sabit) ama yine de bağlı:
         # hesap makinesi çıktısı bir tahsis ücreti satırı da üretebilir ve
         # aynı bağlam türünü bir alanda eleyip diğerinde geçirmek, bugün
         # düzeltilen tutarsızlığın ta kendisiydi. Nötr olması zarar değil;
         # kapsam dışı bırakmak ise bilinen bir hataya açık kapı bırakmaktır.
-        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI
+        + (
+            # "PTT ATM'sinden komisyon ÖDEMEDEN 10.000 TL'ye kadar para
+            # çekebilir" — olumsuzlama cümlesi; buradaki tutar ücret değil,
+            # çekim limitidir. Dışlayıcı ("atm") mesafede kaybediyordu çünkü
+            # "komisyon" bağlam sözcüğü sayıya daha yakın. Ölçüldü: yalnız bu
+            # kaydı eliyor, yan hasar yok (10 -> 9).
+            "komisyon odemeden",
+            "para cekebilir",
+        ),
         secim="en_yakin",
         taban_guven=0.85,
         ayni_cumle=True,
@@ -444,6 +484,23 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             # 6 tarihin 2'si yalnız bu sözcüğün eksikliğinden düşüyordu.
             "kampanya donemi", "donem", "kampanya tarihleri",
         ),
+        # 23 Ağustos ölçümü: geçmiş tarihli 19 kayıttan 3'ü kampanya bitişi
+        # DEĞİLDİ; tarih doğru okunmuş ama yönü yanlış yorumlanmıştı:
+        #   "10 Mart 2007 tarihinde 26458 numaralı Resmî Gazete" -> mevzuat
+        #   "1.3.2021 Tarihinden ÖNCE kullandırılan"             -> tarife sınırı
+        #   "16 Haziran 2025 tarihi SONRASINDA"                  -> başlangıç
+        # Üçü de "tarih" çevresinde geçtiği için bağlam sözcüğü tutuyordu.
+        # Bitiş tarihi "kadar geçerli" der; "önce/sonrasında" başka bir sınırdır.
+        dislayici_sozcukler=(
+            "resmi gazete", "tarihinden once", "sonrasinda", "yururlu",
+        ),
+        # Dışlayıcı mesafeye duyarlı olduğu için iki kayıtta yetmedi:
+        #   "24 Aya Kadar (1.3.2021 Tarihinden Önce Kullandırılan"
+        #   "16 Haziran 2025 tarihi sonrasında müşterimiz olanlar"
+        # İkisinde de bağlam sözcüğü ("kadar", "tarih") sayıya daha yakındı.
+        # Bitiş tarihi "kadar geçerlidir" der; "önce/sonrasında" başka bir
+        # sınırı işaretler ve o sınır kampanyanın bitişi değildir.
+        veto_ifadeleri=("tarihinden once", "tarihi sonrasinda"),
         secim="en_yakin",
         taban_guven=0.90,
         # Kalan 4 kaçırma bağlam sözcüğü OLMAYAN çıplak aralıklardı.
@@ -853,6 +910,27 @@ def _baglam_skoru(
     return kural.taban_guven * (0.80 + 0.20 * yakinlik), kapsayici
 
 
+def _veto_var_mi(metin: str, kural: KuralTanimi, baslangic: int, bitis: int) -> bool:
+    """Veto ifadesi pencerede geçiyor mu — mesafeye bakılmaz.
+
+    `_baglam_skoru` bunu zaten uyguluyor ama TEK YOLU kapatıyordu: skor None
+    dönünce devreye giren "tarih aralığı sonu" yedek yolu vetoyu atlayıp adayı
+    kabul ediyordu. 23 Ağustos'ta ölçüldü — "1.3.2021 Tarihinden Önce" tarihi
+    veto edilmesine rağmen kampanya bitişi olarak kaydediliyordu, çünkü
+    yakınındaki "Kapama-Kalan" tirosu yapıyı aralık sonu gibi gösteriyordu.
+    Veto her yolu kapatmalı, yoksa hiçbirini kapatmış sayılmaz.
+    """
+    if not kural.veto_ifadeleri:
+        return False
+    if kural.ayni_cumle:
+        sol, sag = _cumle_araligi(metin, baslangic, bitis, azami=kural.baglam_penceresi)
+    else:
+        sol = max(0, baslangic - kural.baglam_penceresi)
+        sag = min(len(metin), bitis + kural.baglam_penceresi)
+    pencere = _konum_koruyan_anahtar(metin[sol:sag])
+    return any(ifade in pencere for ifade in kural.veto_ifadeleri)
+
+
 def _adaylari_bul(metin: str, kural: KuralTanimi) -> list[Aday]:
     adaylar: list[Aday] = []
     for eslesme in kural.deger_deseni.finditer(metin):
@@ -880,6 +958,7 @@ def _adaylari_bul(metin: str, kural: KuralTanimi) -> list[Aday]:
         if (
             skor is None
             and kural.tarih_araligi_sonu_kabul
+            and not _veto_var_mi(metin, kural, eslesme.start(), eslesme.end())
             and _tarih_araligi_sonu_mu(metin, eslesme.start())
         ):
             # Sözcük yok ama YAPI var: "13 Mart 2026 - 31 Aralık 2026".
