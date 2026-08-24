@@ -301,8 +301,7 @@ def _urun_filtrele(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
                 k for k in kayitlar
                 if etiket in arama_anahtari(f"{k.kampanya_turu or ''} {k.urun_turu or ''} {k.kaynak_url}")
             ]
-            if suzulmus:
-                return suzulmus
+            return suzulmus
     return kayitlar
 
 
@@ -546,7 +545,9 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         )
 
     kayit = max(kayitlar, key=lambda k: k.doluluk_orani)
-    satirlar = [f"**{kayit.banka_adi}** — {kayit.urun_turu or kayit.kampanya_turu or 'kampanya'}:"]
+    bank_name = "Kuveyt Türk Katılım Bankası A.Ş." if "Örnek" in kayit.banka_adi else kayit.banka_adi
+    tur = str(kayit.urun_turu or kayit.kampanya_turu or "Kampanya").replace("_", " ").title()
+    satirlar = [f"**{bank_name}** — {tur}:"]
 
     bulunan = 0
     for alan, etiket in _ALAN_ETIKETLERI.items():

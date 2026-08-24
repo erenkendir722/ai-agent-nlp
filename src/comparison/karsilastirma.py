@@ -304,7 +304,7 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
         if len(birimler) > 1:
             adlar = ", ".join(sorted(b.value for b in birimler))
             mesajlar.append(
-                f"⚠️ `{alan_adi}` alanı farklı birimlerde ({adlar}). Ortak tabana "
+                f"`{alan_adi}` alanı farklı birimlerde ({adlar}). Ortak tabana "
                 "indirmek için bir senaryo (anapara, vade) gerekir; senaryo "
                 "verilmeden bu kriter sıralamaya KATILMAZ."
             )
@@ -312,21 +312,21 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
     vadeler = {k.vade_ay_max for k in kayitlar if k.vade_ay_max is not None}
     if len(vadeler) > 1:
         mesajlar.append(
-            f"⚠️ Karşılaştırılan ürünlerin vadeleri farklı ({', '.join(str(v) for v in sorted(vadeler))} ay). "
+            f"Karşılaştırılan ürünlerin vadeleri farklı ({', '.join(str(v) for v in sorted(vadeler))} ay). "
             "Farklı vadeli ürünler doğrudan karşılaştırılamaz; toplam maliyet üzerinden değerlendirin."
         )
 
     eksik_oran = [k.banka_adi for k in kayitlar if k.kar_payi_orani is None]
     if eksik_oran:
         mesajlar.append(
-            f"ℹ️ Kâr payı oranı şu bankaların kampanyasında belirtilmemiş: {', '.join(sorted(set(eksik_oran)))}. "
+            f"Kâr payı oranı şu bankaların kampanyasında belirtilmemiş: {', '.join(sorted(set(eksik_oran)))}. "
             "Sıralamada bu alan nötr sayıldı."
         )
 
     turler = {k.kampanya_turu for k in kayitlar if k.kampanya_turu}
     if len(turler) > 1:
         mesajlar.append(
-            f"⚠️ Farklı kampanya türleri karşılaştırılıyor ({', '.join(sorted(turler))}). "
+            f"Farklı kampanya türleri karşılaştırılıyor ({', '.join(t.replace('_', ' ').title() for t in sorted(turler))}). "
             "Aynı tür içinde karşılaştırma daha anlamlıdır."
         )
 

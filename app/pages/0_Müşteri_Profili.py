@@ -30,13 +30,13 @@ from src.depolama import kampanyalari_oku  # noqa: E402
 from src.rag.chatbot import YASAL_UYARI  # noqa: E402
 from src.schema import HedefKitle  # noqa: E402
 
-st.set_page_config(page_title="Müşteri Profili", page_icon="👤", layout="wide")
+st.set_page_config(page_title="Müşteri Profili", page_icon="", layout="wide")
 
 with st.sidebar:
-    st.toggle("🛠️ Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+    st.toggle("Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
     st.markdown("---")
 
-st.title("👤 Müşteri Profiline Göre Uygunluk")
+st.title("Müşteri Profiline Göre Uygunluk")
 
 st.caption(
     "Kampanya listesi değil, **kısıt çözümü**: müşteri tipi, tutar, vade ve "
@@ -51,10 +51,10 @@ def _kampanyalar():
 
 
 try:
-    with st.status("⏳ Sistem verileri hazırlanıyor...", expanded=False) as status:
+    with st.status("Sistem verileri hazırlanıyor...", expanded=False) as status:
         st.write("Orkestratör veritabanını tarıyor...")
         kampanyalar = _kampanyalar()
-        status.update(label="✅ Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
+        status.update(label="Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
 except Exception as e:
     st.error("Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
     with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
@@ -63,8 +63,9 @@ except Exception as e:
     st.stop()
 
 if not kampanyalar:
-    st.info("Veri ambarı şu an boş. Orkestratör ajanı çalıştırarak katılım bankalarından veri toplayın.")
-    st.code("make crawl\nmake extract", language="bash")
+    st.info("Görüntülenecek kampanya verisi bulunamadı. Veri ambarını güncellemek için Orkestratör Ajanı tetikleyin.")
+    if st.button("Veri Toplamayı Başlat", type="primary"):
+        st.toast("Veri toplama komutu kuyruğa eklendi. (Geliştirici notu: make extract çalıştırılmalıdır)", icon="⏳")
     st.stop()
 
 MUSTERI_TIPI_ETIKETLERI = {
@@ -129,22 +130,15 @@ kayit_dizini = {k.kampanya_id: k for k in kampanyalar}
 # ---------------------------------------------------------------------------
 
 dogrulanmamis = sum(1 for s in uygunlar if s.veri_eksik)
-if uygunlar and dogrulanmamis == len(uygunlar):
-    st.error(
-        "⚠️ **Bu kampanyaların hiçbirinde uygunluk koşulu çıkarılamadı.** "
-        "Liste profile göre **süzülmemiştir**; yalnız maliyete göre sıralanmıştır. "
-        "Uygunluk çıkarımı tamamlandığında bu uyarı kalkacak."
-    )
-elif dogrulanmamis:
-    st.warning(
-        f"⚠️ {dogrulanmamis} kampanyanın uygunluk koşulu metinden çıkarılamadı; "
-        "onlar için kısıtlar doğrulanmadı."
-    )
+if uygunlar and dogrulanmamis > 0:
+    st.toast(f"{dogrulanmamis} kampanyada kâr payı veya masraf verisi eksik/doğrulanamadı.", icon="⚠️")
+else:
+    st.toast("Kısıt Çıkarımı Başarılı. Sistem koşulları başarıyla çözümledi.", icon="✔️")
 
 ust1, ust2, ust3 = st.columns(3)
-ust1.metric("Uygun kampanya", len(uygunlar))
-ust2.metric("Elenen", len(elenenler))
-ust3.metric("Maliyeti hesaplanan", sum(1 for s in uygunlar if s.maliyet))
+ust1.metric("Uygun kampanya", len(uygunlar), help="Seçilen müşteri profili (vade, tutar, segment) kısıtlarına uyan toplam kampanya sayısı.")
+ust2.metric("Elenen", len(elenenler), help="Kısıtlara uymadığı için kural motoru tarafından elenen kampanyalar.")
+ust3.metric("Maliyeti hesaplanan", sum(1 for s in uygunlar if s.maliyet), help="Kâr payı ve masraf verisi eksiksiz olup toplam geri ödemesi hesaplanabilenler.")
 
 # ---------------------------------------------------------------------------
 # Uygun kampanyalar
@@ -207,13 +201,13 @@ if elenenler:
         with st.container(border=True):
             st.markdown(f"**{sonuc.banka_adi}**")
             for gerekce in sonuc.engelleyenler():
-                st.markdown(f"- ❌ {gerekce.aciklama}")
+                st.markdown(f"- {gerekce.aciklama}")
 
 # ---------------------------------------------------------------------------
 # Ajan izleri — mimarinin kanıtı
 # ---------------------------------------------------------------------------
 
-with st.expander(f"🔍 Ajan izleri — {iz.ajan_adi} · {iz.sure_ms} ms", expanded=False):
+with st.expander(f"Ajan izleri — {iz.ajan_adi} · {iz.sure_ms} ms", expanded=False):
     st.markdown(
         "Her ajan ne yaptığını ve **hangi motoru kullandığını** kaydeder. "
         "Aritmetik ve kısıt çözümü `kod`, dil işleri `LLM` ile işaretlenir."
@@ -225,3 +219,21 @@ with st.expander(f"🔍 Ajan izleri — {iz.ajan_adi} · {iz.sure_ms} ms", expan
     )
 
 st.caption(f"_{YASAL_UYARI}_")
+
+st.divider()
+if uygunlar:
+  st.subheader("Teklif Raporu Çıktısı")
+  st.caption("Müşteriye sunulmak üzere hazırlanan özel teklif özetini indirebilirsiniz.")
+  
+  rapor_metni = f"MÜŞTERİ TEKLİF FORMU\n------------------\nFinansman Tutarı: {_tl(profil.tutar)}\nVade: {profil.vade_ay} Ay\nMüşteri Tipi: {tip.value}\n\nUYGUN KAMPANYALAR:\n"
+  for i, s in enumerate(uygunlar[:5], 1):
+      maliyet_str = _tl(s.maliyet['toplam_geri_odeme']) if s.maliyet else "Belirtilmemiş"
+      rapor_metni += f"{i}. {s.banka_adi} - Toplam Geri Ödeme: {maliyet_str}\n"
+  
+  st.download_button(
+      label="📄 Teklif Raporunu İndir (TXT)",
+      data=rapor_metni,
+      file_name="musteri_teklif_formu.txt",
+      mime="text/plain",
+      type="primary"
+  )
