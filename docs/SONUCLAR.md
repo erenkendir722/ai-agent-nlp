@@ -1,25 +1,25 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 24.08.2026 12:44 · `make eval`_
+_Otomatik üretildi: 24.08.2026 17:31 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 24.08.2026 12:44'de `hibrit` yapılandırmasıyla koştu (589 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 24.08.2026 17:29'de `hibrit` yapılandırmasıyla koştu (1021 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
-- İşlenen kampanya: **590**
+- İşlenen kampanya: **1023**
 - Banka sayısı: **9**
-- Toplam alan: 9440 · Dolu: 3182
+- Toplam alan: 16368 · Dolu: 4235
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.25 | ≤ %3 | ✅ |
-| Alan doluluğu | %33.7 | — | — |
-| Ortalama güven | 0.804 | — | — |
+| **Halüsinasyon oranı** | %0.38 | ≤ %3 | ✅ |
+| Alan doluluğu | %25.9 | — | — |
+| Ortalama güven | 0.794 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
 | Denetimsiz cevap parçası | %0.0 | %0 | ✅ |
 
@@ -33,7 +33,7 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | Parça kökeni | Sayı | Doğrulama ölçütü |
 |---|---|---|
 | `yapisal` | 24 | yapısal kayıtta birebir karşılığı olmalı |
-| `alinti` | 42 | kaynak metnin alt dizesi + sayıları alıntının içinde |
+| `alinti` | 37 | kaynak metnin alt dizesi + sayıları alıntının içinde |
 | `sistem` | 9 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
 | `duz` | 18 | sayı içeremez (yapıcıda denetlenir) |
 | `denetimsiz` | 0 | **miras yol — atlanır ama sayılır** |
@@ -44,17 +44,19 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 2120 |
-| `kural` | 714 |
-| `hibrit` | 348 |
+| `llm` | 2823 |
+| `kural` | 942 |
+| `hibrit` | 470 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
-- `kampanya_kosullari: özette geçen '60' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '1,5' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '5.000' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '400.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
+- `kampanya_avantaji: özette geçen '1.250' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
@@ -64,18 +66,18 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | Alan | Doluluk |
 |---|---|
 | `kampanya_turu` | %100 |
-| `kampanya_kosullari` | %97 |
-| `hedef_kitle` | %89 |
-| `kampanya_avantaji` | %70 |
-| `kampanya_bitis` | %59 |
-| `vade_ay_max` | %48 |
-| `masrafsiz_mi` | %27 |
-| `odul_miktari` | %21 |
-| `indirim_orani` | %10 |
-| `finansman_tutari_max` | %9 |
-| `kar_payi_orani` | %5 |
+| `kampanya_kosullari` | %82 |
+| `kampanya_avantaji` | %65 |
+| `kampanya_bitis` | %44 |
+| `vade_ay_max` | %37 |
+| `hedef_kitle` | %25 |
+| `odul_miktari` | %17 |
+| `kar_payi_orani` | %16 |
+| `masrafsiz_mi` | %8 |
+| `indirim_orani` | %7 |
+| `finansman_tutari_max` | %6 |
 | `alisveris_puani` | %3 |
-| `tahsis_ucreti` | %2 |
+| `tahsis_ucreti` | %3 |
 | `urun_turu` | %0 |
 | `taksit_sayisi` | %0 |
 | `masraf_bilgisi` | %0 |
@@ -86,9 +88,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Sayısal alan doğruluğu | 0.933 | ≥ 0,90 | ✅ |
+| Sayısal alan doğruluğu | 0.950 | ≥ 0,90 | ✅ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.764 _(%95 GA: 0.623–0.838)_ | ≥ 0,78 | ❌ |
+| **Makro-F1** | 0.785 _(%95 GA: 0.654–0.865)_ | ≥ 0,78 | ✅ |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
 
@@ -102,21 +104,21 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Alan | N | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |
 |---|---|---|---|---|---|---|---|
-| `kampanya_turu` | 60 | 0.833 | 0.000 | 0.833 | 0.833 | **0.833** | 50/10/10 |
+| `kampanya_turu` | 60 | 0.850 | 0.000 | 0.850 | 0.850 | **0.850** | 51/9/9 |
 | `urun_turu` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `hedef_kitle` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `kar_payi_orani` | 10 | 0.950 | 0.833 | 0.889 | 0.800 | **0.842** | 8/1/2 |
-| `finansman_tutari_max` | 5 🔸 | 0.917 | 0.917 | 0.500 | 0.800 | **0.615** | 4/4/1 |
-| `vade_ay_max` | 20 | 0.867 | 0.667 | 0.739 | 0.850 | **0.791** | 17/6/3 |
+| `kar_payi_orani` | 10 | 0.983 | 0.833 | 0.909 | 1.000 | **0.952** | 10/1/0 |
+| `finansman_tutari_max` | 5 🔸 | 0.917 | 0.917 | 0.500 | 0.600 | **0.545** | 3/3/2 |
+| `vade_ay_max` | 20 | 0.900 | 0.667 | 0.818 | 0.900 | **0.857** | 18/4/2 |
 | `taksit_sayisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `tahsis_ucreti` | 5 🔸 | 0.967 | 0.917 | 0.714 | 1.000 | **0.833** | 5/2/0 |
+| `tahsis_ucreti` | 5 🔸 | 0.983 | 0.917 | 0.833 | 1.000 | **0.909** | 5/1/0 |
 | `masraf_bilgisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `masrafsiz_mi` | 7 🔸 | 0.933 | 0.883 | 0.714 | 0.714 | **0.714** | 5/2/2 |
 | `odul_miktari` | 3 🔸 | 0.967 | 0.950 | 0.667 | 0.667 | **0.667** | 2/1/1 |
 | `indirim_orani` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `alisveris_puani` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `kampanya_avantaji` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `kampanya_bitis` | 14 | 0.933 | 0.767 | 0.846 | 0.786 | **0.815** | 11/2/3 |
+| `kampanya_bitis` | 14 | 0.933 | 0.767 | 0.786 | 0.786 | **0.786** | 11/3/3 |
 | `kampanya_kosullari` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 
 > ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem boş olması gereken hücrelere değer yazıyor (yanlış pozitif); önce kesinliği düzeltmek gerekir.
