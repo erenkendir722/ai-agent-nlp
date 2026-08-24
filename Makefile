@@ -1,7 +1,8 @@
 .PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
         birim-goc ablasyon eval-gorulmemis \
         altin-ornekle altin-denetle altin-uyum altin-derle \
-        gorev gorev-dogrula git-kontrol hava-boslugu sunum
+        gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
+        suresi-gecenleri-ele
 
 PYTHON ?= .venv/bin/python
 STREAMLIT ?= .venv/bin/streamlit
@@ -60,6 +61,12 @@ eval-gorulmemis:  ## görülmemiş metin ölçümü (llm=1 ile LLM katmanı da) 
 
 eval-robust:  ## dayanıklılık ölçümü (şartname 5.2) -> docs/DAYANIKLILIK.md
 	$(PYTHON) -m eval.dayaniklilik
+
+veri-kalitesi:  ## veri kalitesi denetimi -> docs/VERI_KALITESI.md (kati=1 ile esik asiminda kirilir)
+	$(PYTHON) tools/veri_kalitesi.py $(if $(kati),--kati)
+
+suresi-gecenleri-ele:  ## suresi gecmis kampanyalari sil (uygula=1 olmadan yalniz gosterir)
+	$(PYTHON) tools/suresi_gecenleri_ele.py $(if $(uygula),--uygula)
 
 lisanslar:  ## bağımlılık lisans raporu (şartname 5.10 kanıtı)
 	$(PYTHON) -m eval.lisanslar

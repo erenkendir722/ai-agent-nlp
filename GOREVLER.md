@@ -1006,7 +1006,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 1 hafta sonu (15–16 Ağustos)
 
-- [ ] **G-07** Veri kalitesi kontrolleri · 📅 16 Ağu
+- [x] **G-07** Veri kalitesi kontrolleri · 📅 16 Ağu
       ⛔ **Önce bitmeli:** G-04 (Görkem)
       ↳ Bitti sayılır: `docs/VERI_KALITESI.md` — aykırı değer, çelişki, eksiklik raporu
       ↳ Ör: finansman tutarı < 5.000 TL olanlar, vade > 360 ay olanlar, aynı
@@ -1022,7 +1022,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 2 (17–21 Ağustos)
 
-- [ ] **G-09** Katılım bankacılığı terim sözlüğü — **min. 60 terim** · 📅 19 Ağu
+- [x] **G-09** Katılım bankacılığı terim sözlüğü — **min. 60 terim** · 📅 19 Ağu
       ↳ Bitti sayılır: `docs/TERIM_SOZLUGU.md` yayınlandı
       ↳ Şartname 5.5'teki 5 resmî tanımla başla (kâr payı oranı, finansman
         maliyeti, katılım fonu, masrafsız finansman, avantajlı finansman),
