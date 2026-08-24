@@ -183,6 +183,117 @@ def katmanli_ornekle(kampanyalar: list[Kampanya], adet: int, tohum: int = TOHUM)
     return secilen
 
 
+# ---------------------------------------------------------------------------
+# Hedefli örnekleme — zayıf alanları derinleştirir (24 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# NEDEN GEREKLİ:
+#     `katmanli_ornekle` TÜRE ve BANKAYA göre dengeler. Bu, sınıflandırma
+#     alanı için doğru; ama sayısal alanların doluluğu türle ilgisiz. 60
+#     kayıtlık ilk sette sonuç şu oldu:
+#
+#         kampanya_turu 60 · vade_ay_max 20 · kampanya_bitis 14
+#         kar_payi_orani 10 · masrafsiz_mi 7 · tahsis_ucreti 5
+#         finansman_tutari_max 5 · odul_miktari 3
+#
+#     Makro-F1 bu sekiz alanın DÜZ ortalaması. `odul_miktari` N=3 demek, tek
+#     bir kaydın düzelmesinin F1'i 33 puan oynatması demek — yani makro-F1'in
+#     sekizde biri neredeyse tamamen gürültü. Rastgele kayıt eklemek bunu
+#     düzeltmez: nadir alan nadir kalır.
+#
+# SEÇİM SİSTEMİN ÇIKTISINA BAKMAZ — bu kural pazarlık konusu değil:
+#     Kayıtları "sistemin `tahsis_ucreti` bulduğu kayıtlar" diye seçseydik,
+#     altın set sistemin zaten başardığı örneklerle dolar ve ölçüm kendi
+#     kendini onaylardı. Seçim yalnız HAM METİNDE bir yüzey işareti arar
+#     ("tahsis ücreti" ifadesi geçiyor mu?). İşaretin geçmesi alanın DOLU
+#     olduğunu garanti etmez — o kararı etiketleyen insan verir.
+#
+# ÖLÇÜMÜN ANLAMI DEĞİŞİR, BU YAZILMALIDIR:
+#     Hedefli örneklemle F1, "rastgele bir kampanyada" değil, "o alanın
+#     konuşulduğu kampanyalarda" ölçülür. F1 zaten doğru negatifi saymadığı
+#     için bu daha bilgilendirici; ama farklı bir soruya cevap verdiği
+#     `docs/SONUCLAR.md`'de açıkça söylenir.
+
+ZAYIF_ALAN_ISARETLERI: dict[str, str] = {
+    "kar_payi_orani": r"k[âa]r pay[ıi]\s*oran|%\s*\d+[,.]\d+.{0,30}k[âa]r pay",
+    "finansman_tutari_max": r"'?ye kadar finansman|varan finansman|finansman tutar[ıi]",
+    "vade_ay_max": r"\d+\s*ay(a|ı)? (kadar|varan|vade)",
+    "tahsis_ucreti": r"tahsis [üu]creti|dosya masraf",
+    "odul_miktari": r"hediye|[öo]d[üu]l|kazan[ıi]n?\b.{0,20}TL",
+    "masrafsiz_mi": r"masrafs[ıi]z|[üu]cret al[ıi]nma|masraf al[ıi]nma",
+    "kampanya_bitis": (
+        r"\d{1,2}[./ ](Ocak|Şubat|Mart|Nisan|Mayıs|Haziran|Temmuz|Ağustos"
+        r"|Eylül|Ekim|Kasım|Aralık)[./ ]\d{4}"
+    ),
+}
+"""Alanın metinde KONUŞULDUĞUNA dair yüzey işaretleri.
+
+Kasten gevşek: amaç alanı çıkarmak değil, etiketlemeye DEĞER adayı bulmak.
+Yanlış pozitif ucuzdur (etiketleyen "boş" der, kayıt yine de sete girer);
+yanlış negatif pahalıdır (aday hiç görülmez)."""
+
+
+def hedefli_ornekle(
+    kampanyalar: list[Kampanya],
+    gerekli: dict[str, int],
+    *,
+    tohum: int = TOHUM,
+) -> list[Kampanya]:
+    """Zayıf alanları kapatacak en küçük kayıt kümesini seçer.
+
+    Açgözlü küme kaplama: her adımda hâlâ AÇIK olan en çok alanı taşıyan
+    kayıt alınır. Eşitlikte o ana kadar en az örnek vermiş banka kazanır —
+    aksi hâlde tek bir bankanın sayfa düzeni seti ele geçirir (ilk denemede
+    34 kaydın 21'i tek bankadan gelmişti).
+
+    `gerekli`: alan -> daha kaç dolu örnek isteniyor.
+    """
+    desenler = {
+        alan: re.compile(desen, re.IGNORECASE)
+        for alan, desen in ZAYIF_ALAN_ISARETLERI.items()
+        if gerekli.get(alan, 0) > 0
+    }
+    rastgele = random.Random(tohum)
+    havuz = list(kampanyalar)
+    rastgele.shuffle(havuz)  # eşit adaylar arasında koşudan koşuya kararlı sıra
+
+    kapsam = {
+        k.kampanya_id: {a for a, d in desenler.items() if d.search(k.ham_metin or "")}
+        for k in havuz
+    }
+    kalan = dict(gerekli)
+    banka_sayaci: Counter[str] = Counter()
+    secilen: list[Kampanya] = []
+
+    while any(v > 0 for v in kalan.values()):
+        en_iyi = None
+        en_iyi_puan = (0, 0)
+        for k in havuz:
+            if k in secilen:
+                continue
+            fayda = sum(1 for a in kapsam[k.kampanya_id] if kalan.get(a, 0) > 0)
+            if fayda == 0:
+                continue
+            # Çok alan kapatan kazanır; eşitlikte az temsil edilen banka.
+            puan = (fayda, -banka_sayaci[k.banka_kodu])
+            if puan > en_iyi_puan:
+                en_iyi, en_iyi_puan = k, puan
+        if en_iyi is None:
+            break  # korpusta bu alanları taşıyan başka kayıt yok
+        secilen.append(en_iyi)
+        banka_sayaci[en_iyi.banka_kodu] += 1
+        for a in kapsam[en_iyi.kampanya_id]:
+            if kalan.get(a, 0) > 0:
+                kalan[a] -= 1
+
+    return secilen
+
+
+def alan_doluluk_raporu(altin: list[dict[str, object]]) -> dict[str, int]:
+    """Altın sette her alanın kaç kez DOLU olduğu (F1'deki N)."""
+    return {alan: sum(1 for r in altin if r.get(alan) is not None) for alan in CEKIRDEK_ALANLAR}
+
+
 def _kirp(metin: str) -> str:
     if len(metin) <= METIN_KIRPMA:
         return metin
@@ -746,6 +857,61 @@ def doldurulmus_sayfalar(kisiler: tuple[str, ...] = KISILER) -> list[str]:
     return dolu
 
 
+def komut_genislet(hedef_n: int = 20) -> int:
+    """Zayıf alanları kapatacak EK örneklem çıkarır (mevcut seti bozmadan).
+
+    `ornekle`den farkı: baştan set kurmaz, VAR OLAN setin eksiğini tamamlar.
+    Zaten etiketlenmiş kayıtlar havuzdan çıkarılır; seçim yalnız ham metindeki
+    yüzey işaretlerine bakar (bkz. `ZAYIF_ALAN_ISARETLERI`).
+    """
+    from eval.calistir import altin_seti_yukle
+
+    altin = altin_seti_yukle()
+    if not altin:
+        print("❌ Altın set bulunamadı. Önce `make altin-ornekle` + `make altin-derle`.")
+        return 1
+
+    mevcut = alan_doluluk_raporu(altin)
+    gerekli = {a: max(0, hedef_n - n) for a, n in mevcut.items() if a in ZAYIF_ALAN_ISARETLERI}
+
+    print(f"Altın set: {len(altin)} kayıt · hedef N={hedef_n}\n")
+    print(f"{'alan':24}{'mevcut N':>9}{'gereken':>9}")
+    print("-" * 42)
+    for alan in ZAYIF_ALAN_ISARETLERI:
+        print(f"{alan:24}{mevcut.get(alan, 0):9}{gerekli.get(alan, 0):9}")
+
+    if not any(gerekli.values()):
+        print("\n✅ Tüm alanlar hedefte. Genişletmeye gerek yok.")
+        return 0
+
+    etiketli = {r.get("kampanya_id") for r in altin}
+    havuz = [k for k in _kampanyalari_al() if k.kampanya_id not in etiketli]
+    secilen = hedefli_ornekle(havuz, gerekli)
+
+    print(f"\n✅ {len(secilen)} EK kayıt seçildi (etiketsiz havuz: {len(havuz)})\n")
+
+    # Seçim sonrası hangi alanlar hâlâ açık? Korpus sınırı burada görünür.
+    desenler = {a: re.compile(d, re.I) for a, d in ZAYIF_ALAN_ISARETLERI.items()}
+    print(f"{'alan':24}{'hedef N':>9}{'ulaşılabilir':>13}{'durum':>10}")
+    print("-" * 58)
+    for alan, gerek in gerekli.items():
+        if not gerek:
+            continue
+        kapanan = sum(1 for k in secilen if desenler[alan].search(k.ham_metin or ""))
+        varilan = mevcut.get(alan, 0) + kapanan
+        durum = "✅" if varilan >= hedef_n else "🔴 KORPUS YETMİYOR"
+        print(f"{alan:24}{hedef_n:9}{varilan:13}{durum:>10}")
+
+    banka = Counter(k.banka_adi[:20] for k in secilen)
+    print(f"\nBanka dağılımı: {dict(banka)}")
+    print(
+        "\nBu komut PLAN üretir, dosya yazmaz. Etiketleme sayfalarını üretmek"
+        "\nmevcut CSV'lerin üzerine yazma riski taşıdığı için ayrı bir adımdır"
+        "\n— önce takım hedef N'e ve kimin kaç kayıt alacağına karar versin."
+    )
+    return 0
+
+
 def komut_ornekle(adet: int, zorla: bool = False) -> int:
     kampanyalar = _kampanyalari_al()
     if adet > len(kampanyalar):
@@ -1285,6 +1451,10 @@ def main() -> int:
         "--zorla", action="store_true", help="doldurulmuş sayfaların üstüne yaz"
     )
 
+    p_gen = alt.add_parser("genislet", help="zayıf alanlar için EK örneklem (mevcut seti bozmaz)")
+    p_gen.add_argument("--hedef-n", type=int, default=20, help="alan başına hedef dolu örnek")
+    p_gen.set_defaults(islev="genislet")
+
     p_den = alt.add_parser("denetle", help="kendi CSV'ni pushlamadan önce kontrol et")
     p_den.add_argument("--ad", default=None, help="yalnız bu kişinin dosyaları")
 
@@ -1294,6 +1464,8 @@ def main() -> int:
     args = ap.parse_args()
     if args.komut == "ornekle":
         return komut_ornekle(args.adet, args.zorla)
+    if args.komut == "genislet":
+        return komut_genislet(args.hedef_n)
     if args.komut == "denetle":
         return komut_denetle(args.ad)
     if args.komut == "uyum":

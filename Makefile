@@ -1,6 +1,6 @@
 .PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar temiz temiz-db docker-up docker-down \
         birim-goc ablasyon eval-gorulmemis \
-        altin-ornekle altin-denetle altin-uyum altin-derle \
+        altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
         suresi-gecenleri-ele
 
@@ -121,6 +121,9 @@ temiz-db:  ## ⚠️ data/katilim.db'yi sil — DEPODA TAKİPLİ DOSYA, yeniden 
 # --- altın set (H-01 / H-02) ---
 altin-ornekle:  ## katmanlı örneklem -> kişi başı CSV + okuma kâğıdı
 	@$(PYTHON) tools/altin_set.py ornekle --adet $(or $(adet),60)
+
+altin-genislet:  ## zayıf alanlar için ek örneklem planı (hedef=20 ile hedef N)
+	@$(PYTHON) tools/altin_set.py genislet --hedef-n $(or $(hedef),20)
 
 altin-denetle:  ## KENDİ etiketlerini pushlamadan önce kontrol et (ad=Esra)
 	@$(PYTHON) tools/altin_set.py denetle $(if $(ad),--ad $(ad))
