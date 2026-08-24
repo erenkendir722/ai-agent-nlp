@@ -401,6 +401,28 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Her önemli kararı `docs/kararlar/NNN-baslik.md` olarak kaydedin
       ↳ 24 Ağustos'ta derlemesi 30 dakika sürer; yoksa 4 saat
 
+- [ ] **H-06** 📏 **ALTIN SET GENİŞLETME — 38 kayıt** · 24 Ağu'da eklendi
+      ↳ **Neden:** makro-F1 sekiz alanın düz ortalaması ve dördünde N ≤ 7.
+        `finansman_tutari_max` N=5 — o beş hücre tek başına %80 hedefini
+        geçip geçmediğimizi belirliyor. Sistem tarafında yapılabilecekler
+        bitti (dört fikir ölçülüp geri alındı); kalan darboğaz ölçüm aracı.
+      ↳ Çalışma sayfaları HAZIR, `make altin-genislet uygula=1` ile üretildi:
+        ```
+        data/gold/etiketleme_ek_<adın>.csv        ~8 kayıt (kişisel pay)
+        data/gold/etiketleme_ek_uyum_<adın>.csv    5 kayıt (HERKES etiketler)
+        ```
+      ↳ ⚠️ **Samet çalışamaz durumda; ona düşen 8 kayıt dağıtılmalı.**
+        Eren ve Görkem 4'er kayıt alsın (Esra video/slaytta).
+      ↳ Kılavuz aynı: `docs/ETIKETLEME_KILAVUZU.md`. **Sıfır geçerli bir
+        değerdir**, boş hücreden farklıdır (bkz. `docs/kararlar/012-*`).
+      ↳ Bitince sırayla: `make altin-denetle ad=<adın>` → `make altin-derle`
+        → `make eval`
+      ↳ ⚠️ **İlk turun 60 etiketi ezilmiyor** — ek dosyalar ayrı, `derle`
+        ikisini birden okur.
+      ↳ Beklenen sonuç: `finansman_tutari_max` N=5→20, `tahsis_ucreti` 5→21,
+        `odul_miktari` 3→20. Sayı yükselmeyebilir; kazanç **doğru sayıyı
+        öğrenmek ve güven aralığını daraltmak** (şu an %95 GA 0,654–0,865).
+
 - [ ] **H-05** 🔑 **HERKES KENDİ `.env` DOSYASINI OLUŞTURACAK** · 24 Ağu'da eklendi
       ↳ **Bunu yapmadan `make extract` ÇALIŞMAZ.** Hata şu olur:
         `RuntimeError: EVREN_API_ANAHTARI tanımlı değil`
