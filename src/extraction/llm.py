@@ -29,6 +29,7 @@ from datetime import datetime
 from typing import Any
 
 from src.ajanlar.elestirmen import ElestirmenAjani
+from src.alan_tanimlari import TUR_TANIMLARI
 from src.extraction.saglayici import (
     SABIT_TOHUM,
     SICAKLIK,
@@ -164,6 +165,22 @@ MUTLAK KURALLAR:
 """
 
 
+# ALAN TANIMLARI BU İSTEME BİLEREK KONMUYOR — ölçüldü, zarar verdi.
+#
+# `alan_tanimlari.ALAN_TANIMLARI` blok hâlinde isteme eklendi ve makro-F1
+# 3 tekrarlı ölçümde **0,765 → 0,750** düştü (yayılım 0,002, yani gürültü
+# değil). Düşüş iki alanda toplandı: `odul_miktari` 0,667→0,571,
+# `kampanya_bitis` 0,815→0,786.
+#
+# Yorum: aynı tanımlar YÜKLEM AJANINDA fayda sağlıyor (`tahsis_ucreti`
+# 0,833→0,909). Fark görevin şeklinde: denetçi TEK bir değer hakkında
+# TEK bir karar verir, tanım orada odaklıdır. Çıkarıcı ise 16 alanı aynı
+# anda dolduruyor; 10 alanın uzun tanımı istemi şişirip asıl metinden
+# dikkat çalıyor.
+#
+# Tanımlar silinmedi, yeri değişti: `ajanlar/yuklem.py` kullanıyor.
+
+
 def _kullanici_istemi(metin: str, azami: int | None = None) -> str:
     turler = ", ".join(t.value for t in KampanyaTuru)
     kitleler = ", ".join(h.value for h in HedefKitle)
@@ -171,6 +188,7 @@ def _kullanici_istemi(metin: str, azami: int | None = None) -> str:
 
 kampanya_turu şunlardan biri olmalı: {turler}
 hedef_kitle şunlardan biri olmalı (veya null): {kitleler}
+{TUR_TANIMLARI}
 
 --- METİN BAŞLANGICI ---
 {metin[: azami or AZAMI_METIN]}
@@ -415,4 +433,5 @@ __all__ = [
     "LLMCikarici",
     "SISTEM_ISTEMI",
     "TERIMLER",
+    "TUR_TANIMLARI",
 ]

@@ -26,7 +26,15 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from src.schema import ALAN_ADLARI, ALAN_BOYUTLARI, SAYISAL_ALANLAR, Alan, HamKayit, Kampanya
+from src.schema import (
+    ALAN_ADLARI,
+    ALAN_BOYUTLARI,
+    SAYISAL_ALANLAR,
+    Alan,
+    HamKayit,
+    Kampanya,
+    Kaynak,
+)
 
 log = logging.getLogger(__name__)
 
@@ -64,6 +72,23 @@ class UzlastirmaRaporu:
     hibrit_alan_sayisi: int = 0
     celiskiler: list[Celiski] = field(default_factory=list)
     llm_reddedilen: int = 0  # metinde doğrulanamadığı için düşen alanlar
+    yuklem_duzeltme_sayisi: int = 0
+    """Yüklem ajanının KANITINI düzelttiği değerler.
+
+    Kural katmanı doğru sayıyı yanlış yerden bulmuş; ajan aynı değeri
+    metnin doğru yerinden geri getirmiş. Değer korunur, kanıt zinciri
+    onarılır — ret sayacından ayrı tutulur, çünkü biri veri kaybı diğeri
+    veri onarımıdır."""
+
+    yuklem_reddi_sayisi: int = 0
+    """YÜKLEM AJANININ düşürdüğü kural-tek değerler.
+
+    `elenen_alan_sayisi`'ndan ayrı sayaç, çünkü farklı bir kapı: makullük
+    kapısı değerin BÜYÜKLÜĞÜNE bakar (aylık %40 kâr payı olamaz), yüklem
+    kapısı değerin O ALANA AİT olup olmadığına bakar (125.000 TL metinde
+    var ama azami finansman tutarı değil). Ayrı sayaçlar olmadan ablasyon
+    tablosunda hangi kapının ne kazandırdığı ayırt edilemezdi."""
+
     elenen_alan_sayisi: int = 0
     """Uzlaştırmayı kazanıp ALAN MAKULLÜĞÜNDEN düşen değerler.
 
@@ -171,14 +196,61 @@ def _makul_mu(alan_adi: str, alan: Alan, metin: str) -> bool:
     return deger_makul_mu(alan_adi, alan.deger, metin, bas, bit)
 
 
+def _ifadeden_alan(
+    alan_adi: str, ifade: str, kayit: HamKayit, eski: Alan
+) -> Alan | None:
+    """Düzeltilmiş ham ifadeden alanı yeniden kurar. Türetilemezse None.
+
+    Ayrıştırıcılar `extraction.llm`'den alınır — aynı ifadeyi iki farklı
+    yerde iki farklı biçimde sayıya çevirmek, iki katmanın "aynı değeri
+    buldu" kararını anlamsız kılardı.
+    """
+    from src.extraction.llm import _AYRISTIRICILAR
+
+    ayristirici = _AYRISTIRICILAR.get(alan_adi)
+    if ayristirici is None:
+        return None
+    try:
+        deger = ayristirici(ifade)
+    except (ValueError, TypeError):
+        return None
+    if deger is None:
+        return None
+
+    konum = kayit.govde_metin.find(ifade)
+    kaynak = None
+    if konum != -1:
+        kaynak = Kaynak(
+            url=kayit.url,
+            cekim_tarihi=kayit.cekim_tarihi,
+            alinti=kayit.govde_metin[max(0, konum - 80) : konum + len(ifade) + 80],
+            karakter_baslangic=konum,
+            karakter_bitis=konum + len(ifade),
+        )
+    return Alan(
+        deger=deger,
+        ham_ifade=ifade,
+        kaynak=kaynak,
+        guven=eski.guven,
+        yontem="hibrit",
+        birim=eski.birim,
+    )
+
+
 def uzlastir(
     kural_alanlari: dict[str, Alan],
     llm_alanlari: dict[str, Alan],
     *,
     kayit: HamKayit,
     rapor: UzlastirmaRaporu | None = None,
+    yuklem: object | None = None,
 ) -> tuple[Kampanya, UzlastirmaRaporu]:
-    """İki katmanın çıktısını tek bir kanonik Kampanya kaydına indirger."""
+    """İki katmanın çıktısını tek bir kanonik Kampanya kaydına indirger.
+
+    `yuklem` verilirse (bkz. `ajanlar.yuklem.YuklemAjani`) KURAL-TEK değerler
+    ek bir kapıdan geçer: metin bu değeri gerçekten o alana yüklüyor mu?
+    Hibrit ve LLM değerleri denetlenmez — kanıt seviyeleri farklıdır.
+    """
     rapor = rapor or UzlastirmaRaporu()
     alanlar: dict[str, Alan] = {}
 
@@ -195,6 +267,36 @@ def uzlastir(
             sonuc = Alan.yok()
             durum = "elendi"
             rapor.elenen_alan_sayisi += 1
+
+        # YÜKLEM KAPISI — yalnız KURAL-TEK değerlerde.
+        #
+        # Ölçülen kesinlikler: hibrit 0,870 · llm 0,820 · kural-tek 0,696.
+        # Kural-tek değerlerde sayı metinde GERÇEKTEN geçiyor (eleştirmen bunu
+        # zaten doğruladı) ama çoğu kez başka bir şeyi anlatıyor: başka ürünün
+        # vadesi, bir tablo satırı, örnek hesaplama. Varlık denetimi bunu
+        # göremez; yüklem denetimi görebilir.
+        #
+        # Çapraz doğrulanmış değerlere uygulanmaz: iki bağımsız katmanın aynı
+        # sonuca varması zaten daha güçlü bir kanıttır ve gereksiz bir LLM
+        # çağrısı hem yavaşlatır hem yeni bir hata kaynağı açar.
+        elif durum == "kural" and yuklem is not None and sonuc.deger is not None:
+            karar = yuklem.denetle(
+                alan_adi, sonuc.deger, sonuc.ham_ifade or "", kayit.govde_metin
+            )
+            if karar == "":
+                # Metin bu alanı hiç anlatmıyor — değer düşer.
+                sonuc = Alan.yok()
+                durum = "yuklem_reddi"
+                rapor.yuklem_reddi_sayisi += 1
+            elif karar:
+                # Doğru alan, yanlış kanıt: değeri düzeltilmiş ifadeden
+                # yeniden türet. Türetilemezse eski değere DOKUNMA —
+                # ajan yalnız kanıtı iyileştirebilir, veri kaybettiremez.
+                yenilenmis = _ifadeden_alan(alan_adi, karar, kayit, sonuc)
+                if yenilenmis is not None:
+                    sonuc = yenilenmis
+                    durum = "yuklem_duzeltmesi"
+                    rapor.yuklem_duzeltme_sayisi += 1
 
         alanlar[alan_adi] = sonuc
 
@@ -233,6 +335,7 @@ def kampanya_cikar(
     llm_cikarici: object | None = None,
     kural_kullan: bool = True,
     llm_kullan: bool = True,
+    yuklem: object | None = None,
 ) -> tuple[Kampanya, UzlastirmaRaporu]:
     """Ham kayıttan kanonik Kampanya üretir — çıkarım motorunun dış yüzü.
 
@@ -257,7 +360,7 @@ def kampanya_cikar(
             llm_cikarici = LLMCikarici()
         llm_alanlari = llm_cikarici.cikar(metin, kayit.url, kayit.cekim_tarihi)  # type: ignore[attr-defined]
 
-    return uzlastir(kural_alanlari, llm_alanlari, kayit=kayit)
+    return uzlastir(kural_alanlari, llm_alanlari, kayit=kayit, yuklem=yuklem)
 
 
 def tarih_damgali_kimlik(banka_kodu: str, url: str, tarih: datetime) -> str:

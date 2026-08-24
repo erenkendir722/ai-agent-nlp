@@ -1255,6 +1255,7 @@ __all__ = ["KURALLAR", "KuralTanimi", "kurallarla_cikar"]
 _URL_TUR_ISARETLERI: tuple[tuple[str, str], ...] = (
     # Sıra önemli: özel olan genel olandan ÖNCE denenir.
     ("konut", "konut_finansmani"),
+    ("gayrimenkul", "konut_finansmani"),
     ("mortgage", "konut_finansmani"),
     ("tasit", "tasit_finansmani"),
     ("taşıt", "tasit_finansmani"),
@@ -1263,7 +1264,25 @@ _URL_TUR_ISARETLERI: tuple[tuple[str, str], ...] = (
     ("otomobil", "tasit_finansmani"),
     ("ihtiyac", "ihtiyac_finansmani"),
     ("ihtiyaç", "ihtiyac_finansmani"),
+    # Finansman dışı kategoriler. Tablo eskiden yalnız finansman alt
+    # türlerini tanıyordu; oysa şema `kart` ve `yatirim_urunu` da tanımlıyor
+    # ve `llm.TUR_TANIMLARI` bunları zaten anlatıyor. Aynı taksonominin iki
+    # yerde farklı yazılması sessiz bir tutarsızlıktı: istem "altın bir
+    # yatırım ürünüdür" derken URL tablosu altını hiç tanımıyordu.
+    ("kart", "kart"),
+    ("altin", "yatirim_urunu"),
+    ("altın", "yatirim_urunu"),
+    ("yatirim", "yatirim_urunu"),
+    ("yatırım", "yatirim_urunu"),
+    ("katilim-fonu", "yatirim_urunu"),
+    ("katılım-fonu", "yatirim_urunu"),
 )
+"""URL yol parçasından ürün kategorisi çıkaran işaretler.
+
+TEK TAKSONOMİ, İKİ KULLANIM YERİ: buradaki eşleme `llm.TUR_TANIMLARI`'nda
+modele anlatılan sınıflarla AYNI olmak zorundadır. Biri değişip diğeri
+kalırsa kural katmanı ile LLM katmanı farklı taksonomilere göre çalışır ve
+"iki katman uzlaştı" kararı anlamını yitirir."""
 
 _PUAN_KANITI = re.compile(
     r"\b(puan|mil|chip[- ]?para|world|bonus|para[- ]?puan|maxipuan|bankkart lira)\b",
@@ -1272,11 +1291,14 @@ _PUAN_KANITI = re.compile(
 
 
 def turu_urlden_cikar(url: str) -> str | None:
-    """URL parçasından kampanya alt türünü okur.
+    """URL parçasından kampanya kategorisini okur.
 
-    Yalnız FİNANSMAN alt türleri için kullanılır: banka siteleri ürün türünü
-    yol parçasında neredeyse her zaman açıkça yazar (`/konut-finansmani`).
-    Bu, LLM'in tahminine göre çok daha güçlü bir sinyaldir.
+    Banka siteleri ürün türünü yol parçasında neredeyse her zaman açıkça
+    yazar (`/konut-finansmani`, `/kartlar`). Bu, LLM'in tahminine göre çok
+    daha güçlü bir sinyaldir.
+
+    Eskiden yalnız finansman alt türlerini tanıyordu; artık şemanın tanıdığı
+    tüm kategorileri kapsıyor (bkz. `_URL_TUR_ISARETLERI`).
     """
     if not url:
         return None
@@ -1311,6 +1333,17 @@ def kampanya_turunu_duzelt(tur: str, url: str, metin: str) -> tuple[str, str | N
 
     if tur == "finansman" and url_turu:
         return url_turu, f"URL alt türü söylüyor ({url_turu})"
+
+    # `diger` de bir SIĞINAK etiketidir, tıpkı genel `finansman` gibi: ikisi de
+    # "alt türü bilmiyorum" demektir. Adres bir ürün kategorisi söylüyorsa
+    # bilmemek için sebep kalmaz.
+    #
+    # ÖLÇÜLDÜ (24 Ağu, 60 kayıtlık altın set): `kampanya_turu`'nun 10
+    # hatasından **8'i** `X -> diger` yönündeydi ve URL'ler kategoriyi açıkça
+    # yazıyordu (`/gayrimenkul-finansmani`, `/kartlar`, `/fiziki-altin`).
+    # Yukarıdaki `finansman` kuralıyla aynı gerekçe, aynı kanıt: yol parçası.
+    if tur == "diger" and url_turu:
+        return url_turu, f"«diger» sığınağı, URL alt türü söylüyor ({url_turu})"
 
     if tur == "alisveris_puani" and not puan_kaniti_var_mi(metin):
         if "kart" in (url or "").lower():

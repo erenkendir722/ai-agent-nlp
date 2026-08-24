@@ -169,6 +169,16 @@ def _cikar_ve_kaydet(
                 "koşusu değildir."
             )
 
+    # YÜKLEM AJANI — kural-tek sayısal değerlerin yüklemini denetler.
+    # Ölçüm (60 kayıtlık altın set, 3 tekrar): `vade_ay_max` 0,791→0,810,
+    # `tahsis_ucreti` 0,833→0,909. Ayrıntı: `src/ajanlar/yuklem.py`.
+    yuklem_ajani = None
+    if not args.yalniz_kural and not args.yuklem_yok:
+        from src.ajanlar.yuklem import YuklemAjani
+
+        yuklem_ajani = YuklemAjani()
+        log.info("Yüklem ajanı etkin (kapatmak için --yuklem-yok)")
+
     toplam_rapor = UzlastirmaRaporu()
     kampanyalar: list = []
     bekleyen: list = []
@@ -190,6 +200,7 @@ def _cikar_ve_kaydet(
                 llm_cikarici=llm_cikarici,
                 kural_kullan=not args.yalniz_llm,
                 llm_kullan=not args.yalniz_kural,
+                yuklem=yuklem_ajani,
             )
         except Exception as hata:
             log.error("Çıkarım hatası (%s): %s", kayit.url, hata)
@@ -245,6 +256,8 @@ def _cikar_ve_kaydet(
     print(f"  Yalnız kuraldan gelen: {toplam_rapor.kural_alan_sayisi} alan")
     print(f"  Yalnız LLM'den gelen : {toplam_rapor.llm_alan_sayisi} alan")
     print(f"  Hibrit (iki katman)  : {toplam_rapor.hibrit_alan_sayisi} alan")
+    print(f"  Yüklem düzeltmesi    : {toplam_rapor.yuklem_duzeltme_sayisi} alan")
+    print(f"  Yüklem reddi         : {toplam_rapor.yuklem_reddi_sayisi} alan")
     print(f"  Çelişki              : {len(toplam_rapor.celiskiler)}")
     for celiski in toplam_rapor.celiskiler[:8]:
         print(f"     - {celiski}")
@@ -309,6 +322,11 @@ def ayristirici_kur() -> argparse.ArgumentParser:
             "--elestirmen-yok",
             action="store_true",
             help="ablasyon: kanıt doğrulaması kapalı (üretimde KULLANMA)",
+        )
+        p.add_argument(
+            "--yuklem-yok",
+            action="store_true",
+            help="ablasyon: yüklem denetimi kapalı",
         )
         p.set_defaults(islev=islev)
 
