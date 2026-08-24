@@ -76,6 +76,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Türkçe normalizasyon | `src/preprocessing/normalizasyon.py` |
 | Jenerik toplayıcı | `src/collector/toplayici.py` |
 | Hibrit çıkarım | `src/extraction/{kural,llm,uzlastirici}.py` |
+| LLM sağlayıcı (EVREN / Ollama) | `src/extraction/saglayici.py` |
 | Depolama | `src/depolama.py` |
 | Karşılaştırma | `src/comparison/karsilastirma.py` |
 | Chatbot + kalkan | `src/rag/chatbot.py` |
@@ -101,11 +102,34 @@ iddiası bu. Kalkan yanlış pozitif veriyorsa çözüm kalkanı gevşetmek değ
 denetlenecek metni doğru seçmektir (`Cevap.dogrulanacak_metin`).
 
 **Llama ve Gemma türevi model KULLANILMAZ.** Şartname 5.10 doğrudan bunları
-hedefliyor. Yalnız Apache 2.0 / MIT (Qwen3.5, Qwen3.6). Yeni bağımlılık
-eklendiğinde `make lisanslar` çalıştır.
+hedefliyor. Yalnız Apache 2.0 / MIT (Qwen3.5, Qwen3.6). EVREN'deki `llm-large`
+ve `llm-fast` ikisi de Qwen ailesi — yasağa takılmıyor. `vlm`, `guard`, `router`
+ve `rerank` uçlarının modeli DOĞRULANMADI; bu senaryoda ihtiyaç da yok, ama
+kullanılacaksa önce lisansı teyit et. Yeni bağımlılık eklendiğinde
+`make lisanslar` çalıştır.
 
-**`make extract` koşarken Streamlit'i kapat.** 8 GB makinede aynı anda açık
-olunca kayıt başına 13 saniye yerine 2,5 dakika sürer (bellek takası).
+**Çıkarım EVREN'de koşuyor (24 Ağu).** T.C. Cumhurbaşkanlığı SSB'nin yarışmaya
+tahsis ettiği servis. `llm-large` = **`Qwen/Qwen3.5-122B-A10B`** — MoE, 122B
+toplam / 10B aktif, BF16 (kuantizasyon yok), 262.144 token bağlam, tensör
+paralelliği 4. Lisans **Apache-2.0**, iki kaynaktan teyitli (EVREN model kartı
++ HF deposu) — şartname 5.10 kanıtı `docs/SARTNAME_UYUM.md`'de.
+Ölçülen: 13 sn/kayıt → 0,43 sn/kayıt (16 işçi), doluluk kırpılan kayıtlarda
++8 puan. Sağlayıcı katmanı `src/extraction/saglayici.py`; orada ölçülmüş **üç
+sessiz tuzak** yazılı (`chat_template_kwargs` üst seviyede olmalı, `guided_json`
+yok sayılıyor, `max_tokens` 4096) — okumadan o dosyaya dokunma.
+
+**Yerel yol silinmedi, yedektir.** `make extract-yerel` (`LLM_SAGLAYICI=ollama`)
+aynı kod yolunu yerel Ollama ile koşar: EVREN düştüğünde ve hava boşluğu
+demosunda. Yerelde `CIKARIM_ISCI=1` zorunlu ve **Streamlit'i kapat** — 8 GB
+makinede aynı anda açık olunca kayıt başına 13 saniye yerine 2,5 dakika sürer
+(bellek takası). EVREN'de bu kısıtların ikisi de yok, iş bizim makinemizde değil.
+
+**EVREN bayt düzeyinde deterministik DEĞİL — ölçüldü.** `temperature=0` ve sabit
+tohuma rağmen aynı girdi 5 kayıttan 3'ünde farklı çıktı verdi (ortak vLLM
+sunucusunda sürekli yığınlama). Ama 8 kayıt × 4 koşuda oynayan alanların tamamı
+**serbest metindi**; sayısal ve enum alanlarda sıfır sapma. `docs/SONUCLAR.md`
+sayıları işlenmiş veritabanından üretildiği için yeniden üretilebilir kalır.
+Bayt düzeyinde tekrarlanabilirlik şartsa: `LLM_SAGLAYICI=ollama`.
 
 ---
 
@@ -114,10 +138,12 @@ olunca kayıt başına 13 saniye yerine 2,5 dakika sürer (bellek takası).
 ```bash
 make kur          # kurulum
 make crawl        # kampanya topla
-make extract      # çıkarım (kural + LLM) -> SQLite
+make extract      # çıkarım (kural + LLM) -> SQLite  [EVREN]
+make extract-yerel      # aynı çıkarım, yerel Ollama ile (yedek / hava boşluğu)
+make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka
 make run          # Streamlit arayüzü
-make test         # testler (296 test)
+make test         # testler (593 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make lisanslar    # lisans raporu
 make gorev ad=X   # görev durumu

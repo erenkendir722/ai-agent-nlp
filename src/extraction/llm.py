@@ -1,8 +1,13 @@
 """LLM katmanı — şema kısıtlı yapısal üretim (Katman 2b).
 
-Ollama'nın `format` parametresi arka planda dilbilgisi kısıtlaması uygular;
-model şemanın dışına ÇIKAMAZ. Bu, "şema geçerliliği 1,00" metriğini garanti eder
-— JSON ayrıştırma hatası diye bir kategori kalmaz.
+Şema, dilbilgisi kısıtlaması olarak uygulanır; model şemanın dışına ÇIKAMAZ.
+Bu, "şema geçerliliği 1,00" metriğini garanti eder — JSON ayrıştırma hatası
+diye bir kategori kalmaz. Kısıtın hangi parametreyle iletildiği sağlayıcıya
+göre değişir (Ollama'da `format`, EVREN'de `response_format.json_schema`);
+ayrıntı ve ölçülen tuzaklar: `src/extraction/saglayici.py`.
+
+BU MODÜL HANGİ SAĞLAYICIDA KOŞTUĞUNU BİLMEZ. Taşıma katmanı ayrıldı ki
+"yerel 4B vs servis 122B" ablasyon satırı ölçülebilsin.
 
 HALÜSİNASYON ÖNLEME — bu modülün en önemli tasarım kararı:
     Modelden değeri yorumlaması değil, metinde geçtiği hâliyle BİREBİR
@@ -23,9 +28,13 @@ import re
 from datetime import datetime
 from typing import Any
 
-import ollama
-
 from src.ajanlar.elestirmen import ElestirmenAjani
+from src.extraction.saglayici import (
+    SABIT_TOHUM,
+    SICAKLIK,
+    Saglayici,
+    saglayici_kur,
+)
 from src.preprocessing.normalizasyon import (
     birim_belirle,
     masrafsiz_mi,
@@ -38,47 +47,32 @@ from src.schema import Alan, HedefKitle, KampanyaTuru, Kaynak, ollama_json_semas
 
 log = logging.getLogger(__name__)
 
-VARSAYILAN_MODEL = os.getenv("OLLAMA_MODEL", "qwen3.5:4b-q4_K_M")
-OLLAMA_SUNUCU = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-AZAMI_METIN = 6000  # karakter; 4B modelde bağlamı dar tutmak doğruluğu artırıyor
+VARSAYILAN_MODEL = None
+"""Model seçimi sağlayıcıya bırakıldı (`saglayici_kur`).
 
-AZAMI_URETIM = 2048
-"""Üretim bütçesi (token). 1200'den yükseltildi.
+Eskiden burada `qwen3.5:4b-q4_K_M` yazıyordu. Artık `LLM_SAGLAYICI` hangi
+sağlayıcıyı seçerse onun varsayılanı geçerli: EVREN'de `llm-large`, yerelde
+`OLLAMA_MODEL`. Tek bir `--model` bayrağı ikisini de karşılar."""
 
-Model nadiren uzun bir üretime giriyor (ölçülen: 6 kayıtta 1, ~98 saniye) ve
-bütçe dolduğunda JSON cümlenin ORTASINDA kesiliyor. Aynı kayıt ikinci denemede
-135 token'da bitiyor — yani sorun metnin uzunluğu değil, ara sıra oluşan
-savrulma. Bütçeyi büyütmek bu savrulmaların çoğunu tamamlanmaya bırakır;
-tamamlanmayanları `_kismi_json_kurtar` yakalar."""
+AZAMI_METIN = int(os.getenv("AZAMI_METIN", "40000"))
+"""Modele verilen azami metin uzunluğu (karakter).
 
-SICAKLIK = 0.0
-"""Örnekleme sıcaklığı. 0,1'den sıfıra indirildi (S-20).
+6000'den yükseltildi. Eski değerin gerekçesi *"4B modelde bağlamı dar tutmak
+doğruluğu artırıyor"* idi — 262K bağlamlı 122B modelde bu kısıt yalnız
+zarar veriyor.
 
-ÖLÇÜLEN SORUN: `temperature=0,1` ile aynı kod, aynı girdi ve aynı model iki
-koşu arasında **6/96 kayıtta** farklı sınıflandırma üretiyordu; dördü altın
-sette, üçü doğrudan yanlışa dönüyordu. Tek başına bedeli −0,006 makro-F1 —
-hedefe olan farktan büyük.
+ÖLÇÜLEN KAYIP: 590 kayıdın **66'sı (%11,2)** 6000 karakterde kırpılıyordu.
+Kırpılan bölgedeki alanlar sessizce kayboluyordu; çıkarım hatası olarak da
+görünmüyorlardı, çünkü model o metni hiç görmemişti.
 
-Sıfır sıcaklık üretimi açgözlü (greedy) hâle getirir: her adımda en yüksek
-olasılıklı token seçilir, örnekleme devre dışı kalır. Yapılandırılmış
-çıkarımda bu standarttır ve kaliteyi düşürmez; şema kısıtı çıktıyı zaten
-zorluyor, sıcaklığın kattığı tek şey gürültüydü.
+40.000 karakter dağılımın p99'unu (9.827) rahatça kapsar. Tek bir 88.832
+karakterlik kayıt hâlâ kırpılır; o sayfa birleştirilmiş bir dizin sayfasıdır,
+tek kampanya değildir. Yerel 4B ile koşarken `AZAMI_METIN=6000` verin."""
 
-Ölçüm tarafındaki karşılığı: ablasyon tablosunun üç satırı ancak koşular
-tekrarlanabilirse karşılaştırılabilir. Aksi hâlde satırlar arasındaki farkın
-ne kadarı yapılandırmadan, ne kadarı gürültüden geliyor ayırt edilemez."""
-
-SABIT_TOHUM = 20260820
-"""Örnekleyici tohumu.
-
-`SICAKLIK = 0` açgözlü üretimde tohuma zaten ihtiyaç bırakmaz — determinizmi
-sağlayan asıl ayar sıcaklıktır. Tohum yine de sabitleniyor: eşit olasılıklı
-iki token'da bağın nasıl çözüldüğü çalıştırma katmanının (llama.cpp) sürümüne
-bağlı bir ayrıntıdır ve varsayılan tohum koşudan koşuya değişir. Sabitlemek
-bu ihtimali de kapatır ve koşunun niyetini kodda görünür kılar.
-
-Değeri anlamlı değildir, sabit olması anlamlıdır. **Değiştirme** — değişirse
-`docs/SONUCLAR.md`'deki sayılar yeniden üretilemez hâle gelir."""
+# SICAKLIK, SABIT_TOHUM ve AZAMI_URETIM artık `saglayici.py`'de tanımlı:
+# örnekleme ayarları taşıma katmanının işidir ve sağlayıcıya göre farklı
+# parametre adlarıyla iletilir. EVREN'de determinizmin neden garanti
+# OLMADIĞI da orada ölçümüyle birlikte yazılı — okumadan değiştirmeyin.
 
 
 def _kismi_json_kurtar(icerik: str) -> dict[str, Any]:
@@ -170,7 +164,7 @@ MUTLAK KURALLAR:
 """
 
 
-def _kullanici_istemi(metin: str) -> str:
+def _kullanici_istemi(metin: str, azami: int | None = None) -> str:
     turler = ", ".join(t.value for t in KampanyaTuru)
     kitleler = ", ".join(h.value for h in HedefKitle)
     return f"""Aşağıdaki kampanya metnini analiz et.
@@ -179,7 +173,7 @@ kampanya_turu şunlardan biri olmalı: {turler}
 hedef_kitle şunlardan biri olmalı (veya null): {kitleler}
 
 --- METİN BAŞLANGICI ---
-{metin[:AZAMI_METIN]}
+{metin[: azami or AZAMI_METIN]}
 --- METİN SONU ---
 
 Alanları JSON olarak çıkar. Sayısal alanları metindeki yazımıyla birebir kopyala."""
@@ -232,48 +226,35 @@ class LLMCikarici:
 
     def __init__(
         self,
-        model: str = VARSAYILAN_MODEL,
-        sunucu: str = OLLAMA_SUNUCU,
+        model: str | None = None,
         *,
+        saglayici: Saglayici | None = None,
         elestirmen: ElestirmenAjani | None = None,
     ) -> None:
-        self.model = model
-        self.istemci = ollama.Client(host=sunucu)
+        self.saglayici = saglayici or saglayici_kur(model=model)
+        self.model = self.saglayici.model
         self.elestirmen = elestirmen or ElestirmenAjani()
 
     def ham_cikar(self, metin: str) -> dict[str, Any]:
         """Modelden şemaya uygun ham JSON alır. Normalizasyon YAPMAZ.
 
-        `think=False` KRİTİKTİR. Qwen3.5 bir düşünme modelidir; varsayılan
-        davranışta üretim bütçesinin tamamını akıl yürütmeye harcar ve
-        `content` boş döner (`done_reason: length`). Yapısal çıkarımda
-        düşünmeye ihtiyacımız yok — şema kısıtı zaten çıktıyı zorluyor.
-        Kapatınca kayıt başına süre ~3 dakikadan ~3 saniyeye iniyor.
+        AKIL YÜRÜTME HER İKİ SAĞLAYICIDA DA KAPALI — bu kritiktir. Qwen3.5
+        bir düşünme modelidir; varsayılan davranışta üretim bütçesinin
+        tamamını akıl yürütmeye harcar ve `content` BOŞ döner. Yapısal
+        çıkarımda düşünmeye ihtiyacımız yok; şema kısıtı çıktıyı zaten
+        zorluyor. Kapatmanın ölçülen bedeli: yerelde kayıt başına ~3 dakika
+        yerine ~13 saniye, EVREN'de bütçe dolup boş dönmek yerine ~2 saniye.
+
+        Parametrenin nasıl iletileceği sağlayıcıya göre değişir ve ikisinde
+        de sessiz bir tuzağı var — `saglayici.py` modül başlığına bakın.
         """
-        yanit = self.istemci.chat(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": SISTEM_ISTEMI},
-                {"role": "user", "content": _kullanici_istemi(metin)},
-            ],
-            format=ollama_json_semasi(),
-            think=False,
-            options={
-                "temperature": SICAKLIK,
-                "seed": SABIT_TOHUM,
-                "num_predict": AZAMI_URETIM,
-            },
-        )
-        icerik = yanit["message"]["content"]
+        icerik = self.saglayici.uret(SISTEM_ISTEMI, _kullanici_istemi(metin), ollama_json_semasi())
         try:
             return json.loads(icerik)
         except json.JSONDecodeError:
             kurtarilan = _kismi_json_kurtar(icerik)
             if kurtarilan:
-                log.warning(
-                    "JSON kesilmiş, %d alan kurtarıldı (done_reason=%s)",
-                    len(kurtarilan), yanit.get("done_reason"),
-                )
+                log.warning("JSON kesilmiş, %d alan kurtarıldı", len(kurtarilan))
                 return kurtarilan
             log.error("Şema kısıtına rağmen JSON ayrıştırılamadı: %.200s", icerik)
             return {}
@@ -424,4 +405,14 @@ class LLMCikarici:
         )
 
 
-__all__ = ["LLMCikarici", "SISTEM_ISTEMI", "TERIMLER", "VARSAYILAN_MODEL"]
+# SICAKLIK ve SABIT_TOHUM burada KULLANILMIYOR ama bilerek yeniden
+# yayımlanıyor: `tests/test_determinizm.py` ve ablasyon betikleri bu
+# modülden içe aktarıyor. Sabitlerin tanımı `saglayici.py`'de.
+__all__ = [
+    "AZAMI_METIN",
+    "SABIT_TOHUM",
+    "SICAKLIK",
+    "LLMCikarici",
+    "SISTEM_ISTEMI",
+    "TERIMLER",
+]

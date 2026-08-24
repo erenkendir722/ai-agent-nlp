@@ -99,21 +99,37 @@ def test_chatbot_yapisal_sorgu_ag_kullanmaz(ag_kilidi: list[str]) -> None:
     assert ag_kilidi == []
 
 
-def test_llm_yalnizca_yerel_ollamaya_baglanir(ag_kilidi: list[str]) -> None:
-    """LLM istemcisi varsayılan olarak localhost'a bakmalı.
+# Çıkarım LLM'inin çıkabileceği TEK dış uç. Yarışma kapsamında T.C.
+# Cumhurbaşkanlığı SSB tarafından tahsis edilen EVREN servisi; ticari bir
+# bulut sağlayıcısı değildir ve müşteri verisi bu kapsamda kurum dışı
+# sayılmamaktadır. Listeye başka bir ad EKLENMEZ.
+IZINLI_LLM_UCLARI = IZINLI_HOSTLAR | {"evren-llmapi.ssyz.org.tr"}
 
-    Yapılandırma hatası sonucu uzak bir uca yönlendirilmişse, bu test
-    kurulumun on-prem iddiasını ihlal ettiğini erkenden söyler.
+
+def test_llm_ucu_yalnizca_yerel_veya_evren(ag_kilidi: list[str]) -> None:
+    """Çıkarım LLM'i yalnız yerele veya EVREN'e bakabilir.
+
+    KAPSAM DEĞİŞTİ — 24 Ağustos 2026: çıkarım katmanı EVREN'e taşındı
+    (`src/extraction/saglayici.py`). Dolayısıyla "LLM localhost'a bakmalı"
+    artık doğru şart değil. Ama testin görevi aynı kalıyor: yapılandırma
+    hatasıyla ÜÇÜNCÜ bir uca yönlendirilmişsek burada yakalanmalı.
+
+    Bu testin gevşemesi, dosyadaki diğer testleri GEVŞETMEZ. Kural,
+    normalizasyon, karşılaştırma ve chatbot yapısal sorgu katmanları hâlâ
+    `IZINLI_HOSTLAR` ile sınanıyor ve hâlâ hiçbir dış bağlantı yapamıyor —
+    sistemin en özgün iddiası olan "sayısal cevap yapısal veriden gelir"
+    tam olarak o katmanlarda ölçülüyor.
     """
     from urllib.parse import urlparse
 
-    from src.extraction.llm import OLLAMA_SUNUCU
+    from src.extraction.saglayici import EVREN_TEMEL_URL, OLLAMA_SUNUCU
 
-    sunucu = urlparse(OLLAMA_SUNUCU).hostname or ""
-    assert sunucu in IZINLI_HOSTLAR, (
-        f"OLLAMA_HOST kurum dışını gösteriyor: {OLLAMA_SUNUCU}. "
-        "On-prem iddiası için yerel olmalı."
-    )
+    for ad, adres in (("OLLAMA_HOST", OLLAMA_SUNUCU), ("EVREN_TEMEL_URL", EVREN_TEMEL_URL)):
+        sunucu = urlparse(adres).hostname or ""
+        assert sunucu in IZINLI_LLM_UCLARI, (
+            f"{ad} izinsiz bir uca bakıyor: {adres}. "
+            f"İzinli uçlar: {sorted(IZINLI_LLM_UCLARI)}"
+        )
 
 
 def test_kodda_sabit_kodlanmis_dis_api_ucu_yok() -> None:

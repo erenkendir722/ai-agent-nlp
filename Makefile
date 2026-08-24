@@ -1,4 +1,4 @@
-.PHONY: help kur crawl extract seed durum run api test lint eval lisanslar temiz docker-up docker-down \
+.PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar temiz docker-up docker-down \
         birim-goc ablasyon eval-gorulmemis \
         altin-ornekle altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
@@ -23,13 +23,21 @@ kur:  ## sanal ortam + bağımlılıklar
 	python3.12 -m venv .venv
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install -r requirements.txt
-	@echo "✅ Kurulum tamam. Model indirmek için: ollama pull qwen3.5:4b-q4_K_M"
+	@echo "✅ Kurulum tamam."
+	@echo "   EVREN ile koşmak için: .env içine EVREN_API_ANAHTARI yazın."
+	@echo "   Yerel yedek için:      ollama pull qwen3.5:4b-q4_K_M"
 
 crawl:  ## banka sitelerinden kampanya topla
 	$(PYTHON) -m src.boru_hatti crawl
 
-extract:  ## ham kayıtlardan çıkarım yap (kural + LLM hibrit)
+extract:  ## ham kayıtlardan çıkarım yap (kural + LLM hibrit) — EVREN
 	$(PYTHON) -m src.boru_hatti extract
+
+extract-yerel:  ## çıkarım: yerel Ollama ile (hava boşluğu demosu / EVREN düştüğünde)
+	LLM_SAGLAYICI=ollama CIKARIM_ISCI=1 AZAMI_METIN=6000 $(PYTHON) -m src.boru_hatti extract
+
+saglayici-dogrula:  ## EVREN bağlantısını ve şema kısıtını sına
+	$(PYTHON) -m src.extraction.saglayici
 
 seed:  ## tohum veriden çıkarım yap (ağ gerekmez)
 	$(PYTHON) -m src.boru_hatti seed

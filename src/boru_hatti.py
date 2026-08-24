@@ -16,7 +16,9 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 
@@ -38,6 +40,29 @@ TOHUM_DOSYASI = KOK / "data" / "seed" / "seed.jsonl"
 
 ARA_KAYIT_ARALIGI = 10
 """Kaç kayıtta bir veritabanına yazılacağı. Uzun koşularda iş kaybını önler."""
+
+
+def _varsayilan_isci() -> int:
+    """Eş zamanlı çıkarım işçisi sayısı.
+
+    YERELDE 1 OLMAK ZORUNDA. Ollama tek makinede koşuyor; ikinci bir istek
+    modeli belleğe ikinci kez yüklemeye çalışır ve 8 GB'lık makinede bellek
+    takasına girer — `CLAUDE.md`'deki "extract koşarken Streamlit'i kapat"
+    uyarısının sebebi de budur. Paralellik orada hız değil, çökme getirir.
+
+    EVREN'DE İŞ BİZİM MAKİNEMİZDE DEĞİL. 8×H200 üzerinde vLLM sürekli
+    yığınlama yapıyor; eş zamanlı istek zaten beklediği çalışma biçimi.
+    Ölçüm (24 gerçek kayıt, `llm-large`):
+
+        seri      2,2 sn/kayıt  ->  590 kayıt ~25 dk
+        16 işçi   0,44 sn/kayıt ->  590 kayıt ~4,5 dk
+
+    16 seçildi çünkü ölçümde 4 ve 8 işçi arasında anlamlı fark yoktu
+    (servis ortak kullanımda, kuyruk gürültüsü baskın). Gerekirse
+    `CIKARIM_ISCI` ile değiştirilebilir.
+    """
+    varsayilan = 1 if os.getenv("LLM_SAGLAYICI", "evren").lower() == "ollama" else 16
+    return max(1, int(os.getenv("CIKARIM_ISCI", str(varsayilan))))
 
 
 def _gunlugu_kur(ayrintili: bool = False) -> None:
@@ -148,43 +173,67 @@ def _cikar_ve_kaydet(
     kampanyalar: list = []
     bekleyen: list = []
 
-    for sira, kayit in enumerate(kayitlar, 1):
+    isci = _varsayilan_isci()
+    obek_boyu = max(ARA_KAYIT_ARALIGI, isci)
+    if isci > 1:
+        log.info("Eş zamanlı çıkarım: %d işçi, %d kayıtlık öbekler", isci, obek_boyu)
+
+    def _guvenli_cikar(kayit: HamKayit):
+        """Tek kaydı çıkarır; hatayı yutar.
+
+        Bir kaydın düşmesi 590 kayıtlık koşuyu düşürmemeli. Seri sürümdeki
+        `continue` davranışının paraleldeki karşılığı budur.
+        """
         try:
-            kampanya, rapor = kampanya_cikar(
+            return kampanya_cikar(
                 kayit,
                 llm_cikarici=llm_cikarici,
                 kural_kullan=not args.yalniz_llm,
                 llm_kullan=not args.yalniz_kural,
             )
-        except Exception as hata:  # tek kayıt tüm koşuyu düşürmesin
+        except Exception as hata:
             log.error("Çıkarım hatası (%s): %s", kayit.url, hata)
-            continue
+            return None
 
-        kampanyalar.append(kampanya)
-        bekleyen.append(kampanya)
-        toplam_rapor.kural_alan_sayisi += rapor.kural_alan_sayisi
-        toplam_rapor.llm_alan_sayisi += rapor.llm_alan_sayisi
-        toplam_rapor.hibrit_alan_sayisi += rapor.hibrit_alan_sayisi
-        toplam_rapor.celiskiler.extend(rapor.celiskiler)
+    # ÖBEKLİ PARALELLİK — iki kısıtı aynı anda karşılar:
+    #   1. `havuz.map` sonuçları GİRDİ SIRASINDA verir, bitiş sırasında değil.
+    #      Günlük satırları ve veritabanı yazma sırası koşudan koşuya oynamaz.
+    #   2. Ara kayıt öbek sonunda yapılır; çökmede en fazla bir öbek kaybedilir.
+    #
+    # `isci = 1` olduğunda bu, eski seri döngüyle aynı davranışı üretir —
+    # bilerek: ablasyon satırlarının aynı kod yolundan çıkması gerekiyor.
+    sira = 0
+    with ThreadPoolExecutor(max_workers=isci) as havuz:
+        for obek_bas in range(0, len(kayitlar), obek_boyu):
+            obek = kayitlar[obek_bas : obek_bas + obek_boyu]
 
-        log.info(
-            "[%3d/%3d] %-16s doluluk=%.0f%% guven=%.2f  %s",
-            sira, len(kayitlar), kampanya.banka_adi[:16],
-            kampanya.doluluk_orani() * 100, kampanya.ortalama_guven(),
-            kayit.url[-52:],
-        )
+            for kayit, sonuc in zip(obek, havuz.map(_guvenli_cikar, obek)):
+                sira += 1
+                if sonuc is None:
+                    continue
+                kampanya, rapor = sonuc
 
-        # ARA KAYIT: LLM çıkarımı kayıt başına ~10 saniye sürüyor. 300 kampanyada
-        # bu ~50 dakikadır; koşunun sonunda tek seferde yazmak, ortada oluşacak
-        # bir çökmede tüm işi çöpe atar. Kimlikler deterministik ve yazma
-        # upsert olduğu için ara kayıt güvenlidir — koşu tekrarlanabilir.
-        if len(bekleyen) >= ARA_KAYIT_ARALIGI:
-            kaydet(bekleyen, url)
-            log.info("   ↳ %d kayıt veritabanına yazıldı (ara kayıt)", len(bekleyen))
-            bekleyen.clear()
+                kampanyalar.append(kampanya)
+                bekleyen.append(kampanya)
+                toplam_rapor.kural_alan_sayisi += rapor.kural_alan_sayisi
+                toplam_rapor.llm_alan_sayisi += rapor.llm_alan_sayisi
+                toplam_rapor.hibrit_alan_sayisi += rapor.hibrit_alan_sayisi
+                toplam_rapor.celiskiler.extend(rapor.celiskiler)
 
-    if bekleyen:
-        kaydet(bekleyen, url)
+                log.info(
+                    "[%3d/%3d] %-16s doluluk=%.0f%% guven=%.2f  %s",
+                    sira, len(kayitlar), kampanya.banka_adi[:16],
+                    kampanya.doluluk_orani() * 100, kampanya.ortalama_guven(),
+                    kayit.url[-52:],
+                )
+
+            # ARA KAYIT: koşunun sonunda tek seferde yazmak, ortada oluşacak bir
+            # çökmede tüm işi çöpe atar. Kimlikler deterministik ve yazma upsert
+            # olduğu için ara kayıt güvenlidir — koşu tekrarlanabilir.
+            if bekleyen:
+                kaydet(bekleyen, url)
+                log.info("   ↳ %d kayıt veritabanına yazıldı (ara kayıt)", len(bekleyen))
+                bekleyen.clear()
 
     # Koşuyu kaydet: `make eval` bayat sayı raporlamasın diye. Ara kayıttan
     # SONRA, tek sefer — koşunun tamamlandığı an budur.
@@ -253,7 +302,7 @@ def ayristirici_kur() -> argparse.ArgumentParser:
         ("seed", komut_seed, "tohum veriden çıkarım yap (ağ gerekmez)"),
     ):
         p = altlar.add_parser(ad, help=yardim)
-        p.add_argument("--model", default=None, help="Ollama model etiketi")
+        p.add_argument("--model", default=None, help="model adı (EVREN: llm-large/llm-fast, yerel: Ollama etiketi)")
         p.add_argument("--yalniz-kural", action="store_true", help="ablasyon: LLM kapalı")
         p.add_argument("--yalniz-llm", action="store_true", help="ablasyon: kural kapalı")
         p.add_argument(
@@ -273,11 +322,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ayristirici_kur().parse_args(argv)
     _gunlugu_kur(args.ayrintili)
 
-    if getattr(args, "model", None) is None and hasattr(args, "model"):
-        from src.extraction.llm import VARSAYILAN_MODEL
-
-        args.model = VARSAYILAN_MODEL
-
+    # Model varsayılanı artık sağlayıcının işi (`saglayici_kur`): EVREN'de
+    # `llm-large`, yerelde `OLLAMA_MODEL`. `--model` verilmezse None kalır
+    # ve sağlayıcı kendi varsayılanını seçer.
     return int(args.islev(args))
 
 

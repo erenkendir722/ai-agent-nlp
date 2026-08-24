@@ -377,6 +377,29 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Her önemli kararı `docs/kararlar/NNN-baslik.md` olarak kaydedin
       ↳ 24 Ağustos'ta derlemesi 30 dakika sürer; yoksa 4 saat
 
+- [ ] **H-05** 🔑 **HERKES KENDİ `.env` DOSYASINI OLUŞTURACAK** · 24 Ağu'da eklendi
+      ↳ **Bunu yapmadan `make extract` ÇALIŞMAZ.** Hata şu olur:
+        `RuntimeError: EVREN_API_ANAHTARI tanımlı değil`
+      ↳ Çıkarım artık SSB'nin EVREN servisinde koşuyor (Qwen3.5-122B-A10B).
+        Servis anahtar ister; anahtar **depoya girmez** (`.env` gitignore'da),
+        o yüzden herkes kendi makinesinde bir kez oluşturmak zorunda.
+      ↳ Yapılacak — üç komut:
+        ```bash
+        cp .env.example .env
+        # .env dosyasını aç, şu satırı doldur:
+        #   EVREN_API_ANAHTARI=sk-evren-team29-...
+        make saglayici-dogrula     # ✅ görmen lazım
+        ```
+      ↳ **Anahtarı Eren WhatsApp'tan verecek.** Anahtarı asla commit'lemeyin,
+        `.env.example`'a yazmayın, ekran görüntüsü paylaşmayın.
+      ↳ `make saglayici-dogrula` yalnız bağlantıyı değil **şema kısıtını** da
+        sınar: modele metinde karşılığı olmayan bir enum dayatılır. Kısıt
+        uygulanmıyorsa "şema geçerliliği 1,00" iddiamız geçersizdir, o yüzden
+        ✅ görmeden çıkarım koşmayın.
+      ↳ **İnternet yoksa / EVREN düşerse:** `make extract-yerel` aynı kod
+        yolunu yerel Ollama ile koşar, anahtar istemez.
+      ↳ Ayrıntı: `.env.example` · `src/extraction/saglayici.py`
+
 ---
 
 # 🧑‍✈️ EREN — Kaptan · mimari, entegrasyon, on-prem, teslim
