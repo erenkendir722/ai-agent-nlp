@@ -1,4 +1,4 @@
-.PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar temiz docker-up docker-down \
+.PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar temiz temiz-db docker-up docker-down \
         birim-goc ablasyon eval-gorulmemis \
         altin-ornekle altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
@@ -105,10 +105,18 @@ hava-boslugu:  ## hava boşluğu ölçümü — konteynerden dışarı çıkıla
 docker-down:
 	docker compose down
 
-temiz:  ## türetilmiş dosyaları sil (ham veri KORUNUR)
-	rm -f data/katilim.db
+temiz:  ## önbellekleri sil (ham veri VE veritabanı KORUNUR)
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-	@echo "✅ Temizlendi. data/raw/ dokunulmadı."
+	rm -rf .pytest_cache .ruff_cache
+	find . -name .DS_Store -delete 2>/dev/null || true
+	@echo "✅ Önbellekler silindi. data/ dokunulmadı."
+	@echo "   Veritabanını da silmek için: make temiz-db"
+
+temiz-db:  ## ⚠️ data/katilim.db'yi sil — DEPODA TAKİPLİ DOSYA, yeniden üretmen gerekir
+	@echo "⚠️  data/katilim.db artık depoda TAKİPLİ (590 kampanya, commit cc2b9af)."
+	@echo "   Silersen geri getirmek için: git checkout data/katilim.db"
+	@echo "   Yeniden üretmek ~5 dk sürer: make extract"
+	@printf "   Devam? [e/H] " && read c && [ "$$c" = "e" ] && rm -f data/katilim.db && echo "silindi" || echo "iptal"
 
 # --- altın set (H-01 / H-02) ---
 altin-ornekle:  ## katmanlı örneklem -> kişi başı CSV + okuma kâğıdı

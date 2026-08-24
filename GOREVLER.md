@@ -1,12 +1,32 @@
 # 📋 GÖREV PANOSU — Takım SVARTAL
 
-**Son güncelleme:** 12 Ağustos 2026 — *durum denetimi yapıldı, bkz. ⏰ GECİKMİŞ*
-**Teslim:** 26 Ağustos 2026 23:59 · **Hedefimiz: 25 Ağustos 20:00**
-**Özellik dondurma:** 🔒 **21 Ağustos Cuma 23:59 — istisnasız**
+**Son güncelleme:** 24 Ağustos 2026 — *EVREN geçişi, tarih düzeltmesi, bayat tikler*
+**Teslim:** 🔴 **27 Ağustos 2026** · **26 Ağustos: video + sunum hazırlanacak**
+**Özellik dondurma:** 🔒 **21 Ağustos'ta GEÇTİ — kod yazılmıyor**
 
-> ⏳ **Kalan süre: geliştirmeye 9 gün, teslime 13 gün.** Dondurmadan sonra kod
-> yazılmaz — sadece ölçüm, doküman ve video. Takvimi 26 Ağustos'a göre değil,
-> **21 Ağustos'a göre** kur.
+> ⏳ **Bugün 24 Ağustos. Teslime 3 gün.**
+>
+> | Gün | Ne yapılacak |
+> |---|---|
+> | **24 Ağu (bugün)** | Ölçüm (`make extract` + `make eval`), doküman başlıkları |
+> | **25 Ağu** | Doküman bitirme, prova |
+> | **26 Ağu** | 🎬 **Video + sunum** |
+> | **27 Ağu** | 📦 **TESLİM** — depo bu gün public'e alınacak |
+>
+> Dondurma geçti: yeni özellik açılmaz. Kalan iş yalnız **ölçüm, doküman,
+> video, sunum**.
+>
+> 🎬 **İKİ AYRI VİDEO ZORUNLU — 24 Ağu'da şartnameden teyit edildi.**
+> Karıştırılıyordu, ikisi de gerekli:
+>
+> | Görev | Süre | Nerede | Şartname |
+> |---|---|---|---|
+> | **ES-17** | maks. **5 dakika** | GitHub'a yüklenen teslimat | **Madde 6** |
+> | **ES-18** | **1 dakika** | Sunum sırasında oynatılır | **Madde 10** |
+>
+> Madde 10 birebir: *"Sunum süresi **4 dakika**, demo videosu süresi ise
+> **1 dakika** olacaktır."* — yani o 1 dakika **soru-cevap değil, videonun
+> kendisi**. ES-17 iptal edilemez: madde 6 onu ayrı teslimat sayıyor.
 
 ---
 
@@ -287,11 +307,15 @@ sprintlerde yoğunlaşıyor. **Esra'nın işi Sprint 2 ve 4'te ağırlaşıyor**
 
 ### 🚨 En kritik 4 şey
 
-1. ✅ ~~DEPO PRIVATE~~ — **14 Ağustos'ta public yapıldı.** (E-01 kapandı)
-2. 🔴 **Altın veri seti — 16 Ağustos.** Gerçek durum 10/60. Bu olmadan puanın
-   %30'u ölçülemez. Bu akşam kapanmalı — yukarıdaki denetim tablosuna bak.
+1. 🔴 **DEPO HÂLÂ PRIVATE — 24 Ağu'da ölçüldü.** Bu satır önceden *"14
+   Ağustos'ta public yapıldı, E-01 kapandı"* diyordu; **doğru değildi.**
+   Kimliksiz istek `github.com/erenkendir722/ai-agent-nlp` → **HTTP 404**
+   (kontrol: `api.github.com/repos/python/cpython` → 200, yani ağ sağlam).
+   **Karar (24 Ağu): depo teslim günü, 27 Ağustos'ta public'e alınacak.**
+   Bilinçli erteleme — ama E-03 ve E-18 buna bağlı, o gün unutulursa teslim düşer.
+2. ✅ ~~Altın veri seti~~ — 15 Ağustos'ta bitti (H-01), 60 örnek.
 3. ✅ ~~Docker testi~~ — 12 Ağustos'ta çalıştırıldı, üç kırık nokta düzeltildi.
-4. **21 Ağustos özellik dondurma.** Sonrasında sadece ölçüm, doküman, video.
+4. 🎬 **26 Ağustos: video + sunum.** Dondurma 21 Ağu'da geçti; kod yazılmıyor.
 
 ---
 
@@ -406,7 +430,11 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **E-01** 🔴 **DEPO PRIVATE — ÖNCE BUNU AÇ** · 📅 **10 Ağu ⏰ GECİKMİŞ (2 gün)**
+- [ ] **E-01** 🔴 **DEPOYU PUBLIC YAP** · 📅 **27 Ağu — TESLİM GÜNÜ**
+      ↳ 🔴 **KARAR (24 Ağu): bilerek teslim gününe bırakıldı.** Depo o zamana
+        kadar private kalacak. **27 Ağustos sabahı ilk iş budur** — E-03 ve
+        E-18 buna bağlı, unutulursa teslim edilecek bir şey kalmaz.
+      ↳ 24 Ağu doğrulaması: kimliksiz istek **HTTP 404** → hâlâ private.
       ↳ ⚠️ **12 Ağu denetimi:** `api.github.com/repos/erenkendir722/ai-agent-nlp`
         **404** dönüyor, depo herkese açık depolar arasında yok → **private**.
         Ayrıca **açıklama boş, hiç topic yok, hiç git etiketi yok.**
@@ -459,8 +487,9 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 3 — ölçüm ve sertleştirme (22–23 Ağustos)
 
-- [ ] **E-07** 🔴 **Hava boşluğu (air-gap) testi** · 📅 **23 Ağu**
-      ↳ ✅ **18 Ağu: teknik kısım BİTTİ ve ölçüldü.** Kalan tek şey **video kaydı**.
+- [x] **E-07** ✅ **Hava boşluğu (air-gap) testi** *(bitti: 18 Ağu)*
+      ↳ ⚠️ **Video kaydı ES-17'ye taşındı** — teknik ölçüm tamam, kayıt sunum işi.
+      ↳ ✅ **18 Ağu: ölçüldü.** Kanıt: `docs/SARTNAME_UYUM.md` 5.9 satırı, `make hava-boslugu`.
       ↳ `ic-ag` ağı `internal: true` yapıldı; ollama **yalnız** orada.
         Konteynerden 8.8.8.8, 1.1.1.1 ve DNS **anında** engellendi (rota yok).
         Bu haldeyken: Streamlit + 3 alt sayfa 200, API 200, LLM çıkarımı
@@ -528,7 +557,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         (c) Madde 10 sunumun **GitHub'a da yüklenmesini** istiyor
       ↳ Denetim günlüğü dosyanın sonunda; her taramada satır eklenecek
 
-- [ ] **E-20** 🔴 Teslim tarihi çelişkisini resmî kanaldan sor · 📅 **12 Ağu (bugün)**
+- [x] **E-20** ✅ Teslim tarihi çelişkisi **çözüldü — teslim 27 Ağustos** *(24 Ağu)*
       ↳ Şartname madde 9: *"Yarışmamız 12.07.2026 tarihinde sona erecektir"*
         Şartname madde 3: *"Yarışma Çevrimiçi Süreci: 27 Temmuz – 26 Ağustos"*
       ↳ Bitti sayılır: `iletisim@teknofest.org`'a **yazılı** soruldu ve yarışma
@@ -638,7 +667,12 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         doğruladığı durum az; bu, güven skorunun kalibrasyonunu zayıflatıyor.
       ↳ Bitti sayılır: hibrit alan sayısı ≥ 50
 
-- [ ] **S-20** 🔴 **Çıkarımı deterministik yap** (`temperature=0` + sabit seed) · 📅 20 Ağu
+- [x] **S-20** ✅ **Çıkarımı deterministik yap** (`temperature=0` + sabit seed) *(bitti: 23 Ağu, commit `6f6e016`)*
+      ↳ ⚠️ **24 Ağu — EVREN geçişiyle kapsamı daraldı.** EVREN bayt düzeyinde
+        deterministik DEĞİL (ortak vLLM'de sürekli yığınlama). Ölçüldü: oynayan
+        alanların **tamamı serbest metin**, sayısal/enum alanlarda sıfır sapma.
+        Bayt düzeyi tekrarlanabilirlik gerekirse `LLM_SAGLAYICI=ollama`.
+        Ayrıntı: `src/extraction/saglayici.py` · `tests/test_determinizm.py`
       ↳ **Sorun ölçüldü:** `llm.py:231` `temperature=0.1`, sabit seed yok.
         Aynı kodla iki koşu arasında **6/96 kayıtta** sınıflandırma değişti,
         4'ü altın sette, 3'ü doğrudan yanlışa döndü. Tek başına bedeli
@@ -1360,6 +1394,14 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
         README "çalışıyor mu acaba" sorusu bıraktırır
 
 - [ ] **ES-15** Model çıktı örnekleri (doküman başlığı 9) · 📅 24 Ağu
+      🔄 **24 Ağu: GÖRKEM'E DEVREDİLDİ.** Kod değişmedi (`ES-15` referansları
+        `docs/` ve `⛔` satırlarında geçiyor), yalnız sahibi değişti —
+        `tools/gorevler.py` → `GOREV_DEVRI`.
+        **Neden:** teslime 3 gün kala Esra'da 15 açık iş vardı ve ES-17 tek
+        başına üç görevi tıkıyordu. Video ve slayt onda kalmalı. Bu görev
+        ekran gerektirmiyor — çıktı örnekleri `data/katilim.db`'den üretiliyor,
+        Görkem'in veri kalitesi işine doğrudan komşu. Görkem 8 açık işle en az
+        yüklü kişiydi.
       ↳ Bitti sayılır: `docs/CIKTI_ORNEKLERI.md` — girdi metni → yapısal çıktı
         eşleşmeleri, kanıt zinciriyle (alıntı + güven + yöntem)
       ↳ En az 5 örnek: biri temiz, biri eksik bilgili, biri dolaylı ifadeli
@@ -1369,14 +1411,14 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
       ↳ Bitti sayılır: `docs/KULLANIM_KILAVUZU.md` — üç ekranın ne işe yaradığı,
         ekran görüntüleriyle. Teknik değil, kullanıcı dilinde.
 
-- [ ] **ES-17** 🔴 **DEMO VİDEOSU — maks. 5 dakika** · 📅 **25 Ağu**
+- [ ] **ES-17** 🔴 **DEMO VİDEOSU — maks. 5 dakika** (şartname madde 6) · 📅 **26 Ağu**
       ⛔ **Önce bitmeli:** ES-12 (Esra) · E-07 (Eren)
-      ↳ 🔴 **«Son gün çekeriz» OLMAZ — teslim edilecek bir dosya bu.**
-        Madde 6 videoyu **GitHub'a yüklenecek teslimat** sayıyor; E-18 TESLİM
-        **25 Ağu 20:00**. Fiziki sunum 27 Ağu ama repo o tarihten **iki gün
-        önce** kapanıyor. 27'sinde çekilen video teslime yetişmez.
-      ↳ Ayrıca ES-18 (1 dk) bunun içinden kesiliyor — ES-17 gecikirse ikisi
-        birden kaybedilir. **Gerçekçi son tarih: 24 Ağu akşamı.**
+      ↳ ✅ **24 Ağu — şartnameden teyit edildi, ZORUNLU.** Madde 6 birebir:
+        *"maksimum 5 dakikalık bir video hazırlanmalıdır. Videoda kullanıcı
+        arayüzü, dashboard, chatbot, metin girdisi verilmesi, modelin ürettiği
+        yapılandırılmış çıktı ve karşılaştırma sonuçları açık şekilde
+        gösterilmelidir."* Altı unsur da görünmezse teslimat eksik sayılır.
+      ↳ ES-18 (1 dk) bunun içinden kesilir — ES-17 önce çekilirse ES-18 bedava.
       ↳ Şartname madde 6 zorunlu. **Altı unsur da görünmeli:** kullanıcı arayüzü,
         dashboard, chatbot, metin girdisi, yapılandırılmış çıktı, karşılaştırma sonuçları
       ↳ 2 saat: OBS ile ekran kaydı, tek çekimde, sesli anlatımla. **Kurgu yapma.**
@@ -1384,9 +1426,15 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
         dashboard karşılaştırma (60sn) → chatbot (50sn) → **hava boşluğu kanıtı
         (30sn)** → metrikler (30sn) → kapanış (15sn)
 
-- [ ] **ES-18** 🔴 **1 dakikalık kısa video** (sunum için) · 📅 **25 Ağu**
+- [ ] **ES-18** 🔴 **SUNUM VİDEOSU — 1 dakika** (şartname madde 10) · 📅 **26 Ağu**
       ⛔ **Önce bitmeli:** ES-17 (Esra)
-      ↳ 30 dk: en iyi 60 saniyeyi kes. Şartname madde 10 zorunlu tutuyor.
+      ↳ 🎬 Madde 10 birebir: *"Sunum süresi 4 dakika, demo videosu süresi ise
+        **1 dakika** olacaktır."* Sunum sırasında oynatılır; canlı demoda
+        aksaklık olursa yerine geçmesi için var.
+      ↳ **Hedef 50–55 sn.** 1 dakikayı aşma — sunum taşar. 40 sn'nin altına da
+        düşme; altı unsurdan hiçbiri görünmezse işe yaramaz.
+      ↳ ES-17'nin (5 dk) en iyi dakikasını kes.
+      ↳ Videoyu laptopta **yerel dosya** olarak bulundur — YouTube'a güvenme.
       ↳ Videoyu laptopta **yerel dosya** olarak da bulundur — YouTube'a güvenme
 
 ### ✅ Esra — bitenler (Sprint 0)

@@ -1,25 +1,25 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 23.08.2026 21:00 · `make eval`_
+_Otomatik üretildi: 24.08.2026 12:44 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 23.08.2026 20:47'de `hibrit` yapılandırmasıyla koştu (590 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 24.08.2026 12:44'de `hibrit` yapılandırmasıyla koştu (589 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
 - İşlenen kampanya: **590**
 - Banka sayısı: **9**
-- Toplam alan: 9440 · Dolu: 2609
+- Toplam alan: 9440 · Dolu: 3182
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.42 | ≤ %3 | ✅ |
-| Alan doluluğu | %27.6 | — | — |
-| Ortalama güven | 0.807 | — | — |
+| **Halüsinasyon oranı** | %0.25 | ≤ %3 | ✅ |
+| Alan doluluğu | %33.7 | — | — |
+| Ortalama güven | 0.804 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
 | Denetimsiz cevap parçası | %0.0 | %0 | ✅ |
 
@@ -44,38 +44,41 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 1536 |
-| `kural` | 1009 |
-| `hibrit` | 64 |
+| `llm` | 2120 |
+| `kural` | 714 |
+| `hibrit` | 348 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
-- `kampanya_kosullari: özette geçen '400.000' sayısı ham metinde yok`
-- `kampanya_kosullari: özette geçen '400.001' sayısı ham metinde yok`
-- `kampanya_kosullari: özette geçen '1,5' sayısı ham metinde yok`
-- `kampanya_kosullari: özette geçen '15.001' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '60' sayısı ham metinde yok`
+- `kampanya_avantaji: özette geçen '5.000' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
+- `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
+- `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
 
 ## Alan bazlı doluluk
 
 | Alan | Doluluk |
 |---|---|
 | `kampanya_turu` | %100 |
-| `kampanya_kosullari` | %75 |
-| `kampanya_bitis` | %58 |
-| `kampanya_avantaji` | %56 |
+| `kampanya_kosullari` | %97 |
+| `hedef_kitle` | %89 |
+| `kampanya_avantaji` | %70 |
+| `kampanya_bitis` | %59 |
 | `vade_ay_max` | %48 |
-| `hedef_kitle` | %29 |
 | `masrafsiz_mi` | %27 |
 | `odul_miktari` | %21 |
 | `indirim_orani` | %10 |
 | `finansman_tutari_max` | %9 |
 | `kar_payi_orani` | %5 |
 | `alisveris_puani` | %3 |
-| `tahsis_ucreti` | %1 |
-| `masraf_bilgisi` | %0 |
+| `tahsis_ucreti` | %2 |
 | `urun_turu` | %0 |
 | `taksit_sayisi` | %0 |
+| `masraf_bilgisi` | %0 |
 
 ## Altın set metrikleri
 
@@ -83,9 +86,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Sayısal alan doğruluğu | 0.937 | ≥ 0,90 | ✅ |
+| Sayısal alan doğruluğu | 0.933 | ≥ 0,90 | ✅ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.763 _(%95 GA: 0.623–0.837)_ | ≥ 0,78 | ❌ |
+| **Makro-F1** | 0.764 _(%95 GA: 0.623–0.838)_ | ≥ 0,78 | ❌ |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
 
@@ -99,14 +102,14 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Alan | N | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |
 |---|---|---|---|---|---|---|---|
-| `kampanya_turu` | 60 | 0.750 | 0.000 | 0.750 | 0.750 | **0.750** | 45/15/15 |
+| `kampanya_turu` | 60 | 0.833 | 0.000 | 0.833 | 0.833 | **0.833** | 50/10/10 |
 | `urun_turu` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `hedef_kitle` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `kar_payi_orani` | 10 | 0.950 | 0.833 | 0.889 | 0.800 | **0.842** | 8/1/2 |
 | `finansman_tutari_max` | 5 🔸 | 0.917 | 0.917 | 0.500 | 0.800 | **0.615** | 4/4/1 |
 | `vade_ay_max` | 20 | 0.867 | 0.667 | 0.739 | 0.850 | **0.791** | 17/6/3 |
 | `taksit_sayisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `tahsis_ucreti` | 5 🔸 | 0.983 | 0.917 | 0.833 | 1.000 | **0.909** | 5/1/0 |
+| `tahsis_ucreti` | 5 🔸 | 0.967 | 0.917 | 0.714 | 1.000 | **0.833** | 5/2/0 |
 | `masraf_bilgisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `masrafsiz_mi` | 7 🔸 | 0.933 | 0.883 | 0.714 | 0.714 | **0.714** | 5/2/2 |
 | `odul_miktari` | 3 🔸 | 0.967 | 0.950 | 0.667 | 0.667 | **0.667** | 2/1/1 |

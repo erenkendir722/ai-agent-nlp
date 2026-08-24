@@ -44,6 +44,25 @@ DEVIR = {"S": "Eren"}
 
 SAHIPLER = {onek: DEVIR.get(onek, ad) for onek, ad in _ASIL_SAHIPLER.items()}
 
+# TEK GÖREV DEVRİ — ön ek değil, görev bazında.
+#
+# `DEVIR` bütün bir ön eki taşır (`S-*` → Eren). Bazen tek bir görevi taşımak
+# gerekir: 24 Ağustos'ta Esra'nın 15 açık işi ve teslime 3 günü vardı, üstelik
+# ES-17 tek başına üç görevi tıkıyordu. Video ve slayt onda kalmalıydı; ekran
+# gerektirmeyen ES-15 (model çıktı örnekleri — veritabanından üretiliyor)
+# Görkem'e verildi, çünkü 8 açık işle en az yüklü kişi oydu.
+#
+# Kod DEĞİŞTİRİLMEZ: `ES-15` referansları `⛔ Önce bitmeli:` satırlarında ve
+# `docs/` içinde geçiyor. Yalnız sahibi değişir.
+GOREV_DEVRI = {"ES-15": "Görkem"}
+
+
+def sahip_bul(kod: str) -> str:
+    """Görevin sahibi — önce tek görev devri, sonra ön ek devri."""
+    if (devralan := GOREV_DEVRI.get(kod)) is not None:
+        return devralan
+    return SAHIPLER[kod.split("-")[0]]
+
 # Büyük `[X]` de kabul edilir: 16 Ağustos'ta elle atılan üç `[X]` üç görevi
 # panodan tamamen düşürdü ve onlara bağlı beş görev "tanımsız referans" verdi.
 _GOREV = re.compile(r"^- \[([ xX])\] \*\*((?:ES|E|S|G|H)-\d{2})\*\*\s*(.*)$")
@@ -79,13 +98,12 @@ def panoyu_oku(yol: Path = PANO) -> dict[str, Gorev]:
 
         if (m := _GOREV.match(satir)) is not None:
             durum, kod, kalan = m.groups()
-            onek = kod.split("-")[0]
             temiz = re.sub(r"[*`🔴]", "", kalan).strip()
             baslik = temiz.split("·")[0].strip()
             tarih_m = _TARIH.search(kalan)
             son = Gorev(
                 kod=kod,
-                sahip=SAHIPLER[onek],
+                sahip=sahip_bul(kod),
                 baslik=baslik or temiz,
                 bitti=(durum.lower() == "x"),
                 kritik="🔴" in kalan,
