@@ -141,17 +141,6 @@ TEK GÖREVİN: Metin, bu değerin O ALANIN değeri olduğunu söylüyor mu?
   cevabın tamamı reddedilir."""
 
 
-def pencere_ver(metin: str, ifade: str) -> str:
-    """İfadenin çevresinden bağlam — düzeltmenin kendi denetimi için.
-
-    `YuklemAjani._pencere` None dönebilir (ifade bulunamadı); burada ifade
-    zaten metinde doğrulanmış olduğu için sade bir kesit yeter."""
-    konum = metin.find(ifade)
-    if konum == -1:
-        return metin[: PENCERE * 2]
-    return metin[max(0, konum - PENCERE) : konum + len(ifade) + PENCERE]
-
-
 class YuklemAjani:
     """Değer ↔ alan yüklemi doğrulaması. LLM kullanır."""
 
@@ -221,25 +210,22 @@ class YuklemAjani:
             return None
 
         if duzeltme:
-            # AJAN KENDİ ÖNERİSİNİ DE DENETLER.
+            # DÜZELTMENİN KENDİ DENETİMİ DENENDİ VE GERİ ALINDI (24 Ağu).
             #
-            # İlk sürüm düzeltmeyi sorgusuz kabul ediyordu ve ölçümde bu YENİ
-            # yanlış pozitifler üretti: kural `125.000 TL` demiş, altın set o
-            # alanın boş olduğunu söylüyor, ajan reddedip yerine `250.000 TL`
-            # koyuyordu. Yani bir hatayı başka bir hatayla değiştiriyordu.
+            # Ajanın önerisini de aynı yüklem denetiminden geçirmek mantıklı
+            # görünüyordu: kural katmanına uygulanan kanıt çıtası ajanın kendi
+            # önerisi için de geçerli olmalı. K=3 ölçüm aksini söyledi:
             #
-            # Kural katmanına uygulanan kanıt çıtası, ajanın kendi önerisi için
-            # de geçerlidir. Öneri aynı yüklem denetiminden geçemiyorsa alan
-            # boş kalır — "bilmiyorum", "yanlış bil"den iyidir.
-            try:
-                onay = self._sor(alan_adi, duzeltme, duzeltme, pencere_ver(metin, duzeltme))
-            except Exception:
-                onay = None
-            if onay is not None and not onay[0]:
-                self.reddedilen.append(
-                    f"{alan_adi}: düzeltme {duzeltme!r} kendi denetiminden geçemedi"
-                )
-                return ""
+            #     öz-denetim yok : makro-F1 0,779  yayılım 0,004
+            #     öz-denetim var : makro-F1 0,777  yayılım 0,026
+            #
+            # Kazanç yok, ama üçüncü bir LLM çağrısı üçüncü bir gürültü
+            # kaynağı: yayılım altı katına çıktı ve `masrafsiz_mi` 0,714'ten
+            # 0,648'e indi. Deterministik olmayan bir serviste her ek çağrı
+            # ölçümü daha da oynak yapıyor.
+            #
+            # Düzeltme zaten kanıtsız kabul edilmiyor: `_duzelt` döndürdüğü
+            # ifadeyi ham metinde birebir arıyor ve bulamazsa None dönüyor.
             self.duzeltilen += 1
             return duzeltme
 
