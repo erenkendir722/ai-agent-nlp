@@ -1173,6 +1173,27 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
     if (masrafsiz := _masrafsizlik(metin, url, cekim_tarihi)) is not None:
         sonuc["masrafsiz_mi"] = masrafsiz
 
+    # SIFIR KÂR PAYI BEYANI — sayısal kural bunu YAPISAL OLARAK bulamaz.
+    #
+    # `KuralTanimi.sifir_gecerli` docstring'i «"Vade farksız" / "0 kâr payı"
+    # kampanyalarında oran gerçekten sıfırdır» diyor ve bayrak açık. Ama o
+    # bayrak yalnız SAYIYI aralık denetiminden muaf tutar; "vade farksız"
+    # ifadesinde ortada sayı yoktur, `D_ORAN` hiç eşleşmez. Niyet yazılmış,
+    # uygulaması eksik kalmıştı.
+    #
+    # ÖLÇÜLDÜ: altın setin `kar_payi_orani=0` etiketli 3 kaydının 2'si tam
+    # bu durumda (üç ayrı etiketleyici bağımsız olarak 0 yazmış). Korpusta
+    # ifade **99/590 kayıtta** geçiyor, biri birebir «Kâr payı yok. ... vade
+    # farksız destek» diyor — yani bu genel bir örüntü, birkaç kayda özgü değil.
+    #
+    # SAYISAL ORANA TABİDİR: yalnız kural katmanı sayısal bir oran bulamadığında
+    # devreye girer. "Vade farksız 6 taksit" bir sayfada geçip aynı sayfa ayrıca
+    # %2,05 ilan ediyorsa kampanyanın oranı %2,05'tir; ifade orada bir alt
+    # teklifi anlatıyordur.
+    if "kar_payi_orani" not in sonuc:
+        if (sifir := _vade_farksiz_orani(metin, url, cekim_tarihi)) is not None:
+            sonuc["kar_payi_orani"] = sifir
+
     # Dilim tablosu, tek tek sayı yakalayan regex kuralından DAHA GÜÇLÜ kanıttır:
     # tabloyu bütün olarak okur ve kılavuzun insana yaptırdığı hesabı (değer ×
     # oran, en büyüğü) yapar. Bu yüzden ürettiğinde `finansman_tutari_max`
@@ -1198,6 +1219,49 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
         )
 
     return sonuc
+
+
+_VADE_FARKSIZ = re.compile(
+    r"[^.!?\n]{0,80}(?:vade\s*fark[sı]?[ıi]?z"
+    r"|vade\s*fark[ıi]\s*(?:olmadan|yok|al[ıi]nma)"
+    r"|k[âa]r\s*pay[ıi]\s*(?:yok|al[ıi]nma))[^.!?\n]{0,80}",
+    re.IGNORECASE,
+)
+"""Sıfır kâr payı beyanı — kanıt cümlesiyle birlikte yakalanır.
+
+Üç yazım da aynı şeyi söyler ve üçü de sahada geçiyor: «vade farksız»,
+«vade farkı olmadan», «kâr payı yok». Katılım bankacılığında vade farkının
+olmaması, kâr payının sıfır olması demektir."""
+
+
+def _vade_farksiz_orani(metin: str, url: str, cekim_tarihi: datetime) -> Alan | None:
+    """«Vade farksız» beyanından `kar_payi_orani = 0` üretir.
+
+    Kanıt, ifadenin geçtiği cümledir — `ham_ifade` olarak saklanır ve
+    eleştirmen ajanının birebir metin denetiminden geçer. Yani bu kural da
+    kanıtsız değer üretmez; ürettiği kanıt sayı değil, cümledir.
+
+    Güven 0,80: sayısal bir orandan (0,93) düşük, çünkü ifadeden çıkarım
+    yapılıyor. LLM aynı sonuca varırsa uzlaştırıcı hibrit'e yükseltir.
+    """
+    eslesme = _VADE_FARKSIZ.search(metin)
+    if eslesme is None:
+        return None
+    cumle = " ".join(eslesme.group(0).split())
+    return Alan(
+        deger=0.0,
+        ham_ifade=cumle[:120],
+        kaynak=Kaynak(
+            url=url,
+            cekim_tarihi=cekim_tarihi,
+            alinti=cumle[:280],
+            karakter_baslangic=eslesme.start(),
+            karakter_bitis=eslesme.end(),
+        ),
+        guven=0.80,
+        yontem="kural",
+        birim=birim_belirle(cumle, "kar_payi_orani"),
+    )
 
 
 _MASRAF_CUMLE = re.compile(r"[^.!?\n]*(?:masraf|tahsis|komisyon|ücret)[^.!?\n]*[.!?\n]?", re.IGNORECASE)

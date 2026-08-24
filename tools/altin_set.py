@@ -95,6 +95,13 @@ metriğe katılmaz. Tahmin edilmiş etiket, eksik etiketten daha zararlıdır.""
 
 UYUM_ONEK = "etiketleme_uyum_"
 
+EK_ONEK = "etiketleme_ek_"
+"""Genişletme turunun çalışma sayfaları — ilk turdan AYRI dosyalar.
+
+Aynı dosyalara yazmak, 15 Ağustos'ta doldurulmuş 60 kaydı ezme riski taşır.
+Ayrı dosya, `derle`nin ikisini birden okumasıyla birleşir; etiketleyen ise
+yalnız yeni satırları görür, eskileri tekrar gözden geçirmek zorunda kalmaz."""
+
 UYUM_ADET = 5
 """Örneklemin ilk 5'ini DÖRDÜ BİRDEN etiketler (H-02).
 
@@ -671,27 +678,35 @@ def derle(kisiler: tuple[str, ...] = KISILER) -> tuple[list[dict[str, Any]], lis
         kayitlar.append(kayit)
 
     for kisi in kisiler:
-        yol = GOLD / f"etiketleme_{kisi.lower()}.csv"
-        if not yol.exists():
-            uyarilar.append(f"{yol.name} yok — {kisi} henüz başlamamış olabilir")
-            continue
+        # İlk tur + genişletme turu birlikte okunur. Genişletme dosyası yoksa
+        # sessiz geçilir: her takım her turu yapmak zorunda değil.
+        yollar = [GOLD / f"etiketleme_{kisi.lower()}.csv"]
+        if (ek := GOLD / f"{EK_ONEK}{kisi.lower()}.csv").exists():
+            yollar.append(ek)
 
-        for satir_no, kimlik, etiketler, dokunuldu in _csv_oku(yol):
-            if not kimlik:
-                uyarilar.append(f"{yol.name}:{satir_no} kampanya_id boş — atlandı")
+        if not yollar[0].exists():
+            uyarilar.append(f"{yollar[0].name} yok — {kisi} henüz başlamamış olabilir")
+            if len(yollar) == 1:
                 continue
-            if not dokunuldu or not etiketler:
-                uyarilar.append(
-                    f"{yol.name}:{satir_no} ({kimlik}) etiketlenmemiş "
-                    f"({DOKUNMA_ALANI} boş) — atlandı"
-                )
-                continue
-            if kimlik in gorulen:
-                uyarilar.append(f"{kimlik} birden fazla yerde etiketli — ilki korundu")
-                continue
+            yollar = yollar[1:]
 
-            gorulen.add(kimlik)
-            kayitlar.append({"kampanya_id": kimlik, "etiketleyen": kisi, **etiketler})
+        for yol in yollar:
+            for satir_no, kimlik, etiketler, dokunuldu in _csv_oku(yol):
+                if not kimlik:
+                    uyarilar.append(f"{yol.name}:{satir_no} kampanya_id boş — atlandı")
+                    continue
+                if not dokunuldu or not etiketler:
+                    uyarilar.append(
+                        f"{yol.name}:{satir_no} ({kimlik}) etiketlenmemiş "
+                        f"({DOKUNMA_ALANI} boş) — atlandı"
+                    )
+                    continue
+                if kimlik in gorulen:
+                    uyarilar.append(f"{kimlik} birden fazla yerde etiketli — ilki korundu")
+                    continue
+
+                gorulen.add(kimlik)
+                kayitlar.append({"kampanya_id": kimlik, "etiketleyen": kisi, **etiketler})
 
     return kayitlar, uyarilar
 
@@ -857,7 +872,7 @@ def doldurulmus_sayfalar(kisiler: tuple[str, ...] = KISILER) -> list[str]:
     return dolu
 
 
-def komut_genislet(hedef_n: int = 20) -> int:
+def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
     """Zayıf alanları kapatacak EK örneklem çıkarır (mevcut seti bozmadan).
 
     `ornekle`den farkı: baştan set kurmaz, VAR OLAN setin eksiğini tamamlar.
@@ -904,10 +919,51 @@ def komut_genislet(hedef_n: int = 20) -> int:
 
     banka = Counter(k.banka_adi[:20] for k in secilen)
     print(f"\nBanka dağılımı: {dict(banka)}")
+    if not uygula:
+        print(
+            "\nBu bir PLANDIR, dosya yazılmadı."
+            "\nÇalışma sayfalarını üretmek için:  make altin-genislet uygula=1"
+        )
+        return 0
+
+    # Çalışan kişiler: ilk turda dördü vardı. Genişletme turunda kimin
+    # etiketleyeceği takım kararıdır; varsayılan olarak ilk turdaki
+    # dosyalardan hangileri DOLU ise onlar sürdürür.
+    GOLD.mkdir(parents=True, exist_ok=True)
+    METINLER.mkdir(parents=True, exist_ok=True)
+
+    uyum = secilen[:UYUM_ADET]
+    kisisel = secilen[UYUM_ADET:]
+    paylar: dict[str, list[Kampanya]] = {k: [] for k in KISILER}
+    for sira, kampanya in enumerate(kisisel):
+        paylar[KISILER[sira % len(KISILER)]].append(kampanya)
+
+    yazilan: list[str] = []
+    for kisi in KISILER:
+        for yol, kume in (
+            (GOLD / f"{EK_ONEK}{kisi.lower()}.csv", paylar[kisi]),
+            (GOLD / f"{EK_ONEK}uyum_{kisi.lower()}.csv", uyum),
+        ):
+            if yol.exists() and _etiketli_mi(yol):
+                print(f"🛡️  {yol.name} etiket içeriyor — DOKUNULMADI")
+                continue
+            _csv_yaz(yol, kume)
+            yazilan.append(f"{yol.name} ({len(kume)} satır)")
+
+    for kampanya in secilen:
+        (METINLER / f"{kampanya.kampanya_id}.txt").write_text(
+            kampanya.ham_metin or "", encoding="utf-8"
+        )
+
+    print("\n✅ Genişletme çalışma sayfaları yazıldı:")
+    for satir in yazilan:
+        print(f"     data/gold/{satir}")
     print(
-        "\nBu komut PLAN üretir, dosya yazmaz. Etiketleme sayfalarını üretmek"
-        "\nmevcut CSV'lerin üzerine yazma riski taşıdığı için ayrı bir adımdır"
-        "\n— önce takım hedef N'e ve kimin kaç kayıt alacağına karar versin."
+        f"\n  1️⃣  UYUM BLOĞU — ilk {len(uyum)} kayıt, herkes etiketler"
+        f"\n  2️⃣  KİŞİSEL PAY — kişi başı ~{len(kisisel) // max(1, len(KISILER))} kayıt"
+        "\n\n  Bitince:  make altin-denetle ad=<adın>  →  make altin-derle  →  make eval"
+        "\n\n  ⚠️  İlk turun dosyaları (etiketleme_<ad>.csv) DEĞİŞMEDİ."
+        " `derle` ikisini birden okur."
     )
     return 0
 
@@ -1453,6 +1509,7 @@ def main() -> int:
 
     p_gen = alt.add_parser("genislet", help="zayıf alanlar için EK örneklem (mevcut seti bozmaz)")
     p_gen.add_argument("--hedef-n", type=int, default=20, help="alan başına hedef dolu örnek")
+    p_gen.add_argument("--uygula", action="store_true", help="planı uygula, CSV yaz")
     p_gen.set_defaults(islev="genislet")
 
     p_den = alt.add_parser("denetle", help="kendi CSV'ni pushlamadan önce kontrol et")
@@ -1465,7 +1522,7 @@ def main() -> int:
     if args.komut == "ornekle":
         return komut_ornekle(args.adet, args.zorla)
     if args.komut == "genislet":
-        return komut_genislet(args.hedef_n)
+        return komut_genislet(args.hedef_n, args.uygula)
     if args.komut == "denetle":
         return komut_denetle(args.ad)
     if args.komut == "uyum":
