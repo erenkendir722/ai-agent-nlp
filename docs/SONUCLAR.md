@@ -1,23 +1,23 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 26.08.2026 01:30 · `make eval`_
+_Otomatik üretildi: 26.08.2026 01:51 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 26.08.2026 01:30'de `hibrit` yapılandırmasıyla koştu (1022 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 26.08.2026 01:51'de `hibrit` yapılandırmasıyla koştu (1022 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
 - İşlenen kampanya: **1024**
 - Banka sayısı: **9**
-- Toplam alan: 16384 · Dolu: 4223
+- Toplam alan: 16384 · Dolu: 4221
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.38 | ≤ %3 | ✅ |
+| **Halüsinasyon oranı** | %0.40 | ≤ %3 | ✅ |
 | Alan doluluğu | %25.8 | — | — |
 | Ortalama güven | 0.795 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
@@ -44,22 +44,22 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 2822 |
-| `kural` | 902 |
-| `hibrit` | 499 |
+| `llm` | 2816 |
+| `kural` | 908 |
+| `hibrit` | 497 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
-- `kampanya_kosullari: özette geçen '60' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '5.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '400.000' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.250' sayısı ham metinde yok`
-- `kampanya_avantaji: özette geçen '7.500' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '10.000' sayısı ham metinde yok`
 
 ## Alan bazlı doluluk
 
