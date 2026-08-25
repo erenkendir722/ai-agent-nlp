@@ -207,13 +207,13 @@ if ham:
   st.info(" · ".join(parcalar) + " · maliyet iddiası yok (on-prem / EVREN kotası)")
 
   if st.session_state.get("analiz_kural") is not None:
-    with st.expander("1. Kural katmanı (anında)", expanded=False):
-      _sonucu_ciz(
-        st.session_state.analiz_kural,
-        st.session_state.get("analiz_kural_iz"),
-        ham,
-        "Yalnız regex",
-      )
+    st.divider()
+    _sonucu_ciz(
+      st.session_state.analiz_kural,
+      st.session_state.get("analiz_kural_iz"),
+      ham,
+      "Yalnız regex",
+    )
   if st.session_state.get("analiz_kampanya") is not None:
     _sonucu_ciz(
       st.session_state.analiz_kampanya,
