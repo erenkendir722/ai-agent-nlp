@@ -303,8 +303,9 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
         }
         if len(birimler) > 1:
             adlar = ", ".join(sorted(b.value for b in birimler))
+            guzel_alan = alan_adi.replace("_", " ").title().replace("Ucreti", "Ücreti").replace("Kar ", "Kâr ")
             mesajlar.append(
-                f"`{alan_adi}` alanı farklı birimlerde ({adlar}). Ortak tabana "
+                f"**{guzel_alan}** alanı farklı birimlerde ({adlar}). Ortak tabana "
                 "indirmek için bir senaryo (anapara, vade) gerekir; senaryo "
                 "verilmeden bu kriter sıralamaya KATILMAZ."
             )
@@ -325,8 +326,13 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
 
     turler = {k.kampanya_turu for k in kayitlar if k.kampanya_turu}
     if len(turler) > 1:
+        guzel_turler = []
+        for t in sorted(turler):
+            gt = t.replace('_', ' ').title()
+            gt = gt.replace("Ihtiyac", "İhtiyaç").replace("Tasit", "Taşıt").replace("Alisveris Puani", "Alışveriş Puanı").replace("Yatirim Urunu", "Yatırım Ürünü")
+            guzel_turler.append(gt)
         mesajlar.append(
-            f"Farklı kampanya türleri karşılaştırılıyor ({', '.join(t.replace('_', ' ').title() for t in sorted(turler))}). "
+            f"Farklı kampanya türleri karşılaştırılıyor ({', '.join(guzel_turler)}). "
             "Aynı tür içinde karşılaştırma daha anlamlıdır."
         )
 
