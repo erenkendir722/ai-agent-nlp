@@ -133,7 +133,39 @@ def test_uygunluk_cikarilmamis_kayit_isaretlenir(ajan):
     bilmediği bir şeyi biliyormuş gibi sunmaması için işaretlenirler."""
     sonuc = ajan.degerlendir(PROFIL, _kampanya(uygunluk=None))
     assert sonuc.veri_eksik is True
-    assert any("yayınlanmadı" in g.aciklama for g in sonuc.gerekceler)
+    assert any(
+        "doğrulanmadı" in g.aciklama or "doğrulanamadı" in g.aciklama
+        for g in sonuc.gerekceler
+    )
+
+
+def test_uygunluk_eksigi_kaynagi_suclamaz(ajan):
+    """Eksik kısıt, bankanın YAYINLAMADIĞI iddiasına çevrilemez.
+
+    `veri_eksik` iki durumu birden kapsıyor — banka hiç yazmamış olabilir ya
+    da bizim çıkarımımız kaçırmış olabilir — ve ikisini ayırt edemiyor.
+    Açıklamanın birini seçmesi, elimizde olmayan bir bilgiyi varmış gibi
+    sunmaktır; sistemin tüm iddiası bunun tersi.
+
+    25 Ağustos'ta bu İKİ kez yapıldı: önce metin «veri kaynağında
+    yayınlanmadığı için» diye değiştirildi (`5afcac8`), sonra kırılan test
+    o metni dayatacak şekilde güncellendi (`2edf0b9`) — yani bilinçli bir
+    tercihti, dalgınlık değil. Kaptan kararıyla geri alındı: doluluk oranımız
+    %26, dolayısıyla çıkarılamamış kısıtın çoğu bankanın suskunluğu değil
+    bizim sınırımız. Bu test o yolu bir daha sessizce açtırmıyor.
+    """
+    sonuc = ajan.degerlendir(PROFIL, _kampanya(uygunluk=None))
+    aciklamalar = " ".join(g.aciklama for g in sonuc.gerekceler).lower()
+
+    for suclayici in ("yayınlanmadığı", "yayımlanmadığı", "paylaşılmadığı"):
+        assert suclayici not in aciklamalar, (
+            f"Açıklama kaynağı suçluyor ({suclayici!r}): kısıtın neden eksik "
+            f"olduğunu bilmiyoruz, yalnız eksik olduğunu biliyoruz."
+        )
+
+    # İki olasılığın ikisi de anılmalı — belirsizlik gizlenmemeli.
+    assert "belirtilmemiş" in aciklamalar
+    assert "çıkarılamamış" in aciklamalar
 
 
 def test_oran_yoksa_maliyet_uydurulmaz(ajan):

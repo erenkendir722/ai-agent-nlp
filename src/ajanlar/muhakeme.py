@@ -254,10 +254,19 @@ class MuhakemeAjani:
         veri_eksik = kampanya.uygunluk is None or not kampanya.uygunluk.kisit_var_mi()
         if veri_eksik:
             gerekceler.append(
+                # Bu bayrak İKİ AYRI durumu birden kapsar ve ikisini
+                # ayırt edemez: banka kısıtı hiç yazmamış olabilir, ya da
+                # yazmış ama bizim çıkarımımız kaçırmış olabilir. Metin
+                # ikisini de söylemek zorunda — birini seçmek, sistemin
+                # bilmediği bir şeyi biliyormuş gibi sunması olur.
+                # (25 Ağu: burada bir ara «veri kaynağında yayınlanmadığı
+                # için» yazıyordu; o, kanıtımız olmayan bir iddiaydı.)
                 Gerekce(
                     "uygunluk",
                     True,
-                    "Veri kaynağında yayınlanmadığı için kısıtlar doğrulanamadı.",
+                    "Uygunluk kısıtı bu kayıtta yok — kampanya metninde "
+                    "belirtilmemiş ya da çıkarılamamış olabilir; kısıtlar "
+                    "doğrulanmadı.",
                 )
             )
 
