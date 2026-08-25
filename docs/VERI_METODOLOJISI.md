@@ -12,14 +12,25 @@ adımları"* başlıklarına karşılık gelir.
 Veri seti, BDDK'nın resmî listesindeki katılım bankalarının **tümünü** içerir:
 <https://www.bddk.org.tr/Kurulus/Liste/77>
 
-**BDDK listesi manuel olarak alınmıştır.** BDDK sitesi `robots.txt` ile otomatik
-erişimi engellemektedir. Şartname 5.1 *"manuel veri toplama teknikleri"*
-kullanımına açıkça izin verdiği için liste tarayıcıdan elle çıkarılmış,
-`data/banks.yaml` dosyasına işlenmiştir.
+**BDDK listesi manuel olarak alınmıştır.** Şartname 5.1 *"manuel veri toplama
+teknikleri"* kullanımına açıkça izin verdiği için liste tarayıcıdan elle
+çıkarılmış, `data/banks.yaml` dosyasına işlenmiştir. Ekran görüntüsü:
+`docs/kanit/bddk-liste.png`.
 
-Bu, bir kısıtın etrafından dolaşmak değil, kısıta uymaktır: bir sitenin
-`robots.txt` dosyası otomatik erişimi reddediyorsa, o site otomatik olarak
-taranmaz.
+**24 Ağustos 2026 ölçümü — gerekçe düzeltildi.** Burada daha önce *"BDDK sitesi
+robots.txt ile otomatik erişimi engellemektedir"* yazıyordu; ölçüm bunu
+doğrulamadı. Gerçek durum iki gözlemden çıkıyor: (1) toplayıcı `bddk.org.tr`
+alan adına **bağlanamıyor**, çünkü TLS sertifika zinciri varsayılan sertifika
+deposuyla doğrulanamıyor (`unable to get local issuer certificate`) — kanıt
+`docs/kanit/ROBOTS_KONTROL_GUNLUGU.md`, BDDK satırı; (2) tek seferlik tanı
+denemesinde (sertifika doğrulaması kapatılarak, yalnız bu soruyu yanıtlamak
+için) `/robots.txt` **HTTP 404** döndü — sitenin robots.txt dosyası yok, bir
+reddetme de yok. Toplayıcı kodu sertifika doğrulamasını asla kapatmaz.
+
+Karar değişmedi, gerekçesi düzeltildi: **BDDK sitesi otomatik taranmıyor.** Bir
+sitenin `robots.txt` dosyası otomatik erişimi reddediyorsa ya da site güvenli
+biçimde çekilemiyorsa, o site otomatik olarak taranmaz — kısıtın etrafından
+dolaşılmaz.
 
 ### 1.2 Faaliyette olmayan bankalar da kayıt defterinde
 
@@ -63,6 +74,11 @@ banka eklemek 8 satır YAML demektir.
 | Derinlik | Seed URL'den en fazla 2 seviye |
 
 `robots.txt` okunamadığında sayfa **çekilmez** — temkinli taraf seçilir.
+
+Bu tablo bir beyandır; **kanıtı** `docs/kanit/VERI_TOPLAMA_ETIGI.md` dosyasıdır:
+alan adı başına robots.txt kararları, ağa gerçekten gönderilen User-Agent
+başlığı ve korpusun KVKK taraması orada, yeniden üretilebilir hâlde durur
+(`make kanit`).
 
 ### 2.2 URL keşfi
 

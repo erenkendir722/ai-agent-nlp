@@ -162,6 +162,16 @@ def sayi_ayristir(parca: str) -> float | None:
 _YUZDE_SOZCUGU = re.compile(r"y[üu]zde", re.IGNORECASE)
 
 
+_BINDE = re.compile(r"\bbinde\s+([\d.,]+|\w+)", re.IGNORECASE)
+"""«binde 5», «binde beş» — bindelik oran. Yüzdeye çevrilir: binde 5 = %0,5."""
+
+_YAZIYLA_SAYI = {
+    "bir": 1.0, "iki": 2.0, "uc": 3.0, "dort": 4.0, "bes": 5.0,
+    "alti": 6.0, "yedi": 7.0, "sekiz": 8.0, "dokuz": 9.0, "on": 10.0,
+}
+"""Bindelik oranlarda sayı yazıyla da yazılıyor («binde beş»); derlemde 9 kayıt."""
+
+
 def oran_ayristir(parca: str) -> float | None:
     """Yüzde ifadesini sayıya çevirir. Tüm yazım varyantlarını kabul eder.
 
@@ -175,9 +185,33 @@ def oran_ayristir(parca: str) -> float | None:
     2.05
     >>> oran_ayristir("aylık %1,89'dan başlayan")
     1.89
+
+    BİNDE — Türk bankacılığının tahsis ücretinde standart yazımı. Yüzde
+    işareti hiç geçmez, oran bindelik olarak verilir:
+
+    >>> oran_ayristir("binde 5")
+    0.5
+    >>> oran_ayristir("binde 5'i oranındadır")
+    0.5
+    >>> oran_ayristir("binde beş")
+    0.5
+    >>> oran_ayristir("vergiler hariç finansman tutarının binde 5'i")
+    0.5
     """
     if not parca:
         return None
+
+    # 25 Ağustos ölçümü: "binde" derlemde 62 kayıtta geçiyor (22'si "binde 5")
+    # ve hiçbiri okunamıyordu. `tahsis_ucreti` bu yüzden altın sette dolu olan
+    # hücreleri boş bırakıyordu; altın set haklıydı, ayrıştırıcı sağırdı.
+    # Yüzdeden ÖNCE bakılır: "binde 5" ifadesinde yüzde işareti yoktur.
+    if (bindelik := _BINDE.search(parca)) is not None:
+        ham = bindelik.group(1)
+        deger = _YAZIYLA_SAYI.get(arama_anahtari(ham)) if not ham[0].isdigit() else sayi_ayristir(ham)
+        if deger is not None and 0.0 <= deger <= 1000.0:
+            return deger / 10.0
+        return None
+
     temiz = _YUZDE_SOZCUGU.sub("%", parca)
     if "%" not in temiz and "٪" not in temiz:
         return None
@@ -363,7 +397,10 @@ MASRAF_SOZCUKLERI = ("masraf", "ucret", "komisyon", "tahsis", "dosya parasi")
 masrafsızlık beyanı DEĞİLDİR — 14 Ağustos'ta LLM, masraf sözcüğü hiç geçmeyen
 bir metinden `masrafsiz_mi=True` uydurdu (şartname madde 11, C Bankası)."""
 
-FINANSMAN_MASRAFI = ("masraf", "tahsis", "dosya parasi", "ekspertiz")
+FINANSMAN_MASRAFI = (
+    "dosya masraf", "finansman masraf", "kredi masraf",
+    "tahsis", "dosya parasi", "ekspertiz", "ipotek tesis",
+)
 """`masrafsiz_mi` ALANININ konusu: finansmanın maliyeti.
 
 `MASRAF_SOZCUKLERI` çıplak "ucret"i de içeriyor ve o fazla geniş: banka
@@ -393,8 +430,30 @@ FINANSMAN_DISI_UCRET = (
     # "temel bankacılık işlemlerinden de ücretsiz yararlanın" — hesap/kart
     # hizmetleri paketi, finansman masrafı değil.
     "temel bankacilik",
+    # 25 Ağustos ölçümü (altın set 98 kayıt): `masrafsiz_mi` 16 yanlış pozitif
+    # üretti ve hepsi aynı biçimdeydi — sayfada finansmanla ilgisi olmayan bir
+    # ücretsizlik geçiyordu. Kanıt cümleleriyle birlikte:
+    #   "Katılım SMS'i ücretsiz olup..."          -> sms
+    #   "Ücretsiz Lounge Hizmeti"                  -> lounge
+    #   "ATM'lerden ücretsiz olarak para çekme"    -> para cekme
+    #   "hediye altın ... ücretsiz gönderilir"     -> kargo/gonderil
+    #   "- Masrafsız Banka ve Kredi Kartı"         -> kart
+    "sms", "lounge", "para cekme", "kargo", "gonderil",
+    "kredi karti", "banka karti", "kart dunyasi",
 )
 """Ücretin finansmana DEĞİL başka bir hizmete ait olduğunu gösteren imler."""
+
+FINANSMAN_URUNU = (
+    "finansman", "ihtiyac", "konut", "tasit", "arac", "dosya", "tahsis", "ekspertiz",
+)
+"""Cümlenin finansman ürününden söz ettiğini gösteren imler.
+
+`masrafsiz_mi` sıfat yolunun kapısı. «Masrafsız» tek başına neyin masrafsız
+olduğunu söylemez: 25 Ağustos ölçümünde "Bankan Mobilse İşlemlerin Masrafsız!",
+"Masraf yok, kazanç var" ve "VKart dünyasında masraf yok!" cümleleri
+`masrafsiz_mi=True` üretiyordu. Üçü de doğru cümle, üçü de finansman hakkında
+DEĞİL. Kılavuzun insana dayattığı ayrımın (finansmanın tahsis/dosya masrafı)
+kural karşılığı budur."""
 
 _KAPSAM_DISI = re.compile(
     r"\bicermemekte(?:dir)?\b|\bicermez\b|\bdahil degil|\bharic(?:tir)?\b"
@@ -438,11 +497,24 @@ _BANKA_KARSILIYOR = "banka tarafindan karsilan"
 masraf müşteriye yansımıyor. Şartname madde 11, B Bankası bunu «Ekspertiz
 ücretsiz» olarak tablolar."""
 
+_UCRET_MIKTARI = re.compile(
+    r"%\s*\d|\d\s*%|\bbinde\s+\d|\byuzde\s+\d|\d[\d.,]*\s*(?:tl|₺)\b"
+)
+"""Ücretin miktarını bildiren ifade — oran, binde ya da tutar."""
+
 _MASRAFLI_YUKLEM = re.compile(
     r"\balin(?:ir|maktadir|mistir)\b"
     r"|\btahsil edil(?:ir|mektedir)\b"
     r"|\buygulan(?:ir|maktadir)\b"
     r"|\byansitil(?:ir|maktadir)\b"
+    # 25 Ağustos: 9 ıskalama tek kalıptaydı — "Tahsis ücreti, finansman
+    # tutarının %0,5'i KADARDIR". Ücretin varlığını bildiriyor ama yüklem
+    # listesinde yoktu, alan `None` kalıyordu (etiketçiler doğru şekilde
+    # `hayır` yazmıştı).
+    r"|\bkadardir\b"
+    r"|\boranindadir\b"
+    r"|\btahsil edilecektir\b"
+    r"|\balinacaktir\b"
 )
 
 
@@ -512,14 +584,23 @@ def masrafsiz_mi(parca: str) -> bool | None:
     ):
         return None
 
-    # Sıfat biçimi ("masrafsız") kendi başına yeter, yüklem aramaya gerek yok.
+    # Sıfat biçimi ("masrafsız") yüklem aramaya gerek bırakmaz, ama NEYİN
+    # masrafsız olduğunu söylemez — finansman bağlamı ayrıca aranır.
     if _MASRAFSIZ_SIFAT.search(anahtar) or any(k in anahtar for k in _MASRAFSIZ_KALIPLAR):
-        return True
+        if any(im in anahtar for im in FINANSMAN_URUNU):
+            return True
+        return None
 
     # Buradan sonrası bir MASRAF cümlesi olmayı şart koşar. Bu kapı olmadan
     # "kampanya sona ermemektedir" gibi alakasız bir olumsuzlama masrafsızlık
     # sanılırdı.
     if not any(sozcuk in anahtar for sozcuk in MASRAF_SOZCUKLERI):
+        return None
+
+    # Cümle masraftan söz ediyor ama HANGİ ürünün masrafı? Finansman bağlamı
+    # yoksa beyan bu alana yazılamaz — "Masraf yok, kazanç var" bir kart
+    # kampanyası sloganıdır, finansman masrafsızlığı değil.
+    if not any(im in anahtar for im in FINANSMAN_URUNU):
         return None
 
     if _BANKA_KARSILIYOR in anahtar:
@@ -532,6 +613,15 @@ def masrafsiz_mi(parca: str) -> bool | None:
     if _OLUMSUZ_YUKLEM.search(anahtar):
         return True
     if _MASRAFLI_YUKLEM.search(anahtar):
+        return False
+
+    # ÜCRETİN MİKTARINI bildirmek, ücretin VARLIĞINI bildirmektir.
+    # "Finansman tahsis ücreti finansman tutarının %0,5'dir" cümlesinde
+    # yüklem ne olumsuz ne de "alınır" ailesinden; sadece bir orandır.
+    # 25 Ağustos ölçümünde bu kalıp 6 kayıtta alanı boş bırakıyordu.
+    # Olumsuzlama kapısı YUKARIDA olduğu için "dosya masrafı alınmaz"
+    # buraya hiç düşmez.
+    if _UCRET_MIKTARI.search(anahtar):
         return False
     return None
 

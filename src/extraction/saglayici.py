@@ -54,6 +54,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import sys
 from typing import Any, Protocol
 
 log = logging.getLogger(__name__)
@@ -266,6 +267,13 @@ def _dogrula() -> int:
     yetmez: modele, metinde KARŞILIĞI OLMAYAN bir enum değerini üretmesi
     dayatılır. Şema gerçekten uygulanıyorsa model başka bir şey YAZAMAZ.
     """
+    # Windows konsolu cp1254; aşağıdaki ✅/❌ işaretleri orada
+    # UnicodeEncodeError fırlatıyordu — sınama GEÇTİĞİ hâlde son satırda
+    # yığın izi basıyordu. Yalnız bu CLI yolunda yapılır: modül içe
+    # aktarıldığında (16 işçili çıkarım, Streamlit) stdout'a dokunulmaz.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     tuzak = {
         "type": "object",
         "properties": {"kampanya_turu": {"type": "string", "enum": ["ZZZ_MOR", "ZZZ_YESIL"]}},

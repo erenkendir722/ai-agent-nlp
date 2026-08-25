@@ -33,7 +33,11 @@ from __future__ import annotations
 ALAN_TANIMLARI: dict[str, str] = {
     "kar_payi_orani": (
         "kampanyanın kâr payı oranı (katılım bankacılığında faiz yerine geçen oran). "
-        "Vergi, komisyon veya indirim yüzdesi DEĞİLDİR."
+        "Vergi, komisyon veya indirim yüzdesi DEĞİLDİR. "
+        "SIFIR GEÇERLİ BİR DEĞERDİR ve boş hücreden farklıdır: «vade farksız», "
+        "«vade farkı yok/olmadan», «kâr payı yok/alınmaz» ifadeleri oranın SIFIR "
+        "olduğunu söyler — katılım bankacılığında vade farkının olmaması, kâr "
+        "payının alınmaması demektir. Bu ifadeler oran beyanı sayılır."
     ),
     "finansman_tutari_max": (
         "bu kampanyada kullandırılabilecek AZAMİ finansman tutarı. "

@@ -1,8 +1,8 @@
-.PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar temiz temiz-db docker-up docker-down \
+.PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar lisanslar-teyit temiz temiz-db docker-up docker-down \
         birim-goc ablasyon eval-gorulmemis \
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
-        suresi-gecenleri-ele
+        suresi-gecenleri-ele kanit kanit-robots kanit-kvkk
 
 PYTHON ?= .venv/bin/python
 STREAMLIT ?= .venv/bin/streamlit
@@ -76,9 +76,22 @@ veri-kalitesi:  ## veri kalitesi denetimi -> docs/VERI_KALITESI.md (kati=1 ile e
 suresi-gecenleri-ele:  ## suresi gecmis kampanyalari sil (uygula=1 olmadan yalniz gosterir)
 	$(PYTHON) tools/suresi_gecenleri_ele.py $(if $(uygula),--uygula)
 
-lisanslar:  ## bağımlılık lisans raporu (şartname 5.10 kanıtı)
+# --- Veri toplama etigi kanitlari (G-14) — docs/kanit/VERI_TOPLAMA_ETIGI.md ---
+kanit: kanit-robots kanit-kvkk  ## veri toplama etigi kanitlarini yenile (robots + KVKK)
+
+kanit-robots:  ## robots.txt kontrol gunlugu -> docs/kanit/ (ag gerekir)
+	$(PYTHON) tools/robots_kanit.py
+
+kanit-kvkk:  ## KVKK kisisel veri taramasi -> docs/kanit/ (kati=1 ile supheli bulguda kirilir)
+	$(PYTHON) tools/kvkk_taramasi.py $(if $(kati),--kati)
+
+lisanslar:  ## bağımlılık + model lisans raporu (şartname 5.10 kanıtı)
 	$(PYTHON) -m eval.lisanslar
 	@echo "✅ docs/LISANSLAR.md güncellendi"
+
+lisanslar-teyit:  ## aynı rapor + model lisanslarını Hugging Face'ten teyit et (ağ gerekir)
+	$(PYTHON) -m eval.lisanslar --model-teyit
+	@echo "✅ docs/LISANSLAR.md + docs/kanit/model-lisanslari.json güncellendi"
 
 ablasyon:  ## ATOMİK ablasyon: üç yapılandırma tek süreçte, tek kod izi (hizli=1 ile LLM'siz)
 	$(PYTHON) -m eval.ablasyon $(if $(hizli),--yalniz-kural)
@@ -123,7 +136,7 @@ altin-ornekle:  ## katmanlı örneklem -> kişi başı CSV + okuma kâğıdı
 	@$(PYTHON) tools/altin_set.py ornekle --adet $(or $(adet),60)
 
 altin-genislet:  ## zayıf alanlar için ek örneklem planı (hedef=20 ile hedef N)
-	@$(PYTHON) tools/altin_set.py genislet --hedef-n $(or $(hedef),20)
+	@$(PYTHON) tools/altin_set.py genislet --hedef-n $(or $(hedef),20) $(if $(uygula),--uygula)
 
 altin-denetle:  ## KENDİ etiketlerini pushlamadan önce kontrol et (ad=Esra)
 	@$(PYTHON) tools/altin_set.py denetle $(if $(ad),--ad $(ad))

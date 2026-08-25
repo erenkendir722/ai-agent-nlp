@@ -210,6 +210,22 @@ class YuklemAjani:
             return None
 
         if duzeltme:
+            # DÜZELTMENİN KENDİ DENETİMİ DENENDİ VE GERİ ALINDI (24 Ağu).
+            #
+            # Ajanın önerisini de aynı yüklem denetiminden geçirmek mantıklı
+            # görünüyordu: kural katmanına uygulanan kanıt çıtası ajanın kendi
+            # önerisi için de geçerli olmalı. K=3 ölçüm aksini söyledi:
+            #
+            #     öz-denetim yok : makro-F1 0,779  yayılım 0,004
+            #     öz-denetim var : makro-F1 0,777  yayılım 0,026
+            #
+            # Kazanç yok, ama üçüncü bir LLM çağrısı üçüncü bir gürültü
+            # kaynağı: yayılım altı katına çıktı ve `masrafsiz_mi` 0,714'ten
+            # 0,648'e indi. Deterministik olmayan bir serviste her ek çağrı
+            # ölçümü daha da oynak yapıyor.
+            #
+            # Düzeltme zaten kanıtsız kabul edilmiyor: `_duzelt` döndürdüğü
+            # ifadeyi ham metinde birebir arıyor ve bulamazsa None dönüyor.
             self.duzeltilen += 1
             return duzeltme
 

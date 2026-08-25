@@ -194,9 +194,54 @@ hâlinde yazılıyor çünkü bankalar aynı şeyi farklı çekimlerle söylüyo
 (Türkiye Finans). Ek'e bağlı yazılan veto ikincisini kaçırıyordu."""
 
 ORNEK_TABLO = ("baz alinarak", "ornek odeme")
+
+MALIYET_TABLOSU = ("toplam maliyet",)
+"""Maliyet tablosunun TAHSİS sütunu — yalnız `tahsis_ucreti` için veto.
+
+    Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | ...
+     12  |  %4,82    |   157,50 ₺    |        ...
+
+Hücredeki tutar, o örnek vade/tutar bileşimi için HESAPLANMIŞ bir rakamdır;
+kampanyanın tahsis ücreti aynı sayfada düz yazıyla «finansman tutarının %0,5'i»
+olarak duruyor. Derlemde 15-17 kayıtta geçiyor, yani örüntü.
+
+ORTAK TABANA KONULAMAZ: aynı tablonun KÂR ORANI sütunu meşrudur ve kılavuz
+oradan müşteri lehine ucu almayı söyler
+(`tests/test_kural.py::TestTabloKolonAyrimi`). Tabloyu bütün olarak elemek
+doğru sayıyı da elerdi."""
 """«100.000 TL baz alınarak oluşturulan örnek ödeme tablosu».
 
 Tablodaki her sayı temsilîdir; taban tutar da, satırlardaki oranlar da."""
+
+DILIM_KOSULU = (
+    "olmasi durumunda",
+    "araligindaki",
+    "araliginda olan",
+    "araclar icin",
+    "ve uzeri",
+    "ve altinda olan",
+    "kadar olan finansman",
+    # BAŞKA ÜRÜNÜN limiti — finansmanın değil. "Anlık Transfer (FAST)
+    # işlemlerinde limit ... işlem başına 100.000 TL'dir" cümlesindeki sayı
+    # Merkez Bankası'nın transfer tavanıdır.
+    "anlik transfer", "fast islem", "islem basina",
+    # YAYIMLANMIŞ ORAN TABLOSUNUN referans tutarı: "Web sitemizdeki konut
+    # finansmanı oranlarımız 100.000 TL finansman tutarı ile sınırlıdır" —
+    # oranların hangi tutar için geçerli olduğunu söyler, azami tutarı değil.
+    "oranlarimiz",
+)
+"""Bankanın DİLİM tablosunun düz yazı hâli — sınır değeri, kampanya limiti değil.
+
+    «Finansman tutarı 125.000 TL'ye kadar OLMASI DURUMUNDA maksimum vade 36 ay»
+
+Cümle bir koşul kuruyor: şu aralıktaysan şu vade. 125.000 bir üst limit değil,
+dilimin sınırı. 25 Ağustos ölçümü (altın set 98 kayıt): `finansman_tutari_max`
+yanlış pozitiflerinin BEŞİ tam bu cümleden geliyordu ve beşi de aynı sayıydı —
+bankanın standart ürün tablosu her sayfada tekrarlandığı için.
+
+Dilim tablosunun KENDİSİ ayrıca ayrıştırılıyor (`dilim_tablosundan_azami_finansman`)
+ve kılavuzun hesabını yapıyor; bu veto yalnız tek tek sayı yakalayan kuralı
+tablodan uzak tutar."""
 
 MEVDUAT_URUNU = (
     "hesap bakiyesi",
@@ -311,7 +356,13 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # Dışlayıcı SÖZCÜK olarak eklemek işe yaramıyordu: bağlam sözcüğü
         # "tutar" ifadelerin kendi içinde geçiyor ve sayıya daha yakın kalıp
         # mesafe kuralını her seferinde kazanıyordu.
-        veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
+        #
+        # `DILIM_KOSULU` YALNIZ BURADA, ortak tabanda DEĞİL. Dilim tablosunda
+        # tutarlar sınır değeridir ama VADELER gerçektir: «125.000 TL'ye kadar
+        # olan finansmanlarda 36 aya kadar» cümlesinden 36 çıkarılmalıdır.
+        # Ortak tabana konduğunda `vade_ay_max` de susuyordu
+        # (`tests/test_kural.py::TestVadeBaglami::test_en_yuksek_vade_secilir`).
+        veto_ifadeleri=SAYISAL_ALAN_VETOLARI + DILIM_KOSULU,
         secim="en_yuksek",
         taban_guven=0.88,
         # Üst sınır YOK: kurumsal finansmanda yüz milyonlu limitler gerçektir.
@@ -372,16 +423,25 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # Son ikisi "komisyon" bağlam sözcüğüyle geldiği için sözcüğü
         # kaldırmak çözüm değil (gerçek tahsis ücretlerini de elerdi);
         # ayırt edici olan hacim/ATM/POS bağlamıdır.
+        # ÇIPLAK "finansman" DIŞLAYICI OLAMAZ — alanın kendi deyimini eliyordu.
+        # Bankaların tahsis ücretini yazma biçimi birebir şudur:
+        #     "Tahsis ücreti, FİNANSMAN TUTARININ %0,5'i kadardır"
+        # 25 Ağustos ölçümü (altın set 98 kayıt): alanın 7 ıskalamasının 6'sı
+        # bu cümleydi. Dışlayıcının koruduğu vaka ise "5.000.000 TL'ye KADAR
+        # FİNANSMAN. Dosya masrafı alınmaz." — orada kalıp "kadar finansman"
+        # olduğu için daraltmak korumayı bozmuyor.
         dislayici_sozcukler=(
-            "finansman", "limit", "odul", "hediye", "iade",
+            "kadar finansman", "limit", "odul", "hediye", "iade",
             "islem hacmi", "para cek", "atm", "bloke",
         ),
+        # `MALIYET_TABLOSU` yalnız burada — gerekçesi sabitin yanında.
         # Ortak taban burada ÖLÇÜMDE nötr (0,909 sabit) ama yine de bağlı:
         # hesap makinesi çıktısı bir tahsis ücreti satırı da üretebilir ve
         # aynı bağlam türünü bir alanda eleyip diğerinde geçirmek, bugün
         # düzeltilen tutarsızlığın ta kendisiydi. Nötr olması zarar değil;
         # kapsam dışı bırakmak ise bilinen bir hataya açık kapı bırakmaktır.
         veto_ifadeleri=SAYISAL_ALAN_VETOLARI
+        + MALIYET_TABLOSU
         + (
             # "PTT ATM'sinden komisyon ÖDEMEDEN 10.000 TL'ye kadar para
             # çekebilir" — olumsuzlama cümlesi; buradaki tutar ücret değil,
@@ -1173,6 +1233,27 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
     if (masrafsiz := _masrafsizlik(metin, url, cekim_tarihi)) is not None:
         sonuc["masrafsiz_mi"] = masrafsiz
 
+    # SIFIR KÂR PAYI BEYANI — sayısal kural bunu YAPISAL OLARAK bulamaz.
+    #
+    # `KuralTanimi.sifir_gecerli` docstring'i «"Vade farksız" / "0 kâr payı"
+    # kampanyalarında oran gerçekten sıfırdır» diyor ve bayrak açık. Ama o
+    # bayrak yalnız SAYIYI aralık denetiminden muaf tutar; "vade farksız"
+    # ifadesinde ortada sayı yoktur, `D_ORAN` hiç eşleşmez. Niyet yazılmış,
+    # uygulaması eksik kalmıştı.
+    #
+    # ÖLÇÜLDÜ: altın setin `kar_payi_orani=0` etiketli 3 kaydının 2'si tam
+    # bu durumda (üç ayrı etiketleyici bağımsız olarak 0 yazmış). Korpusta
+    # ifade **99/590 kayıtta** geçiyor, biri birebir «Kâr payı yok. ... vade
+    # farksız destek» diyor — yani bu genel bir örüntü, birkaç kayda özgü değil.
+    #
+    # SAYISAL ORANA TABİDİR: yalnız kural katmanı sayısal bir oran bulamadığında
+    # devreye girer. "Vade farksız 6 taksit" bir sayfada geçip aynı sayfa ayrıca
+    # %2,05 ilan ediyorsa kampanyanın oranı %2,05'tir; ifade orada bir alt
+    # teklifi anlatıyordur.
+    if "kar_payi_orani" not in sonuc:
+        if (sifir := _vade_farksiz_orani(metin, url, cekim_tarihi)) is not None:
+            sonuc["kar_payi_orani"] = sifir
+
     # Dilim tablosu, tek tek sayı yakalayan regex kuralından DAHA GÜÇLÜ kanıttır:
     # tabloyu bütün olarak okur ve kılavuzun insana yaptırdığı hesabı (değer ×
     # oran, en büyüğü) yapar. Bu yüzden ürettiğinde `finansman_tutari_max`
@@ -1200,33 +1281,126 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
     return sonuc
 
 
+_VADE_FARKSIZ = re.compile(
+    r"[^.!?\n]{0,80}(?:vade\s*fark[sı]?[ıi]?z"
+    r"|vade\s*fark[ıi]\s*(?:olmadan|yok|al[ıi]nma)"
+    r"|k[âa]r\s*pay[ıi]\s*(?:yok|al[ıi]nma))[^.!?\n]{0,80}",
+    re.IGNORECASE,
+)
+"""Sıfır kâr payı beyanı — kanıt cümlesiyle birlikte yakalanır.
+
+Üç yazım da aynı şeyi söyler ve üçü de sahada geçiyor: «vade farksız»,
+«vade farkı olmadan», «kâr payı yok». Katılım bankacılığında vade farkının
+olmaması, kâr payının sıfır olması demektir."""
+
+
+def _vade_farksiz_orani(metin: str, url: str, cekim_tarihi: datetime) -> Alan | None:
+    """«Vade farksız» beyanından `kar_payi_orani = 0` üretir.
+
+    Kanıt, ifadenin geçtiği cümledir — `ham_ifade` olarak saklanır ve
+    eleştirmen ajanının birebir metin denetiminden geçer. Yani bu kural da
+    kanıtsız değer üretmez; ürettiği kanıt sayı değil, cümledir.
+
+    Güven 0,80: sayısal bir orandan (0,93) düşük, çünkü ifadeden çıkarım
+    yapılıyor. LLM aynı sonuca varırsa uzlaştırıcı hibrit'e yükseltir.
+    """
+    eslesme = _VADE_FARKSIZ.search(metin)
+    if eslesme is None:
+        return None
+    cumle = " ".join(eslesme.group(0).split())
+    return Alan(
+        deger=0.0,
+        ham_ifade=cumle[:120],
+        kaynak=Kaynak(
+            url=url,
+            cekim_tarihi=cekim_tarihi,
+            alinti=cumle[:280],
+            karakter_baslangic=eslesme.start(),
+            karakter_bitis=eslesme.end(),
+        ),
+        guven=0.80,
+        yontem="kural",
+        birim=birim_belirle(cumle, "kar_payi_orani"),
+    )
+
+
 _MASRAF_CUMLE = re.compile(r"[^.!?\n]*(?:masraf|tahsis|komisyon|ücret)[^.!?\n]*[.!?\n]?", re.IGNORECASE)
 
 
 def _masrafsizlik(metin: str, url: str, cekim_tarihi: datetime) -> Alan | None:
-    """Masrafsızlık beyanı — cümle düzeyinde aranır, kanıt cümlesi saklanır."""
+    """Masrafsızlık beyanı — cümle düzeyinde aranır, kanıt cümlesi saklanır.
+
+    ÜCRETİ VAR DİYEN CÜMLE, YOK DİYENİ EZER. Önce ilk karar veren cümlede
+    duruluyordu; sayfanın üstünde geçen bir «masrafsız» iddiası, altındaki
+    açık «tahsis ücreti %0,5» beyanını gölgeliyordu. 25 Ağustos ölçümünde
+    altın set bu kayıtlara `hayır` diyordu ve haklıydı: bir masraf kalemi
+    açıkça duyurulmuşsa finansman masrafsız değildir — başka bir kalemin
+    (çoğu kez dosya masrafının) alınmaması bunu değiştirmez.
+    """
+    ilk_olumlu: tuple[str, int, int] | None = None
     for eslesme in _MASRAF_CUMLE.finditer(metin):
         cumle = eslesme.group(0)
         karar = masrafsiz_mi(cumle)
         if karar is None:
             continue
-        return Alan(
-            deger=karar,
-            ham_ifade=cumle.strip()[:120],
-            kaynak=Kaynak(
-                url=url,
-                cekim_tarihi=cekim_tarihi,
-                alinti=cumle.strip(),
-                karakter_baslangic=eslesme.start(),
-                karakter_bitis=eslesme.end(),
-            ),
-            guven=0.91,
-            yontem="kural",
+        if karar:
+            if ilk_olumlu is None:
+                ilk_olumlu = (cumle, eslesme.start(), eslesme.end())
+            continue
+        return _masrafsizlik_alani(
+            False, cumle, eslesme.start(), eslesme.end(), url, cekim_tarihi
         )
+    if ilk_olumlu is not None:
+        return _masrafsizlik_alani(True, *ilk_olumlu, url, cekim_tarihi)
     return None
 
 
-__all__ = ["KURALLAR", "KuralTanimi", "kurallarla_cikar"]
+def _masrafsizlik_alani(
+    karar: bool, cumle: str, bas: int, bit: int, url: str, cekim_tarihi: datetime
+) -> Alan:
+    return Alan(
+        deger=karar,
+        ham_ifade=cumle.strip()[:120],
+        kaynak=Kaynak(
+            url=url,
+            cekim_tarihi=cekim_tarihi,
+            alinti=cumle.strip(),
+            karakter_baslangic=bas,
+            karakter_bitis=bit,
+        ),
+        guven=0.91,
+        yontem="kural",
+    )
+
+
+def dilim_turevi_mi(alan_adi: str, alan: Alan, metin: str) -> bool:
+    """Bu değer, dilim tablosunun BÜTÜNÜNDEN mi hesaplandı?
+
+    25 Ağustos ölçümü (altın set 98 kayıt): ayrıştırıcı altı taşıt kaydında
+    doğru cevabı (400.000 = max(değer × oran)) üretiyor, ama dördü sonuçta
+    `None` olarak kaydediliyordu. Değer aşağıdaki iki kapıda eleniyordu:
+
+        makullük kapısı  — kanıtın çevresindeki pencereye bakar
+        yüklem kapısı    — "metin bu sayıyı bu alana yüklüyor mu" diye sorar
+
+    İkisi de CÜMLE ölçeğinde çalışır; dilim değeri ise tablonun tamamı
+    üzerinden yapılan bir hesaptır ve hiçbir tek cümlede geçmez. Pencerede
+    gördükleri şey başka dilimlerin sayılarıdır, o yüzden ikisi de doğru
+    cevabı reddeder. Kapıların kusuru değil, uygulanamayacakları bir değer
+    sınıfına uygulanmalarıdır — `KuralTanimi` tabanlı tek sayı yakalayan
+    kurallarda ikisi de doğru çalışmaya devam eder.
+
+    Yeniden hesap ucuzdur (saf regex) ve şemaya alan eklemeden ayrımı
+    kurar: değer de kanıt da ayrıştırıcının ürettiğiyle birebir aynıysa,
+    o değer tablo türevidir.
+    """
+    if alan_adi != "finansman_tutari_max" or alan.deger is None:
+        return False
+    dilim = dilim_tablosundan_azami_finansman(metin)
+    return dilim.tutar == alan.deger and bool(dilim.kanit) and dilim.kanit == alan.ham_ifade
+
+
+__all__ = ["KURALLAR", "KuralTanimi", "kurallarla_cikar", "dilim_turevi_mi"]
 
 
 # ---------------------------------------------------------------------------

@@ -105,8 +105,10 @@ denetlenecek metni doğru seçmektir (`Cevap.dogrulanacak_metin`).
 hedefliyor. Yalnız Apache 2.0 / MIT (Qwen3.5, Qwen3.6). EVREN'deki `llm-large`
 ve `llm-fast` ikisi de Qwen ailesi — yasağa takılmıyor. `vlm`, `guard`, `router`
 ve `rerank` uçlarının modeli DOĞRULANMADI; bu senaryoda ihtiyaç da yok, ama
-kullanılacaksa önce lisansı teyit et. Yeni bağımlılık eklendiğinde
-`make lisanslar` çalıştır.
+kullanılacaksa önce lisansı teyit et. **EVREN'in jenerik `embed` ucu da bu
+sınıfta — gömme için `bge-m3-embed` ya da yerel `BAAI/bge-m3` (MIT) kullan.**
+Yeni bağımlılık eklendiğinde `make lisanslar`, yeni model eklendiğinde
+`make lisanslar-teyit` çalıştır (lisansı HF'ten çeker, tutmazsa kırılır).
 
 **Çıkarım EVREN'de koşuyor (24 Ağu).** T.C. Cumhurbaşkanlığı SSB'nin yarışmaya
 tahsis ettiği servis. `llm-large` = **`Qwen/Qwen3.5-122B-A10B`** — MoE, 122B
@@ -143,9 +145,11 @@ make extract-yerel      # aynı çıkarım, yerel Ollama ile (yedek / hava boşl
 make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka
 make run          # Streamlit arayüzü
-make test         # testler (593 test)
+make test         # testler (671 test)
 make eval         # metrikler -> docs/SONUCLAR.md
-make lisanslar    # lisans raporu
+make lisanslar    # bağımlılık + model lisans raporu
+make lisanslar-teyit    # aynı rapor + model lisanslarını HF'ten teyit et (ağ)
+make kanit        # veri toplama etiği kanıtları (robots günlüğü + KVKK taraması)
 make gorev ad=X   # görev durumu
 ```
 

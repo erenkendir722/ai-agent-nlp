@@ -252,7 +252,7 @@ def uzlastir(
 
     `yuklem` verilirse (bkz. `ajanlar.yuklem.YuklemAjani`) KURAL-TEK değerler
     ek bir kapıdan geçer: metin bu değeri gerçekten o alana yüklüyor mu?
-    Hibrit ve LLM değerleri denetlenmez — kanıt seviyeleri farklıdır.
+    Hibrit, LLM ve çelişki değerleri denetlenmez — gerekçeler aşağıda.
     """
     rapor = rapor or UzlastirmaRaporu()
     alanlar: dict[str, Alan] = {}
@@ -266,23 +266,51 @@ def uzlastir(
         # makullüğünden geçer. Bu kapı olmadan kural katmanının elediği bir
         # değer LLM yolundan geri giriyordu (bkz. `deger_makul_mu`): eleme,
         # hatayı önlemek yerine kaynağını değiştiriyordu.
-        if not _makul_mu(alan_adi, sonuc, kayit.govde_metin):
+        from src.extraction.kural import dilim_turevi_mi  # döngüsel içe aktarım
+
+        tablo_turevi = durum == "kural" and dilim_turevi_mi(
+            alan_adi, sonuc, kayit.govde_metin
+        )
+
+        if not tablo_turevi and not _makul_mu(alan_adi, sonuc, kayit.govde_metin):
             sonuc = Alan.yok()
             durum = "elendi"
             rapor.elenen_alan_sayisi += 1
 
-        # YÜKLEM KAPISI — yalnız KURAL-TEK değerlerde.
+        # YÜKLEM KAPISI — KANITI ZAYIF olan değerlerde.
         #
         # Ölçülen kesinlikler: hibrit 0,870 · llm 0,820 · kural-tek 0,696.
         # Kural-tek değerlerde sayı metinde GERÇEKTEN geçiyor (eleştirmen bunu
         # zaten doğruladı) ama çoğu kez başka bir şeyi anlatıyor: başka ürünün
-        # vadesi, bir tablo satırı, örnek hesaplama. Varlık denetimi bunu
+        # vadesi, bir tablo satırı, bir koşul eşiği. Varlık denetimi bunu
         # göremez; yüklem denetimi görebilir.
         #
-        # Çapraz doğrulanmış değerlere uygulanmaz: iki bağımsız katmanın aynı
-        # sonuca varması zaten daha güçlü bir kanıttır ve gereksiz bir LLM
-        # çağrısı hem yavaşlatır hem yeni bir hata kaynağı açar.
-        elif durum == "kural" and yuklem is not None and sonuc.deger is not None:
+        # ÇELİŞKİYE UYGULANMASI DENENDİ VE GERİ ALINDI (24 Ağu).
+        #
+        # Gerekçe sağlamdı: `_birlestir` çelişki çıktığında kazanana GÜVEN
+        # CEZASI veriyor, yani kod çelişkiyi zaten zayıf kanıt sayıyor. İki
+        # katmanın ANLAŞAMADIĞI bir değerin dayanağı, tek katmanın ürettiğinden
+        # güçlü olmamalıydı. Üstelik `finansman_tutari_max`'ın iki yanlış
+        # pozitifi tam bu delikten geçiyordu ve ajan onları tek tek
+        # sorulduğunda 3/3 tutarlılıkla reddediyordu.
+        #
+        # K=3 ölçüm aksini söyledi:
+        #     yalnız kural   : makro-F1 0,782 · finansman_tutari_max 0,515
+        #     kural+çelişki  : makro-F1 0,764 · finansman_tutari_max 0,400
+        #
+        # Sebep: çelişkilerin çoğunda kural katmanı HAKLI. Kapı yanlış
+        # pozitifleri elerken doğru çözümleri de düşürüyor ve net zarar
+        # veriyor. Çelişki "zayıf kanıt" demek, ama "yanlış" demek değil.
+        #
+        # HİBRİTE UYGULANMAZ: iki katmanın aynı sonuca varması zaten daha güçlü
+        # bir kanıttır; gereksiz LLM çağrısı hem yavaşlatır hem yeni bir hata
+        # kaynağı açar.
+        elif (
+            durum == "kural"
+            and not tablo_turevi
+            and yuklem is not None
+            and sonuc.deger is not None
+        ):
             karar = yuklem.denetle(
                 alan_adi, sonuc.deger, sonuc.ham_ifade or "", kayit.govde_metin
             )

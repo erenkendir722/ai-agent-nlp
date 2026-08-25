@@ -1,9 +1,15 @@
 # Katılım bankaları kayıt defteri — şartname 5.1
 #
 # KAYNAK: BDDK Kuruluş Listesi — https://www.bddk.org.tr/Kurulus/Liste/77
-# YÖNTEM: BDDK sitesi robots.txt ile otomatik erişimi engellediği için liste
-#         tarayıcıdan MANUEL alınmıştır (şartname "manuel veri toplama
+# YÖNTEM: Liste tarayıcıdan MANUEL alınmıştır (şartname "manuel veri toplama
 #         teknikleri"ne izin veriyor). Ekran görüntüsü: docs/kanit/bddk-liste.png
+#         24 Ağu 2026 ölçümü: toplayıcı bddk.org.tr'ye BAĞLANAMIYOR — TLS
+#         sertifika zinciri doğrulanamıyor (unable to get local issuer
+#         certificate). Tek seferlik tanı denemesinde (doğrulama kapatılarak)
+#         /robots.txt HTTP 404 döndü, yani dosya yok; reddetme de yok.
+#         Kanıt: docs/kanit/ROBOTS_KONTROL_GUNLUGU.md · docs/kanit/VERI_TOPLAMA_ETIGI.md
+#         (Daha önce burada "robots.txt engelliyor" yazıyordu; ölçüm bunu
+#          doğrulamadı. Karar aynı, gerekçesi düzeltildi.)
 #
 # ÖNEMLİ: Faaliyete geçmemiş bankalar da listede tutulur ve `durum` ile
 # işaretlenir. Sitelerinde kampanya olmayacaktır; bu bir eksiklik değil,

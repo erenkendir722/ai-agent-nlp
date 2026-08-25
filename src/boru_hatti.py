@@ -229,6 +229,12 @@ def _cikar_ve_kaydet(
                 toplam_rapor.kural_alan_sayisi += rapor.kural_alan_sayisi
                 toplam_rapor.llm_alan_sayisi += rapor.llm_alan_sayisi
                 toplam_rapor.hibrit_alan_sayisi += rapor.hibrit_alan_sayisi
+                # Bu iki satır UNUTULMUŞTU: sayaçlar kayıt başına doğru
+                # işliyordu ama toplama eklenmediği için özet hep 0 gösterdi
+                # ve yüklem ajanı hiç çalışmıyor sanıldı.
+                toplam_rapor.yuklem_duzeltme_sayisi += rapor.yuklem_duzeltme_sayisi
+                toplam_rapor.yuklem_reddi_sayisi += rapor.yuklem_reddi_sayisi
+                toplam_rapor.elenen_alan_sayisi += rapor.elenen_alan_sayisi
                 toplam_rapor.celiskiler.extend(rapor.celiskiler)
 
                 log.info(
