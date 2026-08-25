@@ -51,6 +51,22 @@ vektor:  ## RAG vektör indeksini kur (gömme + kosinüs, ~2 dk)
 chatbot-test:  ## chatbot 30 soruluk test seti (S-10): doğruluk + kaynak gösterme
 	$(PYTHON) -m eval.chatbot_testi
 
+paket:  ## çevrimdışı kurulum paketi (E-14) — bağımlılıkları paketler/ altına indir
+	$(PYTHON) -m pip download -r requirements.txt -d paketler/
+	@echo ""
+	@echo "✅ paketler/ hazır. USB'ye kopyalanacaklar:"
+	@echo "   1) paketler/            (bağımlılıklar)"
+	@echo "   2) data/katilim.db      (işlenmiş veri)"
+	@echo "   3) data/vektor_indeksi.npz  (RAG indeksi — ağsız kurulamaz!)"
+	@echo "   4) deponun kendisi"
+	@echo ""
+	@echo "   Hedef makinede:  make kur-cevrimdisi"
+
+kur-cevrimdisi:  ## ağsız kurulum — paketler/ klasöründen (E-14)
+	python3.12 -m venv .venv
+	$(PYTHON) -m pip install --no-index --find-links paketler/ -r requirements.txt
+	@echo "✅ Ağsız kurulum tamam. Sınama: make test"
+
 run:  ## Streamlit arayüzünü başlat
 	$(ARROW_HAVUZ) $(STREAMLIT) run app/Genel_Bakis.py
 

@@ -636,11 +636,24 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         slaytlar + video), slaytların yazıcı çıktısı, mobil hotspot
       ↳ Projeksiyon bağlantısı en sık yaşanan aksilik
 
-- [ ] **E-14** Offline kurulum paketi hazırla · 📅 23 Ağu
-      ↳ Bitti sayılır: `pip download -r requirements.txt -d paketler/` ile
-        bağımlılıklar indirildi, USB'de duruyor
-      ↳ Şartname "son 24 saat fiziki" diyor ve orada ek geliştirme istenebilir.
-        Etkinlik Wi-Fi'ıyla `pip install` yapmayı planlama.
+- [x] **E-14** ✅ **Çevrimdışı kurulum paketi** *(25 Ağu)* — ⚠️ USB adımı SENDE
+      ↳ **`make paket`** bağımlılıkları indirir (80 paket, 140 MB),
+        **`make kur-cevrimdisi`** ağsız kurar. Talimat `docs/KURULUM.md`'de.
+      ↳ ✅ **Ölçüldü, iddia değil:** temiz sanal ortama `--no-index` ile
+        kuruldu, kritik bağımlılıkların hepsi içe aktarıldı.
+      ↳ 🔴 **İŞLETİM SİSTEMİ TUZAĞI — bunu bilmeden USB'ye kopyalama.**
+        `pip download` koşulduğu makinenin tekerleklerini indirir. Bizim
+        koşumuzda 80 paketin **18'i macOS'a özgü ikili** (numpy, pandas,
+        pyarrow, pydantic_core, lxml, ruff, SQLAlchemy…). Final laptopu
+        **macOS değilse bu paket ÇALIŞMAZ.** Çözüm: paketi final
+        laptopunun kendisinde üret (`make paket`), ya da
+        `--platform win_amd64 --only-binary=:all:` ile indir.
+      ↳ 📦 **USB'ye DÖRT şey kopyalanacak** — üçüncüsü kolay atlanır:
+        1. `paketler/` · 2. `data/katilim.db` ·
+        3. **`data/vektor_indeksi.npz`** (36 MB, depoda yok, `make vektor`
+           ağ ister — USB'de yoksa fiziki finalde koşul soruları ölür) ·
+        4. deponun kendisi
+      ↳ `paketler/` `.gitignore`'da — 140 MB depoya girmez, `make paket` üretir.
 
 ### Sprint 4 — teslim (24–26 Ağustos)
 

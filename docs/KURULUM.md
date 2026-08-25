@@ -221,6 +221,73 @@ make seed && make run
 
 ---
 
+## Çevrimdışı kurulum paketi (fiziki final)
+
+Şartname son 24 saatin fiziki olacağını söylüyor ve orada ek geliştirme
+istenebilir. **Etkinlik Wi-Fi'ıyla `pip install` yapmayı planlamayın.**
+
+### Paketi hazırlama (ağ VARKEN, önceden)
+
+```bash
+make paket        # bağımlılıkları paketler/ altına indirir
+```
+
+USB'ye **dört şey** kopyalanır:
+
+| # | Ne | Neden |
+|---|---|---|
+| 1 | `paketler/` | Bağımlılıklar (~140 MB) |
+| 2 | `data/katilim.db` | İşlenmiş kampanya verisi |
+| 3 | `data/vektor_indeksi.npz` | **RAG indeksi — ağsız KURULAMAZ** |
+| 4 | Deponun kendisi | Kod |
+
+> ⚠️ **3. maddeyi atlamayın.** İndeks 36 MB, depoda durmuyor ve `make vektor`
+> onu EVREN'den kurar — yani ağ ister. USB'de yoksa fiziki finalde koşul
+> soruları cevapsız kalır; sayısal sorular çalışmaya devam eder.
+
+### Hedef makinede kurulum (ağ YOKKEN)
+
+```bash
+make kur-cevrimdisi
+make test
+```
+
+**Doğrulandı (25 Ağustos):** temiz bir sanal ortama, indeks sunucusu kapalı
+biçimde (`--no-index`) tüm bağımlılıklar kuruldu ve içe aktarıldı.
+
+### 🔴 İŞLETİM SİSTEMİ UYARISI — bu adım atlanırsa paket işe yaramaz
+
+`pip download` **koşulduğu makinenin** tekerleklerini indirir. 25 Ağustos
+koşusunda 80 paketin dağılımı şöyleydi:
+
+| Tür | Adet | Taşınabilir mi |
+|---|---|---|
+| `py3-none-any` (saf Python) | 62 | ✅ her yerde çalışır |
+| macOS'a özgü ikili | **18** | ❌ yalnız macOS |
+
+macOS'a bağlı olanlar: `numpy`, `pandas`, `pyarrow`, `pydantic_core`,
+`lxml`, `pillow`, `protobuf`, `ruff`, `PyYAML`, `SQLAlchemy`, `tornado`,
+`regex`, `selectolax`, `jiter`, `rpds_py`, `markupsafe`,
+`charset_normalizer`, `tomli`.
+
+**Final laptopu macOS değilse** paketi o makinede yeniden üretin:
+
+```bash
+# Final laptopunun kendisinde, ağ varken:
+make paket
+```
+
+Bu mümkün değilse hedef platformu belirterek indirin:
+
+```bash
+.venv/bin/python -m pip download -r requirements.txt -d paketler/ \
+    --platform win_amd64 --python-version 3.12 --only-binary=:all:
+```
+
+> Kural: **paketi, üzerinde koşacağı makinede üretin.** En ucuz sigorta bu.
+
+---
+
 ## Doğrulama
 
 Kurulumun doğru olduğunu şu üç komutla teyit edin:
