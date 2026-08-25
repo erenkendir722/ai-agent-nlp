@@ -510,6 +510,71 @@ class TestTabloKolonAyrimi:
         for maliyet in (5.77, 4.98):
             assert deger != pytest.approx(maliyet)
 
+    def test_tahsis_kolonu_KENDI_alanina_yazilir(self) -> None:
+        """Tabloyu eleyen veto, doğru kolonu da eliyordu — ölçüldü.
+
+        `MALIYET_TABLOSU` vetosu ("toplam maliyet") 25 Ağustos'ta düz
+        `veto_ifadeleri`ne kondu. Ama bağlam penceresi tablo satırında KOMŞU
+        kolonların başlıklarını da görüyor: "Aylık Toplam Maliyet" aynı satırda
+        geçtiği için veto, hücrenin KENDİ başlığı `Tahsis Ücreti` olmasına
+        rağmen 0,50%'yi eliyordu.
+
+        Ölçülen bedel: `tahsis_ucreti` F1'i ilk turun 60 kaydında 0,364 → 0,000
+        (iki `hibrit` doğru pozitif öldü). Vetonun hedeflediği yanlış pozitif
+        ise HİÇ yakalanmadı — o değer LLM katmanından geliyor, veto yalnız
+        kural katmanına uygulanır.
+
+        Kolon başlığı, hücreyi doğrudan adlandırdığında sahiplik iddiasının en
+        güçlü biçimidir; pencerede rastlanan bir ifade onu ezemez
+        (`KuralTanimi.kolonun_asabilecegi_vetolar`)."""
+        assert cikar(self.TABLO).get("tahsis_ucreti") == pytest.approx(0.50)
+
+    AYRACLI_TABLO = (
+        "Finansman Tutarı | Vade | Kâr Oranı | Taksit Tutarı | Toplam Masraflar | "
+        "Aylık Maliyet Oranı | Yıllık Maliyet Oranı |\n"
+        "---|---|---|---|---|---|---|\n"
+        "10.000 TL | 12 Ay | 4,82 % | 1.194,41 TL | 86,30 TL | 8,7868 % | 105,4413 % |"
+    )
+    """Markdown ayraç satırı OLAN tablo — başlık ile veri bitişik değil."""
+
+    def test_ayrac_satiri_kolon_basligini_bozmaz(self) -> None:
+        """`---|---|---` başlık ile veri satırının arasına giriyordu.
+
+        `_kolon_basligi` bir üstteki satıra bakıp ayraç hücrelerini BAŞLIK
+        sanıyor, geriye doğru kayıp sayfanın düz yazısını döndürüyordu. Kolon
+        bilgisi kaybolunca `4,82` komşu kolonun adı («Yıllık Maliyet Oranı»)
+        yüzünden eleniyordu.
+
+        25 Ağustos ölçümü: genişletme turunda `kar_payi_orani`'nin sekiz
+        hatasının dördü bu tabloydu, dördünde de aynı değer kaçıyordu."""
+        assert cikar(self.AYRACLI_TABLO).get("kar_payi_orani") == pytest.approx(4.82)
+
+    def test_ayracli_tabloda_maliyet_kolonu_YINE_elenir(self) -> None:
+        """Düzeltmenin bedeli olmamalı: kolon tanınınca yanlış kolon da tanınır."""
+        deger = cikar(self.AYRACLI_TABLO).get("kar_payi_orani")
+        for maliyet in (8.7868, 105.4413):
+            assert deger != pytest.approx(maliyet)
+
+    def test_birimli_veri_hucresi_baslik_sayilmaz(self) -> None:
+        """`10.000 TL` ve `12 Ay` harf içeriyor ama VERİ hücresidir.
+
+        `_RAKAMSAL_HUCRE` yalnız çıplak sayıyı tanıyordu; birim eki taşıyan
+        gerçek banka tabloları geriye yürüyüşü durdurmuyordu."""
+        from src.extraction.kural import _RAKAMSAL_HUCRE
+
+        for hucre in (" 10.000 TL ", " 12 Ay ", " 4,82 % ", " 86,30 TL "):
+            assert _RAKAMSAL_HUCRE.match(hucre), hucre
+        for baslik in (" Kâr Oranı ", " Toplam Masraflar ", " Finansman Tutarı "):
+            assert not _RAKAMSAL_HUCRE.match(baslik), baslik
+
+    def test_maliyet_vetosu_KOLONSUZ_metinde_hala_calisir(self) -> None:
+        """Veto kaldırılmadı, yalnız kolon başlığına tâbi kılındı.
+
+        Kolon başlığı yoksa aşılacak bir şey de yoktur: düz yazıda "toplam
+        maliyet" bağlamındaki oran tahsis ücreti değildir."""
+        duz = "Bu finansmanda aylık toplam maliyet oranı %5,07 olarak hesaplanır."
+        assert "tahsis_ucreti" not in cikar(duz)
+
     def test_tablo_disi_metin_eski_yoldan_cikarilir(self) -> None:
         """Kolon mantığı yalnız tabloda devreye girer; düz cümle bozulmamalı."""
         assert cikar(A_BANKASI)["kar_payi_orani"] == pytest.approx(1.89)

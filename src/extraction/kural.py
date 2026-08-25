@@ -106,6 +106,26 @@ class KuralTanimi:
     """True ise bağlam sözcüğü değerle AYNI CÜMLEDE olmak zorunda."""
     olumsuzlama_reddet: bool = False
     """True ise "alınmaz / yok / ücretsiz" içeren bağlamdan sayı çıkarılmaz."""
+    kolonun_asabilecegi_vetolar: tuple[str, ...] = field(default=())
+    """`veto_ifadeleri` gibi, ama KOLON BAŞLIĞI alanı adlandırıyorsa düşer.
+
+    Bir veto pencerede ifade arar; pencere ise tablo satırında komşu kolonların
+    başlıklarını da kapsar. Kolonlu metinde bu, doğru kolonu komşusu yüzünden
+    elemek demektir:
+
+        Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | ...
+          3  |  3,67%    |    0,50%      |     5,07%            | ...
+
+    `MALIYET_TABLOSU` vetosu ("toplam maliyet") 0,50% hücresini eliyordu, oysa
+    hücrenin KENDİ başlığı "Tahsis Ücreti" — yani alanı doğrudan adlandırıyor.
+    25 Ağustos ölçümü: bu veto `tahsis_ucreti` F1'ini ilk turun 60 kaydında
+    0,364'ten 0,000'a düşürdü (iki `hibrit` doğru pozitif öldü) ve hedeflediği
+    yanlış pozitifi HİÇ yakalamadı — o değer LLM katmanından geliyor, veto ise
+    yalnız kural katmanına uygulanır.
+
+    Kolon başlığı, aşağıdaki kapının kendi yorumuyla «sahiplik iddiasının en
+    güçlü biçimi»dir. Pencerede rastlanan bir ifade onu ezmemeli."""
+
     veto_ifadeleri: tuple[str, ...] = field(default=())
     """Pencerede GEÇMESİ yeten ifadeler — mesafe karşılaştırması yapılmaz.
 
@@ -292,10 +312,23 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # sezgisel olarak doğru görünüyordu, ölçüm aksini söyledi.
         baglam_sozcukleri=("kar payi", "kar orani", "kar payi orani", "oran", "aylik kar"),
         dislayici_sozcukler=("indirim", "iade", "nakit iade", "kdv"),
+        # `HESAP_ARACI_CIKTISI` KOLONA TÂBİ — ortak tabandan çıkarıldı.
+        # Beşi de bir ödeme tablosunun KOLON ADIDIR ("Yıllık Maliyet Oranı",
+        # "Toplam Geri Ödenen", …). Pencerede aranınca komşu kolonun adı
+        # doğru kolonu eliyordu:
+        #
+        #     Finansman Tutarı | Vade  | Kâr Oranı | ... | Yıllık Maliyet Oranı |
+        #     10.000 TL        | 12 Ay | 4,82 %    | ... | 105,4413 %           |
+        #
+        # 25 Ağustos ölçümü: genişletme turunda `kar_payi_orani`'nin sekiz
+        # hatasının DÖRDÜ bu tabloydu, dördünde de 4,82 kaçıyordu. Artık veto
+        # hücrenin KENDİ başlığına sorulur: `Kâr Oranı` geçer, `Yıllık Maliyet
+        # Oranı` elenir. Tablo yoksa veto eskisi gibi pencerede çalışır.
+        kolonun_asabilecegi_vetolar=HESAP_ARACI_CIKTISI,
         # Yüzde her yerde var; ortak taban KÂR PAYI olmayan yüzdeleri eler.
         # Hepsinde "oran" bağlam sözcüğü yakında geçtiği için mesafe kuralı
         # elemiyor — varlık ölçüt olmalı.
-        veto_ifadeleri=SAYISAL_ALAN_VETOLARI
+        veto_ifadeleri=tuple(v for v in SAYISAL_ALAN_VETOLARI if v not in HESAP_ARACI_CIKTISI)
         + (
             # "Erken ödeme tazminatı oranı ... % 1'i" — tazminat, kâr payı değil.
             "erken odeme tazminati",
@@ -435,13 +468,17 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             "islem hacmi", "para cek", "atm", "bloke",
         ),
         # `MALIYET_TABLOSU` yalnız burada — gerekçesi sabitin yanında.
+        # KOLON BAŞLIĞINA TÂBİ: hücrenin kendi başlığı "Tahsis Ücreti" ise veto
+        # düşer (bkz. `kolonun_asabilecegi_vetolar`). 25 Ağustos'ta düz
+        # `veto_ifadeleri`ndeydi ve maliyet tablosunun TAHSİS sütununu da
+        # kesiyordu — ilk turun 60 kaydında F1 0,364 → 0,000.
+        kolonun_asabilecegi_vetolar=MALIYET_TABLOSU,
         # Ortak taban burada ÖLÇÜMDE nötr (0,909 sabit) ama yine de bağlı:
         # hesap makinesi çıktısı bir tahsis ücreti satırı da üretebilir ve
         # aynı bağlam türünü bir alanda eleyip diğerinde geçirmek, bugün
         # düzeltilen tutarsızlığın ta kendisiydi. Nötr olması zarar değil;
         # kapsam dışı bırakmak ise bilinen bir hataya açık kapı bırakmaktır.
         veto_ifadeleri=SAYISAL_ALAN_VETOLARI
-        + MALIYET_TABLOSU
         + (
             # "PTT ATM'sinden komisyon ÖDEMEDEN 10.000 TL'ye kadar para
             # çekebilir" — olumsuzlama cümlesi; buradaki tutar ücret değil,
@@ -683,7 +720,30 @@ def _olumsuz_cumle_mi(cumle: str) -> bool:
 
 
 _HUCRE = re.compile(r"\|")
-_RAKAMSAL_HUCRE = re.compile(r"^[\s\d.,%₺]*$")
+
+_AYRAC_HUCRE = re.compile(r"^\s*:?[-–—]{2,}:?\s*$")
+"""Markdown ayraç satırının hücresi — `---|---|---`.
+
+Başlık ile veri satırının ARASINA girer ve ikisinin bitişikliğini bozar.
+`_kolon_basligi` geriye doğru yürürken bu hücreleri başlık sanıyordu; sonuçta
+kolonu bulamayıp sayfanın düz yazısını "başlık" diye döndürüyordu. Hücre hiçbir
+şey taşımaz, bu yüzden sayımdan tamamen ÇIKARILIR — ne veri ne başlık."""
+
+_RAKAMSAL_HUCRE = re.compile(r"^[\s\d.,%₺]*(?:tl|ay|₺|adet|gun|yil)?[\s.]*$", re.IGNORECASE)
+"""Veri hücresi mi? — `_kolon_basligi` başlık satırının nerede bittiğini
+buradan anlar.
+
+BİRİM EKİ KABUL EDİLİR. İlk sürüm yalnız çıplak sayıyı tanıyordu
+(`^[\\s\\d.,%₺]*$`) ve bankaların gerçek tabloları buna uymuyor:
+
+    Finansman Tutarı | Vade  | Kâr Oranı | ...
+    10.000 TL        | 12 Ay | 4,82 %    | ...
+
+`10.000 TL` ve `12 Ay` harf içerdiği için "başlık" sayılıyor, geriye yürüyüş
+durmuyor ve kolon kaybediliyordu. 25 Ağustos ölçümü: altın setin genişletme
+turunda `kar_payi_orani`'nin sekiz hatasının DÖRDÜ bu tek tabloydu — dördünde
+de aynı değer (4,82) kaçıyordu."""
+
 TABLO_ASGARI_KOLON = 3
 """Bu kadar başlık hücresi görülmeden bir metin parçası tablo sayılmaz."""
 
@@ -729,7 +789,9 @@ def _kolon_basligi(metin: str, baslangic: int) -> str | None:
         çağıran taraf eski karakter penceresi mantığına düşer.
     """
     parca = metin[:baslangic]
-    hucreler = _HUCRE.split(parca)
+    # Ayraç hücreleri (`---`) sayımdan çıkarılır: başlık ile veri satırının
+    # arasına girip bitişikliği bozuyorlar (bkz. `_AYRAC_HUCRE`).
+    hucreler = [h for h in _HUCRE.split(parca) if not _AYRAC_HUCRE.match(h)]
     if len(hucreler) < TABLO_ASGARI_KOLON:
         return None
 
@@ -932,6 +994,23 @@ def _baglam_skoru(
     # değildir (bkz. `KuralTanimi.veto_ifadeleri`).
     if any(ifade in pencere for ifade in kural.veto_ifadeleri):
         return None
+
+    # KOLONUN AŞABİLECEĞİ VETO: pencere tablo satırında komşu kolonların
+    # başlıklarını da görür, o yüzden bu vetolar pencereye değil HÜCRENİN KENDİ
+    # KOLON BAŞLIĞINA sorulur (bkz. `KuralTanimi.kolonun_asabilecegi_vetolar`).
+    if kural.kolonun_asabilecegi_vetolar and any(
+        ifade in pencere for ifade in kural.kolonun_asabilecegi_vetolar
+    ):
+        kolon = _kolon_basligi(metin, baslangic)
+        if kolon is None:
+            return None  # tablo değil: veto pencerede geçerli, eski davranış
+        kolon_anahtari = arama_anahtari(kolon)
+        # Veto ifadesi hücrenin KENDİ başlığında geçiyorsa değer gerçekten o
+        # yasak kolondadır — elenir. Komşu kolonda geçmesi bir şey söylemez.
+        if any(ifade in kolon_anahtari for ifade in kural.kolonun_asabilecegi_vetolar):
+            return None
+        if not any(s in kolon_anahtari for s in kural.baglam_sozcukleri):
+            return None
 
     # Değer bir tablo hücresindeyse KOLON BAŞLIĞI bir KAPIDIR: yanlış kolonun
     # değeri elenir. Ama puanlamayı devralmaz — eleme sonrası aday yine normal

@@ -51,7 +51,12 @@ def test_her_sayisal_alan_ortak_vetolari_tasir(alan_adi: str):
     düştüğü bunu değiştirmez.
     """
     kural = _ALAN_KURALI[alan_adi]
-    eksik = set(SAYISAL_ALAN_VETOLARI) - set(kural.veto_ifadeleri)
+    # Veto İKİ listeden birinde olabilir. `kolonun_asabilecegi_vetolar` da bir
+    # vetodur — yalnız pencerede değil, hücrenin KENDİ kolon başlığında aranır
+    # (bkz. `KuralTanimi.kolonun_asabilecegi_vetolar`). Bağlam türü yine
+    # eleniyor; eleme kanıtı daha isabetli bir yerden okunuyor.
+    tasinan = set(kural.veto_ifadeleri) | set(kural.kolonun_asabilecegi_vetolar)
+    eksik = set(SAYISAL_ALAN_VETOLARI) - tasinan
     assert not eksik, f"{alan_adi} ortak vetoları taşımıyor: {sorted(eksik)}"
 
 
