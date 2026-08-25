@@ -113,6 +113,35 @@ uzlaştığı kayıtlar. Kişisel paylar zaten okunuyordu, açık yalnız ortak 
 Ölçüm ön eki (`uyum_hesapla`) bilerek AYRI bırakıldı: «etiketleme uzlaşmamız
 %X» cümlesi tek bir turun oranıdır, iki turu harmanlamak o sayıyı bozar."""
 
+TUR2_ONEK = "etiketleme_tur2_"
+"""İKİNCİ ETİKETLEME TURU — aynı kayıtlar, KÖR, ayrı dosya.
+
+Neden ayrı dosya ve neden kör: 26 Ağustos'ta ölçüldü, altın setin «altın boş,
+sistem dolu» tipindeki 22 hücresinin 15'inde HATALI OLAN ALTIN SETTİ. Örnekler
+kararlar defterinde yazılı olup uygulanmamış kuralların ta kendisi:
+`0213-8e662b576a6b` metninde «Vade Farksız 12 Taksit» yazıyor, 15 Ağu kuralı
+«vade farksızsa 0 yaz» diyor, hücre boş bırakılmış. Bu bir etiketleyici
+dalgınlığı sınıfıdır ve ancak kayıtlar YENİDEN OKUNARAK bulunur.
+
+Üç kısıt, üçü de bir arızayı önlüyor:
+
+  * ESKİ ETİKET GÖSTERİLMEZ. Eski etikete bakıp «değiştireyim mi» diye
+    düşünmek çapa yanlılığı üretir; kör etiketleyip sonra fark almak üretmez.
+    İkinci turun değeri bağımsızlığındadır — bağımsız değilse yalnız emek.
+
+  * SİSTEM ÇIKTISI GÖSTERİLMEZ. `data/katilim.db`'ye bakarak etiketlemek
+    altın seti sisteme uydurmaktır; ölçüm o anda çöpe döner ve jüriye
+    savunulamaz. Bu sayfa yalnız ham metni taşır.
+
+  * `derle` BU DOSYAYI OKUMAZ. Okusaydı gece yazılan 784 hücre, uzlaştırma
+    adımı olmadan mevcut altın setin üstüne binerdi — denetim raporunun 1.
+    bulgusunun (bağımsız etiketlerin ezilmesi) aynısı. Tur-2 altın sete
+    ancak `tur2-fark` ile ayrışmalar tek tek karara bağlandıktan sonra girer.
+
+Yan kazanç: 98 kaydın tamamı iki kez etiketlenmiş olur, yani «etiketleme
+uzlaşmamız %X» cümlesi 5 kayıtlık ortak blok yerine setin TAMAMI üzerinden
+kurulabilir."""
+
 UYUM_ADET = 5
 """Örneklemin ilk 5'ini DÖRDÜ BİRDEN etiketler (H-02).
 
@@ -1583,6 +1612,162 @@ def komut_denetle(ad: str | None) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# İkinci etiketleme turu (tur-2) — kör yeniden etiketleme ve uzlaştırma
+# ---------------------------------------------------------------------------
+
+
+def tur2_sayfasi_yaz(kisi: str, zorla: bool = False) -> tuple[Path, int]:
+    """Altın setteki kayıtların TAMAMINI boş bir çalışma sayfasına döker.
+
+    Sayfa bilerek `ornekle`nin ürettiğiyle aynı biçimde: aynı sekiz sütun,
+    aynı `metin` kolonu, etiket hücreleri boş. Fark tek şeyde — örneklem
+    yapılmaz, `altin_set.jsonl`'de ne varsa o gelir. İkinci tur setin bir
+    parçasını değil, ölçülen kayıtların tamamını yeniden okumak içindir.
+
+    (yol, kayıt sayısı) döner.
+    """
+    altin = [
+        json.loads(satir)
+        for satir in ALTIN_SET.read_text(encoding="utf-8").splitlines()
+        if satir.strip() and not satir.startswith("//")
+    ]
+    kimlikler = [k["kampanya_id"] for k in altin]
+
+    kimlik_kampanya = {k.kampanya_id: k for k in _kampanyalari_al()}
+    eksik = [k for k in kimlikler if k not in kimlik_kampanya]
+    if eksik:
+        raise ValueError(f"{len(eksik)} kayıt veritabanında yok: {eksik[:3]}")
+
+    yol = GOLD / f"{TUR2_ONEK}{kisi.lower()}.csv"
+    if not zorla and _etiketli_mi(yol):
+        raise FileExistsError(
+            f"{yol.name} zaten doldurulmuş — üstüne yazmak emeği siler. "
+            f"Gerçekten isteniyorsa --zorla."
+        )
+
+    _csv_yaz(yol, [kimlik_kampanya[k] for k in kimlikler])
+    return yol, len(kimlikler)
+
+
+def tur2_farklari(kisi: str) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    """Tur-2 sayfasını mevcut altın setle karşılaştırır — uzlaştırma listesi.
+
+    Dört sonuç sınıfı ayrılır ve üçü ayrı ayrı önemlidir:
+
+      `ayni`        iki tur da aynı değeri yazdı — dokunulmaz
+      `ayrisiyor`   ikisi de dolu ama farklı  -> KARARA BAĞLANACAK
+      `tur2_ekliyor`  tur-1 boş, tur-2 dolu   -> ölçüde YP'yi DP'ye çevirebilir
+      `tur2_siliyor`  tur-1 dolu, tur-2 boş   -> ölçüde DP'yi YN'ye çevirebilir
+
+    Son iki sınıfın ZITT yönlerde çalıştığını görmek şart: ikinci tur otomatik
+    bir kazanç değildir. `tur2_ekliyor` sistemin bulduğu bir değeri altın sete
+    getirirse F1 yükselir, ama sistemin de kaçırdığı bir değeri getirirse
+    doğru negatif yanlış negatife döner ve F1 DÜŞER. Karar her hücrede
+    metne bakılarak verilir, yönüne bakılarak değil.
+
+    Etiketlenmemiş satırlar (`kampanya_turu` boş) hiç karşılaştırılmaz —
+    yarım kalmış bir sayfa, «tur-2 hepsini boş bıraktı» diye okunmamalı.
+    """
+    yol = GOLD / f"{TUR2_ONEK}{kisi.lower()}.csv"
+    if not yol.exists():
+        raise FileNotFoundError(f"{yol.name} yok — önce `tur2` komutunu çalıştır")
+
+    tur1 = {
+        json.loads(satir)["kampanya_id"]: json.loads(satir)
+        for satir in ALTIN_SET.read_text(encoding="utf-8").splitlines()
+        if satir.strip() and not satir.startswith("//")
+    }
+
+    farklar: list[dict[str, Any]] = []
+    sayac = {"ayni": 0, "ayrisiyor": 0, "tur2_ekliyor": 0, "tur2_siliyor": 0, "atlandi": 0}
+
+    for _, kimlik, etiketler, dokunuldu in _csv_oku(yol):
+        if not kimlik or not dokunuldu:
+            sayac["atlandi"] += 1
+            continue
+        eski = tur1.get(kimlik)
+        if eski is None:
+            continue
+        for alan in CEKIRDEK_ALANLAR:
+            # Alan hiç yoksa etiketleyen '?' yazmıştır: bilerek ölçüm dışı.
+            if alan not in etiketler or alan not in eski:
+                continue
+            yeni_deger, eski_deger = etiketler[alan], eski[alan]
+            if _anahtar(yeni_deger) == _anahtar(eski_deger):
+                sayac["ayni"] += 1
+                continue
+            if eski_deger is None:
+                tur = "tur2_ekliyor"
+            elif yeni_deger is None:
+                tur = "tur2_siliyor"
+            else:
+                tur = "ayrisiyor"
+            sayac[tur] += 1
+            farklar.append(
+                {"kampanya_id": kimlik, "alan": alan, "tur": tur,
+                 "tur1": eski_deger, "tur2": yeni_deger}
+            )
+
+    return farklar, sayac
+
+
+def komut_tur2(kisi: str, zorla: bool = False) -> int:
+    try:
+        yol, adet = tur2_sayfasi_yaz(kisi, zorla)
+    except (FileExistsError, ValueError) as hata:
+        print(f"❌ {hata}")
+        return 1
+
+    print(f"✅ {_kisa_yol(yol)} yazıldı — {adet} kayıt, etiket hücreleri BOŞ\n")
+    print("   Üç kural, üçü de bu turun değerini korur:")
+    print("     1. Eski etiketlere BAKMA (altin_set.jsonl, etiketleme_*.csv)")
+    print("     2. Sistem çıktısına BAKMA (data/katilim.db, arayüz)")
+    print("     3. Emin değilsen '?' yaz — tahmin, eksik etiketten zararlıdır\n")
+    print("   Kararlar defteri: docs/ETIKETLEME_KILAVUZU.md")
+    print(f"   Bitince:  make altin-tur2-fark ad={kisi}")
+    return 0
+
+
+def komut_tur2_fark(kisi: str) -> int:
+    try:
+        farklar, sayac = tur2_farklari(kisi)
+    except FileNotFoundError as hata:
+        print(f"❌ {hata}")
+        return 1
+
+    karsilastirilan = sum(v for a, v in sayac.items() if a != "atlandi")
+    print(f"Tur-2 karşılaştırması — {kisi}\n")
+    print(f"  karşılaştırılan hücre : {karsilastirilan}")
+    print(f"  aynı                  : {sayac['ayni']}")
+    print(f"  AYRIŞIYOR             : {sayac['ayrisiyor']}   (ikisi de dolu, farklı)")
+    print(f"  tur-2 EKLİYOR         : {sayac['tur2_ekliyor']}   (tur-1 boş bırakmış)")
+    print(f"  tur-2 SİLİYOR         : {sayac['tur2_siliyor']}   (tur-1 dolu, tur-2 boş)")
+    print(f"  etiketlenmemiş satır  : {sayac['atlandi']}")
+
+    if karsilastirilan:
+        oran = sayac["ayni"] / karsilastirilan
+        print(f"\n  📊 TURLAR ARASI UYUM: %{oran * 100:.1f}   ({sayac['ayni']}/{karsilastirilan})")
+
+    if not farklar:
+        print("\n✅ Ayrışma yok.")
+        return 0
+
+    print(f"\n{'kayıt':22}{'alan':22}{'tur-1':>14}{'tur-2':>14}  ne oldu")
+    for f in sorted(farklar, key=lambda x: (x["alan"], x["kampanya_id"])):
+        print(
+            f"{f['kampanya_id']:22}{f['alan']:22}"
+            f"{str(f['tur1']):>14}{str(f['tur2']):>14}  {f['tur']}"
+        )
+
+    print(
+        "\n⚠️  Bu liste OTOMATİK UYGULANMAZ. Her satır ham metne bakılarak"
+        "\n    karara bağlanır; karar kararlar defterine yazılır. Sonra"
+        "\n    ilgili hücre tur-1 CSV'sinde düzeltilir ve `make altin-derle`."
+    )
+    return 0
+
+
 def main() -> int:
     # Windows konsolu cp1254; çıktıdaki 📊/✅/🛡️ işaretleri orada
     # UnicodeEncodeError fırlatıyordu — `altin-uyum` uyum oranını hesaplayıp
@@ -1609,6 +1794,13 @@ def main() -> int:
     p_den = alt.add_parser("denetle", help="kendi CSV'ni pushlamadan önce kontrol et")
     p_den.add_argument("--ad", default=None, help="yalnız bu kişinin dosyaları")
 
+    p_tur2 = alt.add_parser("tur2", help="ikinci (kör) etiketleme turu için boş sayfa")
+    p_tur2.add_argument("--ad", required=True, help="sayfayı kim dolduracak")
+    p_tur2.add_argument("--zorla", action="store_true", help="dolu sayfanın üstüne yaz")
+
+    p_t2f = alt.add_parser("tur2-fark", help="tur-2'yi altın setle karşılaştır (uzlaştırma listesi)")
+    p_t2f.add_argument("--ad", required=True, help="hangi kişinin tur-2 sayfası")
+
     alt.add_parser("uyum", help="etiketleyiciler arası uyum oranı (H-02)")
     alt.add_parser("derle", help="CSV'leri altin_set.jsonl'e derle + denetle")
 
@@ -1619,6 +1811,10 @@ def main() -> int:
         return komut_genislet(args.hedef_n, args.uygula)
     if args.komut == "denetle":
         return komut_denetle(args.ad)
+    if args.komut == "tur2":
+        return komut_tur2(args.ad, args.zorla)
+    if args.komut == "tur2-fark":
+        return komut_tur2_fark(args.ad)
     if args.komut == "uyum":
         return komut_uyum()
     return komut_derle()

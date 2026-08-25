@@ -1046,3 +1046,103 @@ class TestOrneklemDefteri:
         assert defter["toplam_adet"] == 60
         assert defter["turlar"][0]["tur"] == "ornekle"
         assert defter["turlar"][0]["atama"] == {"Eren": ["b"]}
+
+
+# ---------------------------------------------------------------------------
+# İkinci etiketleme turu (tur-2)
+# ---------------------------------------------------------------------------
+
+
+def _tur2_hazirla(gold_dizini, monkeypatch):
+    """Etiketlenmiş bir altın set + tur-2 sayfası üretir."""
+    kampanyalar, _ = _hazirla(gold_dizini)
+    _csv_doldur(
+        gold_dizini / "etiketleme_eren.csv",
+        [{"kampanya_turu": "finansman", "kar_payi_orani": "2,05", "vade_ay_max": ""}],
+    )
+    kayitlar, _ = altin_set.derle()
+    altin_set.jsonl_yaz(kayitlar)
+    monkeypatch.setattr(altin_set, "_kampanyalari_al", lambda: kampanyalar)
+    return kampanyalar, kayitlar
+
+
+def test_tur2_sayfasi_altin_setin_tamamini_bos_dokar(gold_dizini, monkeypatch):
+    """Kör sayfa: kayıtların hepsi gelir, etiket hücrelerinin hiçbiri dolu değil.
+
+    Eski etiketin sızması ikinci turu değersizleştirir — etiketleyen kendi
+    kararını değil, önündeki değeri onaylar (çapa yanlılığı).
+    """
+    _, kayitlar = _tur2_hazirla(gold_dizini, monkeypatch)
+
+    yol, adet = altin_set.tur2_sayfasi_yaz("Eren")
+
+    assert adet == len(kayitlar)
+    with yol.open(encoding="utf-8-sig", newline="") as dosya:
+        satirlar = list(csv.DictReader(dosya))
+    assert len(satirlar) == len(kayitlar)
+    for satir in satirlar:
+        for alan in altin_set.CEKIRDEK_ALANLAR:
+            assert not (satir[alan] or "").strip(), f"{alan} sızmış"
+        assert satir["metin"], "ham metin olmadan etiketlenemez"
+
+
+def test_derle_tur2_sayfasini_okumaz(gold_dizini, monkeypatch):
+    """Tur-2 altın sete KENDİLİĞİNDEN girmez — uzlaştırma adımı atlanamaz.
+
+    Okusaydı gecelik 784 hücre, karara bağlanmadan mevcut etiketlerin üstüne
+    binerdi: denetim raporunun 1. bulgusunun (bağımsız etiketlerin ezilmesi)
+    birebir tekrarı.
+    """
+    _tur2_hazirla(gold_dizini, monkeypatch)
+    altin_set.tur2_sayfasi_yaz("Eren")
+    _csv_doldur(
+        gold_dizini / f"{altin_set.TUR2_ONEK}eren.csv",
+        [{"kampanya_turu": "kart"}],
+    )
+
+    kayitlar, _ = altin_set.derle()
+
+    assert all(k["kampanya_turu"] != "kart" for k in kayitlar)
+
+
+def test_tur2_dolu_sayfanin_ustune_yazmaz(gold_dizini, monkeypatch):
+    _tur2_hazirla(gold_dizini, monkeypatch)
+    yol, _ = altin_set.tur2_sayfasi_yaz("Eren")
+    _csv_doldur(yol, [{"kampanya_turu": "kart"}])
+
+    with pytest.raises(FileExistsError):
+        altin_set.tur2_sayfasi_yaz("Eren")
+
+
+def test_tur2_fark_dort_sinifi_ayirir(gold_dizini, monkeypatch):
+    """Ekleme ve silme ZIT yönlerde çalışır; ikisi tek sayaca yazılamaz.
+
+    `tur2_ekliyor` bir yanlış pozitifi doğru pozitife çevirebilir (F1 yükselir),
+    `tur2_siliyor` bir doğru pozitifi yanlış negatife çevirebilir (F1 düşer).
+    Ayrımı kaybetmek, ikinci turu 'otomatik kazanç' sanmaya yol açar.
+    """
+    _tur2_hazirla(gold_dizini, monkeypatch)
+    altin_set.tur2_sayfasi_yaz("Eren")
+    _csv_doldur(
+        gold_dizini / f"{altin_set.TUR2_ONEK}eren.csv",
+        [{"kampanya_turu": "kart", "kar_payi_orani": "", "vade_ay_max": "36"}],
+    )
+
+    farklar, sayac = altin_set.tur2_farklari("Eren")
+    turler = {(f["alan"], f["tur"]) for f in farklar}
+
+    assert ("kampanya_turu", "ayrisiyor") in turler
+    assert ("kar_payi_orani", "tur2_siliyor") in turler
+    assert ("vade_ay_max", "tur2_ekliyor") in turler
+    assert sayac["ayrisiyor"] >= 1
+
+
+def test_tur2_fark_etiketlenmemis_satiri_saymaz(gold_dizini, monkeypatch):
+    """Yarım kalmış sayfa 'tur-2 hepsini boşalttı' diye okunmamalı."""
+    _tur2_hazirla(gold_dizini, monkeypatch)
+    altin_set.tur2_sayfasi_yaz("Eren")
+
+    farklar, sayac = altin_set.tur2_farklari("Eren")
+
+    assert farklar == []
+    assert sayac["atlandi"] > 0
