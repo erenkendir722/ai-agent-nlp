@@ -13,6 +13,9 @@ data/ablasyon/
 # ham HTML dosyaları kalmaz (depo şişer + telif riski).
 data/raw/**/*.html
 data/embeddings.npy
+# RAG vektör indeksi — 36 MB, türetilmiş. `make vektor` 70 sn'de yeniden kurar.
+# ⚠️ Hava boşluğu demosunda (E-14) çevrimdışı pakete ELLE konmalı.
+data/vektor_indeksi.npz
 
 # Araç çıktıları
 .pytest_cache/

@@ -790,15 +790,26 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 2 (17–21 Ağustos)
 
-- [ ] **S-09** Gömme boru hattı + kosinüs benzerlik RAG · 📅 19 Ağu
-      ⛔ **Önce bitmeli:** G-13 (Görkem)
-      ↳ Model: `ytu-ce-cosmos/turkish-e5-large` (lisansını repodan doğrula!)
-        Yedek: BGE-M3 (MIT)
-      ↳ Bitti sayılır: `src/rag/` içinde gömme + kosinüs arama var, chatbot'un
-        `_kosul_cevabi` fonksiyonu anahtar sözcük yerine bunu kullanıyor
-      ↳ ⚠️ Gemma tabanlı gömme modeli **KULLANMA** (EmbeddingGemma dahil) — lisans
-      ↳ ⚠️ Gömmeler diske yazılsın (`data/embeddings.npy`); her açılışta yeniden
-        hesaplamak final laptopunda demoyu geciktirir
+- [x] **S-09** ✅ **Gömme boru hattı + kosinüs benzerlik RAG** *(25 Ağu)*
+      ⛔ **Önce bitmeli:** G-13 (Görkem) ✅
+      ↳ Model: **`bge-m3-embed`** (EVREN) = `BAAI/bge-m3`, **MIT** — ADR 013.
+        `turkish-e5-large` denenmedi; BGE-M3 çok dilli ve lisansı teyitli.
+      ↳ Bitti ölçütü tuttu: `src/vektor_db.py` gömme + kosinüs arama yapıyor,
+        `_kosul_cevabi` anahtar sözcük yerine bunu kullanıyor. Uçtan uca
+        denendi — "emeklilere özel kampanya" sorusu üç ilgili paragraf getiriyor.
+      ↳ ✅ Gemma tabanlı model kullanılmadı.
+      ↳ ✅ Gömmeler diske yazılıyor — `data/vektor_indeksi.npz`, 15.151 paragraf,
+        36 MB. `make vektor` 70 sn'de kuruyor, açılışta yeniden hesaplanmıyor.
+      ↳ 🔴 **Qdrant yolu bırakıldı (ADR 014).** `qdrant.ssyz.org.tr` DNS'te
+        çözülmüyordu, tahsis belgesi de yoktu; proje planı Qdrant altyapısını
+        zaten bütçe dışı ilan etmiş. Bu ölçekte numpy nokta çarpımı milisaniye.
+      ↳ 🐛 **Yol boyunca üç sessiz hata bulundu ve kapatıldı:** gömme modeli adı
+        EVREN'de yoktu (404), hata sıfır vektörüne yutuluyordu, ve zarif düşme
+        kuralı Windows hata metnine göre yazıldığı için **Mac'te chatbot'u
+        çökertiyordu**. 14 yeni test yazıldı (`tests/test_vektor_db.py`, ağsız).
+      ↳ ⚠️ **E-14 için:** indeks depoda durmuyor (36 MB, türetilmiş) —
+        çevrimdışı pakete **elle konmalı**, yoksa hava boşluğu demosunda
+        koşul soruları cevapsız kalır.
 
 - [ ] **S-10** Chatbot 30 soruluk test seti · 📅 20 Ağu
       ↳ Bitti sayılır: 30 soru + beklenen cevap, doğruluk ölçülüyor (hedef ≥0,88),
@@ -1182,8 +1193,16 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         (ağırlık dağıtmıyoruz · model Apache-2.0 olduğu için on-prem koşulabilir ·
         `LLM_SAGLAYICI=ollama` ile kilitlenme yok)
       ↳ ✅ **S-09'un cevabı hazır (Samet):** `BAAI/bge-m3` → **MIT**, teyit edildi.
-        EVREN'de `bge-m3-embed` ucu da var. ⛔ EVREN'in jenerik `embed` ucunu
-        KULLANMA — model kimliği doğrulanmadı, EmbeddingGemma olma ihtimali dışlanamaz
+        EVREN'de `bge-m3-embed` ucu da var.
+      ↳ 🔧 **25 Ağu — uygulandı ve ölçüldü (ADR 013).** `src/vektor_db.py` artık
+        `bge-m3-embed` kullanıyor. Lisans duruşu da netleşti: EVREN'de sunulan
+        modeller uygun sayılır, ama kullandığımız her modelin lisansı ayrıca
+        teyitli — yaslanmak zorunda değiliz.
+        ⛔ Jenerik `embed` ucunu yine de kullanma, ama artık lisans yüzünden
+        değil: **2560 boyut** veriyor, `VECTOR_SIZE` 1024 — tutmuyor.
+        `bge-m3-embed` 1024 veriyor (BGE-M3 kimliğinin teyidi de bu).
+        `embedding` diye bir uç EVREN'de **yok** — kodun eski varsayılanı buydu,
+        her çağrıda sessizce 404 alıyordu.
 
 - [x] **G-14** ✅ Veri toplama etiği kanıt dosyası — `docs/kanit/VERI_TOPLAMA_ETIGI.md` *(24 Ağu)*
       ⛔ **Önce bitmeli:** G-02 (Görkem) ✅

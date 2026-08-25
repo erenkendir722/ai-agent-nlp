@@ -297,6 +297,38 @@ def komut_durum(_: argparse.Namespace) -> int:
             print(f"  {anahtar:22}: {deger:.3f}")
         else:
             print(f"  {anahtar:22}: {deger}")
+
+    from src.vektor_db import indeks_durumu
+
+    durum = indeks_durumu()
+    print("\n=== RAG VEKTÖR İNDEKSİ ===")
+    if not durum["var"]:
+        print(f"  ⚠️  kurulmamış — `make vektor` ile kurulur ({durum['yol']})")
+    else:
+        print(f"  {'paragraf':22}: {durum['paragraf']}")
+        print(f"  {'kampanya':22}: {durum['kampanya']}")
+        print(f"  {'boyut':22}: {durum['boyut']}")
+        print(f"  {'model':22}: {durum['model']}")
+    return 0
+
+
+def komut_vektor(_: argparse.Namespace) -> int:
+    """RAG vektör indeksini kurar (S-09, ADR 014).
+
+    Harici vektör veritabanı yok: paragraflar EVREN `bge-m3-embed` ile
+    gömülüp yerel bir `.npz` dosyasına yazılır, arama numpy ile yapılır.
+    """
+    from src.depolama import tum_kayitlar
+    from src.vektor_db import GOMME_MODELI, INDEKS_DOSYASI, indeks_kur
+
+    kayitlar = tum_kayitlar()
+    if not kayitlar:
+        print("Veritabanı boş — önce `make extract` koşun.")
+        return 1
+
+    print(f"{len(kayitlar)} kayıt, gömme modeli: {GOMME_MODELI}")
+    adet = indeks_kur(kayitlar)
+    print(f"✅ {adet} paragraf indekslendi → {INDEKS_DOSYASI}")
     return 0
 
 
@@ -338,6 +370,9 @@ def ayristirici_kur() -> argparse.ArgumentParser:
 
     p_durum = altlar.add_parser("durum", help="veritabanı özeti")
     p_durum.set_defaults(islev=komut_durum)
+
+    p_vektor = altlar.add_parser("vektor", help="RAG vektör indeksini kur (gömme + kosinüs)")
+    p_vektor.set_defaults(islev=komut_vektor)
 
     return ap
 

@@ -14,8 +14,7 @@ SQLAlchemy==2.0.36
 # --- Zekâ (Katman 4) ---
 numpy==2.1.3
 ollama==0.6.2          # >=0.5 şart: `think` parametresi bu sürümle geldi
-openai==1.55.0         # EVREN vLLM API (OpenAI uyumlu endpointler) için
-qdrant-client==1.12.1  # TEKNOFEST EVREN Qdrant Vektör Veritabanı için
+openai==1.55.0         # EVREN gömme ucu (OpenAI uyumlu /v1/embeddings)
 
 # --- Sunum (Katman 5) ---
 streamlit==1.40.1

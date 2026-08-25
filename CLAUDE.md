@@ -80,6 +80,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Depolama | `src/depolama.py` |
 | Karşılaştırma | `src/comparison/karsilastirma.py` |
 | Chatbot + kalkan | `src/rag/chatbot.py` |
+| RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
 
 Ayrıntı: [`docs/MIMARI.md`](docs/MIMARI.md) · Durum: [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
@@ -103,10 +104,33 @@ denetlenecek metni doğru seçmektir (`Cevap.dogrulanacak_metin`).
 
 **Llama ve Gemma türevi model KULLANILMAZ.** Şartname 5.10 doğrudan bunları
 hedefliyor. Yalnız Apache 2.0 / MIT (Qwen3.5, Qwen3.6). EVREN'deki `llm-large`
-ve `llm-fast` ikisi de Qwen ailesi — yasağa takılmıyor. `vlm`, `guard`, `router`
-ve `rerank` uçlarının modeli DOĞRULANMADI; bu senaryoda ihtiyaç da yok, ama
-kullanılacaksa önce lisansı teyit et. **EVREN'in jenerik `embed` ucu da bu
-sınıfta — gömme için `bge-m3-embed` ya da yerel `BAAI/bge-m3` (MIT) kullan.**
+ve `llm-fast` ikisi de Qwen ailesi — yasağa takılmıyor.
+
+**EVREN'de sunulan modeller uygun sayılır (ADR 013, 25 Ağu).** Servis, yarışmayı
+düzenleyen SSB'nin tahsis ettiği servistir. Ama buna **yaslanmıyoruz**: fiilen
+kullandığımız her modelin lisansı ayrıca teyitli — üç Qwen (Apache-2.0) ve RAG
+gömmesi `bge-m3-embed` → `BAAI/bge-m3` (MIT). Jüriye verilen cevap duruş değil,
+`docs/kanit/model-lisanslari.json`.
+
+**Gömme için `bge-m3-embed` kullanılır** — lisanstan önce gelen bir sebeple:
+ölçüldü, o uç **1024 boyut** veriyor (`vektor_db.BOYUT` ile birebir, ayrıca
+BGE-M3 kimliğinin teyidi). Jenerik `embed` ucu **2560** veriyor, yani bu koda
+hiç uymuyor. `embedding` diye bir uç ise EVREN'de **yok** — kodun eski
+varsayılanı buydu ve sessizce 404 alıyordu.
+
+**RAG'da harici vektör veritabanı YOK (ADR 014, 25 Ağu).** `qdrant.ssyz.org.tr`
+DNS'te çözülmüyordu ve öyle bir servisin tahsis edildiğine dair belge yoktu.
+15.151 paragraf yerel bir `.npz` dosyasında duruyor, arama numpy nokta çarpımı
+— milisaniyeler. `make vektor` ile kurulur (~70 sn), `make durum` kurulu olup
+olmadığını gösterir. İndeks 36 MB, depoda durmuyor; **çevrimdışı pakete elle
+konmalı** (E-14).
+
+**Sessiz yutma yasak.** Gömme hatası da, arama hatası da fırlatılır. Bu kural
+bedava öğrenilmedi: `embed_text` sıfır vektörü, `vektor_ara` boş liste
+döndürdüğü için RAG dört gün hiç çalışmadan çalışıyor göründü. Sıfır vektörü de
+uydurma bir değerdir — `Alan(deger=..., yontem="belirtilmemis")` neden
+patlıyorsa o da patlamalı.
+
 Yeni bağımlılık eklendiğinde `make lisanslar`, yeni model eklendiğinde
 `make lisanslar-teyit` çalıştır (lisansı HF'ten çeker, tutmazsa kırılır).
 
@@ -161,9 +185,10 @@ make crawl        # kampanya topla
 make extract      # çıkarım (kural + LLM) -> SQLite  [EVREN]
 make extract-yerel      # aynı çıkarım, yerel Ollama ile (yedek / hava boşluğu)
 make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
-make durum        # kaç kampanya, kaç banka
+make durum        # kaç kampanya, kaç banka, RAG indeksi kurulu mu
+make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make run          # Streamlit arayüzü
-make test         # testler (691 test)
+make test         # testler (706 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make lisanslar    # bağımlılık + model lisans raporu
 make lisanslar-teyit    # aynı rapor + model lisanslarını HF'ten teyit et (ağ)

@@ -1,12 +1,12 @@
 # Bağımlılık ve Model Lisans Raporu
 
-_Otomatik üretildi: 25.08.2026 13:26 · `make lisanslar`_
+_Otomatik üretildi: 25.08.2026 23:03 · `make lisanslar`_
 
 Şartname 5.10: *"Açık kaynaklı gözüküp, uygulama aşamasında lisans problemi çıkarma potansiyeli olan çözümler kullanılmamalıdır."*
 
 ## Sonuç
 
-- Taranan paket: **85** (bunun **79** tanesi `requirements.txt` kapanışında)
+- Taranan paket: **89** (bunun **80** tanesi `requirements.txt` kapanışında)
 - Taranan model: **4**
 - Kısıtlı/şüpheli lisans: **0**
 
@@ -17,39 +17,46 @@ _Otomatik üretildi: 25.08.2026 13:26 · `make lisanslar`_
 Modeller pip paketi değildir; yukarıdaki tarama onları görmez. Şartname
 5.10'un asıl hedefi ise model lisanslarıdır — bu bölüm o yüzden var.
 
-Lisanslar **2026-08-24** tarihinde Hugging Face depo üst verisinden çekilmiştir; ham yanıt: [`docs/kanit/model-lisanslari.json`](kanit/model-lisanslari.json). Modelin kendi beyanına ya da bizim hafızamıza dayanılmıyor.
+Lisanslar **2026-08-25** tarihinde Hugging Face depo üst verisinden çekilmiştir; ham yanıt: [`docs/kanit/model-lisanslari.json`](kanit/model-lisanslari.json). Modelin kendi beyanına ya da bizim hafızamıza dayanılmıyor.
 
 | Kullanım | Nerede koşuyor | Hugging Face deposu | Lisans | Teyit |
 |---|---|---|---|---|
-| Çıkarım — varsayılan, ölçüm koşuları | EVREN `llm-large` | `Qwen/Qwen3.5-122B-A10B` | **apache-2.0** | ✅ HF API · 2026-08-24 |
-| Çıkarım — seçilebilir hızlı uç, **varsayılan değil** | EVREN `llm-fast` (`--model llm-fast`) | `Qwen/Qwen3.6-35B-A3B` | **apache-2.0** | ✅ HF API · 2026-08-24 |
-| Çıkarım — yerel yedek, hava boşluğu demosu | Ollama `qwen3.5:4b-q4_K_M` | `Qwen/Qwen3.5-4B` | **apache-2.0** | ✅ HF API · 2026-08-24 |
-| Gömme (S-09) — **aday**, henüz kullanılmıyor | EVREN `bge-m3-embed` · yerel `BAAI/bge-m3` | `BAAI/bge-m3` | **mit** | ✅ HF API · 2026-08-24 |
+| Çıkarım — varsayılan, ölçüm koşuları | EVREN `llm-large` | `Qwen/Qwen3.5-122B-A10B` | **apache-2.0** | ✅ HF API · 2026-08-25 |
+| Çıkarım — seçilebilir hızlı uç, **varsayılan değil** | EVREN `llm-fast` (`--model llm-fast`) | `Qwen/Qwen3.6-35B-A3B` | **apache-2.0** | ✅ HF API · 2026-08-25 |
+| Çıkarım — yerel yedek, hava boşluğu demosu | Ollama `qwen3.5:4b-q4_K_M` | `Qwen/Qwen3.5-4B` | **apache-2.0** | ✅ HF API · 2026-08-25 |
+| RAG gömme — **kullanılıyor** (`src/vektor_db.py`) | EVREN `bge-m3-embed` · yerel `BAAI/bge-m3` | `BAAI/bge-m3` | **mit** | ✅ HF API · 2026-08-25 |
 
 Notlar:
 
 - `Qwen/Qwen3.5-122B-A10B` — MoE, 122B toplam / 10B aktif, BF16, 262.144 token bağlam.
 - `Qwen/Qwen3.6-35B-A3B` — MoE. Ölçümde şema geçerliliği `llm-large`'ın altında kaldığı için varsayılan yapılmadı; bayrakla seçilebildiği sürece lisansı da teyitli olmalı.
 - `Qwen/Qwen3.5-4B` — EVREN düştüğünde aynı kod yolu yerelde koşar (`LLM_SAGLAYICI=ollama`).
-- `BAAI/bge-m3` — S-09'un gömme modeli. Gemma tabanlı alternatiflere gerek yok.
+- `BAAI/bge-m3` — RAG gömme modeli. EVREN'de `bge-m3-embed` ucu **1024 boyut** veriyor — BGE-M3'ün bilinen boyutu; ada ek kimlik teyidi (ADR 013).
 
 ### EVREN uçları — hangisi kullanılıyor, hangisi neden kullanılmıyor
 
 Çıkarım, T.C. Cumhurbaşkanlığı SSB'nin yarışmaya tahsis ettiği **EVREN**
 servisinde koşuyor. Servis `GET /v1/models` ile on uç yayımlıyor; hepsi
-takma addır, model kimliği döndürmez. Kullandığımız uçların kimliği EVREN
-model kartından teyitlidir, kalanlarınki **değildir** — o yüzden kullanılmıyorlar.
+takma addır, model kimliği döndürmez.
+
+**Duruş (ADR 013):** EVREN yarışmayı düzenleyen kurumun yarışmacılara
+tahsis ettiği servistir; sunduğu modeller lisans açısından uygun sayılır.
+Buna yaslanmak zorunda değiliz — aşağıda ✅ işaretli, yani **fiilen
+kullandığımız** uçların hepsinin lisansı bağımsız olarak teyitlidir.
+Kalanlar lisans yüzünden değil, **bu senaryoda ihtiyaç olmadığı için**
+kullanılmıyor.
 
 | Uç | Model kimliği | Durum |
 |---|---|---|
 | `llm-large` | Qwen3.5-122B-A10B — Apache-2.0 | ✅ kullanılıyor |
 | `llm-fast` | Qwen3.6-35B-A3B — Apache-2.0 | 🟡 `--model llm-fast` ile seçilebilir; varsayılan değil, ölçüm koşuları `llm-large` ile yapıldı |
-| `bge-m3-embed` · `bge-m3-sparse` · `bge-m3-colbert` | adı BGE-M3'ü işaret ediyor — MIT | 🟡 S-09 adayı; kullanılmadan önce kimlik model kartından teyit edilecek |
-| `embed` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor — jenerik ad; EmbeddingGemma gibi kısıtlı bir model olma ihtimali dışlanamaz |
-| `rerank` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor — bu senaryoda ihtiyaç yok |
-| `router` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor |
-| `guard` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor |
-| `vlm` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor — görsel girdi yok |
+| `bge-m3-embed` | BGE-M3 — MIT; 1024 boyut ölçüldü (kimlik teyidi) | ✅ kullanılıyor — RAG gömme |
+| `bge-m3-sparse` · `bge-m3-colbert` | adı BGE-M3'ü işaret ediyor — MIT | 🟡 kullanılmıyor — ihtiyaç yok |
+| `embed` | kimlik doğrulanmadı — 2560 boyut | 🟡 kullanılmıyor — lisanstan bağımsız olarak da uymuyor: 2560 boyut veriyor, `VECTOR_SIZE` 1024 |
+| `rerank` | kimlik doğrulanmadı | 🟡 kullanılmıyor — bu senaryoda ihtiyaç yok |
+| `router` | kimlik doğrulanmadı | 🟡 kullanılmıyor |
+| `guard` | kimlik doğrulanmadı | 🟡 kullanılmıyor |
+| `vlm` | kimlik doğrulanmadı | 🟡 kullanılmıyor — görsel girdi yok |
 
 ### Servis üzerinden kullanmak lisans durumunu değiştirir mi?
 
@@ -88,13 +95,13 @@ Hayır — üç sebeple, üçü de teslimde sorulabilir:
 
 ## Tam liste
 
-Sanal ortamda kurulu **85** paketin **79** tanesi
+Sanal ortamda kurulu **89** paketin **80** tanesi
 `requirements.txt`'ten (doğrudan ya da geçişli olarak) gelir; kalanlar ortamda
 kalmış, teslim edilen koda dahil olmayan paketlerdir. Ayrımı yazmak gerekiyor:
 `pip install -r requirements.txt` ile kurulan temiz bir ortamda **ortam**
 kapsamlı satırlar bulunmaz.
 
-> ⚠️ Ortam kapsamlı paketler: `httpcore2`, `httpx2`, `jiter`, `openai`, `pip`, `truststore`. Bunlardan `openai`, projenin **kullanmadığı** bir istemcidir — EVREN'e düz `httpx` ile gidilir (`src/extraction/saglayici.py`), bu bilinçli bir karardır. Ortamda durması onu bağımlılık yapmaz.
+> ⚠️ Ortam kapsamlı paketler: `grpcio`, `grpcio-tools`, `h2`, `hpack`, `hyperframe`, `pip`, `portalocker`, `qdrant-client`, `setuptools`. Ortamda durmaları onları bağımlılık yapmaz. `qdrant-client` **artık kullanılmıyor** — harici vektör veritabanı yolu bırakıldı (ADR 014), `requirements.txt`'ten çıkarıldı; sanal ortamda kalıntı olarak duruyor. Çıkarım yolu EVREN'e düz `httpx` ile gider (`src/extraction/saglayici.py`); `openai` istemcisi yalnız gömme ucu için kullanılır (`src/vektor_db.py`) ve `requirements.txt`'te yazılıdır.
 
 | Paket | Sürüm | Lisans | Kapsam |
 |---|---|---|---|
@@ -106,37 +113,39 @@ kapsamlı satırlar bulunmaz.
 | `blinker` | 1.9.0 | OSI Approved :: MIT License | proje |
 | `cachetools` | 5.5.2 | MIT | proje |
 | `certifi` | 2026.7.22 | MPL-2.0 | proje |
-| `charset-normalizer` | 3.5.1 | MIT | proje |
+| `charset-normalizer` | 3.4.9 | MIT | proje |
 | `click` | 8.4.2 | BSD-3-Clause | proje |
-| `colorama` | 0.4.6 | OSI Approved :: BSD License | proje |
 | `courlan` | 1.4.0 | Apache-2.0 | proje |
 | `dateparser` | 1.4.2 | BSD-3-Clause | proje |
+| `distro` | 1.9.0 | Apache License, Version 2.0 | proje |
 | `fastapi` | 0.115.5 | OSI Approved :: MIT License | proje |
 | `gitdb` | 4.0.12 | BSD License | proje |
-| `GitPython` | 3.1.59 | BSD-3-Clause | proje |
-| `greenlet` | 3.5.5 | MIT AND PSF-2.0 | proje |
+| `GitPython` | 3.1.58 | BSD-3-Clause | proje |
+| `grpcio` | 1.83.0 | Apache-2.0 | ortam |
+| `grpcio-tools` | 1.71.2 | Apache License 2.0 | ortam |
 | `h11` | 0.16.0 | MIT | proje |
+| `h2` | 4.4.1 | MIT | ortam |
+| `hpack` | 4.2.0 | MIT | ortam |
 | `htmldate` | 1.10.0 | Apache-2.0 | proje |
 | `httpcore` | 1.0.9 | BSD-3-Clause | proje |
-| `httpcore2` | 2.12.0 | BSD-3-Clause | ortam |
 | `httpx` | 0.27.2 | BSD-3-Clause | proje |
-| `httpx2` | 2.12.0 | BSD-3-Clause | ortam |
-| `idna` | 3.19 | BSD-3-Clause | proje |
+| `hyperframe` | 6.1.0 | OSI Approved :: MIT License | ortam |
+| `idna` | 3.18 | BSD-3-Clause | proje |
 | `iniconfig` | 2.3.0 | MIT | proje |
 | `Jinja2` | 3.1.6 | OSI Approved :: BSD License | proje |
-| `jiter` | 0.16.0 | MIT | ortam |
+| `jiter` | 0.16.0 | MIT | proje |
 | `jsonschema` | 4.26.0 | MIT | proje |
 | `jsonschema-specifications` | 2025.9.1 | MIT | proje |
 | `jusText` | 3.0.2 | The BSD 2-Clause License | proje |
-| `lxml` | 6.1.2 | BSD-3-Clause | proje |
+| `lxml` | 6.1.1 | BSD-3-Clause | proje |
 | `lxml_html_clean` | 0.4.5 | BSD-3-Clause | proje |
 | `markdown-it-py` | 4.2.0 | OSI Approved :: MIT License | proje |
 | `MarkupSafe` | 3.0.3 | BSD-3-Clause | proje |
 | `mdurl` | 0.1.2 | OSI Approved :: MIT License | proje |
-| `narwhals` | 2.25.0 | MIT | proje |
+| `narwhals` | 2.24.0 | MIT | proje |
 | `numpy` | 2.1.3 | OSI Approved :: BSD License | proje |
 | `ollama` | 0.6.2 | MIT | proje |
-| `openai` | 3.3.1 | Apache-2.0 | ortam |
+| `openai` | 1.55.0 | Apache-2.0 | proje |
 | `packaging` | 24.2 | OSI Approved :: Apache Software License / OSI Approved :: BSD License | proje |
 | `pandas` | 2.2.3 | OSI Approved :: BSD License | proje |
 | `pillow` | 11.3.0 | MIT-CMU | proje |
@@ -144,18 +153,20 @@ kapsamlı satırlar bulunmaz.
 | `pip-licenses` | 5.0.0 | MIT | proje |
 | `plotly` | 5.24.1 | MIT | proje |
 | `pluggy` | 1.6.0 | MIT | proje |
+| `portalocker` | 2.10.1 | BSD-3-Clause | ortam |
 | `prettytable` | 3.18.0 | BSD-3-Clause | proje |
 | `protobuf` | 5.29.6 | 3-Clause BSD License | proje |
-| `pyarrow` | 25.0.1 | Apache-2.0 | proje |
+| `pyarrow` | 25.0.0 | Apache-2.0 | proje |
 | `pydantic` | 2.9.2 | MIT | proje |
 | `pydantic_core` | 2.23.4 | MIT | proje |
 | `pydeck` | 0.9.3 | Apache License 2.0 | proje |
-| `Pygments` | 2.21.0 | BSD-2-Clause | proje |
+| `Pygments` | 2.20.0 | BSD-2-Clause | proje |
 | `pytest` | 8.3.3 | MIT | proje |
 | `python-dateutil` | 2.9.0.post0 | Dual License | proje |
 | `python-dotenv` | 1.0.1 | BSD-3-Clause | proje |
 | `pytz` | 2026.3.post1 | MIT | proje |
 | `PyYAML` | 6.0.2 | MIT | proje |
+| `qdrant-client` | 1.12.1 | Apache-2.0 | ortam |
 | `referencing` | 0.37.0 | MIT | proje |
 | `regex` | 2026.7.19 | Apache-2.0 AND CNRI-Python | proje |
 | `requests` | 2.34.2 | Apache-2.0 | proje |
@@ -163,6 +174,7 @@ kapsamlı satırlar bulunmaz.
 | `rpds-py` | 2026.6.3 | MIT | proje |
 | `ruff` | 0.7.4 | MIT | proje |
 | `selectolax` | 0.3.27 | MIT license | proje |
+| `setuptools` | 84.0.0 | MIT | ortam |
 | `six` | 1.17.0 | MIT | proje |
 | `smmap` | 5.0.3 | BSD-3-Clause | proje |
 | `sniffio` | 1.3.1 | MIT OR Apache-2.0 | proje |
@@ -174,14 +186,13 @@ kapsamlı satırlar bulunmaz.
 | `toml` | 0.10.2 | MIT | proje |
 | `tomli` | 2.4.1 | MIT | proje |
 | `tornado` | 6.5.8 | Apache-2.0 | proje |
+| `tqdm` | 4.70.0 | MPL-2.0 AND MIT | proje |
 | `trafilatura` | 1.12.2 | Apache-2.0 | proje |
-| `truststore` | 0.10.4 | MIT | ortam |
 | `typing_extensions` | 4.16.0 | PSF-2.0 | proje |
 | `tzdata` | 2026.3 | Apache-2.0 | proje |
 | `tzlocal` | 5.4.4 | MIT | proje |
 | `urllib3` | 2.7.0 | MIT | proje |
 | `uvicorn` | 0.32.1 | BSD-3-Clause | proje |
-| `watchdog` | 6.0.0 | Apache-2.0 | proje |
 | `wcwidth` | 0.8.2 | MIT | proje |
 
 ---

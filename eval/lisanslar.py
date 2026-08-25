@@ -82,26 +82,28 @@ MODELLER = [
         "not": "EVREN düştüğünde aynı kod yolu yerelde koşar (`LLM_SAGLAYICI=ollama`).",
     },
     {
-        "kullanim": "Gömme (S-09) — **aday**, henüz kullanılmıyor",
+        "kullanim": "RAG gömme — **kullanılıyor** (`src/vektor_db.py`)",
         "nerede": "EVREN `bge-m3-embed` · yerel `BAAI/bge-m3`",
         "depo": "BAAI/bge-m3",
         "beklenen": "mit",
-        "not": "S-09'un gömme modeli. Gemma tabanlı alternatiflere gerek yok.",
+        "not": "RAG gömme modeli. EVREN'de `bge-m3-embed` ucu **1024 boyut** veriyor — BGE-M3'ün bilinen boyutu; ada ek kimlik teyidi (ADR 013).",
     },
 ]
 
-# EVREN'in yayımladığı uçlar (`GET /v1/models`, 24 Ağu 2026 koşusu). Kullandığımız
-# uçların kimliği model kartından teyitli; kalanların DEĞİL. Bu tablo "bakmadık"
-# ile "baktık, gerek yok" arasındaki farkı yazıya döker.
+# EVREN'in yayımladığı uçlar (`GET /v1/models`, 25 Ağu 2026 koşusu). ADR 013:
+# EVREN yarışmayı düzenleyen kurumun tahsis ettiği servistir, sunduğu modeller
+# lisans açısından uygun sayılır — ama kullandığımız her modelin lisansı ayrıca
+# teyitli. Bu tablo "bakmadık" ile "baktık, gerek yok" farkını yazıya döker.
 EVREN_UCLARI = [
     ("`llm-large`", "Qwen3.5-122B-A10B — Apache-2.0", "✅ kullanılıyor"),
     ("`llm-fast`", "Qwen3.6-35B-A3B — Apache-2.0", "🟡 `--model llm-fast` ile seçilebilir; varsayılan değil, ölçüm koşuları `llm-large` ile yapıldı"),
-    ("`bge-m3-embed` · `bge-m3-sparse` · `bge-m3-colbert`", "adı BGE-M3'ü işaret ediyor — MIT", "🟡 S-09 adayı; kullanılmadan önce kimlik model kartından teyit edilecek"),
-    ("`embed`", "**kimlik doğrulanmadı**", "⛔ kullanılmıyor — jenerik ad; EmbeddingGemma gibi kısıtlı bir model olma ihtimali dışlanamaz"),
-    ("`rerank`", "**kimlik doğrulanmadı**", "⛔ kullanılmıyor — bu senaryoda ihtiyaç yok"),
-    ("`router`", "**kimlik doğrulanmadı**", "⛔ kullanılmıyor"),
-    ("`guard`", "**kimlik doğrulanmadı**", "⛔ kullanılmıyor"),
-    ("`vlm`", "**kimlik doğrulanmadı**", "⛔ kullanılmıyor — görsel girdi yok"),
+    ("`bge-m3-embed`", "BGE-M3 — MIT; 1024 boyut ölçüldü (kimlik teyidi)", "✅ kullanılıyor — RAG gömme"),
+    ("`bge-m3-sparse` · `bge-m3-colbert`", "adı BGE-M3'ü işaret ediyor — MIT", "🟡 kullanılmıyor — ihtiyaç yok"),
+    ("`embed`", "kimlik doğrulanmadı — 2560 boyut", "🟡 kullanılmıyor — lisanstan bağımsız olarak da uymuyor: 2560 boyut veriyor, `VECTOR_SIZE` 1024"),
+    ("`rerank`", "kimlik doğrulanmadı", "🟡 kullanılmıyor — bu senaryoda ihtiyaç yok"),
+    ("`router`", "kimlik doğrulanmadı", "🟡 kullanılmıyor"),
+    ("`guard`", "kimlik doğrulanmadı", "🟡 kullanılmıyor"),
+    ("`vlm`", "kimlik doğrulanmadı", "🟡 kullanılmıyor — görsel girdi yok"),
 ]
 
 # Elle incelenmesi gereken lisanslar (kullanıyoruz ama gerekçesini yazıyoruz).
@@ -330,8 +332,14 @@ def _model_bolumu(kanit: dict | None) -> list[str]:
         "",
         "Çıkarım, T.C. Cumhurbaşkanlığı SSB'nin yarışmaya tahsis ettiği **EVREN**",
         "servisinde koşuyor. Servis `GET /v1/models` ile on uç yayımlıyor; hepsi",
-        "takma addır, model kimliği döndürmez. Kullandığımız uçların kimliği EVREN",
-        "model kartından teyitlidir, kalanlarınki **değildir** — o yüzden kullanılmıyorlar.",
+        "takma addır, model kimliği döndürmez.",
+        "",
+        "**Duruş (ADR 013):** EVREN yarışmayı düzenleyen kurumun yarışmacılara",
+        "tahsis ettiği servistir; sunduğu modeller lisans açısından uygun sayılır.",
+        "Buna yaslanmak zorunda değiliz — aşağıda ✅ işaretli, yani **fiilen",
+        "kullandığımız** uçların hepsinin lisansı bağımsız olarak teyitlidir.",
+        "Kalanlar lisans yüzünden değil, **bu senaryoda ihtiyaç olmadığı için**",
+        "kullanılmıyor.",
         "",
         "| Uç | Model kimliği | Durum |",
         "|---|---|---|",
@@ -457,9 +465,13 @@ def rapor_uret(model_kaniti: dict | None = None) -> tuple[str, list[str]]:
         satirlar += [
             "> ⚠️ Ortam kapsamlı paketler: "
             + ", ".join(f"`{ad}`" for ad in ortam_paketleri)
-            + ". Bunlardan `openai`, projenin **kullanmadığı** bir istemcidir — EVREN'e "
-            "düz `httpx` ile gidilir (`src/extraction/saglayici.py`), bu bilinçli bir "
-            "karardır. Ortamda durması onu bağımlılık yapmaz.",
+            + ". Ortamda durmaları onları bağımlılık yapmaz. `qdrant-client` "
+            "**artık kullanılmıyor** — harici vektör veritabanı yolu bırakıldı "
+            "(ADR 014), `requirements.txt`'ten çıkarıldı; sanal ortamda kalıntı "
+            "olarak duruyor. Çıkarım yolu EVREN'e düz `httpx` ile gider "
+            "(`src/extraction/saglayici.py`); `openai` istemcisi yalnız gömme "
+            "ucu için kullanılır (`src/vektor_db.py`) ve `requirements.txt`'te "
+            "yazılıdır.",
             "",
         ]
     satirlar += [

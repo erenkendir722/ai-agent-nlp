@@ -21,11 +21,14 @@ import re
 from dataclasses import dataclass, field
 from enum import StrEnum
 
+import httpx as _httpx
+import openai as _openai
+
 from src.comparison.karsilastirma import Agirliklar, avantaj_skorla, uyarilar
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
 from src.schema import BIRIM_GOSTERIMLERI, SAYISAL_ALANLAR, Birim
-from src.vektor_db import vektor_ara
+from src.vektor_db import IndeksYok, vektor_ara
 
 log = logging.getLogger(__name__)
 
@@ -653,37 +656,66 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     )
 
 
+# RAG'ın zarifçe düşeceği hata türleri: EVREN gömme ucuna ulaşılamaması.
+# Metin eşleştirmesi yerine TÜR yakalanıyor — hata metinleri işletim
+# sistemine göre değişiyor (Windows "getaddrinfo failed", macOS "nodename nor
+# servname provided") ve metne dayalı eski kural Mac'te tutmuyor, chatbot'u
+# ilk koşul sorusunda çökertiyordu.
+_BAGLANTI_HATALARI = (
+    _httpx.ConnectError,
+    _httpx.ConnectTimeout,
+    _httpx.ReadTimeout,
+    _openai.APIConnectionError,
+    _openai.APITimeoutError,
+    OSError,  # socket.gaierror bunun altında
+)
+
 
 def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
-    """Metinsel sorular — Qdrant vektör benzerlik araması (EVREN Embedding) ile getirilir."""
+    """Metinsel sorular — gömme + kosinüs benzerliğiyle getirilir (ADR 014)."""
     if not kayitlar:
         return Cevap(
             parcalar=[CevapParcasi("Bu bilgi veri setinde bulunmuyor.", Koken.DUZ)],
             niyet=Niyet.KOSUL_SORGUSU,
         )
 
-    # Aramayı sınırlandırmak için seçili kayıtların id'lerini alalım
-    filtre_idleri = [k.kampanya_id for k in kayitlar]
-    
-    # Qdrant'tan vektör araması yap
+    # Aramayı yalnız bu sorunun kapsadığı kampanyalarla sınırla
+    secili_idler = [k.kampanya_id for k in kayitlar]
+
     try:
-        arama_sonuclari = vektor_ara(sorgu=soru, limit=3, filter_ids=filtre_idleri)
-    except Exception as e:
-        # Sadece DNS / bağlantı / timeout hatalarını veya ResponseHandlingException yakalayarak gizliyoruz.
-        err_str = str(e).lower()
-        if "responsehandlingexception" in err_str or "getaddrinfo failed" in err_str or "connection" in err_str or "timeout" in err_str:
-            log.warning(f"RAG araması (Qdrant) bağlantı hatası nedeniyle başarısız: {e}")
-            return Cevap(
-                parcalar=[CevapParcasi(
-                    "Yerel modda çalıştığı için bulut destekli metin araması (RAG) devre dışıdır. "
-                    "Banka kampanyalarının kâr payı, vade, tutar gibi sayısal verilerini sormaya devam edebilirsiniz.",
-                    Koken.DUZ,
-                )],
-                niyet=Niyet.KOSUL_SORGUSU,
-            )
-        # Başka bir bug ise (örn. TypeError, ValueError), hatayı gizlemeden fırlat.
-        raise e
-    
+        arama_sonuclari = vektor_ara(sorgu=soru, limit=3, kampanya_idleri=secili_idler)
+    except IndeksYok as e:
+        # Kurulum eksiği — bağlantı sorunu değil. Ayrı mesaj veriliyor ki
+        # "ağ mı bozuk, indeks mi yok" diye aranmasın.
+        log.warning("RAG indeksi kurulmamış: %s", e)
+        return Cevap(
+            parcalar=[CevapParcasi(
+                "Metin araması için vektör indeksi henüz kurulmamış "
+                "(`make vektor`). Kampanyaların kâr payı, vade, tutar gibi "
+                "sayısal verilerini sormaya devam edebilirsiniz.",
+                Koken.DUZ,
+            )],
+            niyet=Niyet.KOSUL_SORGUSU,
+        )
+    except _BAGLANTI_HATALARI as e:
+        # Yalnız bağlantı/DNS/timeout gizlenir. Eskiden bu ayrım hata METNİNDE
+        # aranıyordu ve metin işletim sistemine göre değişiyor: Windows
+        # "getaddrinfo failed" der, macOS "nodename nor servname provided".
+        # Yani kural Windows'ta tutuyor, Mac'te tutmuyordu — Mac'te ilk koşul
+        # sorusu chatbot'u çökertiyordu. Artık tür yakalanıyor, metin değil.
+        log.warning(f"RAG araması başarısız — EVREN gömme ucuna ulaşılamıyor: {e}")
+        return Cevap(
+            parcalar=[CevapParcasi(
+                "Metin araması şu anda erişilemiyor (gömme servisine ulaşılamadı). "
+                "Banka kampanyalarının kâr payı, vade, tutar gibi sayısal verilerini sormaya devam edebilirsiniz.",
+                Koken.DUZ,
+            )],
+            niyet=Niyet.KOSUL_SORGUSU,
+        )
+    # Başka bir hata (TypeError, ValueError, 404 gibi yapılandırma hatası)
+    # gizlenmez — bilerek fırlatılır.
+
+
     if not arama_sonuclari:
         return Cevap(
             parcalar=[CevapParcasi(

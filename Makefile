@@ -45,6 +45,9 @@ seed:  ## tohum veriden çıkarım yap (ağ gerekmez)
 durum:  ## veritabanı özeti
 	$(PYTHON) -m src.boru_hatti durum
 
+vektor:  ## RAG vektör indeksini kur (gömme + kosinüs, ~2 dk)
+	$(PYTHON) -m src.boru_hatti vektor
+
 run:  ## Streamlit arayüzünü başlat
 	$(ARROW_HAVUZ) $(STREAMLIT) run app/Genel_Bakis.py
 
