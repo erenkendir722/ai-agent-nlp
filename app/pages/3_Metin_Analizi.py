@@ -143,9 +143,12 @@ if st.button("Analiz Et (Yapay Zeka ile Çıkar)", type="primary"):
       import pandas as pd
       df_satirlar = pd.DataFrame(satirlar)
       def format_motor(x):
-          if x == "KURAL": return "<span style='background-color: #00BCD4; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>KURAL</span>"
-          if x == "LLM": return "<span style='background-color: #2196F3; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>LLM</span>"
-          if x == "HİBRİT" or x == "HIBRIT": return "<span style='background-color: #9C27B0; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>HİBRİT</span>"
+          if x == "KURAL":
+              return "<span style='background-color: #00BCD4; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>KURAL</span>"
+          if x == "LLM":
+              return "<span style='background-color: #2196F3; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>LLM</span>"
+          if x == "HİBRİT" or x == "HIBRIT":
+              return "<span style='background-color: #9C27B0; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>HİBRİT</span>"
           return x
       df_satirlar["Motor"] = df_satirlar["Motor"].apply(format_motor)
       df_satirlar["Güven"] = df_satirlar["Güven"].apply(lambda g: f"<span title='Modelin kendi bildirdiği güven skoru; bağımsız kalibrasyon testi yapılmamıştır.' style='cursor: help; text-decoration: underline dotted;'>{g}</span>")

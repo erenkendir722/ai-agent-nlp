@@ -5,10 +5,10 @@ kampanya verilerini Qdrant'a yükler ve benzerlik araması yapar.
 """
 
 import os
+from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchAny
 import logging
 from openai import OpenAI
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
 
 from src.depolama import KampanyaKaydi
 
@@ -110,7 +110,6 @@ def kayitlari_vektorlestir(kayitlar: list[KampanyaKaydi]):
         )
         log.info(f"{len(points)} vektör Qdrant'a yazıldı.")
 
-from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchAny
 
 def vektor_ara(sorgu: str, limit: int = 3, filter_ids: list[str] | None = None) -> list[dict]:
     """Sorguya en benzer metinleri Qdrant'tan getirir.

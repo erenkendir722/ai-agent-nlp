@@ -133,7 +133,7 @@ def test_uygunluk_cikarilmamis_kayit_isaretlenir(ajan):
     bilmediği bir şeyi biliyormuş gibi sunmaması için işaretlenirler."""
     sonuc = ajan.degerlendir(PROFIL, _kampanya(uygunluk=None))
     assert sonuc.veri_eksik is True
-    assert any("çıkarılamadı" in g.aciklama for g in sonuc.gerekceler)
+    assert any("yayınlanmadığı" in g.aciklama for g in sonuc.gerekceler)
 
 
 def test_oran_yoksa_maliyet_uydurulmaz(ajan):
