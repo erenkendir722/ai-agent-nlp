@@ -290,6 +290,12 @@ def genel_rapor(gorevler: dict[str, Gorev]) -> None:
 
 
 def main(argv: list[str]) -> int:
+    # Windows konsolu cp1254; panodaki ✅/⛔ işaretleri orada UnicodeEncodeError
+    # fırlatıyordu — `make gorev-dogrula` doğrulamayı bitirip son satırda
+    # çöküyordu. Yalnız CLI yolunda; testler modülü içe aktarırken dokunulmaz.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     if not PANO.exists():
         print(f"Pano bulunamadı: {PANO}")
         return 1
