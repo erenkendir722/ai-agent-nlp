@@ -97,6 +97,7 @@ planlanmalı.
 | 5.7 | Ürünlerin karşılaştırılabilir hale getirilmesi | ✅ | `src/comparison/karsilastirma.py` | Eren |
 | 5.7 | 5 karşılaştırma kriteri (en düşük kâr payı, en yüksek ödül, en uzun vade, en düşük masraf, en avantajlı) | ✅ | Beşi de kodda | Eren |
 | 5.8 | Veri ön işleme adımları | ✅ | `src/preprocessing/normalizasyon.py` | Samet |
+| 5.9 | Kurum sistemlerine entegre edilebilir mimari | ✅ | **25 Ağu (E-10):** [`docs/KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md) — yerleşim topolojisi, LDAP/AD kimliğinin uygulama DIŞINDA çözülmesi, kurumsal vekil ve TLS araya girme (kök sertifika tuzağı), veri ambarına gecelik besleme (üç tablo + kod parmak izi), denetim izi (kanıt zinciri zaten veri modelinde), ölçeklenebilirlik değerlendirmesi. Neyin bugün çalıştığı ve neyin kurum tarafında yapılacağı ayrı ayrı işaretli. | Eren (E-10) |
 | 5.9 | Kurum içi sunucularda çalışabilirlik | ✅ | **18 Ağu: `docker compose up -d` koşuldu.** 3 konteyner healthy · Streamlit :8501 ve API :8000/docs 200 · LLM konteyner içinde çıkarım yaptı (19,1 sn) · `exec` ile boru hattı koştu. Kanıt: `docs/KURULUM.md` | Eren (E-02) |
 | 5.9 | Veri güvenliği · müşteri verisi kurum dışına çıkmamalı | ✅ | `tests/test_sizinti_yok.py` (6 test). **24 Ağu — kapsam netleşti:** kural, normalizasyon, karşılaştırma ve chatbot katmanları hâlâ tamamen kapalı devre; testler bunu ölçmeye devam ediyor. Çıkarım LLM'i T.C. Cumhurbaşkanlığı SSB tahsisli **EVREN** servisine çıkar (`evren-llmapi.ssyz.org.tr`) — ticari bulut değil, yarışma altyapısı. İzinli tek dış uç odur ve `test_llm_ucu_yalnizca_yerel_veya_evren` bunu sözleşme hâline getirir. **24 Ağu (G-14):** korpusun kendisi de tarandı — 1024 ham kayıtta kimliği belirli gerçek kişiye ait veri **yok** (`docs/kanit/KVKK_TARAMASI.md`, `make kanit-kvkk`). | Eren · Görkem |
 | 5.9 | Dış servislere bağımlı olmadan çalışabilme | ✅ | **Bağımlılık yok: EVREN düşerse `make extract-yerel` ile yerel Ollama'ya tek komutla dönülür** (`LLM_SAGLAYICI=ollama`), kod yolu aynıdır. **18 Ağu: hava boşluğu ölçüldü.** `ic-ag` ağı `internal: true`; ollama yalnız orada → 8.8.8.8/1.1.1.1/DNS **anında engellendi** (rota yok). Bu haldeyken LLM çıkarımı 24,4 sn'de koştu, chatbot kaynak gösterdi. Sınır: uygulama/api port yayını için `sunum` ağında da, oradan çıkış var — kanıtı `tests/test_sizinti_yok.py`. Ayrıntı: `docs/KURULUM.md` | Eren (E-07) |
@@ -145,7 +146,7 @@ planlanmalı.
 | **%30** | Model Başarısı ve Anlamlandırma | Altın set + `make eval` + ablasyon | 🔴 Altın set 16 Ağu'da bitmezse ölçüm yok |
 | **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 3 ekran, API | 🟠 96/300 kampanya |
 | **%20** | Teknik İmplementasyon ve Mimari | Donmuş şema, hibrit çıkarım, modüler yapı | ✅ |
-| **%20** | On-Prem Uygulanabilirlik | Docker, yerel LLM, sızıntı testleri | 🔴 Docker hiç çalıştırılmadı |
+| **%20** | On-Prem Uygulanabilirlik | Docker (**18 Ağu'da koşuldu**), yerel LLM yolu, hava boşluğu ölçümü, sızıntı testleri, **[`KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md)** (LDAP/AD · vekil · ambar besleme · denetim izi) | ✅ Bu satır 18 Ağu'dan beri bayattı — Docker koşulmuştu, tabloya yansımamıştı |
 | **%10** | Yenilikçilik ve Yaratıcılık | Kanıt zinciri, sayısal doğrulama kalkanı, hava boşluğu | 🟠 Dokümantasyon netliği de bu kalemde |
 
 > Madde 7 «Eksik veya farklı yazılmış bilgiler karşısında doğru sonuç üretebilmesi»

@@ -597,10 +597,21 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         ters vekil (reverse proxy) gerektirir — yeni bağımlılık, 5 gün kala
         yapılmadı. Sunumda dürüst cümle `make hava-boslugu` çıktısında yazıyor.
 
-- [ ] **E-10** Kurumsal entegrasyon mimarisi diyagramı · 📅 23 Ağu
-      ↳ Bitti sayılır: `docs/KURUMSAL_ENTEGRASYON.md` — LDAP/AD kimlik, kurumsal
-        proxy arkasında çalışma, veri ambarına toplu besleme, denetim izi
-      ↳ **Kod yazmana gerek yok, mimari çizim yeter.** ~2 saat, doğrudan puan.
+- [x] **E-10** ✅ **Kurumsal entegrasyon mimarisi** *(25 Ağu)*
+      ↳ `docs/KURUMSAL_ENTEGRASYON.md` — dördü de var: **LDAP/AD kimlik**
+        (uygulamanın DIŞINDA, ters vekilde — yarım kimlik katmanı olmayandan
+        tehlikelidir), **kurumsal vekil** (+ TLS araya girme kök sertifika
+        tuzağı), **veri ambarına gecelik besleme** (üç tablo, kod parmak izi
+        dahil), **denetim izi** (kanıt zinciri zaten veri modelinde).
+      ↳ Yerleşim topolojisi çizildi: internet oku YALNIZ toplama adımına
+        gidiyor; çıkarım, karşılaştırma ve chatbot kurum ağından çıkmıyor.
+      ↳ 🔑 **Her bölümde "bugün çalışan" ile "kurumda yapılacak" ayrı
+        işaretli.** Yapılmamışı yapılmış göstermek jüride en pahalı hatadır.
+      ↳ 8. bölüm kurum BT ekibi için adım adım kurulum sırası.
+      ↳ 🐛 **Yan bulgu:** `SARTNAME_UYUM.md`'de %20'lik On-Prem kriteri
+        "🔴 Docker hiç çalıştırılmadı" diyordu — oysa aynı belgenin 100.
+        satırı 18 Ağustos'ta koşulduğunu yazıyor. Bir haftadır bayatmış,
+        düzeltildi.
 
 - [ ] **E-11** 🔴 Temiz bilgisayarda sıfırdan kurulum testi · 📅 **23 Ağu**
       ⛔ **Önce bitmeli:** E-02 (Eren)
