@@ -27,7 +27,13 @@ import openai as _openai
 from src.comparison.karsilastirma import Agirliklar, avantaj_skorla, uyarilar
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
-from src.schema import BIRIM_GOSTERIMLERI, SAYISAL_ALANLAR, Birim
+from src.schema import (
+    BIRIM_GOSTERIMLERI,
+    SAYISAL_ALANLAR,
+    Birim,
+    alan_etiketi,
+    tur_etiketi,
+)
 from src.vektor_db import IndeksYok, vektor_ara
 
 log = logging.getLogger(__name__)
@@ -498,16 +504,22 @@ def _kaynakca(kayit: KampanyaKaydi) -> Kaynakca:
     )
 
 
-_ALAN_ETIKETLERI = {
-    "kar_payi_orani": "Kâr payı oranı",
-    "vade_ay_max": "Azami vade",
-    "finansman_tutari_max": "Azami finansman tutarı",
-    "taksit_sayisi": "Taksit sayısı",
-    "tahsis_ucreti": "Tahsis ücreti",
-    "odul_miktari": "Ödül miktarı",
-    "indirim_orani": "İndirim oranı",
-}
-"""Alan -> ETİKET. Biçim burada YOK; biçim birimden türer.
+_GOSTERILECEK_ALANLAR = (
+    "kar_payi_orani",
+    "vade_ay_max",
+    "finansman_tutari_max",
+    "taksit_sayisi",
+    "tahsis_ucreti",
+    "odul_miktari",
+    "indirim_orani",
+)
+"""Tekil cevapta bu SIRAYLA gösterilecek alanlar.
+
+Burada yalnız SIRA var; etiketin kendisi `schema.ALAN_ETIKETLERI`'nden gelir
+(tek doğruluk kaynağı). Etiketi burada da tutmak, iki kopyanın ayrışmasına
+davetiyedir — 25 Ağustos'ta tam olarak bu oldu.
+
+Biçim ise ikisinde de YOK; biçim birimden türer.
 
 Eskiden her alanın yanında sabit bir şablon duruyordu:
 
@@ -550,14 +562,16 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
 
     kayit = max(kayitlar, key=lambda k: k.doluluk_orani)
     bank_name = "Kuveyt Türk Katılım Bankası A.Ş." if "Örnek" in kayit.banka_adi else kayit.banka_adi
-    tur = str(kayit.urun_turu or kayit.kampanya_turu or "Kampanya").replace("_", " ").title()
+    # `.title()` KULLANMA: Türkçe'de sessizce bozar (bkz. schema.ALAN_ETIKETLERI).
+    tur = tur_etiketi(kayit.urun_turu or kayit.kampanya_turu) or "Kampanya"
     satirlar = [f"**{bank_name}** — {tur}:"]
 
     bulunan = 0
-    for alan, etiket in _ALAN_ETIKETLERI.items():
+    for alan in _GOSTERILECEK_ALANLAR:
         deger = getattr(kayit, alan, None)
         if deger is None:
             continue
+        etiket = alan_etiketi(alan)
         satirlar.append(f"- {etiket}: {alan_goster(alan, deger, kayit.birim(alan))}")
         bulunan += 1
 

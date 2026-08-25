@@ -670,7 +670,11 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ 10 dokümantasyon başlığının hepsi var mı, PDF **ve** PPTX var mı,
         5 dk **ve** 1 dk video var mı, veri seti bağlantısı çalışıyor mu
 
-- [ ] **E-18** 🔴 **TESLİM** — her şey GitHub'da, `v1.0` etiketi · 📅 **25 Ağu 20:00**
+- [ ] **E-18** 🔴 **TESLİM** — her şey GitHub'da, `v1.0` etiketi · 📅 **27 Ağu**
+      ↳ 📅 **25 Ağu: tarih 25 → 27 Ağustos'a çekildi.** Burada 25 Ağu 20:00
+        yazıyordu ama bağlı olduğu E-01 (depoyu public yap) 24 Ağu'da bilerek
+        27'ye bırakılmıştı — yani iki tarih çelişiyordu. Teslim için resmî
+        bilgi henüz gelmedi; gelince güncellenecek.
       ⛔ **Önce bitmeli:** E-17 (Eren)
 
 - [ ] **E-19** Jüri soru-cevap provası · 📅 26 Ağu

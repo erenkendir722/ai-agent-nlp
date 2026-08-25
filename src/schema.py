@@ -1,4 +1,4 @@
-"""Şema sözleşmesi — DONMUŞ (v1.0.0, 9 Ağustos 2026).
+"""Şema sözleşmesi — DONMUŞ. Güncel sürüm: `SEMA_SURUMU`.
 
 Bu dosya projenin tek doğruluk kaynağıdır. Toplayıcı, çıkarım motoru, depolama,
 karşılaştırma ve arayüz bu şemaya karşı çalışır; kimse kimseyi beklemez.
@@ -23,11 +23,16 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 SEMA_SURUMU = "1.2.0"
-"""1.0.0 (9 Ağu) -> 1.1.0 (14 Ağu): `Kampanya.uygunluk` eklendi.
+"""Sürüm izi — donma «hiç değişmez» değil, **ADR'siz değişmez** demektir.
 
-Toplama değişikliği — alan opsiyonel ve `Alan` tipinde olmadığı için mevcut
-metrikler, altın set ve depolama etkilenmez. Gerekçe:
-`docs/kararlar/006-sema-v1-1-uygunluk.md`"""
+    1.0.0  ( 9 Ağu)  ilk sözleşme
+    1.1.0  (14 Ağu)  `Kampanya.uygunluk` eklendi — ADR 006
+    1.2.0  (19 Ağu)  `Alan.birim` eklendi — ADR 009
+
+Üçü de EKLEMELİ: kayıtlar kendi `sema_surumu`'nu taşıdığı için eski veri
+geçerli kalır; mevcut metrikler, altın set ve depolama etkilenmez.
+Gerekçeler: `docs/kararlar/006-sema-v1-1-uygunluk.md` ·
+`docs/kararlar/009-boyutlu-nicelik.md`"""
 
 
 # ---------------------------------------------------------------------------
@@ -153,6 +158,63 @@ class Birim(StrEnum):
     AY = "ay"
     ADET = "adet"
     PUAN = "puan"
+
+
+ALAN_ETIKETLERI: dict[str, str] = {
+    "kampanya_turu": "Kampanya türü",
+    "urun_turu": "Ürün türü",
+    "hedef_kitle": "Hedef kitle",
+    "kar_payi_orani": "Kâr payı oranı",
+    "finansman_tutari_max": "Azami finansman tutarı",
+    "vade_ay_max": "Azami vade",
+    "taksit_sayisi": "Taksit sayısı",
+    "tahsis_ucreti": "Tahsis ücreti",
+    "masraf_bilgisi": "Masraf bilgisi",
+    "masrafsiz_mi": "Masrafsız mı",
+    "odul_miktari": "Ödül miktarı",
+    "indirim_orani": "İndirim oranı",
+    "alisveris_puani": "Alışveriş puanı",
+    "kampanya_avantaji": "Kampanya avantajı",
+    "kampanya_bitis": "Kampanya bitişi",
+    "kampanya_kosullari": "Kampanya koşulları",
+}
+"""Alan adı -> ekranda görünecek TÜRKÇE etiket. Tek doğruluk kaynağı.
+
+NEDEN ELLE YAZILI BİR SÖZLÜK — alan adları ASCII'dir (`ihtiyac_finansmani`),
+etiketler değildir (`İhtiyaç Finansmanı`). Aradaki dönüşüm türetilemez:
+Python'un `str.title()` metodu Türkçe için yanlıştır ve sessizce bozar.
+
+    "ihtiyac_finansmani".replace("_", " ").title()   # 'Ihtiyac Finansmani'
+    #                                                   ^        ^      ^
+    #                                            İ değil I · ç yok · ı yok
+
+25 Ağustos'ta bu üç ayrı yerde elle `.replace("Ihtiyac", "İhtiyaç")` gibi
+yamalarla düzeltilmeye çalışıldı. Ölçüldü: dokuz kampanya türünün DOKUZU da
+hâlâ yanlış çıkıyordu — yamalanmış olanlar dahil ("İhtiyaç Finansman**i**").
+Yama listesi ayrıca yeni bir alan eklendiğinde sessizce eksik kalır.
+
+Biçim burada YOK, yalnız etiket var: biçim birimden türer
+(`BIRIM_GOSTERIMLERI`). Bkz. `tests/test_etiketler.py`."""
+
+
+def tur_etiketi(tur: str | KampanyaTuru | None) -> str:
+    """Kampanya türünün ekranda görünecek Türkçe adı.
+
+    Depodan gelen değer düz `str`'dir (enum değil), o yüzden dize üzerinden
+    aranır. Bilinmeyen tür olduğu gibi döner — uydurmaktansa ham değeri
+    göstermek dürüsttür.
+    """
+    if not tur:
+        return ""
+    try:
+        return KAMPANYA_TURU_ETIKETLERI[KampanyaTuru(str(tur))]
+    except ValueError:
+        return str(tur)
+
+
+def alan_etiketi(alan: str) -> str:
+    """Alanın ekranda görünecek Türkçe adı; bilinmeyen alan olduğu gibi döner."""
+    return ALAN_ETIKETLERI.get(alan, alan)
 
 
 BIRIM_GOSTERIMLERI: dict[Birim, str] = {
@@ -683,6 +745,9 @@ __all__ = [
     "AYLIK_KAR_PAYI_UST_SINIRI",
     "EN_AZ_FINANSMAN_TUTARI",
     "ALAN_BOYUTLARI",
+    "ALAN_ETIKETLERI",
+    "alan_etiketi",
+    "tur_etiketi",
     "BIRIM_GOSTERIMLERI",
     "SEMA_SURUMU",
     "TEK_BIRIMLI_ALANLAR",

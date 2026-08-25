@@ -21,7 +21,7 @@ from enum import StrEnum
 from typing import Literal
 
 from src.depolama import KampanyaKaydi
-from src.schema import ALAN_BOYUTLARI, Birim
+from src.schema import ALAN_BOYUTLARI, Birim, alan_etiketi, tur_etiketi
 
 Yon = Literal["dusuk_iyi", "yuksek_iyi"]
 
@@ -303,9 +303,9 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
         }
         if len(birimler) > 1:
             adlar = ", ".join(sorted(b.value for b in birimler))
-            guzel_alan = alan_adi.replace("_", " ").title().replace("Ucreti", "Ücreti").replace("Kar ", "Kâr ")
+            etiket = alan_etiketi(alan_adi)
             mesajlar.append(
-                f"**{guzel_alan}** alanı farklı birimlerde ({adlar}). Ortak tabana "
+                f"**{etiket}** alanı farklı birimlerde ({adlar}). Ortak tabana "
                 "indirmek için bir senaryo (anapara, vade) gerekir; senaryo "
                 "verilmeden bu kriter sıralamaya KATILMAZ."
             )
@@ -326,11 +326,10 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
 
     turler = {k.kampanya_turu for k in kayitlar if k.kampanya_turu}
     if len(turler) > 1:
-        guzel_turler = []
-        for t in sorted(turler):
-            gt = t.replace('_', ' ').title()
-            gt = gt.replace("Ihtiyac", "İhtiyaç").replace("Tasit", "Taşıt").replace("Alisveris Puani", "Alışveriş Puanı").replace("Yatirim Urunu", "Yatırım Ürünü")
-            guzel_turler.append(gt)
+        # Etiketler `schema.KAMPANYA_TURU_ETIKETLERI`'den gelir. Elle
+        # güzelleştirmeyin: `.title()` Türkçe'de sessizce bozar ve yama
+        # listesi yeni tür eklendiğinde eksik kalır (bkz. o sözlüğün notu).
+        guzel_turler = [tur_etiketi(t) for t in sorted(turler)]
         mesajlar.append(
             f"Farklı kampanya türleri karşılaştırılıyor ({', '.join(guzel_turler)}). "
             "Aynı tür içinde karşılaştırma daha anlamlıdır."
