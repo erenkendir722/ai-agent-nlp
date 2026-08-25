@@ -126,15 +126,15 @@ planlanmalı.
 | # | Başlık | Durum | Dosya | Kim |
 |---|---|---|---|---|
 | 1 | Sistem mimarisi ve veri akışı | ✅ | `docs/MIMARI.md` | Eren (E-15) |
-| 2 | Kullanılan NLP yaklaşımı | 🟠 | `docs/MIMARI.md` bölüm 3 — genişletilecek | Samet (S-16) |
+| 2 | Kullanılan NLP yaklaşımı | ✅ | [`docs/MIMARI.md`](MIMARI.md) bölüm 3 — beş katman (normalizasyon · kural · LLM · uzlaştırma · RAG) | Eren (S-16) |
 | 3 | Kullanılan veri seti ve açıklaması | 🟠 | `docs/VERI_METODOLOJISI.md` — gerçek sayılarla güncellenecek | Görkem (G-15) |
 | 4 | Veri ön işleme adımları | 🟠 | `docs/VERI_METODOLOJISI.md` | Görkem (G-15) |
-| 5 | Model veya kural yapısının açıklaması | 🟠 | `docs/kararlar/003-hibrit-cikarim.md` iyi başlangıç | Samet (S-16) |
+| 5 | Model veya kural yapısının açıklaması | ✅ | [`docs/MODEL_VE_KURAL_YAPISI.md`](MODEL_VE_KURAL_YAPISI.md) | Eren (S-16) |
 | 6 | Benzer ürünler nasıl karşılaştırılıyor | ❌ | Yazılacak | Eren (E-15) |
 | 7 | Adım adım çalıştırma talimatları | ✅ | `docs/KURULUM.md` | Eren (E-15) |
 | 8 | Karşılaşılan problemler ve çözümler | 🟠 | `docs/SPRINT0_RAPORU.md` böl. 5 + `docs/kararlar/` — derlenecek | Eren (E-16) |
 | 9 | Model çıktılarının örnekleri | ❌ | `docs/CIKTI_ORNEKLERI.md` | Esra (ES-15) |
-| 10 | Performans değerlendirme yöntemleri | 🟠 | `docs/SONUCLAR.md` + `eval/` — altın set sonrası tamamlanır | Samet (S-16) |
+| 10 | Performans değerlendirme yöntemleri | ✅ | [`docs/DEGERLENDIRME_YONTEMI.md`](DEGERLENDIRME_YONTEMI.md) — yöntem; sayılar [`SONUCLAR.md`](SONUCLAR.md)'de | Eren (S-16) |
 
 ---
 

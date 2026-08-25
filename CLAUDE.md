@@ -89,9 +89,16 @@ Ayrıntı: [`docs/MIMARI.md`](docs/MIMARI.md) · Durum: [`docs/SPRINT0_RAPORU.md
 
 ## Değiştirmeden önce bilinmesi gerekenler
 
-**`src/schema.py` donmuştur (v1.0.0).** Dört kişi bu şemaya karşı çalışıyor.
-Değiştirmek gerekiyorsa: takıma duyur, `docs/kararlar/` altına ADR yaz, sürümü
-yükselt. Sessiz değişiklik dördünün işini birden bozar.
+**`src/schema.py` donmuştur — güncel sürüm `SEMA_SURUMU` sabitinde.**
+Dört kişi bu şemaya karşı çalışıyor. Değiştirmek gerekiyorsa: takıma duyur,
+`docs/kararlar/` altına ADR yaz, sürümü yükselt. Sessiz değişiklik dördünün
+işini birden bozar.
+
+Donma "hiç değişmez" demek değil, **ADR'siz değişmez** demek. Şimdiye kadar iki
+kez, ikisi de usulünce: v1.0.0 → v1.1.0 ([ADR 006](docs/kararlar/006-sema-v1-1-uygunluk.md),
+uygunluk koşulları) → v1.2.0 ([ADR 009](docs/kararlar/009-boyutlu-nicelik.md),
+`Alan.birim`). İkisi de eklemeli; kayıtlar kendi `sema_surumu`'nu taşıdığı için
+eski veri geçerli kalır.
 
 **Kanıtsız değer üretilemez.** Her `Alan` kaynağını, güvenini ve hangi katmandan
 geldiğini taşır. `Alan(deger=2.05, yontem="belirtilmemis")` `ValueError` fırlatır.

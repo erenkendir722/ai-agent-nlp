@@ -80,10 +80,42 @@ işaretlenir (şartname madde 11'in örnek tablosu bu ifadeyi kullanıyor).
 
 ---
 
-## 3. NLP yaklaşımı: hibrit çıkarım
+## 3. NLP yaklaşımı
 
-Tek bir yöntem yerine iki katman kullanılır ve sonuçları uzlaştırılır.
-Gerekçe: [ADR 003](kararlar/003-hibrit-cikarim.md).
+*Şartname madde 6, doküman başlığı 2.*
+
+Sistemde **dört ayrı NLP katmanı** vardır ve her biri farklı bir işi yapar.
+Hiçbiri tek başına yeterli değildir; ayrılmalarının sebebi de bu.
+
+| # | Katman | Yöntem | Nerede |
+|---|---|---|---|
+| 3.0 | Türkçe normalizasyon | Kural tabanlı, saf fonksiyonlar | `src/preprocessing/normalizasyon.py` |
+| 3.1 | Kural çıkarımı | Regex + bağlam penceresi | `src/extraction/kural.py` |
+| 3.2 | LLM çıkarımı | Qwen3.5, JSON şema kısıtlı | `src/extraction/llm.py` |
+| 3.3 | Uzlaştırma | Deterministik öncelik tablosu | `src/extraction/uzlastirici.py` |
+| 3.4 | Anlamsal getirme (RAG) | Gömme + kosinüs benzerliği | `src/vektor_db.py` |
+
+**Sayısal alanlar 3.1–3.3 ile çıkarılır; 3.4 yalnız serbest metin sorularına
+bağlam getirir.** Bu ayrım mimarinin belkemiğidir — sayısal bir cevabın
+anlamsal aramadan gelmesi yapısal olarak imkânsızdır (bölüm 6).
+
+### 3.0 Türkçe normalizasyon (`src/preprocessing/normalizasyon.py`)
+
+Şartname 5.6'nın ve *"eksik veya farklı yazılmış bilgiler"* kriterinin kalbi.
+Türkçe'ye özgü tuzaklar tek tek ele alınır; en pahalısı **İ/I/ı/i sorunudur**:
+
+```python
+"IRAK".lower()      # -> "irak"      YANLIŞ, olması gereken "ırak"
+"İSTANBUL".lower()  # -> "i̇stanbul"  birleşik nokta (U+0307) kalır
+```
+
+Python'un `str.lower()` metodu Türkçe için yanlıştır ve bu **sessiz** bir
+hatadır — eşleştirme ve sınıflandırmada saatler süren hata avına yol açar.
+Önce Türkçe'ye özgü harfler elle eşlenir, sonra genel küçültme uygulanır.
+
+Modül **saf**tır: girdi metin parçası, çıktı normalize değer. Metin *içinde*
+arama yapmak bu katmanın işi değildir — o iş 3.1'in. Ayrım, her fonksiyonun
+doctest ile sınanabilmesini sağlar (`make test` doctest'leri de koşar).
 
 ### 3.1 Kural katmanı (`src/extraction/kural.py`)
 
@@ -110,16 +142,34 @@ eklemektir. **Banka başına özel kural yoktur.**
 
 ### 3.2 LLM katmanı (`src/extraction/llm.py`)
 
-Qwen3.5, Ollama üzerinden, **JSON şema kısıtıyla**. Şema `format` parametresiyle
-verildiği için model şemanın dışına çıkamaz — "JSON ayrıştırma hatası"
-kategorisi yapısal olarak yok edilir (şema geçerliliği = 1,00).
+Qwen3.5, **JSON şema kısıtıyla**. Şema `format` parametresiyle verildiği için
+model şemanın dışına çıkamaz — "JSON ayrıştırma hatası" kategorisi yapısal
+olarak yok edilir (şema geçerliliği = 1,00).
+
+**İki koşum yolu, tek kod yolu** (`src/extraction/saglayici.py`):
+
+| Yol | Model | Ne zaman |
+|---|---|---|
+| **EVREN** (varsayılan) | `Qwen/Qwen3.5-122B-A10B` — MoE, Apache-2.0 | `make extract` |
+| Yerel yedek | `qwen3.5:4b-q4_K_M`, Ollama | `make extract-yerel` — EVREN düştüğünde, hava boşluğu demosunda |
+
+EVREN, T.C. Cumhurbaşkanlığı SSB'nin yarışmaya tahsis ettiği servistir. Yedek
+yol silinmedi: aynı kod yolunu yerelde koşar, yani bulut bağımlılığı bir
+tercihtir, zorunluluk değil.
 
 İki kritik ayar:
 
-- **`think=False`.** Qwen3.5 bir düşünme modelidir; varsayılan davranışta üretim
-  bütçesinin tamamını akıl yürütmeye harcar ve `content` boş döner. Kapatınca
-  kayıt başına süre ~3 dakikadan ~10 saniyeye iner.
+- **Düşünme kapalı.** Qwen3.5 bir düşünme modelidir; varsayılan davranışta
+  üretim bütçesinin tamamını akıl yürütmeye harcar ve içerik boş döner.
+  Kapatınca kayıt başına süre dakikalardan saniyelere iner. (EVREN'de
+  `chat_template_kwargs`, Ollama'da `think=False` — sağlayıcı katmanı bu farkı
+  gizler.)
 - **`temperature=0.1`.** Yapısal çıkarımda yaratıcılık istenmez.
+
+> ⚠️ **Ortak servis deterministik değildir.** EVREN'de `temperature=0` ve sabit
+> tohumla bile aynı girdi farklı çıktı verebilir (sürekli yığınlama). Ölçüme
+> etkisi ve nasıl raporlandığı: [`DEGERLENDIRME_YONTEMI.md`](DEGERLENDIRME_YONTEMI.md)
+> bölüm 4.
 
 **Halüsinasyon önleme:** Modelden değeri yorumlaması değil, *metinde geçtiği
 hâliyle birebir kopyalaması* istenir. Dönen ifade ham metinde aranır;
@@ -141,6 +191,36 @@ enjekte edilir.
 
 Sayısal karşılaştırmada %1 göreli tolerans uygulanır: `"50.000 TL"` ile
 `"50 bin TL"` farklı yazımlardır, farklı değer değil.
+
+### 3.4 Anlamsal getirme — RAG (`src/vektor_db.py`)
+
+Yukarıdaki üç katman **sayısal ve kategorik** alanları çıkarır. Ama
+*"kampanya koşulları neler?"* gibi sorular yapısal bir alana karşılık gelmez;
+bunlar için kaynak metinden ilgili parçayı **getirmek** gerekir.
+
+Yöntem: paragraflar gömme vektörüne çevrilir, sorgu da aynı uzaya taşınır,
+**kosinüs benzerliği** en yakın paragrafları verir.
+
+| | |
+|---|---|
+| Gömme modeli | EVREN `bge-m3-embed` = `BAAI/bge-m3`, **MIT** ([ADR 013](kararlar/013-evren-model-lisans-durusu.md)) |
+| Vektör boyutu | 1024 |
+| İndeks | Yerel `.npz`, `make vektor` ile kurulur |
+| Arama | numpy nokta çarpımı (vektörler L2 normalize, kosinüs = nokta çarpımı) |
+
+**Harici vektör veritabanı kullanılmaz** ([ADR 014](kararlar/014-vektor-db-yerine-yerel-kosinus.md)).
+Bu ölçekte tek nokta çarpımı milisaniyeler sürer; bir sunucu eklemek yalnız
+demoyu ağa bağımlı kılardı. Karar aynı zamanda hava boşluğu senaryosuyla
+tutarlıdır.
+
+Anahtar sözcük araması yerine gömme kullanılmasının sebebi Türkçe'nin
+kendisidir: *"emekliye özel"* ile *"emekli müşterilerimize ayrıcalık"* hiçbir
+ortak sözcük taşımaz ama aynı şeyi söyler. Kosinüs benzerliği bunu yakalar.
+
+> **Kritik sınır:** bu katman **cevap üretmez**, yalnız alıntı getirir. Getirilen
+> parça cevaba *alıntı* olarak girer ve kalkanın bütünlük denetiminden geçer —
+> alıntının ham metnin alt dizesi olması ve içindeki her sayının alıntıda birebir
+> bulunması şarttır (bölüm 6).
 
 ---
 

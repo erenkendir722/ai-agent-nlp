@@ -1059,10 +1059,24 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 4 (24–26 Ağustos)
 
-- [ ] **S-16** Dokümantasyon başlıkları 2, 5, 10 · 📅 24 Ağu
-      ↳ (2) Kullanılan NLP yaklaşımı · (5) Model veya kural yapısı ·
-        (10) Performans değerlendirme yöntemleri
-      ↳ `docs/MIMARI.md` bölüm 3 iyi bir başlangıç
+- [x] **S-16** ✅ **Dokümantasyon başlıkları 2, 5, 10** *(25 Ağu)*
+      ↳ (2) **Kullanılan NLP yaklaşımı** → `docs/MIMARI.md` bölüm 3 yeniden
+        yazıldı. Beş katman ayrı ayrı anlatılıyor: Türkçe normalizasyon ·
+        kural · LLM · uzlaştırma · **RAG (3.4, yeni)**. Bölüm EVREN'e taşınmayı
+        hiç yansıtmıyordu ("Ollama üzerinden" yazıyordu), düzeltildi.
+      ↳ (5) **Model / kural yapısı** → `docs/MODEL_VE_KURAL_YAPISI.md` (yeni).
+        Şema sözleşmesi · `KuralTanimi`'nin alan alan açıklaması · model seçimi
+        ve lisans zinciri · uzlaştırma tablosu · "cevap üretiminde LLM yok".
+      ↳ (10) **Performans değerlendirme yöntemleri** →
+        `docs/DEGERLENDIRME_YONTEMI.md` (yeni). Yuva doldurma sözleşmesi,
+        neden F1, önyükleme güven aralığı, **±0,01 gürültü bandı**, ablasyon
+        disiplini, kalkanın iki yönlü hata uzayı, tazelik damgası.
+      ↳ 🔑 **Sayı gömülmedi — bilerek.** Bu üç belge altın set değiştikçe
+        bayatlamaz; güncel sayıların tek kaynağı `SONUCLAR.md` olarak
+        gösteriliyor. Görkem'in H-02 çalışması bu dosyaları geçersizleştirmez.
+      ↳ 🐛 **Yan bulgu:** `CLAUDE.md` şemanın v1.0.0'da donduğunu söylüyordu,
+        kod v1.2.0. İkisi de ADR'li (006, 009) — yani protokol çalışmış, belge
+        bayatmış. Jüriye "kod sözleşmeden kaçmış" gibi görünürdü, düzeltildi.
 
 - [ ] **S-17** Sunum metrik slaytını hazırla (2:00–2:45 senin) · 📅 25 Ağu
       ⛔ **Önce bitmeli:** S-13 (Samet)
