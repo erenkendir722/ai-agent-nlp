@@ -1,0 +1,4 @@
+﻿User-agent: *
+Allow: /
+Disallow: /blog/etiket/*
+Sitemap: https://www.kuveytturk.com.tr/sitemap.xml

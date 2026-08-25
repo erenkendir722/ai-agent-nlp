@@ -1,0 +1,469 @@
+{
+  "uretildi": "2026-08-24T22:54:45+03:00",
+  "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+  "asgari_istek_araligi_sn": 2.0,
+  "uretici": "tools/robots_kanit.py",
+  "alanlar": [
+    {
+      "ad": "Albaraka Türk (faal)",
+      "alan": "https://www.albaraka.com.tr",
+      "robots": {
+        "adres": "https://www.albaraka.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 299,
+        "sha256": "e54ab0a24cefb23018e17c67e19bb2bf2886f63d5381b5b7d5d5dcdfc3292013",
+        "dosya": "docs/kanit/robots/www.albaraka.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "www.albaraka.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": [
+          "https://www.albaraka.com.tr/sitemap.xml"
+        ]
+      },
+      "kararlar": [
+        {
+          "url": "https://www.albaraka.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.albaraka.com.tr/tr/kampanyalar",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Kuveyt Türk (faal)",
+      "alan": "https://www.kuveytturk.com.tr",
+      "robots": {
+        "adres": "https://www.kuveytturk.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 104,
+        "sha256": "2223315634c91186d79fe3a7b45910fe7758217601f6785eff7b432c22113d04",
+        "dosya": "docs/kanit/robots/www.kuveytturk.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "www.kuveytturk.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": [
+          "https://www.kuveytturk.com.tr/sitemap.xml"
+        ]
+      },
+      "kararlar": [
+        {
+          "url": "https://www.kuveytturk.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.kuveytturk.com.tr/kampanyalar/isim-icin",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Türkiye Finans (faal)",
+      "alan": "https://www.turkiyefinans.com.tr",
+      "robots": {
+        "adres": "https://www.turkiyefinans.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 721,
+        "sha256": "8206dfaf868e0eecd0e4070a57cb7266a77f638acab8f6c339a7a2297990b6e1",
+        "dosya": "docs/kanit/robots/www.turkiyefinans.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "www.turkiyefinans.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": [
+          "https://www.turkiyefinans.com.tr/sitemap.xml"
+        ]
+      },
+      "kararlar": [
+        {
+          "url": "https://www.turkiyefinans.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Ziraat Katılım (faal)",
+      "alan": "https://www.ziraatkatilim.com.tr",
+      "robots": {
+        "adres": "https://www.ziraatkatilim.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 2246,
+        "sha256": "eaeb02cf26815ab01619adb980d3cac9d4cb9b83816af2a2de6f16b3e07c8ccf",
+        "dosya": "docs/kanit/robots/www.ziraatkatilim.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "www.ziraatkatilim.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": [
+          "https://www.ziraatkatilim.com.tr/en/sitemap.xml",
+          "https://www.ziraatkatilim.com.tr/ar/sitemap.xml"
+        ]
+      },
+      "kararlar": [
+        {
+          "url": "https://www.ziraatkatilim.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.ziraatkatilim.com.tr/kart-kampanyalari",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Vakıf Katılım (faal)",
+      "alan": "https://www.vakifkatilim.com.tr",
+      "robots": {
+        "adres": "https://www.vakifkatilim.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 346,
+        "sha256": "3b3c490e0489680f21b219146b42f495b80661ab4bf7d76bb38a18bb63f50006",
+        "dosya": "docs/kanit/robots/www.vakifkatilim.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "www.vakifkatilim.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": [
+          "https://www.vakifkatilim.com.tr/sitemap-tr.xml",
+          "https://www.vakifkatilim.com.tr/sitemap-en.xml"
+        ]
+      },
+      "kararlar": [
+        {
+          "url": "https://www.vakifkatilim.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=2&kendimIcin=false&isimIcin=false",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=3&kendimIcin=false&isimIcin=false",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Emlak Katılım (faal)",
+      "alan": "https://www.emlakkatilim.com.tr",
+      "robots": {
+        "adres": "https://www.emlakkatilim.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 23,
+        "sha256": "eaeaa8d3511d1622227d89707d995b8b1f0902f5b86fdbe58882d1cef260d4d7",
+        "dosya": "docs/kanit/robots/www.emlakkatilim.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "www.emlakkatilim.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": []
+      },
+      "kararlar": [
+        {
+          "url": "https://www.emlakkatilim.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.emlakkatilim.com.tr/tr/kurumsal/kampanyalar",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Hayat Finans (faal)",
+      "alan": "https://hayatfinans.com.tr",
+      "robots": {
+        "adres": "https://hayatfinans.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 75,
+        "sha256": "0ba165ca6cae48ec0ad075b25ea87d1c5c444b3381201b0f206d6d3f2263a9ec",
+        "dosya": "docs/kanit/robots/hayatfinans.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "hayatfinans.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": [
+          "https://www.hayatfinans.com.tr/sitemap.xml"
+        ]
+      },
+      "kararlar": [
+        {
+          "url": "https://hayatfinans.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://hayatfinans.com.tr/kampanyalar",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://hayatfinans.com.tr/isim-kampanyalar",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "TOM Katılım (faal)",
+      "alan": "https://tombank.com.tr",
+      "robots": {
+        "adres": "https://tombank.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 404,
+        "hata": null,
+        "uzunluk": 0,
+        "sha256": null,
+        "dosya": null,
+        "gonderilen_basliklar": {
+          "host": "tombank.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": []
+      },
+      "kararlar": [
+        {
+          "url": "https://tombank.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://tombank.com.tr/kampanyalar.html",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Dünya Katılım (faal)",
+      "alan": "https://dunyakatilim.com.tr",
+      "robots": {
+        "adres": "https://dunyakatilim.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 111,
+        "sha256": "3397ad62438da107a630e659ead3637f4d107f2a7404e777df45d481d84b7d73",
+        "dosya": "docs/kanit/robots/dunyakatilim.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "dunyakatilim.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": [
+          "https://dunyakatilimsite.blueprint.com.tr/sitemap.xml"
+        ]
+      },
+      "kararlar": [
+        {
+          "url": "https://dunyakatilim.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://dunyakatilim.com.tr/kampanyalar",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Adil Katılım (faaliyete_gecmedi)",
+      "alan": "https://www.adilkatilim.com.tr",
+      "robots": {
+        "adres": "https://www.adilkatilim.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": 200,
+        "hata": null,
+        "uzunluk": 1,
+        "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "dosya": "docs/kanit/robots/www.adilkatilim.com.tr.txt",
+        "gonderilen_basliklar": {
+          "host": "www.adilkatilim.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
+        "beyan_edilen_gecikme": null,
+        "sitemapler": []
+      },
+      "kararlar": [
+        {
+          "url": "https://www.adilkatilim.com.tr",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "İktisat Katılım (faaliyete_gecmedi)",
+      "alan": "https://www.iktisatkatilim.com.tr",
+      "robots": {
+        "adres": "https://www.iktisatkatilim.com.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": null,
+        "hata": "ConnectTimeout: _ssl.c:983: The handshake operation timed out",
+        "uzunluk": 0,
+        "sha256": null,
+        "dosya": null,
+        "gonderilen_basliklar": null,
+        "beyan_edilen_gecikme": null,
+        "sitemapler": []
+      },
+      "kararlar": [
+        {
+          "url": "https://www.iktisatkatilim.com.tr",
+          "izinli": false,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ],
+      "robots_kontrol_acik": true
+    },
+    {
+      "ad": "Halk Katılım (kurulus_asamasinda)",
+      "alan": null,
+      "atlandi": "site yok — kuruluş aşamasında",
+      "robots": null,
+      "kararlar": []
+    },
+    {
+      "ad": "Fuzul Katılım (kurulus_asamasinda)",
+      "alan": null,
+      "atlandi": "site yok — kuruluş aşamasında",
+      "robots": null,
+      "kararlar": []
+    },
+    {
+      "ad": "Dost Katılım (kurulus_asamasinda)",
+      "alan": null,
+      "atlandi": "site yok — kuruluş aşamasında",
+      "robots": null,
+      "kararlar": []
+    },
+    {
+      "ad": "Katılımevim Katılım (kurulus_asamasinda)",
+      "alan": null,
+      "atlandi": "site yok — kuruluş aşamasında",
+      "robots": null,
+      "kararlar": []
+    },
+    {
+      "ad": "BDDK — kayıt defteri kaynağı (kampanya için taranmaz)",
+      "alan": "https://www.bddk.org.tr",
+      "robots": {
+        "adres": "https://www.bddk.org.tr/robots.txt",
+        "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
+        "durum": null,
+        "hata": "ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)",
+        "uzunluk": 0,
+        "sha256": null,
+        "dosya": null,
+        "gonderilen_basliklar": null,
+        "beyan_edilen_gecikme": null,
+        "sitemapler": []
+      },
+      "kararlar": [
+        {
+          "url": "https://www.bddk.org.tr",
+          "izinli": false,
+          "uygulanan_bekleme_sn": 2.0
+        }
+      ]
+    }
+  ]
+}
