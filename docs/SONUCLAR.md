@@ -1,25 +1,25 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 25.08.2026 20:06 · `make eval`_
+_Otomatik üretildi: 26.08.2026 01:30 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 25.08.2026 20:05'de `hibrit` yapılandırmasıyla koştu (1022 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 26.08.2026 01:30'de `hibrit` yapılandırmasıyla koştu (1022 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
 - İşlenen kampanya: **1024**
 - Banka sayısı: **9**
-- Toplam alan: 16384 · Dolu: 4216
+- Toplam alan: 16384 · Dolu: 4223
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.43 | ≤ %3 | ✅ |
-| Alan doluluğu | %25.7 | — | — |
-| Ortalama güven | 0.794 | — | — |
+| **Halüsinasyon oranı** | %0.38 | ≤ %3 | ✅ |
+| Alan doluluğu | %25.8 | — | — |
+| Ortalama güven | 0.795 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
 | Denetimsiz cevap parçası | %0.0 | %0 | ✅ |
 
@@ -32,10 +32,10 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Parça kökeni | Sayı | Doğrulama ölçütü |
 |---|---|---|
-| `yapisal` | 24 | yapısal kayıtta birebir karşılığı olmalı |
-| `alinti` | 37 | kaynak metnin alt dizesi + sayıları alıntının içinde |
-| `sistem` | 9 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
-| `duz` | 18 | sayı içeremez (yapıcıda denetlenir) |
+| `yapisal` | 21 | yapısal kayıtta birebir karşılığı olmalı |
+| `alinti` | 38 | kaynak metnin alt dizesi + sayıları alıntının içinde |
+| `sistem` | 8 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
+| `duz` | 24 | sayı içeremez (yapıcıda denetlenir) |
 | `denetimsiz` | 0 | **miras yol — atlanır ama sayılır** |
 
 > ✅ **Meşru soruların hiçbiri engellenmedi.** 18 Ağustos ölçümünde bu oran %14,3'tü (35 meşru sorunun 5'i): bankanın kendi metnindeki sayılar — bir vaka **6698 sayılı KVKK kanun numarası** — yapısal alanda karşılığı olmadığı için «uydurma» sayılıyordu. Kalkan gevşetilmedi; parçaların kökeni bildirildi ve alıntılar KAYNAĞINA karşı denetlenir oldu. Aynı değişiklik, hesap bölümündeki kör noktayı da kapattı (skor ve ağırlıklar artık yeniden üretiliyor).
@@ -44,29 +44,29 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 2832 |
-| `kural` | 896 |
-| `hibrit` | 488 |
+| `llm` | 2822 |
+| `kural` | 902 |
+| `hibrit` | 499 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
+- `kampanya_kosullari: özette geçen '60' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '5.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '400.000' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
+- `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.250' sayısı ham metinde yok`
-- `kampanya_kosullari: özette geçen '15.000' sayısı ham metinde yok`
-- `kampanya_kosullari: özette geçen '200.000' sayısı ham metinde yok`
-- `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
-- `kampanya_avantaji: özette geçen '1.250' sayısı ham metinde yok`
+- `kampanya_avantaji: özette geçen '7.500' sayısı ham metinde yok`
 
 ## Alan bazlı doluluk
 
 | Alan | Doluluk |
 |---|---|
 | `kampanya_turu` | %100 |
-| `kampanya_kosullari` | %83 |
+| `kampanya_kosullari` | %82 |
 | `kampanya_avantaji` | %65 |
 | `kampanya_bitis` | %44 |
 | `vade_ay_max` | %37 |
@@ -76,7 +76,7 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | `indirim_orani` | %7 |
 | `finansman_tutari_max` | %6 |
 | `masrafsiz_mi` | %5 |
-| `tahsis_ucreti` | %3 |
+| `tahsis_ucreti` | %4 |
 | `alisveris_puani` | %3 |
 | `urun_turu` | %0 |
 | `taksit_sayisi` | %0 |
@@ -88,9 +88,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Sayısal alan doğruluğu | 0.895 | ≥ 0,90 | ❌ |
+| Sayısal alan doğruluğu | 0.930 | ≥ 0,90 | ✅ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.724 _(%95 GA: 0.651–0.781)_ | ≥ 0,78 | ❌ |
+| **Makro-F1** | 0.823 _(%95 GA: 0.760–0.871)_ | ≥ 0,78 | ✅ |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
 
@@ -104,16 +104,16 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Alan | N | Doğruluk | Hep boş | Kesinlik | Duyarlılık | **F1** | DP/YP/YN |
 |---|---|---|---|---|---|---|---|
-| `kampanya_turu` | 98 | 0.806 | 0.000 | 0.806 | 0.806 | **0.806** | 79/19/19 |
+| `kampanya_turu` | 98 | 0.796 | 0.000 | 0.796 | 0.796 | **0.796** | 78/20/20 |
 | `urun_turu` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `hedef_kitle` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `kar_payi_orani` | 19 | 0.907 | 0.804 | 0.737 | 0.737 | **0.737** | 14/5/5 |
-| `finansman_tutari_max` | 16 | 0.907 | 0.835 | 0.800 | 0.500 | **0.615** | 8/2/8 |
+| `kar_payi_orani` | 19 | 0.928 | 0.804 | 0.762 | 0.842 | **0.800** | 16/5/3 |
+| `finansman_tutari_max` | 16 | 0.938 | 0.835 | 0.846 | 0.688 | **0.759** | 11/2/5 |
 | `vade_ay_max` | 34 | 0.866 | 0.649 | 0.744 | 0.853 | **0.795** | 29/10/5 |
 | `taksit_sayisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `tahsis_ucreti` | 17 | 0.845 | 0.825 | 0.417 | 0.294 | **0.345** | 5/7/12 |
+| `tahsis_ucreti` | 17 | 0.969 | 0.825 | 0.889 | 0.941 | **0.914** | 16/2/1 |
 | `masraf_bilgisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `masrafsiz_mi` | 20 | 0.959 | 0.796 | 0.864 | 0.950 | **0.905** | 19/3/1 |
+| `masrafsiz_mi` | 20 | 0.969 | 0.796 | 0.905 | 0.950 | **0.927** | 19/2/1 |
 | `odul_miktari` | 14 | 0.948 | 0.856 | 0.714 | 0.714 | **0.714** | 10/4/4 |
 | `indirim_orani` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `alisveris_puani` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
