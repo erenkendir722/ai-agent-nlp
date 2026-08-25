@@ -23,6 +23,7 @@ from datetime import datetime
 
 import pytest
 
+from src.extraction.kural import kurallarla_cikar
 from src.extraction.uzlastirici import uzlastir
 from src.schema import Alan, HamKayit, Kaynak
 
@@ -138,3 +139,54 @@ def test_kaynaksiz_alan_kapiyi_dusurmez() -> None:
     kampanya, _ = uzlastir({}, {"masrafsiz_mi": kaynaksiz}, kayit=kayit)
 
     assert kampanya.masrafsiz_mi.deger is True
+
+
+DILIM_TABLOSU = (
+    "Taşıt Finansmanı Kampanyası. Nihai fatura bedeline göre azami finansman "
+    "oranları:\n"
+    "| Nihai Fatura Bedeli | Finansman Oranı | Azami Vade |\n"
+    "|---|---|---|\n"
+    "| 0 TL - 400.000 TL | 70% | 48 |\n"
+    "| 400.000 - 800.000 TL | 50% | 36 |\n"
+    "| 800.000 - 1.200.000 TL | 30% | 24 |\n"
+    "| 1.200.001 - 2.000.000 TL | 20% | 12 |\n"
+)
+
+
+def test_dilim_degeri_CELISKIDE_de_korunur() -> None:
+    """Dilim baypası çelişkiyi de kapsar — 26 Ağustos'ta ölçülen kayıp.
+
+    Baypas önce yalnız `durum == "kural"` için açıktı. LLM tablonun TEPESİNİ
+    (2.000.000) kapınca durum "celiski" oluyor, baypas kapanıyor ve makullük
+    kapısı kuralın doğru cevabını (800.000 × %50 = 400.000) eliyordu. Altın
+    setin dört taşıt kaydında ölçüldü: `SONUÇ None`, `elenen=1`.
+
+    `finansman_tutari_max` sayısal bir alan olduğu için `_birlestir` çelişkide
+    zaten kuralı kazandırıyor — yani elenen değer, tek başına gelseydi geçecek
+    olan değerin ta kendisiydi. Ayrım değerin kaynağına değil, rakibinin olup
+    olmadığına bakıyordu.
+    """
+    kayit = _kayit(DILIM_TABLOSU)
+    kural = kurallarla_cikar(DILIM_TABLOSU, kayit.url, CEKIM)
+    assert kural["finansman_tutari_max"].deger == pytest.approx(400_000.0), (
+        "ön koşul: kural katmanı dilim hesabını üretmeli"
+    )
+
+    llm = {"finansman_tutari_max": _llm_alani(2_000_000.0, "2.000.000 TL", DILIM_TABLOSU)}
+    kampanya, _ = uzlastir(kural, llm, kayit=kayit)
+
+    assert kampanya.finansman_tutari_max.deger == pytest.approx(400_000.0)
+
+
+def test_dilim_baypasi_llm_uydurmasini_gecirmez() -> None:
+    """Baypas genişledi ama kapıyı `dilim_turevi_mi` tutuyor.
+
+    Kural susmuşken LLM'in tablodan kaptığı değer hâlâ elenmeli — genişletme
+    bir delik açmamalı.
+    """
+    kayit = _kayit(DILIM_TABLOSU)
+    llm = {"finansman_tutari_max": _llm_alani(2_000_000.0, "2.000.000 TL", DILIM_TABLOSU)}
+
+    kampanya, _ = uzlastir({}, llm, kayit=kayit)
+
+    assert kampanya.finansman_tutari_max.var_mi is False

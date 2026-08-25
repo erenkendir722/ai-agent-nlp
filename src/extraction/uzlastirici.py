@@ -268,7 +268,23 @@ def uzlastir(
         # hatayı önlemek yerine kaynağını değiştiriyordu.
         from src.extraction.kural import dilim_turevi_mi  # döngüsel içe aktarım
 
-        tablo_turevi = durum == "kural" and dilim_turevi_mi(
+        # ÇELİŞKİ DE KAPSANIR (26 Ağu). Baypas önce yalnız `durum == "kural"`
+        # için açıktı ve doğru cevap tam da çelişki halinde ölüyordu:
+        #
+        #     0206-d7223804788b (altın 400000)
+        #        kural 400000  ·  llm 2000000 (tablonun tepesi)  ->  SONUÇ None
+        #
+        # LLM de bir değer ürettiği için durum "celiski" oluyor, baypas
+        # kapanıyor, makullük kapısı doğru cevabı eliyordu. Oysa
+        # `finansman_tutari_max` sayısal bir alan, yani `_birlestir` çelişkide
+        # ZATEN kuralı kazandırıyor — kazanan değer kuralın ürettiğinin aynısı.
+        # Ayrımı `durum` etiketi üzerinden kurmak, değerin nereden geldiğini
+        # değil rakibinin olup olmadığını sormaktı.
+        #
+        # Genişletmek güvenli, çünkü kapıyı `dilim_turevi_mi` tutuyor: hem
+        # değer hem kanıt ayrıştırıcının yeniden ürettiğiyle birebir aynı
+        # olmadıkça False döner. LLM'in kaptığı 2000000 o denetimden geçemez.
+        tablo_turevi = durum in {"kural", "celiski"} and dilim_turevi_mi(
             alan_adi, sonuc, kayit.govde_metin
         )
 
