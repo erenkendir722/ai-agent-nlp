@@ -1,0 +1,42 @@
+{
+  "teyit_tarihi": "2026-08-24T23:06:17+03:00",
+  "yontem": "Hugging Face model API'si — depo üst verisindeki lisans etiketi",
+  "modeller": [
+    {
+      "depo": "Qwen/Qwen3.5-122B-A10B",
+      "kaynak": "https://huggingface.co/api/models/Qwen/Qwen3.5-122B-A10B",
+      "beklenen": "apache-2.0",
+      "bulunan": "apache-2.0",
+      "durum": 200,
+      "hata": null,
+      "son_degisiklik": "2026-04-24T03:55:23.000Z"
+    },
+    {
+      "depo": "Qwen/Qwen3.6-35B-A3B",
+      "kaynak": "https://huggingface.co/api/models/Qwen/Qwen3.6-35B-A3B",
+      "beklenen": "apache-2.0",
+      "bulunan": "apache-2.0",
+      "durum": 200,
+      "hata": null,
+      "son_degisiklik": "2026-04-24T02:53:42.000Z"
+    },
+    {
+      "depo": "Qwen/Qwen3.5-4B",
+      "kaynak": "https://huggingface.co/api/models/Qwen/Qwen3.5-4B",
+      "beklenen": "apache-2.0",
+      "bulunan": "apache-2.0",
+      "durum": 200,
+      "hata": null,
+      "son_degisiklik": "2026-03-02T00:52:52.000Z"
+    },
+    {
+      "depo": "BAAI/bge-m3",
+      "kaynak": "https://huggingface.co/api/models/BAAI/bge-m3",
+      "beklenen": "mit",
+      "bulunan": "mit",
+      "durum": 200,
+      "hata": null,
+      "son_degisiklik": "2024-07-03T14:50:10.000Z"
+    }
+  ]
+}

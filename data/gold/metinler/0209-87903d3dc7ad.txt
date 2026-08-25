@@ -1,0 +1,27 @@
+Kolay Adres ve QR Kod ile Anlık Transfer (FAST)
+Anlık Transfer (FAST) ile IBAN numarasına ihtiyaç duymadan Kolay Adrese (Cep Telefonu No, E-posta Adresi, T.C. Kimlik No, Pasaport No, Vergi No) ya da QR Koduna 7/24 para transferi yapabilirsiniz.
+Kolay Adres tanımınızı İnternet Şubesinden, Mobil Şubesinden ya da şubelerimizden IBAN kodunuz ile adresinizi eşleştirerek yapabilirsiniz.
+QR Kod eşleştirmenizi ise Katılım Mobil uygulamamızdan yaparak para gönderimi için kolayca paylaşabilirsiniz.
+Kolay Adres Nedir?
+T.C. Merkez Bankası tarafından geliştirilen Fonların Anlık ve Sürekli Transferi (FAST) sistemi IBAN yerine Cep Telefonu No, E-posta Adresi, T.C. Kimlik No, Pasaport No, Vergi No bilgilerine 7/24 transfer imkânı veren bir hizmettir.
+Fast için QR Kod Nasıl Tanımlanır?
+Katılım Mobil uygulaması, QR İşlemleri menüsü altındaki QR Kodu Oluştur ekranından FAST için QR kodu oluşturabilirsiniz .
+Sıkça Sorulan Sorular
+Bu hizmetten yararlanmak için Kolay Adres olarak adlandırılan bankacılık sistemimizde tanımlı aşağıdaki adreslerinizden en az birini IBAN kodunuz ile eşleştirmeniz gerekir.
+- Cep telefonu,
+- E-posta,
+- TC Kimlik Numarası
+- Yabancı Kimlik Numarası
+- Vergi Numarası
+- Pasaport Numarası
+Katılım Mobil ve İnternet Şubesi; Para Transferleri\Kolay Adreslerim sayfasından ya da şubelerimizden Kolay Adres tanımınızı yapabilirsiniz.
+Her bir adresiniz için bağlı bir tane IBAN olabilir. Adresiniz için en son hangi IBAN'ı eşleştirdiyseniz Kolay Adresiniz olarak o IBAN kabul edilir.
+Farklı Kolay Adreslerinize aynı IBAN'ı tanımlayabilirsiniz.
+Tanımladığınız Kolay Adresleri İnternet Şubesi, Katılım Mobil; Para Transferleri altındaki Kolay Adreslerim ekranından ya da Şubelerimizden görebilir, güncelleyebilir ve silebilirsiniz.
+Anlık Transfer(FAST) ekranlarından para transferlerinizi 7/24 dilediğiniz zaman gerçekleştirebilirsiniz.
+Anlık Transfer (FAST) işlemleri anında karşı bankaya ulaşır.
+Anlık Transfer (FAST) ekranından IBAN koduna ve Kolay Adreslerinize 7/24 transfer yapabilirsiniz.
+Anlık Transfer (FAST) işlemi için herhangi bir masraf alınmamaktadır.
+Anlık Transfer (FAST) işlemlerinde limit Merkez Bankası tarafından belirlenmiş olup işlem başına tüm bankalar için 100.000 TL’ dir.
+Farklı bir bankadan ürettiğiniz QR kodu Katılım Mobil uygulamamız QR İşlemleri menüsü altından okutarak FAST işleminizi kolayca yapabilirsiniz.
+Katılım Mobil uygulaması, QR İşlemleri menüsü altındaki QR Kodu Oluştur ekranından FAST için QR kodu oluşturabilirsiniz .

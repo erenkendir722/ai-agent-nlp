@@ -1,0 +1,12 @@
+# Kanıt dosyaları satır sonu dönüşümünden MUAF.
+#
+# NEDEN: `docs/kanit/robots/*.txt` dosyaları banka sunucularından geldiği
+# BAYTLARLA arşivlenir ve sha256 özetleri `ROBOTS_KONTROL_GUNLUGU.md` içinde
+# yayımlanır — jüri `sha256sum docs/kanit/robots/*.txt` koşup doğrulayabilsin
+# diye. Bu depoda çalışanların bir kısmında `core.autocrlf=true`; o ayarla git,
+# CRLF içeren dosyaları depoya LF olarak yazar ve Windows'a CRLF olarak geri
+# verir. Dönüşüm sessizdir ama özetleri BOZAR: kanıt doğrulanamaz hâle gelir.
+#
+# Ölçülen durum (24 Ağu 2026): 9 arşiv dosyasının 5'i CRLF, 4'ü LF ile geldi —
+# yani sorun kuramsal değil, bu dosyaların çoğunu etkiliyor.
+docs/kanit/robots/*.txt -text

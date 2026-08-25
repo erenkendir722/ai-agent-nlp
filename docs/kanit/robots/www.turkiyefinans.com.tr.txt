@@ -1,0 +1,22 @@
+User-agent: *
+
+Disallow: /_layouts/
+Disallow: /_vti_bin/
+Disallow: /_catalogs/
+Disallow: /BotDetectCaptcha.ashx?
+Disallow: /BotDetectCaptcha.ashx?
+Disallow: /tr-tr/bireysel/ihtiyac-finansmani/Sayfalar/konut-gelistirme-finansmani.aspx
+Disallow: /tr-tr/bireysel/sozlesmeler-ve-formlar/Documents/muteri_edinimi_ve_hesap_aydinlatma_metni.pdf
+Disallow: /*pdf$
+Disallow: /tr-tr/bireysel/sozlesmeler-ve-formlar/Documents/muteri_edinimi_ve_hesap_aydinlatma_metni.pdf
+Disallow: /tr-tr/kampanyalar/Sayfalar/edenred-tanisma-paketi-kampanyasi.aspx
+Disallow: /tr-tr/Demo/internet-subesi-demo/2007_1_1.html
+Disallow: /tr-tr/sayfalar/pos-ucretleri.aspx
+
+
+
+
+
+
+
+Sitemap: https://www.turkiyefinans.com.tr/sitemap.xml

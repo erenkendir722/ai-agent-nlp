@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /documents/*.jpg
+Allow: /documents/*.png
+Allow: /documents/*.jpeg
+Disallow: /tr/arama/
+Disallow: /en/search/
+Disallow: /unigate
+Disallow: /favicon.ico
+Disallow: /plugins/
+Disallow: /documents/
+Sitemap: https://www.vakifkatilim.com.tr/sitemap-tr.xml
+Sitemap: https://www.vakifkatilim.com.tr/sitemap-en.xml

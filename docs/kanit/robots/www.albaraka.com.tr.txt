@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /tr/ticari-ve-kurumsal*
+Disallow: /en/commercial-and-corporate*
+Disallow: /ar/commercial-and-corporate*
+Disallow: *search*
+Disallow: *arama*
+Disallow: /*slug
+Disallow: */TranslateTool/*
+Disallow: */TranslateToolv2/*
+ 
+Sitemap: https://www.albaraka.com.tr/sitemap.xml
