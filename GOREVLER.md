@@ -383,13 +383,25 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         `docs/SONUCLAR.md` ve sunumda açıkça söylenir.
       ↳ 🔓 **S-12, S-13, E-05, S-07 artık açık** — kritik yolun başı geçildi.
 
-- [x] **H-02** ✅ **Uyum turu tamamlandı — %80,8** (hedef %85)
-      ↳ `docs/ETIKETLEME_KILAVUZU.md` v2.0 yazıldı, kararlar defteri 15 madde
+- [x] **H-02** ✅ **Uyum turu tamamlandı — %79,2** (hedef %85)
+      ↳ `docs/ETIKETLEME_KILAVUZU.md` v2.0 yazıldı, kararlar defteri 21 madde
       ↳ **Kopya şüphesi YOK** — detektör sessiz, etiketleme bağımsız yapıldı
       ↳ %85 tutmadı ama beş ayrışmanın hepsi tanımlı kural boşluğuydu; hepsi
         kaynak metne dönülüp karara bağlandı ve kılavuza yazıldı
-      ↳ ⚠️ **Sunumda %80,8 denir, 5 örnek üzerinde olduğu da söylenir.**
-        Güven aralığı %68–87; bu sayıyı "yüksek/düşük" diye yorumlamak yanlış olur
+      ↳ ⚠️ **Sunumda %79,2 denir, 5 örnek üzerinde olduğu da söylenir.**
+        Bu sayıyı "yüksek/düşük" diye yorumlamak yanlış olur
+      ↳ 🔎 **Buradaki sayı 25 Ağustos'ta iki kez düzeltildi** (bkz.
+        `docs/ALTIN_SET_DENETIMI.md`):
+        1. Uyum bloğunun dört dosyası uzlaşı kararıyla EZİLMİŞTİ; oran %100'e
+           çıkmış, kopya detektörü alarma geçmişti. Bağımsız etiketler geri
+           kondu — uzlaşı kararı artık etiketin üstüne değil kararlar
+           defterine yazılıyor.
+        2. Burada yazan **%80,8 hiçbir zaman veriden üretilmemişti.** O sayıyı
+           ilan eden commit (`eca1466`) kendi dosyalarından koşturulduğunda
+           %79,2 veriyor. Sebebi anlaşıldı: `make altin-uyum` Windows'ta oranı
+           basacağı satırda `UnicodeEncodeError` ile çöküyordu (cp1254), yani
+           kimse ekranda göremedi. Çökme giderildi; sayı artık her koşuda
+           görülüyor ve yeniden üretilebilir.
       ↳ Uyum metriğinin göremediği bir oybirliği hatası elle yakalandı
         (dördü de başka ürünün vadesini yazmıştı) — sunumda anlatılacak
 
@@ -422,6 +434,34 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Beklenen sonuç: `finansman_tutari_max` N=5→20, `tahsis_ucreti` 5→21,
         `odul_miktari` 3→20. Sayı yükselmeyebilir; kazanç **doğru sayıyı
         öğrenmek ve güven aralığını daraltmak** (şu an %95 GA 0,654–0,865).
+      ↳ 📊 **25 Ağu itibarıyla gelinen yer** (98 kayıt derlendi, `make eval`):
+        ```
+        alan                  hedef  ulaşılan        alan                  hedef  ulaşılan
+        kampanya_turu            —        98        tahsis_ucreti          21        17
+        kar_payi_orani          20        18        masrafsiz_mi           17        19 ✅
+        vade_ay_max              —        33 ✅     odul_miktari           20        14
+        finansman_tutari_max    20        15        kampanya_bitis         20        28 ✅
+        ```
+        Makro-F1 0,708 → **0,724** (%95 GA 0,651–0,781), sayısal doğruluk
+        0,887 → **0,895**. Tam korpus yeniden çıkarıldı (1022 kayıt),
+        `SONUCLAR.md` ✅ Güncel.
+      ↳ ⚠️ **Sayı ±0,01 gürültü taşıyor.** Aynı kod, aynı girdi, iki koşu:
+        makro-F1 0,735 ↔ 0,724 (98 kayıtta 7 hücre oynadı, hepsi sayısal).
+        Sunumda «0,72» denir; «0,724» yanlış kesinlik iddiasıdır. Bir
+        değişikliğin etkisi ancak bu bandın dışındaysa gerçektir.
+      ↳ ⚠️ **`etiketleme_ek_esra.csv` gözden geçirildi — ETİKETLERİ YAPAY
+        ZEKÂ YAZDI, ESRA'NIN ONAYI GEREKİR.** Jüriye «dört kişi etiketledi»
+        denemez. İlk bakılacak hücre: `0205-8f21909fe25c` / `vade_ay_max`
+        (sayfada hem «vade farksız 5 taksit» hem «en fazla 6 taksit» var).
+      ↳ 🔎 **Beklenti tutmadı, sebebi öğrenildi.** Sekiz kaydın ham metni
+        okundu: **43 hücrenin doğru cevabı BOŞ.** O sayfalar banka kartı
+        tanıtımı, sadakat programı, market kampanyası — finansman koşulu
+        hiç içermiyorlar. «%20 dolu» rakamı yanıltıcıydı: `_cekirdek_ilerleme`
+        «baktım, yok» ile «hiç bakmadım»ı ayırt edemiyor (denetim bulgusu 8).
+        Sonuç: `finansman_tutari_max` 15→16, `odul_miktari` 14→**14**.
+      ↳ 🔴 **Bu iki alanı yükseltmek için YENİ BİR `genislet` TURU gerekir** —
+        o alanların gerçekten konuşulduğu sayfalardan. Mevcut 98 kaydı
+        etiketlemeye devam etmek bu alanları büyütmüyor.
 
 - [ ] **H-05** 🔑 **HERKES KENDİ `.env` DOSYASINI OLUŞTURACAK** · 24 Ağu'da eklendi
       ↳ **Bunu yapmadan `make extract` ÇALIŞMAZ.** Hata şu olur:

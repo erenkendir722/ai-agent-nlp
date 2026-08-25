@@ -128,9 +128,27 @@ makinede aynı anda açık olunca kayıt başına 13 saniye yerine 2,5 dakika s�
 
 **EVREN bayt düzeyinde deterministik DEĞİL — ölçüldü.** `temperature=0` ve sabit
 tohuma rağmen aynı girdi 5 kayıttan 3'ünde farklı çıktı verdi (ortak vLLM
-sunucusunda sürekli yığınlama). Ama 8 kayıt × 4 koşuda oynayan alanların tamamı
-**serbest metindi**; sayısal ve enum alanlarda sıfır sapma. `docs/SONUCLAR.md`
-sayıları işlenmiş veritabanından üretildiği için yeniden üretilebilir kalır.
+sunucusunda sürekli yığınlama).
+
+**SAPMA SAYISAL ALANLARA DA VURUYOR — 25 Ağustos'ta 98 kayıtta ölçüldü.**
+Buradaki eski kayıt *«8 kayıt × 4 koşuda oynayan alanların tamamı serbest
+metindi; sayısal ve enum alanlarda sıfır sapma»* diyordu. O ölçüm 8 kayıtlıktı
+ve **yanıltıcı çıktı.** Altın setin 98 kaydı aynı kodla iki kez çıkarıldığında:
+
+```
+oynayan hücre: 7 / 784 (%0,9) — hepsi sayısal/enum
+  kampanya_turu 2 · tahsis_ucreti 2 · kar_payi_orani 1 · vade_ay_max 1 · masrafsiz_mi 1
+örnek: tahsis_ucreti 0,5 → 20,0   ·   vade_ay_max 84 → 60
+makro-F1: koşu-1 0,735   koşu-2 0,724      ← aynı kod, aynı girdi
+```
+
+**Sonuç: `make eval` sayısı ±0,01 gürültü taşır.** Sunumda «makro-F1 0,72»
+demek doğrudur, «0,724» demek yanlış bir kesinlik iddiasıdır. İki koşunun
+farkını iyileşme sanmayın — bir değişikliğin etkisi ancak bu bandın dışındaysa
+gerçektir.
+
+`docs/SONUCLAR.md` sayıları işlenmiş veritabanından üretildiği için o dosya
+kendi içinde tutarlı kalır; yeniden üretilen şey veritabanının kendisi değildir.
 Bayt düzeyinde tekrarlanabilirlik şartsa: `LLM_SAGLAYICI=ollama`.
 
 ---
@@ -145,7 +163,7 @@ make extract-yerel      # aynı çıkarım, yerel Ollama ile (yedek / hava boşl
 make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka
 make run          # Streamlit arayüzü
-make test         # testler (671 test)
+make test         # testler (691 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make lisanslar    # bağımlılık + model lisans raporu
 make lisanslar-teyit    # aynı rapor + model lisanslarını HF'ten teyit et (ağ)

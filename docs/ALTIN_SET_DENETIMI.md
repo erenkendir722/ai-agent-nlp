@@ -5,8 +5,12 @@ Bu dosya `data/gold/` altındaki 16 etiketleme CSV'sinin, `altin_set.jsonl`'in,
 çalışma ağacı ile `HEAD` karşılaştırılarak yapıldı; denetim sırasında hiçbir
 etiket değiştirilmedi.
 
-> **Durum:** bulgular tespit edildi, **düzeltmeler HENÜZ YAPILMADI.**
-> Aşağıdaki «Yapılacaklar» listesi takım kararı bekliyor.
+> **Durum (25 Ağustos, akşam):** ilk 9 bulgunun **8'i kapatıldı**; 9. bulgunun
+> etiketleri yazıldı ama **kaynağı yapay zekâ olduğu için Esra'nın onayını
+> bekliyor.** Düzeltmeler sırasında **dört bulgu daha** çıktı (10–13); üçü
+> kapatıldı, biri (13) kapatılamaz cinsten — belgelendi.
+>
+> Tam korpus yeniden çıkarıldı (1022 kayıt, EVREN) ve `SONUCLAR.md` **✅ Güncel**.
 
 ---
 
@@ -14,15 +18,31 @@ etiket değiştirilmedi.
 
 | # | Bulgu | Şiddet | Durum |
 |---|---|---|---|
-| 1 | Uyum bloğundaki bağımsız etiketler ezildi | 🔴 | açık |
-| 2 | ADR 012'nin üç kaydından ikisinin etiketi geri alındı | 🔴 | açık |
-| 3 | `masrafsiz_mi` tek sınıflı — pozitif örnek sıfır | 🔴 | açık |
-| 4 | `altin_set.jsonl` ve `SONUCLAR.md` CSV'lerle uyumsuz | 🟠 | açık |
-| 5 | `denetle` genişletme dosyalarına hiç bakmıyor | 🟠 | açık |
-| 6 | `ornek_listesi.json` 98 kaydın yalnız 60'ını belgeliyor | 🟠 | açık |
-| 7 | 12 öksüz metin dosyası | 🟡 | açık |
-| 8 | `?` hiç kullanılmamış — 53 hücrede sessiz "metinde YOK" iddiası | 🟡 | açık |
-| 9 | `etiketleme_ek_esra.csv` zayıf dolduruldu | 🟡 | açık |
+| 1 | Uyum bloğundaki bağımsız etiketler ezildi | 🔴 | ✅ kapandı |
+| 2 | ADR 012'nin üç kaydından ikisinin etiketi geri alındı | 🔴 | ✅ kapandı |
+| 3 | `masrafsiz_mi` tek sınıflı — pozitif örnek sıfır | 🔴 | ✅ kapandı |
+| 4 | `altin_set.jsonl` ve `SONUCLAR.md` CSV'lerle uyumsuz | 🟠 | ✅ kapandı |
+| 5 | `denetle` genişletme dosyalarına hiç bakmıyor | 🟠 | ✅ kapandı |
+| 6 | `ornek_listesi.json` 98 kaydın yalnız 60'ını belgeliyor | 🟠 | ✅ kapandı |
+| 7 | 12 öksüz metin dosyası | 🟡 | ✅ kapandı |
+| 8 | `?` hiç kullanılmamış — 53 hücrede sessiz "metinde YOK" iddiası | 🟡 | ✅ kapandı |
+| 9 | `etiketleme_ek_esra.csv` zayıf dolduruldu | 🟡 | ⚠️ **Esra onayı bekliyor** |
+| 10 | `GOREVLER.md`'deki %80,8 hiçbir zaman veriden üretilmemiş | 🔴 | ✅ kapandı |
+| 11 | Okuma kâğıtları da genişletme turunu görmüyordu | 🟠 | ✅ kapandı |
+| 12 | `MALIYET_TABLOSU` vetosu doğru kolonu da kesiyordu | 🔴 | ✅ kapandı |
+| 13 | EVREN sapması **sayısal alanlara da** vuruyor | 🟠 | 📌 belgelendi |
+
+**Ölçüye etkisi** (98 kayıt, taze çıkarım, `SONUCLAR.md` artık ✅ Güncel):
+
+| | önce | sonra |
+|---|---|---|
+| Makro-F1 | 0,708 | **0,724** |
+| Sayısal doğruluk | 0,887 | **0,895** |
+| `masrafsiz_mi` pozitif örnek | 0 | **2** |
+| `tahsis_ucreti` F1 (ilk 60, taze) | 0,000 | **0,364** |
+
+> ⚠️ **Bu sayılar ±0,01 gürültü taşıyor** — bkz. bulgu 13. «0,72» demek
+> doğrudur, «0,724» yanlış bir kesinlik iddiasıdır.
 
 Sözleşme ihlali (`make altin-denetle` anlamında) **hiçbir dosyada yok** —
 16 CSV'nin tamamı şema kısıtlarına uygun. Aşağıdaki bulgular biçim değil
@@ -222,23 +242,193 @@ kapatmaktı; en az dolan sayfa bu amacı en az besliyor.
 
 ---
 
+## 🔴 10. `GOREVLER.md`'deki %80,8 hiçbir zaman veriden üretilmemiş
+
+Bulgu 1 düzeltilip bağımsız etiketler geri konunca oran %79,2 çıktı — ama
+`GOREVLER.md` H-02 ve `eca1466` commit mesajı **%80,8** diyordu. Aradaki 1,6
+puan araştırıldı ve sebebi bulundu: **böyle bir ölçüm hiç yapılmamış.**
+
+`eca1466` ayrı bir çalışma ağacına alınıp KENDİ dosyalarıyla koşturuldu:
+
+```
+Karşılaştırılan alan çifti: 72 (dolu)
+📊 UYUM ORANI: %79.2
+```
+
+Yani %80,8'i ilan eden commit'in kendisi %79,2 veriyor. CSV'ler, `_hucre_cozumle`,
+`uyum_hesapla`, `ALAN_ADLARI` ve sayı ayrıştırma o tarihten beri **birebir aynı**
+(tek tek karşılaştırıldı), dolayısıyla fark koddan da gelmiyor.
+
+**Neden kimse fark etmedi:** `make altin-uyum` Windows konsolunda oranı basacağı
+satırda çöküyordu —
+
+```
+print(f"\n  📊 UYUM ORANI: %{oran * 100:.1f} …")
+UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4ca'
+```
+
+Oran ekrana hiç gelmedi; yazılan sayı tahmindi. Çökme giderildi
+(`tools/altin_set.py:main`, `tools/gorevler.py`'deki düzeltmenin aynısı).
+Aynı hata `eval/calistir.py`'de de vardı: `make eval` `SONUCLAR.md`'yi
+yazdıktan SONRA çöküyor, yani kabuğa hata dönüp "metrikler tazelenmedi"
+izlenimi veriyordu. O da giderildi.
+
+## 🟠 11. Okuma kâğıtları da genişletme turunu görmüyordu
+
+`okuma_kagitlari_yaz` (satır 1497) aynı eksik ön ek listesini taşıyordu:
+
+```python
+for onek in (UYUM_ONEK, "etiketleme_")
+```
+
+Yani genişletme turunun 38 kaydı için okuma kâğıdı **hiç üretilmedi.** Kâğıt,
+etiketleyene alan alan aday cümleleri hazır veren tek araç — `komut_ornekle`
+docstring'i *«etiketlemeyi ucuzlatan asıl şeyin ayrı bir adım olmaması
+gerekiyor»* diyor. En çok ihtiyaç duyulduğu turda yoktu.
+
+Bulgu 9 ile birlikte okunmalı: genişletme turunun en az dolan sayfasının
+`etiketleme_ek_esra.csv` olmasının sebebi büyük ihtimalle budur.
+
+Aynı ön ek listesi bu depoda artık **üç yerde** unutulmuş oldu (`derle`,
+`denetle`, `okuma_kagitlari_yaz`). Üçü de düzeltildi ve üçünü birbirine
+bağlayan testler yazıldı (`TestGenisletmeTuruDosyalari`).
+
+## 🔴 12. `MALIYET_TABLOSU` vetosu doğru kolonu da kesiyordu
+
+`bd7595e` `tahsis_ucreti`'ye `MALIYET_TABLOSU = ("toplam maliyet",)` vetosu
+ekledi. Ama bağlam penceresi tablo satırında **komşu kolonların başlıklarını da
+görüyor**:
+
+```
+Vade | Kâr Oranı | Tahsis Ücreti | Aylık Toplam Maliyet | ...
+  3  |  3,67%    |    0,50%      |     5,07%            | ...
+```
+
+Hücrenin KENDİ başlığı `Tahsis Ücreti` olmasına rağmen, aynı satırdaki «Toplam
+Maliyet» yüzünden veto `0,50%`'yi kesiyordu. Üstelik veto **kolon başlığı
+kapısından ÖNCE** çalışıyor, yani doğru kapı değeri hiç görmüyordu.
+
+Bilanço iki yönlü ölçüldü:
+
+* Veto, **yazıldığı yanlış pozitifi hiç yakalamadı** — hedefi `157,50 ₺`, o
+  değer LLM katmanından geliyor, `veto_ifadeleri` ise yalnız kural katmanına
+  uygulanır.
+* Buna karşılık **iki doğru pozitifi öldürdü** (ikisi de `hibrit`, güven 0,83).
+  `tahsis_ucreti` F1'i ilk turun 60 kaydında 0,364 → **0,000**.
+
+**Düzeltme:** `KuralTanimi.kolonun_asabilecegi_vetolar` eklendi — kolon başlığı
+alanı doğrudan adlandırıyorsa veto düşer. Veto silinmedi; kolonsuz düz yazıda
+hâlâ çalışıyor. Kodun kendi yorumu zaten bunu söylüyordu: *«Kolon başlığı
+hücreyi DOĞRUDAN adlandırır: sahiplik iddiası en güçlü biçimidir.»*
+
+Regresyon testi `tests/test_kural.py::TestTabloKolonAyrimi`'ye eklendi ve
+`bd7595e` çalışma ağacında koşturulup **kırıldığı doğrulandı**.
+
+## 🟠 13. EVREN sapması sayısal alanlara da vuruyor
+
+`CLAUDE.md` şunu yazıyordu: *«8 kayıt × 4 koşuda oynayan alanların tamamı
+serbest metindi; sayısal ve enum alanlarda sıfır sapma.»* O ölçüm 8 kayıtlıktı.
+Altın setin **98 kaydı aynı kodla iki kez** çıkarıldığında:
+
+```
+oynayan hücre: 7 / 784 (%0,9) — hepsi sayısal/enum
+  kampanya_turu 2 · tahsis_ucreti 2 · kar_payi_orani 1 · vade_ay_max 1 · masrafsiz_mi 1
+
+örnek:  tahsis_ucreti 0,5 → 20,0        vade_ay_max 84 → 60
+makro-F1:  koşu-1 0,735    koşu-2 0,724
+```
+
+**Sunumda anlamı:** `make eval` sayısı ±0,01 gürültü taşır. «Makro-F1 0,72»
+savunulabilir; «0,724» yanlış bir kesinlik iddiasıdır. Daha önemlisi: bir
+değişikliğin etkisi ancak bu bandın DIŞINDAysa gerçektir. `CLAUDE.md`
+güncellendi.
+
+---
+
 ## Yapılacaklar
 
-- [ ] **1.** `git checkout HEAD -- data/gold/etiketleme_uyum_*.csv` — %79,2
-      savunulabilir bir sayıdır, %100 değildir. Uzlaşı kararları bağımsız
-      etiketlerin üstüne değil, `ETIKETLEME_KILAVUZU.md` kararlar defterine
-      yazılmalı.
-- [ ] **2.** ADR 012'nin iki kaydını geri koy: `0205-9f9ed7696f23` (dört uyum
-      dosyasında) ve `0205-735109071c75` (`etiketleme_esra.csv`).
-- [ ] **3.** `masrafsiz_mi` için `0203-4a4c087b579a` ve `0206-32cbb264a824`
-      kayıtlarını insan gözüyle karara bağla; kararı kararlar defterine yaz.
-- [ ] **4.** `0206-d08e26c033db` için %1.00 mü %0.99 mu — karara bağla ve yaz.
-- [ ] **5.** `tools/altin_set.py:1454` — `denetle`ye `EK_ONEK` ve
-      `EK_UYUM_ONEK` eklensin.
-- [ ] **6.** `komut_genislet` `ornek_listesi.json`'ı güncellesin (genişletme
-      turunun tohumu, dağılımı, ataması kaydedilsin).
-- [ ] **7.** 12 öksüz metin dosyası silinsin ya da neden durduğu yazılsın.
-- [ ] **8.** Yukarıdaki 8 aday hücre kaynak metne dönülerek gözden geçirilsin.
-- [ ] **9.** `etiketleme_ek_esra.csv` tamamlansın.
-- [ ] **10.** Hepsi bittikten sonra: `make altin-derle` → `make eval` →
-      `SONUCLAR.md` ve `GOREVLER.md` (H-02 uyum oranı, H-06 kutusu) tazelensin.
+- [x] **1.** Uyum bloğunun dört dosyası bağımsız etiketlere döndürüldü
+      (`bd7595e^` hâli). Uyum %100 → **%79,2**, kopya alarmı sustu, 5 gerçek
+      ayrışma geri geldi. Bonus: düzleştirmede `0212`'nin `kampanya_bitis`'i
+      2026-09-17 yapılmıştı; metin *«Kampanya Dönemi: 16 Temmuz – 16 Ağustos
+      2026»* diyor, yani dördünün ortak etiketi (2026-08-16) doğruydu.
+      *(Rapordaki `git checkout HEAD` komutu artık iş görmez — o değişiklikler
+      bu rapor yazıldıktan sonra `bd7595e`'ye commit'lendi.)*
+- [x] **2.** ADR 012 geri kondu. `0205-9f9ed7696f23` madde 1 ile döndü;
+      `0205-735109071c75` (`etiketleme_esra.csv`) cerrahi olarak düzeltildi —
+      `kar_payi_orani=0`, `vade_ay_max=5`, `masrafsiz_mi=evet`. Aynı
+      commit'teki diğer düzeltmeleri (`tahsis_ucreti 500→0.50` vb.) korundu.
+- [x] **3.** `masrafsiz_mi` artık **2 pozitif** taşıyor (önce 0).
+      `0206-32cbb264a824` → `evet` + `tahsis_ucreti=0`: dipnot *«dosya masrafı
+      = tahsis ücreti»* diyor, muaf tutulan şey finansman masrafının kendisi.
+      `0203-4a4c087b579a` → **boş bırakıldı**: sayfa baştan sona "masrafsız"
+      diyor ama saydığı her şey hesap işletim ücreti / EFT / kart aidatı;
+      finansmandan hiç söz etmiyor, 15 Ağu kuralı aynen geçerli. Sistemin
+      0,91 güvenle bulduğu `True` gerçek bir yanlış pozitiftir ve ölçülmelidir.
+- [x] **4.** `0206-d08e26c033db` → **%0,99.** Tablo (`%1.00`) örnek ödeme
+      planıdır; sayfa oranı ayrıca ilan ediyor (*«0.99% oran avantajları»*) ve
+      düşük uç müşteri lehinedir. Çoğunluk oyu zaten bunu veriyordu (4'te 3).
+- [x] **5.** `denetle` artık dört ön eki de açıyor — 8 dosya yerine 16.
+- [x] **6.** `ornek_listesi.json` v2'ye geçirildi: tur listesi tutuyor,
+      `komut_genislet` kendi turunu deftere EKLİYOR (ilk turu ezmeden).
+      24 Ağustos turu diskteki sayfalardan geri çatıldı. **98/98 kayıt
+      belgeleniyor** (önce 60/98).
+- [x] **7.** 12 öksüz metin silindi — 110 → 98, altın setle birebir.
+      *Kaynağı raporda yazılandan farklı çıktı:* iptal edilmiş bir `genislet`
+      koşusu değil, **12 Ağustos'taki ilk `ornekle` turu**; o tur 15 Ağustos'ta
+      sıfırdan yeniden örneklenince (`f5f0d0a`) geçersizleşmiş. 12'sinin 12'si
+      o turun örnekleminde, yenisinde hiçbiri yok.
+- [x] **8.** 8 aday hücre kaynak metne dönülerek incelendi. **Beşi sistemin
+      yanlış pozitifi** çıktı — kararlar defterindeki «`kaynak_url`'in ürünü»
+      kuralı zaten kapatıyor, insan haklı, dokunulmadı:
+      `0206-b5db11e3633c` (biten kampanyalar listesi), `0206-55c5393fc72f`
+      (Günlük Hesap — getiri oranı, `kar_payi_orani` şemada *finansmanın aylık
+      %*'sidir), `0213-8e662b576a6b` (12 taksit başka kampanyanın),
+      `0203-d7b3a1e8609d` ve `0205-54bc08fa0088` (36/60 ay komşu ürünün).
+      **Üçü karara bağlandı:** `0205-a323f782dfd5` → `finansman_tutari_max
+      = 20000`; `0206-0a6668cc5df3` (tahsis) ve `0206-32cbb264a824` (ödül) →
+      **`?`** — değer metinde VAR ama hangi ürüne ait olduğu seçilemiyor.
+      Bu, 16 CSV'de `?` işaretinin **ilk kullanımıdır.**
+- [~] **9.** ⚠️ **`etiketleme_ek_esra.csv` gözden geçirildi — AMA ETİKETLER
+      YAPAY ZEKÂ TARAFINDAN YAZILDI, ESRA'NIN ONAYI GEREKİR.**
+
+      Takım kararıyla (25 Ağu) sekiz kaydın ham metni okunup boş hücreler
+      dolduruldu. **Kaynak insan değil, Claude'dur.** Bu satırlar jüriye
+      «dört kişi etiketledi» diye sunulamaz; Esra tek tek onaylayana kadar
+      geçici sayılmalıdır.
+
+      **Ölçüde ne anlama geliyor:** çıkarım sistemi de bir dil modeli. Aynı
+      cümleyi ikimiz aynı şekilde yanlış okursak hata «doğru cevap» sayılıp
+      F1'i yapay yükseltir (bağıntılı hata). `finansman_tutari_max` (N=16) ve
+      `odul_miktari` (N=14) küçük olduğu için bu risk oransal olarak büyüktür.
+      Bu yüzden aşağıdaki ölçüm **iki türlü** raporlandı.
+
+      **Yazılan hücreler — toplam 7, ikisi dışında hepsi zaten BOŞ kaldı:**
+
+      | kayıt | alan | değer | dayanak |
+      |---|---|---|---|
+      | `0205-8f21909fe25c` | `kar_payi_orani` | `0` | *«vade farksız 5 taksit»* (15 Ağu kuralı) |
+      | | `vade_ay_max` | `5` | aynı cümle. ⚠️ *Sayfada ayrıca «en fazla 6 taksit» var ama o mevzuat tavanı, ürünün teklifi değil — **Esra'nın bakması gereken ilk hücre budur**.* |
+      | | `finansman_tutari_max` | `100` | *«kart limitinin %10'u kadar, en fazla 100 TL nakit avans»* (25 Ağu kuralı) |
+      | `0206-0a6668cc5df3` | `kar_payi_orani` | `?` | hesaplama aracı sayfası; `financeID=16`'nın hangi ürün olduğu belirsiz |
+      | | `vade_ay_max` | `?` | aynı |
+      | | `finansman_tutari_max` | `?` | aynı |
+      | | `masrafsiz_mi` | `hayır` | ürün fark etmeksizin her dipnotta tahsis/ipotek/ekspertiz ücreti yazıyor |
+
+      **Asıl bulgu şu: sayfa zaten büyük ölçüde DOĞRUYDU.** Kalan 43 hücrenin
+      doğru cevabı **boş** — o kayıtlar banka kartı tanıtımı, sadakat programı,
+      market ParafPara kampanyası gibi sayfalar; finansman koşulu hiç
+      içermiyorlar. Aracın sözleşmesinde boş hücre bir iddiadır («metinde
+      YOK») ve doğru iddiadır.
+
+      Yani **«%20 dolu» rakamı yanıltıcıydı.** `_cekirdek_ilerleme` dolu
+      hücreyi sayıyor, «bakıldı ve yok» ile «hiç bakılmadı»yı ayırt edemiyor —
+      bulgu 8'in ta kendisi. Kaptanın beklediği *«Esra'nın sayfası bitince
+      `finansman_tutari_max` ve `odul_miktari` hedefe ulaşır»* sonucu bu
+      yüzden gerçekleşmiyor: o sekiz sayfada aranan alanlar **yok**.
+      `finansman_tutari_max` 15 → 16, `odul_miktari` 14 → 14.
+- [x] **10.** Tam korpus `extract` (1022 kayıt, EVREN, ~18 dk) → `derle` →
+      `eval` koşuldu. `SONUCLAR.md` artık **✅ Güncel** — bayat damgası kalktı.
+      `GOREVLER.md` (H-02 + H-06), kararlar defteri (5 yeni satır, 16→21) ve
+      `CLAUDE.md` (determinizm kaydı) tazelendi.
+      `make test` **688** ✅, `make lint` ✅.
