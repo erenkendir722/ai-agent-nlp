@@ -824,11 +824,34 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         çevrimdışı pakete **elle konmalı**, yoksa hava boşluğu demosunda
         koşul soruları cevapsız kalır.
 
-- [ ] **S-10** Chatbot 30 soruluk test seti · 📅 20 Ağu
-      ↳ Bitti sayılır: 30 soru + beklenen cevap, doğruluk ölçülüyor (hedef ≥0,88),
-        kaynak gösterme oranı 1,00
-      ↳ Şartname madde 11'deki iki senaryoyu mutlaka içersin
-      ↳ Kapsam dışı sorular da olsun — sistem "bilmiyorum" diyebilmeli
+- [x] **S-10** ✅ **Chatbot 31 soruluk test seti** *(25 Ağu)*
+      ↳ `eval/chatbot_sorulari.yaml` + `eval/chatbot_testi.py` · **`make chatbot-test`**
+      ↳ **Doğruluk 1,000** (hedef ≥0,88) · **kaynak gösterme oranı 1,000** (hedef 1,00)
+      ↳ Şartnamenin iki senaryosu da kümede ve ikisi de geçiyor.
+        📌 Görev tanımı "madde 11" diyordu; senaryolar aslında **13. sayfada**,
+        6. bölümden hemen önce. Madde 11 puanlama sistemi.
+      ↳ Kapsam dışı 5 soru var; sistem "bilmiyorum" diyebiliyor.
+      ↳ 🔑 **Beklenen cevap METNİ tutulmuyor.** Sabit dize ya çıkarım
+        yenilenince yanlış yere kırılır ya da testi geçirmek için güncellenip
+        ölçmeyi bırakır. Onun yerine davranış özellikleri sınanıyor —
+        Görkem'in altın set çalışması bu kümeyi bayatlatmaz.
+      ↳ 🔴 **KÜME ÜÇ GERÇEK HATA BULDU** (ilk koşu doğruluk 0,613):
+        1. **«Garanti Bankası'nın oranı kaç?» → Türkiye Finans'ın oranı**
+           dönüyordu, kaynakçayla. Korpusta olmayan banka sorulunca sistem
+           başka bankanın verisini sunuyordu. Kalkan göremez: sayı gerçekten
+           veride var, yanlış bankanın. **Dayanak denetimi eklendi.**
+        2. **Kapsam dışı tespiti yasak listesiydi** — 5 sorunun 5'i sızdı.
+           Allowlist'e çevrildi, sözlük veriden türüyor.
+        3. **Şartname Senaryo 2 ÇALIŞMIYORDU.** Banka eşleştirici ilk İKİ
+           sözcüğü arıyordu; kullanıcı "Albaraka" der, kayıt "Albaraka Türk".
+           Karşılaştırma bankayı kendisiyle karşılaştırıyordu. Benzersiz ilk
+           sözcük de kabul ediliyor artık ("turkiye" benzersiz olmadığı için
+           hariç).
+      ↳ Ayrıca: `kampanya_bitis` yapısal alanı "ne zaman bitiyor?" sorusuyla
+        eşleşmiyordu; çoğul banka soruları tekil sorguya düşüyordu; gelecek
+        tahmini soruları bugünün verisiyle kaynakça göstererek cevaplanıyordu.
+      ↳ `tests/test_chatbot_soru_kumesi.py` — 8 test, **ağsız**, kümenin
+        sözleşmesini korur (yinelenen YAML anahtarı dahil).
 
 - [ ] **S-11** Güven skoru kalibrasyonu · 📅 21 Ağu
       ⛔ **Önce bitmeli:** S-12 (Samet)

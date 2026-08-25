@@ -28,9 +28,11 @@ from src.comparison.karsilastirma import Agirliklar, avantaj_skorla, uyarilar
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
 from src.schema import (
+    ALAN_ETIKETLERI,
     BIRIM_GOSTERIMLERI,
     SAYISAL_ALANLAR,
     Birim,
+    KampanyaTuru,
     alan_etiketi,
     tur_etiketi,
 )
@@ -242,6 +244,10 @@ _KARSILASTIRMA_IPUCLARI = (
     "mi daha", "mu daha", "daha avantajli", "daha iyi", "daha uygun", "daha ucuz",
     "hangisi", "hangi banka", "karsilastir", "kiyasla", "en avantajli", "en iyi",
     "en dusuk", "en yuksek", "en uzun", "fark", " vs ", "gore daha",
+    # ÇOĞUL banka sorusu korpusun tamamına sorulur, tek kayda değil:
+    # «masrafsız kampanya sunan bankalar hangileri?» tekil sorguya
+    # düşüyordu ve tek bankanın verisiyle cevaplanıyordu (25 Ağu, S-10).
+    "bankalar hangi", "hangi bankalar", "bankalari hangi", "hangi bankalarin",
 )
 _KOSUL_IPUCLARI = (
     "kosul", "sart", "nasil", "kimler", "gerekli", "basvuru", "uygun mu",
@@ -250,7 +256,22 @@ _KOSUL_IPUCLARI = (
 _TEKIL_IPUCLARI = (
     "oran", "kar payi", "vade", "tutar", "limit", "masraf", "ucret", "ne kadar",
     "kac", "odul", "indirim", "taksit",
+    # `kampanya_bitis` YAPISAL bir alan; «ne zaman bitiyor?» sorusu metin
+    # aramasına değil o alana gitmeli. Eksikti (25 Ağu, S-10).
+    "ne zaman", "bitis", "bitiyor", "sona er", "gecerlilik", "son tarih",
 )
+_TAHMIN_IPUCLARI = (
+    "ne olacak", "nasil olacak", "olacak mi", "tahmin", "ongoru", "ongoru",
+    "yukselecek", "dusecek", "artacak", "azalacak", "beklentiniz",
+    "gelecek yil", "onumuzdeki yil", "sizce ne olur",
+)
+"""Gelecek sorusu işaretleri.
+
+Sistemin elinde YALNIZCA bugünkü kampanya verisi var. «2027'de oranlar ne
+olacak?» sorusuna bugünün oranlarını kaynakçayla sunmak, tahmin yapmadığı
+hâlde tahmin yapıyormuş izlenimi verir — ölçüldü (25 Ağu, S-10). Veri
+iddiası ile kehanet arasındaki fark kullanıcıya açıkça söylenmeli."""
+
 _KAPSAM_DISI_IPUCLARI = (
     "hava durumu", "mac skoru", "sarki", "film", "sifre", "hesabima gir",
     "para gonder", "kredi karti numaram",
@@ -268,6 +289,8 @@ def niyet_belirle(soru: str) -> Niyet:
 
     if any(ipucu in anahtar for ipucu in _KAPSAM_DISI_IPUCLARI):
         return Niyet.KAPSAM_DISI
+    if any(ipucu in anahtar for ipucu in _TAHMIN_IPUCLARI):
+        return Niyet.KAPSAM_DISI
     if any(ipucu in anahtar for ipucu in _KARSILASTIRMA_IPUCLARI):
         return Niyet.KARSILASTIRMA
     if any(ipucu in anahtar for ipucu in _TEKIL_IPUCLARI):
@@ -282,17 +305,179 @@ def niyet_belirle(soru: str) -> Niyet:
 # ---------------------------------------------------------------------------
 
 
+def _benzersiz_ilk_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
+    """İlk sözcüğü TEK bir bankaya ait olan adları döndürür: sözcük -> banka.
+
+    «albaraka», «ziraat», «vakif» tek bir kurumu işaret eder; «turkiye» ise
+    ikisini birden (Türkiye Emlak, Türkiye Finans) — o yüzden dışarıda kalır.
+    Ayrım veriden türer, elle yazılmaz: yeni bir banka eklendiğinde
+    benzersizlik kendiliğinden yeniden hesaplanır.
+    """
+    ilk_sozcuk_bankalari: dict[str, set[str]] = {}
+    for banka in {k.banka_adi for k in kayitlar}:
+        sozcukler = arama_anahtari(banka).split()
+        if sozcukler:
+            ilk_sozcuk_bankalari.setdefault(sozcukler[0], set()).add(banka)
+    return {s: next(iter(b)) for s, b in ilk_sozcuk_bankalari.items() if len(b) == 1}
+
+
 def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
-    """Sorudaki banka adlarını kayıtlarla eşler."""
+    """Sorudaki banka adlarını kayıtlarla eşler.
+
+    İKİ ÖLÇÜT — ölçülmüş hata (25 Ağustos, S-10):
+        Eskiden yalnız «ilk iki sözcük» aranıyordu (`albaraka turk`). Ama
+        kullanıcı «Albaraka» der, «Albaraka Türk» demez. Sonucu şartnamenin
+        KENDİ örnek senaryosunu düşürüyordu: «Kuveyt Türk mü daha avantajlı,
+        Albaraka mı?» sorusunda yalnız Kuveyt Türk eşleşiyor, karşılaştırma
+        bankayı kendisiyle karşılaştırıyordu.
+
+        Artık benzersiz ilk sözcük de kabul ediliyor — ama YALNIZ benzersizse.
+        «turkiye» iki bankaya ait olduğu için tek başına eşleşmez; orada
+        ikinci sözcük gerekir. Böylece kolaylık, karışıklık pahasına gelmiyor.
+    """
     anahtar = arama_anahtari(soru)
+    tekil_adlar = _benzersiz_ilk_sozcukler(kayitlar)
+    sozcukler = set(anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split())
+
     eslesen: list[KampanyaKaydi] = []
     for kayit in kayitlar:
         banka_anahtari = arama_anahtari(kayit.banka_adi)
-        # "kuveyt turk katilim bankasi a.s." -> ilk iki sözcük ayırt edici
-        cekirdek = " ".join(banka_anahtari.split()[:2])
+        parcalar = banka_anahtari.split()
+        cekirdek = " ".join(parcalar[:2])
         if cekirdek and cekirdek in anahtar:
             eslesen.append(kayit)
+            continue
+        ilk = parcalar[0] if parcalar else ""
+        if ilk and tekil_adlar.get(ilk) == kayit.banka_adi and ilk in sozcukler:
+            eslesen.append(kayit)
     return eslesen
+
+
+_BANKA_SOZCUKLERI = (
+    "bankasi", "bankasinin", "bankasindaki", "bankasinda",
+    "banka", "bankanin", "bankada",
+)
+"""Belirli bir bankanın adlandırılabileceği TEKİL biçimler.
+
+Çoğul biçimler (`bankalar`, `bankalari`) bilerek DIŞARIDA: «masrafsız
+kampanya sunan bankalar hangileri?» tek bir kurumu adlandırmaz, korpusun
+tamamına sorar. Çoğulu içeri almak o soruyu kapsam dışına düşürüyordu."""
+
+_BELIRTEC_SOZCUKLERI = frozenset(
+    (
+        "hangi", "hangisi", "her", "tum", "butun", "bir", "bu", "su", "o",
+        "ne", "kac", "en", "iyi", "kotu", "baska", "diger", "birkac",
+        "hicbir", "herhangi", "katilim", "hangileri", "kimler", "birden",
+    )
+)
+"""Banka sözcüğünün önünde durursa belirli bir banka ADLANDIRILMAMIŞ demektir.
+
+«hangi banka», «her bankada», «tüm bankalar» korpusun tamamına sorulur;
+«Garanti Bankası» tek bir kurumu adlandırır. Ayrım yapılmazsa meşru
+karşılaştırma soruları kapsam dışına düşer."""
+
+
+def yabanci_banka_soruluyor(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
+    """Soru, korpusta OLMAYAN bir bankayı adlandırıyor mu?
+
+    NEDEN VAR — ölçülmüş hata (25 Ağustos, S-10 test seti):
+        «Garanti Bankası'nın konut kredisi faizi kaç?» sorusuna sistem
+        **Türkiye Finans'ın** oranını veriyordu, üstelik kaynakçasıyla —
+        yani doğrulanmış görünüyordu. Sebep `sor()` içindeki
+
+            ilgili = _bankalari_bul(soru, kayitlar) or kayitlar
+
+        satırıydı: banka eşleşmeyince TÜM kayıtlara düşüp «en dolu» olanı
+        seçiyordu. Kalkan bunu yakalayamaz, çünkü sayı gerçekten yapısal
+        veride var — yalnızca YANLIŞ BANKANIN.
+
+        Kalkan «bu sayı kayıtta var mı?» diye sorar; «bu kayıt, sorulan şey
+        mi?» diye sormaz. Bu denetim o boşluğu kapatır.
+
+    NEDEN YASAK LİSTESİ DEĞİL — kapsam dışı tespiti eskiden sabit ifade
+    listesiydi ("hava durumu", "mac skoru"...). Böyle bir liste asla
+    tamamlanamaz; her yeni soru biçimi sessizce içeri sızar. Burada tersi
+    yapılıyor: soruda bir banka adlandırılmışsa, o bankanın korpusta
+    KARŞILIĞI ARANIR. Dayanak yoksa cevap da yoktur.
+    """
+    anahtar = arama_anahtari(soru)
+    sozcukler = anahtar.replace("?", " ").replace(",", " ").split()
+
+    # Banka sözcüğünün ÖNÜNDE bir ad olmalı. «hangi banka», «her banka»,
+    # «bir bankada» belirli bir bankayı adlandırmaz — bunlar korpusun
+    # tamamına sorulan meşru sorulardır. Bu ayrım yapılmadan «En yüksek
+    # ödülü hangi banka veriyor?» kapsam dışına düşüyordu (25 Ağu ölçümü).
+    adlandirildi = False
+    for i, sozcuk in enumerate(sozcukler):
+        if sozcuk not in _BANKA_SOZCUKLERI or i == 0:
+            continue
+        if sozcukler[i - 1] not in _BELIRTEC_SOZCUKLERI:
+            adlandirildi = True
+            break
+
+    if not adlandirildi:
+        return False
+
+    # Korpustaki bir bankaya eşleşiyorsa yabancı değil.
+    return not _bankalari_bul(soru, kayitlar)
+
+
+def _bilinen_bankalar(kayitlar: list[KampanyaKaydi]) -> list[str]:
+    return sorted({k.banka_adi for k in kayitlar})
+
+
+_ALAN_SOZCUKLERI = frozenset(
+    arama_anahtari(s)
+    for s in (
+        # Katılım bankacılığı çekirdek terimleri (şartname 5.5)
+        "banka", "bankasi", "katilim", "kampanya", "finansman", "kar payi",
+        "vade", "taksit", "tahsis", "masraf", "ucret", "odul", "indirim",
+        "puan", "hesap", "kart", "basvuru", "kosul", "avantaj", "urun",
+        "musteri", "faiz", "kredi", "murabaha", "leasing", "katilma",
+        "tutar", "limit", "oran", "promosyon", "segment", "emekli",
+    )
+)
+"""Alan sözlüğü. Sabit liste DEĞİL, çekirdek — geri kalanı veriden türer."""
+
+
+def alan_disi_soru(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
+    """Soru bu sistemin alanıyla hiç ilgili değil mi?
+
+    NEDEN ALLOWLIST — kapsam dışı tespiti eskiden yasak listesiydi
+    (`_KAPSAM_DISI_IPUCLARI`: "hava durumu", "mac skoru", "sarki"...).
+    Ölçüldüğünde (25 Ağu, S-10) beş kapsam dışı sorunun beşi de içeri
+    sızmıştı: «Bugün hava nasıl?» listedeki "hava durumu" ifadesine
+    uymuyor, «Bana bir şiir yaz» "sarki" değil, «Bitcoin fiyatı»
+    listede hiç yok.
+
+    Yasak listesi tanım gereği tamamlanamaz. Burada tersi soruluyor:
+    soruda bu alana ait TEK BİR dayanak var mı? Yoksa kapsam dışıdır.
+
+    Sözlük veriden türer: banka adları kayıtlardan, tür adları şemadan,
+    alan adları `ALAN_ETIKETLERI`'nden. Yani yeni bir banka ya da alan
+    eklendiğinde bu denetim kendiliğinden genişler.
+    """
+    anahtar = arama_anahtari(soru)
+
+    if any(sozcuk in anahtar for sozcuk in _ALAN_SOZCUKLERI):
+        return False
+
+    # Banka adları — veriden
+    for banka in {k.banka_adi for k in kayitlar}:
+        cekirdek = " ".join(arama_anahtari(banka).split()[:2])
+        if cekirdek and cekirdek in anahtar:
+            return False
+
+    # Kampanya türleri ve alan etiketleri — şemadan
+    for tur in KampanyaTuru:
+        if arama_anahtari(tur.value.replace("_", " ")) in anahtar:
+            return False
+    for etiket in ALAN_ETIKETLERI.values():
+        if arama_anahtari(etiket) in anahtar:
+            return False
+
+    # Ürün anahtarları — mevcut sözlükten
+    return all(a not in anahtar for a in _URUN_ANAHTARLARI)
 
 
 _URUN_ANAHTARLARI = {
@@ -785,12 +970,35 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     kayitlar = tum_kayitlar() if kayitlar is None else kayitlar
     niyet = niyet_belirle(soru)
 
-    if niyet == Niyet.KAPSAM_DISI:
+    # Alan dışı mı? Yasak listesi yerine DAYANAK aranıyor — gerekçe
+    # `alan_disi_soru`'nun notunda.
+    if niyet == Niyet.KAPSAM_DISI or alan_disi_soru(soru, kayitlar):
         return Cevap(
             parcalar=[CevapParcasi(
                 "Bu soru sistemin kapsamı dışında. Ben yalnızca Türkiye'deki "
                 "katılım bankalarının kampanya ve ürün bilgileri hakkında "
                 "toplanmış veriye dayanarak cevap verebiliyorum.",
+                Koken.DUZ,
+            )],
+            niyet=Niyet.KAPSAM_DISI,
+        )
+
+    # DAYANAK DENETİMİ — soruda adlandırılan banka korpusta yoksa, başka bir
+    # bankanın verisiyle cevap verilmez. Aşağıdaki `or kayitlar` yedeği
+    # "banka adı geçmiyor" durumu için doğrudur (örn. «en düşük oran hangi
+    # bankada?»), ama "banka adı geçiyor ama bizde yok" durumunda uydurma
+    # üretir. İkisi ayrılmadan önce «Garanti Bankası'nın oranı kaç?» sorusuna
+    # Türkiye Finans'ın oranı dönüyordu (25 Ağu, S-10).
+    if yabanci_banka_soruluyor(soru, kayitlar):
+        bankalar = _bilinen_bankalar(kayitlar)
+        return Cevap(
+            parcalar=[CevapParcasi(
+                "Sorduğunuz banka veri setinde bulunmuyor, bu yüzden onun "
+                "hakkında bilgi veremem — başka bir bankanın verisini onun "
+                "yerine sunmam yanıltıcı olurdu.",
+                Koken.DUZ,
+            ), CevapParcasi(
+                "Veri setinde bulunan katılım bankaları: " + ", ".join(bankalar),
                 Koken.DUZ,
             )],
             niyet=Niyet.KAPSAM_DISI,

@@ -12,6 +12,10 @@ data/ablasyon/
 # Ham anlık görüntülerin META VERİSİ repoda kalır (izlenebilirlik kanıtı),
 # ham HTML dosyaları kalmaz (depo şişer + telif riski).
 data/raw/**/*.html
+# Çevrimdışı kurulum paketi (E-14) — yüzlerce MB tekerlek dosyası.
+# `make paket` yeniden üretir; USB'ye elle kopyalanır, depoya girmez.
+paketler/
+
 data/embeddings.npy
 # RAG vektör indeksi — 36 MB, türetilmiş. `make vektor` 70 sn'de yeniden kurar.
 # ⚠️ Hava boşluğu demosunda (E-14) çevrimdışı pakete ELLE konmalı.

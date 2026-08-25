@@ -294,6 +294,33 @@ Kullanıcı sorusu
 yapısal veriden gelir.* Metin arama yalnız *"kampanya koşulları neler?"* gibi
 metinsel sorulara hizmet eder.
 
+### Dayanak denetimi — kalkanın göremediği hata
+
+Kalkan *"bu sayı kayıtta var mı?"* diye sorar. Sormadığı bir soru vardı:
+***"bu kayıt, sorulanın kendisi mi?"***
+
+Ölçüldü (25 Ağustos, S-10 test seti): *«Garanti Bankası'nın konut kredisi
+faizi kaç?»* sorusuna sistem **Türkiye Finans'ın** oranını veriyordu — üstelik
+kaynakçasıyla, yani doğrulanmış görünerek. Kalkan bunu yakalayamaz, çünkü sayı
+gerçekten yapısal veride var; yalnızca **yanlış bankanın**.
+
+Sebep, kayıt seçimindeki `or kayitlar` yedeğiydi: banka eşleşmeyince tüm
+korpusa düşüp en dolu kaydı seçiyordu. Artık iki durum ayrılıyor:
+
+| Soru | Davranış |
+|---|---|
+| Banka adı geçmiyor (*«en düşük oran hangi bankada?»*) | Tüm korpus — doğru |
+| Banka adlandırılmış ve korpusta VAR | O bankanın kayıtları |
+| Banka adlandırılmış ama korpusta YOK | **Cevap verilmez**, mevcut bankalar listelenir |
+
+Kapsam dışı tespiti de aynı ilkeye çevrildi. Eskiden **yasak listesiydi**
+(*"hava durumu"*, *"mac skoru"*…) ve ölçümde beş kapsam dışı sorunun beşi de
+içeri sızıyordu — *«Bugün hava nasıl?»* listedeki ifadeye uymuyor. Yasak
+listesi tanım gereği tamamlanamaz. Şimdi tersi soruluyor: **soruda bu alana
+ait tek bir dayanak var mı?** Sözlük veriden türer (banka adları
+kayıtlardan, tür ve alan adları şemadan), yani yeni banka eklendiğinde
+denetim kendiliğinden genişler.
+
 Niyet yönlendirici bilinçli olarak kural tabanlıdır: karar 4 sınıflı ve kelime
 örüntüsüyle güvenilir biçimde çözülüyor. Her LLM çağrısı 4B modelde ~10 saniye;
 bunu yönlendirmede harcamak yerine cevabın doğruluğunda kullanmak daha doğru.

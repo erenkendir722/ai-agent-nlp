@@ -1,0 +1,222 @@
+# Chatbot 30 soruluk test seti (S-10)
+#
+# NEDEN BEKLENEN CEVAP METNİ YAZILI DEĞİL:
+#   "Beklenen cevap" olarak bir dize yazmak iki türlü bozulur. Çıkarım
+#   yenilendiğinde sayı değişir ve test yanlış yere kırılır; ya da testi
+#   geçirmek için beklenen dize güncellenir ve test hiçbir şey ölçmez olur.
+#   Bunun yerine her sorunun DAVRANIŞ ÖZELLİKLERİ yazılıyor; doğru cevabın
+#   ne olduğu çalışma anında veritabanından türetiliyor.
+#
+# ALANLAR
+#   soru        : kullanıcının yazdığı
+#   niyet       : beklenen sınıf (tekil_sorgu / karsilastirma / kosul_sorgusu /
+#                 kapsam_disi). Yönlendirici bunu tutturmalı.
+#   kaynak      : true  -> cevap kaynakça göstermeli (banka + URL + tarih)
+#                 false -> veri iddiası yok, kaynak beklenmez
+#   icermeli    : cevapta geçmesi gereken dizeler (küçük harfe indirilerek aranır)
+#   icermemeli  : cevapta GEÇMEMESİ gereken dizeler
+#   sayisal     : true -> cevaptaki sayılar yapısal veriden gelmeli; kalkan
+#                 bu cevabı doğrulamadan geçirmeli (yanlış blok = hata)
+#   not         : sorunun neyi sınadığı
+#
+# Şartname'nin iki örnek senaryosu (13. sayfa, «Senaryo 1» ve «Senaryo 2»)
+# ilk iki sırada duruyor ve ayrıca `sartname_senaryosu` ile işaretli.
+
+# ---------------------------------------------------------------------------
+# ŞARTNAME SENARYOLARI — bunlar geçmezse jüri demosu geçmez
+# ---------------------------------------------------------------------------
+
+- soru: "Kuveyt Türk'ün konut finansmanı oranı ne?"
+  niyet: tekil_sorgu
+  kaynak: true
+  sayisal: true
+  sartname_senaryosu: 1
+  not: >-
+    Şartname Senaryo 1. Beklenen davranış: ilgili alanı bulup kâr payı
+    oranını vermek. Şartnamedeki örnek cevap oranın YANINDA vadeyi de
+    veriyor; bizim cevabımız da tek alanla yetinmemeli.
+
+- soru: "Kuveyt Türk mü daha avantajlı, Albaraka mı?"
+  niyet: karsilastirma
+  kaynak: true
+  sayisal: true
+  sartname_senaryosu: 2
+  icermeli: ["kuveyt türk", "albaraka"]
+  not: >-
+    Şartname Senaryo 2. İki bankayı da anmalı ve gerekçe vermeli —
+    "A daha iyi" demek yetmez, hangi kritere göre olduğu yazmalı.
+
+# ---------------------------------------------------------------------------
+# TEKİL SORGU — tek bankaya ait bilgi
+# ---------------------------------------------------------------------------
+
+- soru: "Ziraat Katılım'ın kâr payı oranı kaç?"
+  niyet: tekil_sorgu
+  kaynak: true
+  sayisal: true
+
+- soru: "Türkiye Finans'ın vade seçeneği en fazla kaç ay?"
+  niyet: tekil_sorgu
+  kaynak: true
+  sayisal: true
+
+- soru: "Albaraka Türk taşıt finansmanı kampanyası var mı?"
+  niyet: [tekil_sorgu, kosul_sorgusu]
+  kaynak: true
+  not: >-
+    Varlık sorusu. Yapısal sorgu alanları listeler, metin araması koşul
+    metnini getirir — ikisi de doğru cevap. Tek sınıfı dayatmak ölçümü
+    keyfîleştirirdi.
+
+- soru: "Vakıf Katılım'ın ödül miktarı ne kadar?"
+  niyet: tekil_sorgu
+  kaynak: true
+  sayisal: true
+
+- soru: "T.O.M. Katılım kampanyasında tahsis ücreti alınıyor mu?"
+  niyet: tekil_sorgu
+  kaynak: true
+
+- soru: "Emlak Katılım finansman tutarı en fazla ne kadar?"
+  niyet: tekil_sorgu
+  kaynak: true
+  sayisal: true
+
+- soru: "Dünya Katılım'ın kampanyası ne zaman bitiyor?"
+  niyet: tekil_sorgu
+  kaynak: true
+
+- soru: "Hayat Finans hangi kampanyaları sunuyor?"
+  niyet: [tekil_sorgu, kosul_sorgusu]
+  kaynak: true
+  not: >-
+    Bankanın kampanya dökümü. Yapısal da metinsel de savunulabilir.
+
+# ---------------------------------------------------------------------------
+# KARŞILAŞTIRMA — birden çok banka
+# ---------------------------------------------------------------------------
+
+- soru: "En düşük kâr payı oranı hangi bankada?"
+  niyet: karsilastirma
+  kaynak: true
+  sayisal: true
+
+- soru: "Hangi bankanın vadesi daha uzun, Ziraat Katılım mı Türkiye Finans mı?"
+  niyet: karsilastirma
+  kaynak: true
+  sayisal: true
+  icermeli: ["ziraat", "türkiye finans"]
+
+- soru: "En avantajlı konut finansmanı kampanyası hangisi?"
+  niyet: karsilastirma
+  kaynak: true
+
+- soru: "Masrafsız kampanya sunan bankalar hangileri?"
+  niyet: karsilastirma
+  kaynak: true
+
+- soru: "En yüksek ödülü hangi banka veriyor?"
+  niyet: karsilastirma
+  kaynak: true
+  sayisal: true
+
+- soru: "Albaraka ile Vakıf Katılım'ı karşılaştır"
+  niyet: karsilastirma
+  kaynak: true
+  icermeli: ["albaraka", "vakıf"]
+
+# ---------------------------------------------------------------------------
+# KOŞUL SORGUSU — serbest metin, RAG ile getirilir
+# ---------------------------------------------------------------------------
+
+- soru: "Kuveyt Türk kampanya koşulları nelerdir?"
+  niyet: kosul_sorgusu
+  kaynak: true
+
+- soru: "Konut finansmanı için hangi belgeler gerekli?"
+  niyet: kosul_sorgusu
+  kaynak: true
+
+- soru: "Emeklilere özel kampanya var mı?"
+  niyet: kosul_sorgusu
+  kaynak: true
+
+- soru: "Kampanyadan kimler yararlanabilir?"
+  niyet: kosul_sorgusu
+  kaynak: true
+
+- soru: "Başvuru nasıl yapılıyor?"
+  niyet: kosul_sorgusu
+  kaynak: true
+
+# ---------------------------------------------------------------------------
+# TÜRKÇE'YE ÖZGÜ — yazım ve ek çeşitliliği aynı yere gitmeli
+# ---------------------------------------------------------------------------
+
+- soru: "kuveyt turk kar payi orani nedir"
+  niyet: tekil_sorgu
+  kaynak: true
+  sayisal: true
+  not: >-
+    Şapkasız ve noktalama yok. `arama_anahtari` normalizasyonu bunu
+    şapkalı yazımla aynı yere götürmeli (şartname 5.6).
+
+- soru: "ZİRAAT KATILIM VADE"
+  niyet: tekil_sorgu
+  kaynak: true
+  not: >-
+    Tümü büyük harf. İ/I tuzağı: `.lower()` naif uygulanırsa "ZİRAAT"
+    bozulur ve banka bulunamaz.
+
+- soru: "Albaraka'nın kampanyası var mı?"
+  niyet: [tekil_sorgu, kosul_sorgusu]
+  kaynak: true
+  not: >-
+    Kesme işaretli ek — banka adı ekten ayrılabilmeli. Varlık sorusu
+    olduğu için hangi katmandan cevaplandığı ikincil.
+
+- soru: "Türkiye Finans mı Ziraat Katılım mı daha ucuz?"
+  niyet: karsilastirma
+  kaynak: true
+  not: >-
+    Soru eki dört biçimli (mi/mı/mu/mü). Ünlü uyumu gözetilmezse bu soru
+    yanlış katmana gider.
+
+# ---------------------------------------------------------------------------
+# KAPSAM DIŞI — sistem "bilmiyorum" diyebilmeli
+# ---------------------------------------------------------------------------
+
+- soru: "Bugün hava nasıl?"
+  niyet: kapsam_disi
+  kaynak: false
+  sayisal: false
+
+- soru: "Bana bir şiir yaz"
+  niyet: kapsam_disi
+  kaynak: false
+
+- soru: "Bitcoin fiyatı ne kadar?"
+  niyet: kapsam_disi
+  kaynak: false
+  not: "Finans kelimesi geçiyor ama korpusta yok — konu yakınlığı yetmez."
+
+- soru: "Garanti Bankası'nın konut kredisi faizi kaç?"
+  niyet: kapsam_disi
+  kaynak: false
+  icermemeli: ["%"]
+  not: >-
+    KRİTİK: Garanti katılım bankası değil, korpusta yok. Sistem başka bir
+    bankanın oranını buraya YAZMAMALI. Cevapta yüzde işareti görünürse
+    uydurma yapılmış demektir.
+
+- soru: "2027'de kâr payı oranları ne olacak?"
+  niyet: kapsam_disi
+  kaynak: false
+  not: "Gelecek tahmini — veri değil, kehanet. Sistem tahmin yapmamalı."
+
+- soru: "Bana en iyi bankayı söyle, hangisine gideyim?"
+  niyet: karsilastirma
+  kaynak: true
+  not: >-
+    Tavsiye isteği. Sistem karşılaştırma yapabilir ama yasal uyarıyı
+    taşımalı — bağlayıcı teklif değildir.

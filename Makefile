@@ -48,6 +48,9 @@ durum:  ## veritabanı özeti
 vektor:  ## RAG vektör indeksini kur (gömme + kosinüs, ~2 dk)
 	$(PYTHON) -m src.boru_hatti vektor
 
+chatbot-test:  ## chatbot 30 soruluk test seti (S-10): doğruluk + kaynak gösterme
+	$(PYTHON) -m eval.chatbot_testi
+
 run:  ## Streamlit arayüzünü başlat
 	$(ARROW_HAVUZ) $(STREAMLIT) run app/Genel_Bakis.py
 
