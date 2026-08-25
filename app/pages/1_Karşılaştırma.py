@@ -51,16 +51,20 @@ with f1:
 
 with f2:
   bankalar = sorted({k.banka_adi for k in kayitlar})
-  secili_bankalar = st.multiselect("Bankalar", bankalar, default=bankalar)
+  c_biz, c_onlar = st.columns([1, 2])
+  with c_biz:
+    benim_bankam = st.selectbox("Benim Bankam (Biz)", ["(Seçilmedi)"] + bankalar)
+  with c_onlar:
+    secili_bankalar = st.multiselect("Rakip Seti (Onlar)", bankalar, default=bankalar)
 
 st.markdown("<br>", unsafe_allow_html=True)
-with st.expander("Gelişmiş Filtreler (Yapay Zeka Komuta Merkezi)", expanded=False):
+with st.expander("Gelişmiş Filtreler (Piyasa Özeti)", expanded=False):
   c1, c2, c3 = st.columns(3)
   with c1:
     arama_metni = st.text_input("Serbest Metin Arama (Ad, içerik, avantaj)")
     
     hedef_kitleler = [h.value for h in HedefKitle]
-    secili_hedef_kitle = st.multiselect("Hedef Kitle (Kapsam İzolasyonu)", hedef_kitleler)
+    secili_hedef_kitle = st.multiselect("Hedef Kitle (Segment İzolasyonu)", hedef_kitleler)
   with c2:
     tarih_filtresi = st.date_input("Geçerlilik Tarihi (Bu tarihten önce bitenleri gizle)", value=datetime.date.today())
     
@@ -70,10 +74,15 @@ with st.expander("Gelişmiş Filtreler (Yapay Zeka Komuta Merkezi)", expanded=Fa
     tam_dolu_mu = st.toggle("Veri Bütünlüğü (Kritik alanları eksiksiz olanlar)", help="Kâr payı, vade gibi temel bilgileri 'Belirtilmemiş' olan kampanyaları gizler.")
 
 suzulmus = []
+gorulen_kampanyalar = set()
+aktif_bankalar = set(secili_bankalar)
+if benim_bankam != "(Seçilmedi)":
+  aktif_bankalar.add(benim_bankam)
+
 for k in kayitlar:
   if secili_tur != "(tümü)" and k.kampanya_turu != secili_tur:
     continue
-  if k.banka_adi not in secili_bankalar:
+  if k.banka_adi not in aktif_bankalar:
     continue
     
   # 1. Yeni: Hedef Kitle Filtresi
@@ -121,7 +130,10 @@ for k in kayitlar:
           continue # Tarihi geçmiş, gösterme
       except Exception:
         pass # Parse edilemeyen tarihleri sakla (False Negative olmasın)
-  suzulmus.append(k)
+  dedup_key = (k.banka_adi, k.kampanya_turu, k.kaynak_url)
+  if dedup_key not in gorulen_kampanyalar:
+    gorulen_kampanyalar.add(dedup_key)
+    suzulmus.append(k)
 
 if not suzulmus:
   st.info("Seçime uyan kampanya yok.")
@@ -215,7 +227,7 @@ def _gorunum(deger, birim: str = "") -> str:
   return f"{deger}{birim}"
 
 if not sirali:
-  st.warning("Seçili kriterlere (Vade, Kar Payı vb.) uygun kampanya bulunamadı.")
+  st.warning("Aranan kriterlere uygun aktif bir katılım bankası kampanyası bulunamamıştır")
   if st.button("Filtreleri Sıfırla"):
     # Yalnızca rerun atıp filtreleri manuel temizlemesini önermek de bir seçenektir,
     # ancak Session State kullanmadığı için bu aşamada st.rerun() Streamlit <= 1.26'da st.experimental_rerun()
@@ -239,6 +251,16 @@ tablo = pd.DataFrame(
     for k in sirali
   ]
 )
+
+# Tamamı 'Belirtilmemiş' olan sütunları gizle (Temiz Görünüm)
+gizlenecek_sutunlar = []
+for col in tablo.columns:
+    if col not in ["Banka", "Tür", "Güven"]:
+        if (tablo[col] == "Belirtilmemiş").all() or (tablo[col] == "—").all():
+            gizlenecek_sutunlar.append(col)
+
+if gizlenecek_sutunlar:
+    tablo.drop(columns=gizlenecek_sutunlar, inplace=True)
 
 def _renklendir_guven(val):
   if val == "Belirtilmemiş" or pd.isna(val):
@@ -270,16 +292,85 @@ def _renklendir_kar(val):
   except Exception:
     return ""
 
+def _highlight_biz(row):
+  # Eğer "Benim Bankam (Biz)" seçilmişse ve satır o bankaya aitse tüm satırı renklendir
+  hedef_ad = "Albaraka Türk" if format_bank_name(benim_bankam) == "Örnek" else format_bank_name(benim_bankam)
+  if benim_bankam != "(Seçilmedi)" and row['Banka'] == hedef_ad:
+    return ['background-color: rgba(46, 204, 113, 0.15)'] * len(row)
+  return [''] * len(row)
+
 # pandas >= 2.1 için map, eski sürümler için applymap
 styler = tablo.style
 if hasattr(styler, "map"):
-  styled_tablo = styler.map(_renklendir_guven, subset=["Güven"]) \
+  styled_tablo = styler.apply(_highlight_biz, axis=1) \
+             .map(_renklendir_guven, subset=["Güven"]) \
              .map(_renklendir_kar, subset=["Kâr payı (aylık %)"])
 else:
-  styled_tablo = styler.applymap(_renklendir_guven, subset=["Güven"]) \
+  styled_tablo = styler.apply(_highlight_biz, axis=1) \
+             .applymap(_renklendir_guven, subset=["Güven"]) \
              .applymap(_renklendir_kar, subset=["Kâr payı (aylık %)"])
 
 st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
+
+# ---------------------------------------------------------------------------
+# Yapay Zeka Battlecard (Biz vs Onlar)
+# ---------------------------------------------------------------------------
+if benim_bankam != "(Seçilmedi)" and sirali:
+  st.subheader("⚔️ Yapay Zeka Battlecard: Biz vs Onlar")
+  st.caption("Seçilen filtrelerdeki ürünler için EVREN (vLLM) ile hazırlanan rekabet analizi")
+  
+  if st.button("Battlecard Üret (EVREN API)"):
+    biz_data = [k for k in sirali if format_bank_name(k.banka_adi) == format_bank_name(benim_bankam)]
+    onlar_data = [k for k in sirali if format_bank_name(k.banka_adi) != format_bank_name(benim_bankam) and format_bank_name(k.banka_adi) in [format_bank_name(b) for b in secili_bankalar]]
+    
+    if not biz_data:
+      st.warning(f"{benim_bankam} bankasına ait filtrelenmiş kampanya bulunamadı.")
+    elif not onlar_data:
+      st.warning("Karşılaştırma yapılacak Rakip Seti kampanyası bulunamadı.")
+    else:
+      with st.spinner("EVREN API analiz ediyor..."):
+        import os
+        from openai import OpenAI
+        
+        api_key = os.getenv("EVREN_API_ANAHTARI", "dummy_key")
+        api_url = os.getenv("EVREN_TEMEL_URL", "https://evren-llmapi.ssyz.org.tr/v1")
+        model_adi = os.getenv("LLM_MODEL", "llm-fast") 
+        
+        try:
+          client = OpenAI(base_url=api_url, api_key=api_key)
+          
+          # Veriyi hazırlama
+          biz_ozet = "\n".join([f"- Ürün: {k.urun_turu or k.kampanya_turu} | Kâr: {k.kar_payi_orani} | Vade: {k.vade_ay_max} | Tahsis: {k.tahsis_ucreti}" for k in biz_data])
+          onlar_ozet = "\n".join([f"- Banka: {k.banka_adi} | Ürün: {k.urun_turu or k.kampanya_turu} | Kâr: {k.kar_payi_orani} | Vade: {k.vade_ay_max} | Tahsis: {k.tahsis_ucreti}" for k in onlar_data])
+          
+          prompt = f"""Sen kıdemli bir katılım bankacılığı ürün yöneticisisin. Aşağıdaki ürün özelliklerine dayanarak, "Bizim Bankamız"ın satış ekipleri için bir "Battlecard" (Rakip analiz kartı) hazırla.
+          
+Bizim Ürünlerimiz ({benim_bankam}):
+{biz_ozet}
+
+Rakip Ürünleri:
+{onlar_ozet}
+
+Lütfen analizini şu başlıklarla yap:
+1. Bizim Üstün Olduğumuz Yönler (Avantajlar)
+2. Rakiplerin Üstün Olduğu Yönler (Zayıflıklar)
+3. Satış Stratejisi (Müşteriye ne söylemeliyiz?)
+
+Sadece analizi ver, profesyonel bir B2B dili kullan."""
+
+          response = client.chat.completions.create(
+              model=model_adi,
+              messages=[
+                  {"role": "system", "content": "Sen kıdemli bir finansal analiz uzmanısın."},
+                  {"role": "user", "content": prompt}
+              ],
+              temperature=0.3
+          )
+          st.success("Battlecard başarıyla üretildi!")
+          st.markdown(f"> **Not:** {model_adi} modeli kullanıldı.")
+          st.info(response.choices[0].message.content)
+        except Exception as e:
+          st.error(f"EVREN API'sine ulaşılamadı: {str(e)}")
 
 # ---------------------------------------------------------------------------
 # Avantaj skorunun dökümü
@@ -327,7 +418,8 @@ for kayit in sirali[:20]:
   )
   with st.expander(baslik):
     kampanya: Kampanya = kayit.kampanyaya_cevir()
-    st.markdown(f"**Kaynak:** {kayit.kaynak_url}")
+    st.markdown(f"**Kaynak:** [{kayit.kaynak_url}]({kayit.kaynak_url})")
+    st.markdown("---")
     st.caption(f"Çekim tarihi: {kayit.cekim_tarihi:%d.%m.%Y %H:%M}")
 
     for alan_adi, alan in kampanya.cikarilan_alanlar().items():

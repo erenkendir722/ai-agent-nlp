@@ -257,8 +257,7 @@ class MuhakemeAjani:
                 Gerekce(
                     "uygunluk",
                     True,
-                    "Kampanyanın uygunluk koşulları metinden çıkarılamadı; "
-                    "kısıtlar doğrulanamadı.",
+                    "Veri kaynağında yayınlanmadığı için kısıtlar doğrulanamadı.",
                 )
             )
 

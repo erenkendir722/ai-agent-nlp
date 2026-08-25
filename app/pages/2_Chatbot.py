@@ -114,7 +114,7 @@ def cevap_renderla(cevap, gecen_sure=None):
     for kaynak in cevap.kaynaklar:
       with st.container(border=True):
         st.markdown(f"**{kaynak.banka_adi}**")
-        st.caption(f"{kaynak.url}")
+        st.markdown(f"[🔗 Kaynağa Git]({kaynak.url})")
         st.caption(f"Çekim tarihi: {kaynak.cekim_tarihi}")
         if kaynak.alinti:
           st.markdown(f"> {kaynak.alinti}")
@@ -145,15 +145,17 @@ if soru:
           import random
           gecen_sure = random.uniform(0.7, 1.4)
       except ConnectionError as e:
-        st.error("Yerel dil modeli sunucusuna (Ollama) şu anda erişilemiyor.")
-        with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
-          st.write("Bağlantı reddedildi. Docker container'ların veya yerel Ollama servisinin çalıştığından emin olun.")
-          st.code(str(e))
+        st.error("Yerel dil modeli sunucusuna (Ollama) veya vektör veritabanına şu anda erişilemiyor.")
+        if st.session_state.get("dev_mode", False):
+          with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
+            st.write("Bağlantı reddedildi. Docker container'ların veya yerel Ollama servisinin çalıştığından emin olun.")
+            st.code(str(e))
         st.stop()
       except Exception as e:
         st.error("Bilinmeyen bir hata oluştu.")
-        with st.expander("Teknik Teşhis"):
-          st.code(str(e))
+        if st.session_state.get("dev_mode", False):
+          with st.expander("Teknik Teşhis"):
+            st.code(str(e))
         st.stop()
 
     cevap_renderla(cevap, gecen_sure)

@@ -89,6 +89,9 @@ class UzlastirmaRaporu:
     var ama azami finansman tutarı değil). Ayrı sayaçlar olmadan ablasyon
     tablosunda hangi kapının ne kazandırdığı ayırt edilemezdi."""
 
+    trace_log: dict = field(default_factory=dict)
+    """Gerçek zamanlı CoT izleme (trace) verileri (süreler, kararlar)."""
+
     elenen_alan_sayisi: int = 0
     """Uzlaştırmayı kazanıp ALAN MAKULLÜĞÜNDEN düşen değerler.
 
@@ -345,22 +348,41 @@ def kampanya_cikar(
     ölçümü karşılaştırılamaz hâle getirirdi.
     """
     from src.extraction.kural import kurallarla_cikar  # döngüsel içe aktarımı önler
+    import time
 
     metin = kayit.govde_metin
     kural_alanlari: dict[str, Alan] = {}
     llm_alanlari: dict[str, Alan] = {}
+    
+    trace = {}
+    t0 = time.time()
 
     if kural_kullan:
+        t_kural = time.time()
         kural_alanlari = kurallarla_cikar(metin, kayit.url, kayit.cekim_tarihi)
+        trace["kural_suresi"] = time.time() - t_kural
 
     if llm_kullan:
+        t_llm = time.time()
         if llm_cikarici is None:
+            t_load = time.time()
             from src.extraction.llm import LLMCikarici
 
             llm_cikarici = LLMCikarici()
+            trace["llm_load_suresi"] = time.time() - t_load
+        
+        t_inf = time.time()
         llm_alanlari = llm_cikarici.cikar(metin, kayit.url, kayit.cekim_tarihi)  # type: ignore[attr-defined]
+        trace["llm_cikarim_suresi"] = time.time() - t_inf
+        trace["llm_toplam_suresi"] = time.time() - t_llm
 
-    return uzlastir(kural_alanlari, llm_alanlari, kayit=kayit, yuklem=yuklem)
+    t_uz = time.time()
+    kampanya, rapor = uzlastir(kural_alanlari, llm_alanlari, kayit=kayit, yuklem=yuklem)
+    trace["uzlastirma_suresi"] = time.time() - t_uz
+    trace["toplam_sure"] = time.time() - t0
+    
+    rapor.trace_log = trace
+    return kampanya, rapor
 
 
 def tarih_damgali_kimlik(banka_kodu: str, url: str, tarih: datetime) -> str:

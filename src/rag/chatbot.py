@@ -652,33 +652,39 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     )
 
 
-def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
-    """Metinsel sorular — ham metinden ilgili parçalar getirilir.
+from src.vektor_db import vektor_ara
 
-    v0'da anahtar sözcük örtüşmesi kullanılıyor. Sprint 2'de gömme tabanlı
-    kosinüs benzerliği ile değiştirilecek (turkish-e5-large). Arayüz sözleşmesi
-    aynı kalacağı için değişim yerel olacak.
-    """
+def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
+    """Metinsel sorular — Qdrant vektör benzerlik araması (EVREN Embedding) ile getirilir."""
     if not kayitlar:
         return Cevap(
             parcalar=[CevapParcasi("Bu bilgi veri setinde bulunmuyor.", Koken.DUZ)],
             niyet=Niyet.KOSUL_SORGUSU,
         )
 
-    soru_sozcukleri = set(arama_anahtari(soru).split()) - {"ne", "nedir", "mi", "mu", "icin"}
-
-    puanli: list[tuple[float, KampanyaKaydi, str]] = []
-    for kayit in kayitlar:
-        for paragraf in re.split(r"\n+", kayit.ham_metin):
-            if len(paragraf) < 40:
-                continue
-            p_sozcukler = set(arama_anahtari(paragraf).split())
-            ortak = soru_sozcukleri & p_sozcukler
-            if ortak:
-                puanli.append((len(ortak) / max(1, len(soru_sozcukleri)), kayit, paragraf))
-
-    puanli.sort(key=lambda x: -x[0])
-    if not puanli:
+    # Aramayı sınırlandırmak için seçili kayıtların id'lerini alalım
+    filtre_idleri = [k.kampanya_id for k in kayitlar]
+    
+    # Qdrant'tan vektör araması yap
+    try:
+        arama_sonuclari = vektor_ara(sorgu=soru, limit=3, filter_ids=filtre_idleri)
+    except Exception as e:
+        # Sadece DNS / bağlantı / timeout hatalarını veya ResponseHandlingException yakalayarak gizliyoruz.
+        err_str = str(e).lower()
+        if "responsehandlingexception" in err_str or "getaddrinfo failed" in err_str or "connection" in err_str or "timeout" in err_str:
+            log.warning(f"RAG araması (Qdrant) bağlantı hatası nedeniyle başarısız: {e}")
+            return Cevap(
+                parcalar=[CevapParcasi(
+                    "Yerel modda çalıştığı için bulut destekli metin araması (RAG) devre dışıdır. "
+                    "Banka kampanyalarının kâr payı, vade, tutar gibi sayısal verilerini sormaya devam edebilirsiniz.",
+                    Koken.DUZ,
+                )],
+                niyet=Niyet.KOSUL_SORGUSU,
+            )
+        # Başka bir bug ise (örn. TypeError, ValueError), hatayı gizlemeden fırlat.
+        raise e
+    
+    if not arama_sonuclari:
         return Cevap(
             parcalar=[CevapParcasi(
                 "Bu konuda veri setinde bilgi bulamadım. Sorunuzu "
@@ -688,36 +694,38 @@ def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             niyet=Niyet.KOSUL_SORGUSU,
         )
 
-    # HER PARAGRAF AYRI BİR ALINTI PARÇASIDIR.
-    #
-    # Eskiden hepsi tek metne birleşip YAPISAL ölçütle denetleniyordu: bankanın
-    # kendi metnindeki sayı yapısal alanda bulunamayınca meşru cevap
-    # engelleniyordu (10 doğal soruda 2 blok). Kalkanı gevşetmek yanlış çözüm
-    # olurdu; doğru çözüm parçanın kökenini bildirmek — alıntı, KAYNAĞINA
-    # karşı denetlenir.
+    # HER BULUNAN METİN AYRI BİR ALINTI PARÇASIDIR.
     parcalar: list[CevapParcasi] = [
         CevapParcasi("Veri setinde bulunan ilgili bilgiler:", Koken.DUZ)
     ]
     kaynaklar: list[Kaynakca] = []
-    for _, kayit, paragraf in puanli[:3]:
-        alinti = paragraf.strip()[:400]
+    
+    # Payload yapısı: {"kampanya_id": str, "banka_adi": str, "metin": str}
+    for i, sonuc in enumerate(arama_sonuclari, 1):
+        alinti = sonuc["metin"].strip()[:400]
         parcalar.append(
             CevapParcasi(
-                f"\n**{kayit.banka_adi}:** {alinti}",
+                f"\n[{i}] **{sonuc['banka_adi']}:** {alinti}",
                 Koken.ALINTI,
-                kayit_id=kayit.kampanya_id,
+                kayit_id=sonuc["kampanya_id"],
                 alinti=alinti,
             )
         )
-        kaynak = _kaynakca(kayit)
-        kaynak.alinti = paragraf.strip()[:200]
-        kaynaklar.append(kaynak)
+        
+        # Orijinal KampanyaKaydi nesnesini bul (kaynaklar için)
+        kayit = next((k for k in kayitlar if k.kampanya_id == sonuc["kampanya_id"]), None)
+        if kayit:
+            kaynak = _kaynakca(kayit)
+            kaynak.alinti = alinti[:200]
+            # Kaynaklara da numarasını ekleyelim
+            kaynak.banka_adi = f"[{i}] {kaynak.banka_adi}"
+            kaynaklar.append(kaynak)
 
     return Cevap(
         parcalar=parcalar,
         niyet=Niyet.KOSUL_SORGUSU,
         kaynaklar=kaynaklar,
-        kullanilan_kayitlar=[k for _, k, _ in puanli[:3]],
+        kullanilan_kayitlar=[k for k in kayitlar if k.kampanya_id in [s["kampanya_id"] for s in arama_sonuclari]],
     )
 
 

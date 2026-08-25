@@ -57,9 +57,10 @@ try:
         status.update(label="Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
 except Exception as e:
     st.error("Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
-    with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
-        st.write("Veritabanı bağlantısı reddedildi veya tablo şeması eksik.")
-        st.code(str(e))
+    if st.session_state.get("dev_mode", False):
+        with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
+            st.write("Veritabanı bağlantısı reddedildi veya tablo şeması eksik.")
+            st.code(str(e))
     st.stop()
 
 if not kampanyalar:
@@ -130,9 +131,10 @@ kayit_dizini = {k.kampanya_id: k for k in kampanyalar}
 # ---------------------------------------------------------------------------
 
 dogrulanmamis = sum(1 for s in uygunlar if s.veri_eksik)
-if uygunlar and dogrulanmamis > 0:
-    st.toast(f"{dogrulanmamis} kampanyada kâr payı veya masraf verisi eksik/doğrulanamadı.", icon="⚠️")
-else:
+toplam_uygun = len(uygunlar)
+if toplam_uygun > 0 and dogrulanmamis > 0:
+    st.warning(f"{dogrulanmamis} / {toplam_uygun} kampanyada kısıt doğrulanamadı (kaynak veri eksikliği, kalkan arızası değil).", icon="⚠️")
+elif uygunlar:
     st.toast("Kısıt Çıkarımı Başarılı. Sistem koşulları başarıyla çözümledi.", icon="✔️")
 
 ust1, ust2, ust3 = st.columns(3)
@@ -152,7 +154,7 @@ def _tl(deger: float) -> str:
 st.subheader("Uygun kampanyalar — toplam maliyete göre sıralı")
 
 if not uygunlar:
-    st.info("Bu profile uygun kampanya bulunamadı. Sebepler aşağıda listeleniyor.")
+    st.info("Aranan kriterlere uygun aktif bir katılım bankası kampanyası bulunamamıştır")
 
 for sira, sonuc in enumerate(uygunlar[:15], 1):
     kampanya = kayit_dizini.get(sonuc.kampanya_id)
@@ -160,7 +162,7 @@ for sira, sonuc in enumerate(uygunlar[:15], 1):
         baslik, deger = st.columns([3, 2])
         baslik.markdown(f"**{sira}. {sonuc.banka_adi}**")
         if kampanya is not None:
-            baslik.caption(kampanya.kaynak_url)
+            baslik.markdown(f"[🔗 Kaynağa Git]({kampanya.kaynak_url})")
 
         if sonuc.maliyet:
             deger.metric(

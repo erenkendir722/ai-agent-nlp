@@ -109,20 +109,38 @@ def inject_custom_css():
         header {visibility: hidden;}
         footer {visibility: hidden;}
         
-        /* Metric Cards Styling */
+        /* Metric Cards Styling (Glassmorphism & Elevation) */
         [data-testid="stMetric"] {
-            background-color: #25252D;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(37, 37, 45, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
             padding: 15px 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
         }
         
         [data-testid="stMetric"]:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 168, 107, 0.2);
-            border-color: rgba(0, 168, 107, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 168, 107, 0.3);
+            border-color: rgba(0, 168, 107, 0.5);
+        }
+        
+        /* Metric Caption / Delta Visibility */
+        [data-testid="stMetricDelta"] > div {
+            font-size: 1.05rem !important;
+            font-weight: 600 !important;
+            opacity: 0.95 !important;
+        }
+
+        /* Alerts Semantic Coloring (Info, Warning, Error) */
+        div.stAlert > div {
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            border-radius: 8px;
+        }
+        div[data-baseweb="notification"] {
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         /* DataFrame Styling */

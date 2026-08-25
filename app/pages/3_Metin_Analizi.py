@@ -22,6 +22,8 @@ st.caption(
 )
 
 with st.sidebar:
+  st.toggle("Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
+  st.markdown("---")
   st.header("Aktif Ajanlar")
   st.markdown("""
   - **Orkestratör Ajan** (Karar Verici)
@@ -71,29 +73,28 @@ if st.button("Analiz Et (Yapay Zeka ile Çıkar)", type="primary"):
       status.update(label="Analiz başarıyla tamamlandı! (Doğrulama Geçti)", state="complete", expanded=False)
     except Exception as e:
       status.update(label="İşlem sırasında hata oluştu.", state="error", expanded=True)
-      st.error("Yerel dil modeli yanıt vermedi (Ollama kapalı olabilir) veya beklenmedik bir çökme yaşandı.")
-      st.markdown("**Geliştirici Logları:**")
-      st.code(str(e))
+      st.error("Yerel dil modeli şu an yanıt vermiyor, lütfen tekrar deneyin.")
+      if st.session_state.get('dev_mode', False):
+        st.markdown("**Geliştirici Logları:**")
+        st.code(str(e))
       st.stop()
 
   # Elapsed, time.time() - start_time yerine LLM süresini kullanıyoruz
-  elapsed = islem_suresi if 'islem_suresi' in locals() else 1.2
+  toplam_elapsed = rapor.trace_log.get('toplam_sure', 1.2) if 'rapor' in locals() and hasattr(rapor, 'trace_log') else 1.2
+  llm_elapsed = rapor.trace_log.get('llm_toplam_suresi', 1.0) if 'rapor' in locals() and hasattr(rapor, 'trace_log') else 1.0
   word_count = len(metin.split())
   
-  st.info(f"**{word_count} kelimelik** metin yerel model ile **{elapsed:.1f} saniyede** işlendi. "
-      f"Bulut API kullanılsaydı ~\$0.02 maliyet oluşacaktı | **Mevcut API Maliyeti: \$0.00**")
+  st.info(f"**{word_count} kelimelik** metin yerel model ile **{toplam_elapsed:.2f} saniyede** (Çıkarım: {llm_elapsed:.2f} s) işlendi. "
+      f"Tahmini Bulut Maliyeti: ~\$0.02 | **Mevcut API Maliyeti: \$0.00**")
       
   col1, col2 = st.columns([1, 1.2])
   
   with col1:
     with st.expander("Ajan Muhakeme Süreci (Chain of Thought)", expanded=True):
-      st.markdown("""
-      **[muhakeme • kod • 12 ms]** `Orkestratör` metni aldı ve analiz görevini başlattı. 
-      **[muhakeme • llm • 1.2 s]** `Veri Çıkarıcı Ajan` metni okudu. "Konut finansmanı" bağlamı tespit edildi -> Tür: Konut Finansmanı. 
-      **[muhakeme • kod • 2 ms]** `Kural Motoru Ajanı` regex taraması yaptı. "%1,89" değeri güvenilir bulundu. 
-      **[muhakeme • kod • 4 ms]** `Sayısal Doğrulayıcı` 500.000 TL limitini onayladı. 
-      **[karar • hibrid]** Çelişki bulunmadı. Veri yapısal JSON formatına dönüştürüldü.
-      """)
+      if 'rapor' in locals() and hasattr(rapor, 'trace_log') and rapor.trace_log:
+          st.json(rapor.trace_log)
+      else:
+          st.write("Muhakeme logu toplanamadı.")
       
     st.subheader("Yapısal Çıktı Tablosu")
     
@@ -131,11 +132,6 @@ if st.button("Analiz Et (Yapay Zeka ile Çıkar)", type="primary"):
       
       if alan_obj.kaynak and alan_obj.kaynak.alinti:
         alinti_metni = alan_obj.kaynak.alinti
-        # Jüri illüzyonu (Slicing hatası yamasını ui'da yap)
-        if alinti_metni.startswith("000 TL'ye kadar"):
-          alinti_metni = "500." + alinti_metni
-        if alan_ismi == "kampanya_turu" and "Konut finansmanı kampanyamız kapsamında" in alinti_metni:
-          alinti_metni = "Konut finansmanı kampanyamız kapsamında, %1,89 kâr payı oranıyla 120 aya varan vade seçenekleri sunuyoruz."
         alintilar.append((alan_ismi, alinti_metni))
         
     if not satirlar:
@@ -144,10 +140,21 @@ if st.button("Analiz Et (Yapay Zeka ile Çıkar)", type="primary"):
       with st.expander("Üretilen Yapısal Veri (JSON/Dict)"):
         st.json(clean_json)
         
-      st.dataframe(satirlar, hide_index=True, use_container_width=True)
+      import pandas as pd
+      df_satirlar = pd.DataFrame(satirlar)
+      def format_motor(x):
+          if x == "KURAL": return "<span style='background-color: #00BCD4; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>KURAL</span>"
+          if x == "LLM": return "<span style='background-color: #2196F3; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>LLM</span>"
+          if x == "HİBRİT" or x == "HIBRIT": return "<span style='background-color: #9C27B0; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 0.75rem;'>HİBRİT</span>"
+          return x
+      df_satirlar["Motor"] = df_satirlar["Motor"].apply(format_motor)
+      df_satirlar["Güven"] = df_satirlar["Güven"].apply(lambda g: f"<span title='Modelin kendi bildirdiği güven skoru; bağımsız kalibrasyon testi yapılmamıştır.' style='cursor: help; text-decoration: underline dotted;'>{g}</span>")
+      
+      st.markdown(df_satirlar.to_html(escape=False, index=False, classes="table table-dark"), unsafe_allow_html=True)
       
       st.markdown("---")
-      st.checkbox("Çıkarılan bu verileri onaylıyorum (Bankacı Onayı)")
+      st.checkbox("Çıkarılan bu verileri onaylıyorum (Bankacı Onayı)", key="onay_durumu")
+      st.button("Veriyi Kaydet ve Aktar", disabled=not st.session_state.get("onay_durumu", False), type="primary")
       st.caption("Yapay zeka asistanı saniyeler içinde bulur, **son kararı bankacı verir**.")
       
       st.subheader("Kanıt Zinciri (Alıntılar)")
@@ -163,12 +170,20 @@ if st.button("Analiz Et (Yapay Zeka ile Çıkar)", type="primary"):
     alintilar_sirali = sorted(alintilar, key=lambda x: len(x[1]), reverse=True)
     islenen_alintilar = set()
     
-    for _, alinti in alintilar_sirali:
+    import re
+    
+    def safe_replace(text, search, replacement):
+        parts = re.split(r'(<[^>]+>)', text)
+        for i, p in enumerate(parts):
+            if not p.startswith('<'):
+                parts[i] = p.replace(search, replacement)
+        return "".join(parts)
+        
+    for alan_isim, alinti in alintilar_sirali:
       if alinti not in islenen_alintilar and len(alinti.strip()) > 3:
-        vurgulu_metin = vurgulu_metin.replace(
-          alinti, 
-          f"<mark style='background-color: rgba(39, 174, 96, 0.4); padding: 2px 4px; border-radius: 4px; font-weight: 500;'>{alinti}</mark>"
-        )
+        guzel_isim = alan_isim.replace('_', ' ').title()
+        mark_html = f"<mark title='Bulunan Varlık: {guzel_isim}' style='background-color: rgba(255, 235, 59, 0.8); color: #000; padding: 2px 4px; border-radius: 4px; font-weight: 600; cursor: help; border-bottom: 2px solid #FBC02D;'>{alinti}</mark>"
+        vurgulu_metin = safe_replace(vurgulu_metin, alinti, mark_html)
         islenen_alintilar.add(alinti)
         
     st.markdown(
