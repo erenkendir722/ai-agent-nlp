@@ -1,29 +1,80 @@
-# Bağımlılık Lisans Raporu
+# Bağımlılık ve Model Lisans Raporu
 
-_Otomatik üretildi: 09.08.2026 18:10 · `make lisanslar`_
+_Otomatik üretildi: 25.08.2026 13:26 · `make lisanslar`_
 
 Şartname 5.10: *"Açık kaynaklı gözüküp, uygulama aşamasında lisans problemi çıkarma potansiyeli olan çözümler kullanılmamalıdır."*
 
 ## Sonuç
 
-- Taranan paket: **77**
+- Taranan paket: **85** (bunun **79** tanesi `requirements.txt` kapanışında)
+- Taranan model: **4**
 - Kısıtlı/şüpheli lisans: **0**
 
-✅ **Tüm bağımlılıklar izin verici (permissive) lisanslıdır.** Kısıtlı kullanım şartı olan hiçbir bileşen yoktur.
+✅ **Tüm bağımlılıklar ve modeller izin verici (permissive) lisanslıdır.** Kısıtlı kullanım şartı olan hiçbir bileşen yoktur.
 
 ## Model lisansları
 
-| Model | Lisans | Kullanım |
+Modeller pip paketi değildir; yukarıdaki tarama onları görmez. Şartname
+5.10'un asıl hedefi ise model lisanslarıdır — bu bölüm o yüzden var.
+
+Lisanslar **2026-08-24** tarihinde Hugging Face depo üst verisinden çekilmiştir; ham yanıt: [`docs/kanit/model-lisanslari.json`](kanit/model-lisanslari.json). Modelin kendi beyanına ya da bizim hafızamıza dayanılmıyor.
+
+| Kullanım | Nerede koşuyor | Hugging Face deposu | Lisans | Teyit |
+|---|---|---|---|---|
+| Çıkarım — varsayılan, ölçüm koşuları | EVREN `llm-large` | `Qwen/Qwen3.5-122B-A10B` | **apache-2.0** | ✅ HF API · 2026-08-24 |
+| Çıkarım — seçilebilir hızlı uç, **varsayılan değil** | EVREN `llm-fast` (`--model llm-fast`) | `Qwen/Qwen3.6-35B-A3B` | **apache-2.0** | ✅ HF API · 2026-08-24 |
+| Çıkarım — yerel yedek, hava boşluğu demosu | Ollama `qwen3.5:4b-q4_K_M` | `Qwen/Qwen3.5-4B` | **apache-2.0** | ✅ HF API · 2026-08-24 |
+| Gömme (S-09) — **aday**, henüz kullanılmıyor | EVREN `bge-m3-embed` · yerel `BAAI/bge-m3` | `BAAI/bge-m3` | **mit** | ✅ HF API · 2026-08-24 |
+
+Notlar:
+
+- `Qwen/Qwen3.5-122B-A10B` — MoE, 122B toplam / 10B aktif, BF16, 262.144 token bağlam.
+- `Qwen/Qwen3.6-35B-A3B` — MoE. Ölçümde şema geçerliliği `llm-large`'ın altında kaldığı için varsayılan yapılmadı; bayrakla seçilebildiği sürece lisansı da teyitli olmalı.
+- `Qwen/Qwen3.5-4B` — EVREN düştüğünde aynı kod yolu yerelde koşar (`LLM_SAGLAYICI=ollama`).
+- `BAAI/bge-m3` — S-09'un gömme modeli. Gemma tabanlı alternatiflere gerek yok.
+
+### EVREN uçları — hangisi kullanılıyor, hangisi neden kullanılmıyor
+
+Çıkarım, T.C. Cumhurbaşkanlığı SSB'nin yarışmaya tahsis ettiği **EVREN**
+servisinde koşuyor. Servis `GET /v1/models` ile on uç yayımlıyor; hepsi
+takma addır, model kimliği döndürmez. Kullandığımız uçların kimliği EVREN
+model kartından teyitlidir, kalanlarınki **değildir** — o yüzden kullanılmıyorlar.
+
+| Uç | Model kimliği | Durum |
 |---|---|---|
-| Qwen3.5 (2B/4B/9B/27B) | **Apache 2.0** | Çıkarım ve chatbot |
-| Qwen3.6-27B | **Apache 2.0** | Final ölçüm koşusu |
+| `llm-large` | Qwen3.5-122B-A10B — Apache-2.0 | ✅ kullanılıyor |
+| `llm-fast` | Qwen3.6-35B-A3B — Apache-2.0 | 🟡 `--model llm-fast` ile seçilebilir; varsayılan değil, ölçüm koşuları `llm-large` ile yapıldı |
+| `bge-m3-embed` · `bge-m3-sparse` · `bge-m3-colbert` | adı BGE-M3'ü işaret ediyor — MIT | 🟡 S-09 adayı; kullanılmadan önce kimlik model kartından teyit edilecek |
+| `embed` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor — jenerik ad; EmbeddingGemma gibi kısıtlı bir model olma ihtimali dışlanamaz |
+| `rerank` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor — bu senaryoda ihtiyaç yok |
+| `router` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor |
+| `guard` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor |
+| `vlm` | **kimlik doğrulanmadı** | ⛔ kullanılmıyor — görsel girdi yok |
+
+### Servis üzerinden kullanmak lisans durumunu değiştirir mi?
+
+Hayır — üç sebeple, üçü de teslimde sorulabilir:
+
+1. **Depoda model ağırlığı yok.** Apache-2.0 bir dağıtım lisansıdır;
+   biz ağırlık dağıtmıyoruz, servisi HTTP ile çağırıyoruz. Yeniden
+   dağıtım yükümlülüğü doğmuyor.
+2. **Modelin kendisi Apache-2.0 olduğu için kurum kendi sunucusunda da
+   koşturabilir.** Şartname 5.10'un derdi "uygulama aşamasında lisans
+   problemi çıkarma potansiyeli"dir; Apache-2.0 bir model bu potansiyeli
+   taşımaz. Kısıtlı lisanslı bir model olsaydı servis üzerinden çağırmak
+   sorunu çözmezdi — kurum içine taşındığı gün patlardı.
+3. **Servise kilitlenme yok, ölçülmüş durumda.** `LLM_SAGLAYICI=ollama`
+   ile aynı kod yolu yerel modelle koşuyor (`make extract-yerel`); hava
+   boşluğu demosu bunu 18 Ağustos'ta doğruladı. EVREN'in kullanım
+   şartları bir **hizmet** sözleşmesidir, yazılım lisansı değil; projenin
+   açık kaynak durumunu etkilemez.
 
 ### Bilinçli olarak KULLANILMAYAN modeller
 
 | Model ailesi | Lisans | Neden kullanılmadı |
 |---|---|---|
 | Llama 3.x/4, Turkish-Llama | Llama Community License | Kullanıcı sayısı eşiği, adlandırma ve kullanım kısıtları içerir. "Açık gibi görünen ama kısıtlı" tanımına birebir uyar — şartname 5.10'un hedefi budur. |
-| Gemma, Türkçe-Gemma, EmbeddingGemma | Gemma Terms of Use | Kullanım kısıtlaması ve geri çağırma hükmü içerir. Aynı gerekçe. |
+| Gemma, Türkçe-Gemma, EmbeddingGemma | Gemma Terms of Use | Kullanım kısıtlaması ve geri çağırma hükmü içerir. Aynı gerekçe. **Gömme modeli seçilirken (S-09) asıl tuzak budur:** EmbeddingGemma teknik olarak uygun görünür, lisansı uygun değildir. |
 
 ## Elle incelenen lisanslar
 
@@ -37,85 +88,101 @@ _Otomatik üretildi: 09.08.2026 18:10 · `make lisanslar`_
 
 ## Tam liste
 
-| Paket | Sürüm | Lisans |
-|---|---|---|
-| `altair` | 5.5.0 | OSI Approved :: BSD License |
-| `annotated-types` | 0.8.0 | MIT |
-| `anyio` | 4.14.2 | MIT |
-| `attrs` | 26.1.0 | MIT |
-| `babel` | 2.18.0 | BSD-3-Clause |
-| `blinker` | 1.9.0 | OSI Approved :: MIT License |
-| `cachetools` | 5.5.2 | MIT |
-| `certifi` | 2026.7.22 | MPL-2.0 |
-| `charset-normalizer` | 3.4.9 | MIT |
-| `click` | 8.4.2 | BSD-3-Clause |
-| `courlan` | 1.4.0 | Apache-2.0 |
-| `dateparser` | 1.4.2 | BSD-3-Clause |
-| `fastapi` | 0.115.5 | OSI Approved :: MIT License |
-| `gitdb` | 4.0.12 | BSD License |
-| `GitPython` | 3.1.58 | BSD-3-Clause |
-| `h11` | 0.16.0 | MIT |
-| `htmldate` | 1.10.0 | Apache-2.0 |
-| `httpcore` | 1.0.9 | BSD-3-Clause |
-| `httpx` | 0.27.2 | BSD-3-Clause |
-| `idna` | 3.18 | BSD-3-Clause |
-| `iniconfig` | 2.3.0 | MIT |
-| `Jinja2` | 3.1.6 | OSI Approved :: BSD License |
-| `jsonschema` | 4.26.0 | MIT |
-| `jsonschema-specifications` | 2025.9.1 | MIT |
-| `jusText` | 3.0.2 | The BSD 2-Clause License |
-| `lxml` | 6.1.1 | BSD-3-Clause |
-| `lxml_html_clean` | 0.4.5 | BSD-3-Clause |
-| `markdown-it-py` | 4.2.0 | OSI Approved :: MIT License |
-| `MarkupSafe` | 3.0.3 | BSD-3-Clause |
-| `mdurl` | 0.1.2 | OSI Approved :: MIT License |
-| `narwhals` | 2.24.0 | MIT |
-| `numpy` | 2.1.3 | OSI Approved :: BSD License |
-| `ollama` | 0.6.2 | MIT |
-| `packaging` | 24.2 | OSI Approved :: Apache Software License / OSI Approved :: BSD License |
-| `pandas` | 2.2.3 | OSI Approved :: BSD License |
-| `pillow` | 11.3.0 | MIT-CMU |
-| `pip` | 26.2.1 | MIT |
-| `pip-licenses` | 5.0.0 | MIT |
-| `plotly` | 5.24.1 | MIT |
-| `pluggy` | 1.6.0 | MIT |
-| `prettytable` | 3.18.0 | BSD-3-Clause |
-| `protobuf` | 5.29.6 | 3-Clause BSD License |
-| `pyarrow` | 25.0.0 | Apache-2.0 |
-| `pydantic` | 2.9.2 | MIT |
-| `pydantic_core` | 2.23.4 | MIT |
-| `pydeck` | 0.9.3 | Apache License 2.0 |
-| `Pygments` | 2.20.0 | BSD-2-Clause |
-| `pytest` | 8.3.3 | MIT |
-| `python-dateutil` | 2.9.0.post0 | Dual License |
-| `python-dotenv` | 1.0.1 | BSD-3-Clause |
-| `pytz` | 2026.3.post1 | MIT |
-| `PyYAML` | 6.0.2 | MIT |
-| `referencing` | 0.37.0 | MIT |
-| `regex` | 2026.7.19 | Apache-2.0 AND CNRI-Python |
-| `requests` | 2.34.2 | Apache-2.0 |
-| `rich` | 13.9.4 | MIT |
-| `rpds-py` | 2026.6.3 | MIT |
-| `ruff` | 0.7.4 | MIT |
-| `selectolax` | 0.3.27 | MIT license |
-| `six` | 1.17.0 | MIT |
-| `smmap` | 5.0.3 | BSD-3-Clause |
-| `sniffio` | 1.3.1 | MIT OR Apache-2.0 |
-| `SQLAlchemy` | 2.0.36 | MIT |
-| `starlette` | 0.41.3 | BSD-3-Clause |
-| `streamlit` | 1.40.1 | Apache License 2.0 |
-| `tenacity` | 9.1.4 | Apache 2.0 |
-| `tld` | 0.13.2 | MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later |
-| `toml` | 0.10.2 | MIT |
-| `tomli` | 2.4.1 | MIT |
-| `tornado` | 6.5.8 | Apache-2.0 |
-| `trafilatura` | 1.12.2 | Apache-2.0 |
-| `typing_extensions` | 4.16.0 | PSF-2.0 |
-| `tzdata` | 2026.3 | Apache-2.0 |
-| `tzlocal` | 5.4.4 | MIT |
-| `urllib3` | 2.7.0 | MIT |
-| `uvicorn` | 0.32.1 | BSD-3-Clause |
-| `wcwidth` | 0.8.2 | MIT |
+Sanal ortamda kurulu **85** paketin **79** tanesi
+`requirements.txt`'ten (doğrudan ya da geçişli olarak) gelir; kalanlar ortamda
+kalmış, teslim edilen koda dahil olmayan paketlerdir. Ayrımı yazmak gerekiyor:
+`pip install -r requirements.txt` ile kurulan temiz bir ortamda **ortam**
+kapsamlı satırlar bulunmaz.
+
+> ⚠️ Ortam kapsamlı paketler: `httpcore2`, `httpx2`, `jiter`, `openai`, `pip`, `truststore`. Bunlardan `openai`, projenin **kullanmadığı** bir istemcidir — EVREN'e düz `httpx` ile gidilir (`src/extraction/saglayici.py`), bu bilinçli bir karardır. Ortamda durması onu bağımlılık yapmaz.
+
+| Paket | Sürüm | Lisans | Kapsam |
+|---|---|---|---|
+| `altair` | 5.5.0 | OSI Approved :: BSD License | proje |
+| `annotated-types` | 0.8.0 | MIT | proje |
+| `anyio` | 4.14.2 | MIT | proje |
+| `attrs` | 26.1.0 | MIT | proje |
+| `babel` | 2.18.0 | BSD-3-Clause | proje |
+| `blinker` | 1.9.0 | OSI Approved :: MIT License | proje |
+| `cachetools` | 5.5.2 | MIT | proje |
+| `certifi` | 2026.7.22 | MPL-2.0 | proje |
+| `charset-normalizer` | 3.5.1 | MIT | proje |
+| `click` | 8.4.2 | BSD-3-Clause | proje |
+| `colorama` | 0.4.6 | OSI Approved :: BSD License | proje |
+| `courlan` | 1.4.0 | Apache-2.0 | proje |
+| `dateparser` | 1.4.2 | BSD-3-Clause | proje |
+| `fastapi` | 0.115.5 | OSI Approved :: MIT License | proje |
+| `gitdb` | 4.0.12 | BSD License | proje |
+| `GitPython` | 3.1.59 | BSD-3-Clause | proje |
+| `greenlet` | 3.5.5 | MIT AND PSF-2.0 | proje |
+| `h11` | 0.16.0 | MIT | proje |
+| `htmldate` | 1.10.0 | Apache-2.0 | proje |
+| `httpcore` | 1.0.9 | BSD-3-Clause | proje |
+| `httpcore2` | 2.12.0 | BSD-3-Clause | ortam |
+| `httpx` | 0.27.2 | BSD-3-Clause | proje |
+| `httpx2` | 2.12.0 | BSD-3-Clause | ortam |
+| `idna` | 3.19 | BSD-3-Clause | proje |
+| `iniconfig` | 2.3.0 | MIT | proje |
+| `Jinja2` | 3.1.6 | OSI Approved :: BSD License | proje |
+| `jiter` | 0.16.0 | MIT | ortam |
+| `jsonschema` | 4.26.0 | MIT | proje |
+| `jsonschema-specifications` | 2025.9.1 | MIT | proje |
+| `jusText` | 3.0.2 | The BSD 2-Clause License | proje |
+| `lxml` | 6.1.2 | BSD-3-Clause | proje |
+| `lxml_html_clean` | 0.4.5 | BSD-3-Clause | proje |
+| `markdown-it-py` | 4.2.0 | OSI Approved :: MIT License | proje |
+| `MarkupSafe` | 3.0.3 | BSD-3-Clause | proje |
+| `mdurl` | 0.1.2 | OSI Approved :: MIT License | proje |
+| `narwhals` | 2.25.0 | MIT | proje |
+| `numpy` | 2.1.3 | OSI Approved :: BSD License | proje |
+| `ollama` | 0.6.2 | MIT | proje |
+| `openai` | 3.3.1 | Apache-2.0 | ortam |
+| `packaging` | 24.2 | OSI Approved :: Apache Software License / OSI Approved :: BSD License | proje |
+| `pandas` | 2.2.3 | OSI Approved :: BSD License | proje |
+| `pillow` | 11.3.0 | MIT-CMU | proje |
+| `pip` | 26.2.1 | MIT | ortam |
+| `pip-licenses` | 5.0.0 | MIT | proje |
+| `plotly` | 5.24.1 | MIT | proje |
+| `pluggy` | 1.6.0 | MIT | proje |
+| `prettytable` | 3.18.0 | BSD-3-Clause | proje |
+| `protobuf` | 5.29.6 | 3-Clause BSD License | proje |
+| `pyarrow` | 25.0.1 | Apache-2.0 | proje |
+| `pydantic` | 2.9.2 | MIT | proje |
+| `pydantic_core` | 2.23.4 | MIT | proje |
+| `pydeck` | 0.9.3 | Apache License 2.0 | proje |
+| `Pygments` | 2.21.0 | BSD-2-Clause | proje |
+| `pytest` | 8.3.3 | MIT | proje |
+| `python-dateutil` | 2.9.0.post0 | Dual License | proje |
+| `python-dotenv` | 1.0.1 | BSD-3-Clause | proje |
+| `pytz` | 2026.3.post1 | MIT | proje |
+| `PyYAML` | 6.0.2 | MIT | proje |
+| `referencing` | 0.37.0 | MIT | proje |
+| `regex` | 2026.7.19 | Apache-2.0 AND CNRI-Python | proje |
+| `requests` | 2.34.2 | Apache-2.0 | proje |
+| `rich` | 13.9.4 | MIT | proje |
+| `rpds-py` | 2026.6.3 | MIT | proje |
+| `ruff` | 0.7.4 | MIT | proje |
+| `selectolax` | 0.3.27 | MIT license | proje |
+| `six` | 1.17.0 | MIT | proje |
+| `smmap` | 5.0.3 | BSD-3-Clause | proje |
+| `sniffio` | 1.3.1 | MIT OR Apache-2.0 | proje |
+| `SQLAlchemy` | 2.0.36 | MIT | proje |
+| `starlette` | 0.41.3 | BSD-3-Clause | proje |
+| `streamlit` | 1.40.1 | Apache License 2.0 | proje |
+| `tenacity` | 9.1.4 | Apache 2.0 | proje |
+| `tld` | 0.13.2 | MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later | proje |
+| `toml` | 0.10.2 | MIT | proje |
+| `tomli` | 2.4.1 | MIT | proje |
+| `tornado` | 6.5.8 | Apache-2.0 | proje |
+| `trafilatura` | 1.12.2 | Apache-2.0 | proje |
+| `truststore` | 0.10.4 | MIT | ortam |
+| `typing_extensions` | 4.16.0 | PSF-2.0 | proje |
+| `tzdata` | 2026.3 | Apache-2.0 | proje |
+| `tzlocal` | 5.4.4 | MIT | proje |
+| `urllib3` | 2.7.0 | MIT | proje |
+| `uvicorn` | 0.32.1 | BSD-3-Clause | proje |
+| `watchdog` | 6.0.0 | Apache-2.0 | proje |
+| `wcwidth` | 0.8.2 | MIT | proje |
 
 ---
 

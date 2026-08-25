@@ -92,17 +92,26 @@ hedefliyor; ikisini de **kullanmıyoruz**.
 
 | Bileşen | Seçim | Lisans |
 |---|---|---|
-| LLM | Qwen3.5 (4B / 9B / 27B) | **Apache 2.0** |
+| LLM — çıkarım (EVREN `llm-large`) | `Qwen/Qwen3.5-122B-A10B` | **Apache 2.0** |
+| LLM — seçilebilir hızlı uç, varsayılan değil (EVREN `llm-fast`) | `Qwen/Qwen3.6-35B-A3B` | **Apache 2.0** |
+| LLM — yerel yedek | `Qwen/Qwen3.5-4B` (Ollama) | **Apache 2.0** |
 | Çıkarım sunucusu | Ollama | MIT |
 | Veritabanı | SQLite + SQLAlchemy | Public Domain / MIT |
 | Arayüz | Streamlit | Apache 2.0 |
 | API | FastAPI | MIT |
 | Toplama | httpx · trafilatura · selectolax | BSD · **Apache 2.0** · MIT |
 
-Tam bağımlılık lisans raporu: [`docs/LISANSLAR.md`](docs/LISANSLAR.md) (`make lisanslar`).
-**72 paketin tamamı izin verici (permissive) lisanslıdır**; kısıtlı kullanım
+Tam bağımlılık ve model lisans raporu: [`docs/LISANSLAR.md`](docs/LISANSLAR.md)
+(`make lisanslar`). **Kurulu 85 paketin tamamı izin verici (permissive)
+lisanslıdır** — 79'u `requirements.txt` kapanışında, kalanı ortamda kalmış ve
+teslim edilen koda dahil olmayan paketler; rapor ikisini ayırır. Kısıtlı kullanım
 şartı olan hiçbir bileşen yoktur. Rapor, seçmeli lisansların (`tld`,
 `python-dateutil`) hangi seçenekle kullanıldığını da gerekçesiyle belgeler.
+
+**Model lisansları elle iddia edilmiyor, teyit ediliyor:** `make lisanslar-teyit`
+kullandığımız modellerin lisansını Hugging Face depo üst verisinden çeker ve
+beklenenle tutmazsa kırılır. Ham yanıt:
+[`docs/kanit/model-lisanslari.json`](docs/kanit/model-lisanslari.json).
 
 **Neden Streamlit, React değil?** Kurum içi dağıtımda tek runtime, ayrı Node
 bağımlılığı yok, Apache 2.0. Ekran değil sistem yarışıyoruz; API katmanı ayrıdır
@@ -154,9 +163,16 @@ make extract         # hibrit (bizim)
 - İstek arası en az **2 saniye**, eşzamanlı istek yok
 - Tanımlı User-Agent, iletişim adresiyle
 - Yalnız **kamuya açık** sayfalar; giriş gerektiren hiçbir alana erişilmez
-- **Kişisel veri toplanmaz** (KVKK)
-- BDDK listesi, sitenin robots.txt kısıtı nedeniyle **manuel** alınmıştır
+- **Kişisel veri toplanmaz** (KVKK) — 1024 ham kayıt tarandı, kimliği belirli
+  gerçek kişiye ait veri bulunmadı
+- BDDK listesi **manuel** alınmıştır (şartname 5.1 izin veriyor); site otomatik
+  taranmıyor, gerekçesi ölçümle belgeli
 - Yayınlanan veri setinde tam sayfa metni değil, **yapısal alanlar + URL + alıntı**
+
+**Bunlar beyan değil, kanıt:** [`docs/kanit/VERI_TOPLAMA_ETIGI.md`](docs/kanit/VERI_TOPLAMA_ETIGI.md)
+— alan adı başına robots.txt kararları, ağa gerçekten gönderilen User-Agent
+başlığı, BDDK ekran görüntüsü ve KVKK taraması, hepsi `make kanit` ile yeniden
+üretilebilir.
 
 Ayrıntı: [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md)
 

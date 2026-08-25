@@ -1129,16 +1129,33 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır: Herkese açık indirme bağlantısı var ve README'de duruyor
       ↳ Bağlantı yoksa şartname madde 9 ihlal edilmiş olur
 
-- [ ] **G-13** Lisans raporunu güncelle (`make lisanslar`) · 📅 22 Ağu
-      ↳ Yeni bağımlılık eklendiyse rapor değişir; ✅ şu an 72 paketin tamamı temiz
-      ↳ ⚠️ Samet gömme modeli eklerken (S-09) **lisansını sen doğrula** —
-        Gemma tabanlı model gelirse şartname 5.10 ihlali olur
+- [x] **G-13** ✅ Lisans raporu güncellendi — **model lisansları artık teyitli** *(24 Ağu)*
+      ↳ `docs/LISANSLAR.md`: 85 kurulu paket, **79'u `requirements.txt` kapanışında**,
+        kısıtlı/şüpheli lisans **0**. Rapor artık kurulu paket ile proje bağımlılığını
+        ayırıyor (`openai` ortamda duruyor ama kullanılmıyor — EVREN'e düz `httpx`)
+      ↳ **EVREN geçişinin lisans cevabı yazıldı:** `llm-large` = `Qwen/Qwen3.5-122B-A10B`
+        (varsayılan), `llm-fast` = `Qwen/Qwen3.6-35B-A3B` (bayrakla seçilebilir),
+        yerel yedek `Qwen/Qwen3.5-4B` — üçü de **Apache-2.0**, Hugging Face
+        API'sinden çekilerek teyit edildi.
+        Kanıt: `docs/kanit/model-lisanslari.json` · yenile: `make lisanslar-teyit`
+      ↳ Servis üzerinden kullanmak lisansı değiştirmiyor; gerekçesi raporda üç madde
+        (ağırlık dağıtmıyoruz · model Apache-2.0 olduğu için on-prem koşulabilir ·
+        `LLM_SAGLAYICI=ollama` ile kilitlenme yok)
+      ↳ ✅ **S-09'un cevabı hazır (Samet):** `BAAI/bge-m3` → **MIT**, teyit edildi.
+        EVREN'de `bge-m3-embed` ucu da var. ⛔ EVREN'in jenerik `embed` ucunu
+        KULLANMA — model kimliği doğrulanmadı, EmbeddingGemma olma ihtimali dışlanamaz
 
-- [ ] **G-14** Veri toplama etiği kanıt dosyası · 📅 23 Ağu
-      ⛔ **Önce bitmeli:** G-02 (Görkem)
-      ↳ Bitti sayılır: `docs/kanit/` altında BDDK ekran görüntüsü, robots.txt
-        kontrol günlüğü örneği, kullanılan User-Agent kaydı
-      ↳ Jüri "veri toplarken hukuki durum?" diye soracak; cevabın **kanıtı** olsun
+- [x] **G-14** ✅ Veri toplama etiği kanıt dosyası — `docs/kanit/VERI_TOPLAMA_ETIGI.md` *(24 Ağu)*
+      ⛔ **Önce bitmeli:** G-02 (Görkem) ✅
+      ↳ Bitti: BDDK ekran görüntüsü + **robots.txt kontrol günlüğü** (12 alan adı,
+        24 URL izinli, 2 çekilmiyor) + **User-Agent kaydı** (ağa gerçekten gönderilen
+        başlıklar) + **KVKK taraması** (1024 kayıt, kişisel veri 0)
+      ↳ Yenile: `make kanit` (robots günlüğü ağ ister, KVKK taraması istemez)
+      ↳ 🔧 **Düzeltildi:** "BDDK robots.txt ile engelliyor" iddiası ölçümle doğrulanmadı.
+        Gerçek durum: robots.txt YOK (404), ama TLS sertifika zinciri doğrulanamıyor.
+        Karar aynı (otomatik taranmıyor), gerekçe düzeltildi — `banks.yaml` +
+        `docs/VERI_METODOLOJISI.md` güncellendi
+      ↳ ⏰ Günlükler tarihli: **teslimden önce `make kanit` bir kez daha koşulmalı**
 
 ### Sprint 4 (24–26 Ağustos)
 
