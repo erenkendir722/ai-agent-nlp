@@ -644,10 +644,19 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 4 — teslim (24–26 Ağustos)
 
-- [ ] **E-15** Dokümantasyon başlıkları 1, 6, 7 · 📅 24 Ağu
-      ↳ (1) Sistem mimarisi ve veri akışı — `docs/MIMARI.md` hazır, gözden geçir
-      ↳ (6) Ürünlerin nasıl karşılaştırıldığı
-      ↳ (7) Adım adım çalıştırma talimatları — `docs/KURULUM.md` hazır, gözden geçir
+- [x] **E-15** ✅ **Dokümantasyon başlıkları 1, 6, 7** *(25 Ağu)*
+      ↳ (1) **Sistem mimarisi** → `docs/MIMARI.md` gözden geçirildi; bölüm 3
+        yeniden yazıldı (S-16 ile birlikte), RAG katmanı eklendi.
+      ↳ (6) **Benzer ürünler nasıl karşılaştırılıyor** →
+        `docs/KARSILASTIRMA_YONTEMI.md` (yeni). Beş kriter, ortak tabana
+        indirgeme (TL ↔ yüzde), "En Avantajlı"nın dört adımı ve ağırlıkların
+        neden tercih olduğu, **manşet oran tuzağı**, karşılaştırılamayanı
+        karşılaştırmama uyarıları, uygunluk elemesi.
+      ↳ (7) **Çalıştırma talimatları** → `docs/KURULUM.md` gözden geçirildi ve
+        **iki bayat nokta düzeltildi**: `make vektor` adımı hiç yoktu (o adım
+        atlanınca chatbot metin sorularına cevap veremiyor) ve doğrulama
+        bölümü "92 test geçmeli" diyordu — gerçek sayı 700'ün üzerinde.
+        Sabit sayı yerine komutun kendi çıktısına yönlendirildi.
 
 - [ ] **E-16** Dokümantasyon başlığı 8'i derle · 📅 24 Ağu
       ⛔ **Önce bitmeli:** H-04 (Herkes)

@@ -130,7 +130,7 @@ planlanmalı.
 | 3 | Kullanılan veri seti ve açıklaması | 🟠 | `docs/VERI_METODOLOJISI.md` — gerçek sayılarla güncellenecek | Görkem (G-15) |
 | 4 | Veri ön işleme adımları | 🟠 | `docs/VERI_METODOLOJISI.md` | Görkem (G-15) |
 | 5 | Model veya kural yapısının açıklaması | ✅ | [`docs/MODEL_VE_KURAL_YAPISI.md`](MODEL_VE_KURAL_YAPISI.md) | Eren (S-16) |
-| 6 | Benzer ürünler nasıl karşılaştırılıyor | ❌ | Yazılacak | Eren (E-15) |
+| 6 | Benzer ürünler nasıl karşılaştırılıyor | ✅ | [`docs/KARSILASTIRMA_YONTEMI.md`](KARSILASTIRMA_YONTEMI.md) | Eren (E-15) |
 | 7 | Adım adım çalıştırma talimatları | ✅ | `docs/KURULUM.md` | Eren (E-15) |
 | 8 | Karşılaşılan problemler ve çözümler | 🟠 | `docs/SPRINT0_RAPORU.md` böl. 5 + `docs/kararlar/` — derlenecek | Eren (E-16) |
 | 9 | Model çıktılarının örnekleri | ❌ | `docs/CIKTI_ORNEKLERI.md` | Esra (ES-15) |

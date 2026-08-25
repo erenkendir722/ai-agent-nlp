@@ -198,10 +198,16 @@ cp .env.example .env
 # 5) Veri topla (~5 dk, nezaket gecikmesi nedeniyle)
 make crawl
 
-# 6) Çıkarım yap (kayıt başına ~10 sn)
+# 6) Çıkarım yap
 make extract
 
-# 7) Arayüzü aç
+# 7) RAG vektör indeksini kur (~70 sn)
+#    Bu adım atlanırsa chatbot sayısal sorulara cevap verir ama
+#    "kampanya koşulları neler?" gibi metin sorularında
+#    "indeks kurulmamış" der. Ağ ister (EVREN gömme ucu).
+make vektor
+
+# 8) Arayüzü aç
 make run
 ```
 
@@ -220,8 +226,9 @@ make seed && make run
 Kurulumun doğru olduğunu şu üç komutla teyit edin:
 
 ```bash
-make test      # 92 test geçmeli
-make durum     # veritabanı özeti
+make test      # tüm testler geçmeli (sayı için `make test` çıktısına bakın)
+make lint      # temiz olmalı
+make durum     # veritabanı özeti + RAG indeksinin durumu
 make eval      # docs/SONUCLAR.md üretilmeli
 ```
 
