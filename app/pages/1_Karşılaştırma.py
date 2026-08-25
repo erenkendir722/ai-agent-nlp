@@ -7,6 +7,7 @@ bu panel o izlenebilirliğin arayüzdeki karşılığıdır.
 
 from __future__ import annotations
 
+import io
 import datetime
 import sys
 from pathlib import Path
@@ -27,11 +28,13 @@ from src.comparison.karsilastirma import ( # noqa: E402
   uyarilar,
 )
 from src.depolama import tum_kayitlar # noqa: E402
-from src.schema import Kampanya, HedefKitle # noqa: E402
-from app.ui_utils import format_bank_name, inject_custom_css, format_kategori # noqa: E402
+from src.rag.chatbot import alan_goster  # noqa: E402
+from src.schema import HedefKitle, Kampanya  # noqa: E402
+from app.ui_utils import format_bank_name, inject_custom_css, format_kategori, ortak_kenar # noqa: E402
 
 st.set_page_config(page_title="Karşılaştırma", page_icon="", layout="wide")
 inject_custom_css()
+ortak_kenar()
 st.title("Bankalar Arası Karşılaştırma")
 
 kayitlar = tum_kayitlar()
@@ -144,9 +147,6 @@ if not suzulmus:
 # ---------------------------------------------------------------------------
 
 with st.sidebar:
-  st.toggle("Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
-  st.markdown("---")
-  
   st.header("Skor ağırlıkları")
   st.caption(
     "«En Avantajlı» sıralaması bu ağırlıklarla hesaplanır. "
@@ -174,36 +174,67 @@ for sutun, (kriter, etiket) in zip(sutunlar, KRITER_ETIKETLERI.items(), strict=T
   if sutun.button(etiket, use_container_width=True):
     st.session_state.kriter = kriter
 
+def _alan_yazi(kayit, alan_adi: str) -> str:
+  """Sayısal alanı birimine göre yazar — tahsis hem TL hem yüzde olabilir."""
+  deger = getattr(kayit, alan_adi, None)
+  if deger is None:
+    return "Belirtilmemiş"
+  if isinstance(deger, bool):
+    return "Evet" if deger else "Hayır"
+  if isinstance(deger, (int, float)):
+    birim = kayit.birim(alan_adi) if hasattr(kayit, "birim") else None
+    return alan_goster(alan_adi, deger, birim)
+  return str(deger)
+
+
 def _csv_olustur(kayitlar):
-  df = pd.DataFrame([
-    {
-      "Banka": "Albaraka Türk" if format_bank_name(k.banka_adi)=="Örnek" else format_bank_name(k.banka_adi),
+  satirlar = []
+  for k in kayitlar:
+    satirlar.append({
+      "Banka": format_bank_name(k.banka_adi),
       "Kampanya/Ürün": (k.urun_turu or k.kampanya_turu or "—").replace("_", " ").title(),
       "Hedef Kitle": k.hedef_kitle or "—",
-      "Kâr Payı Oranı (%)": k.kar_payi_orani if k.kar_payi_orani is not None else "Belirtilmemiş",
-      "Azami Vade (Ay)": k.vade_ay_max if k.vade_ay_max is not None else "Belirtilmemiş",
-      "Azami Tutar (TL)": k.finansman_tutari_max if k.finansman_tutari_max is not None else "Belirtilmemiş",
-      "Tahsis Ücreti": k.tahsis_ucreti if k.tahsis_ucreti is not None else "Belirtilmemiş",
+      "Kâr Payı": _alan_yazi(k, "kar_payi_orani"),
+      "Azami Vade": _alan_yazi(k, "vade_ay_max"),
+      "Azami Tutar": _alan_yazi(k, "finansman_tutari_max"),
+      "Tahsis Ücreti": _alan_yazi(k, "tahsis_ucreti"),
       "Güven Skoru": f"{k.ortalama_guven:.2f}",
       "Kaynak URL": k.kaynak_url,
       "Çekim Tarihi": k.cekim_tarihi.strftime("%Y-%m-%d %H:%M") if k.cekim_tarihi else "—"
-    }
-    for k in kayitlar
-  ])
-  # Türkçe Excel'de sütunların düzgün ayrılması için virgül yerine noktalı virgül (sep=';') kullanıyoruz.
+    })
+  df = pd.DataFrame(satirlar)
   return df.to_csv(index=False, sep=';').encode('utf-8-sig')
+
+
+def _excel_html(kayitlar) -> bytes:
+  """Excel'in açtığı HTML tablo — ek paket yok, on-prem uyumlu."""
+  df = pd.read_csv(io.BytesIO(_csv_olustur(kayitlar)), sep=';')
+  return (
+    "<html><head><meta charset='utf-8'></head><body>"
+    + df.to_html(index=False)
+    + "</body></html>"
+  ).encode("utf-8")
 
 secili_kriter: Kriter = st.session_state.kriter
 
-col_c, col_d = st.columns([3, 1])
+col_c, col_d, col_e = st.columns([2, 1, 1])
 with col_c:
   st.caption(f"Sıralama ölçütü: **{KRITER_ETIKETLERI[secili_kriter]}**")
+sirali_export = sirala(suzulmus, secili_kriter, agirliklar)
 with col_d:
   st.download_button(
     label="CSV İndir",
-    data=_csv_olustur(sirala(suzulmus, secili_kriter, agirliklar)),
+    data=_csv_olustur(sirali_export),
     file_name="kampanyalar_export.csv",
     mime="text/csv",
+    use_container_width=True
+  )
+with col_e:
+  st.download_button(
+    label="Excel İndir",
+    data=_excel_html(sirali_export),
+    file_name="kampanyalar_export.xls",
+    mime="application/vnd.ms-excel",
     use_container_width=True
   )
 
@@ -216,36 +247,17 @@ for mesaj in uyarilar(sirali):
 # Tablo
 # ---------------------------------------------------------------------------
 
-
-def _gorunum(deger, birim: str = "") -> str:
-  if deger is None:
-    return "Belirtilmemiş"
-  if isinstance(deger, bool):
-    return "Evet" if deger else "Hayır"
-  if isinstance(deger, float):
-    return f"{deger:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + birim
-  return f"{deger}{birim}"
-
-if not sirali:
-  st.warning("Aranan kriterlere uygun aktif bir katılım bankası kampanyası bulunamamıştır")
-  if st.button("Filtreleri Sıfırla"):
-    # Yalnızca rerun atıp filtreleri manuel temizlemesini önermek de bir seçenektir,
-    # ancak Session State kullanmadığı için bu aşamada st.rerun() Streamlit <= 1.26'da st.experimental_rerun()
-    # Streamlit 1.27+ için st.rerun() kullanılır.
-    st.info("Sol taraftaki filtreleri gevşetip tekrar deneyebilirsiniz.")
-  st.stop()
-
 tablo = pd.DataFrame(
   [
     {
-      "Banka": "Albaraka Türk" if format_bank_name(k.banka_adi)=="Örnek" else format_bank_name(k.banka_adi),
-      "Tür": (k.kampanya_turu or "—").replace("_", " ").title(),
-      "Kâr payı (aylık %)": _gorunum(k.kar_payi_orani),
-      "Azami vade (ay)": _gorunum(k.vade_ay_max),
-      "Azami tutar (TL)": _gorunum(k.finansman_tutari_max),
-      "Tahsis ücreti": _gorunum(k.tahsis_ucreti),
-      "Masrafsız": _gorunum(k.masrafsiz_mi),
-      "Ödül (TL)": _gorunum(k.odul_miktari),
+      "Banka": format_bank_name(k.banka_adi),
+      "Tür": format_kategori(k.kampanya_turu),
+      "Kâr payı": _alan_yazi(k, "kar_payi_orani"),
+      "Azami vade": _alan_yazi(k, "vade_ay_max"),
+      "Azami tutar": _alan_yazi(k, "finansman_tutari_max"),
+      "Tahsis ücreti": _alan_yazi(k, "tahsis_ucreti"),
+      "Masrafsız": _alan_yazi(k, "masrafsiz_mi"),
+      "Ödül": _alan_yazi(k, "odul_miktari"),
       "Güven": f"{k.ortalama_guven:.2f}",
     }
     for k in sirali
@@ -293,22 +305,22 @@ def _renklendir_kar(val):
     return ""
 
 def _highlight_biz(row):
-  # Eğer "Benim Bankam (Biz)" seçilmişse ve satır o bankaya aitse tüm satırı renklendir
-  hedef_ad = "Albaraka Türk" if format_bank_name(benim_bankam) == "Örnek" else format_bank_name(benim_bankam)
+  hedef_ad = format_bank_name(benim_bankam)
   if benim_bankam != "(Seçilmedi)" and row['Banka'] == hedef_ad:
     return ['background-color: rgba(46, 204, 113, 0.15)'] * len(row)
   return [''] * len(row)
 
 # pandas >= 2.1 için map, eski sürümler için applymap
-styler = tablo.style
+styler = tablo.style.apply(_highlight_biz, axis=1)
+kar_sutun = ["Kâr payı"] if "Kâr payı" in tablo.columns else []
 if hasattr(styler, "map"):
-  styled_tablo = styler.apply(_highlight_biz, axis=1) \
-             .map(_renklendir_guven, subset=["Güven"]) \
-             .map(_renklendir_kar, subset=["Kâr payı (aylık %)"])
+  styled_tablo = styler.map(_renklendir_guven, subset=["Güven"])
+  if kar_sutun:
+    styled_tablo = styled_tablo.map(_renklendir_kar, subset=kar_sutun)
 else:
-  styled_tablo = styler.apply(_highlight_biz, axis=1) \
-             .applymap(_renklendir_guven, subset=["Güven"]) \
-             .applymap(_renklendir_kar, subset=["Kâr payı (aylık %)"])
+  styled_tablo = styler.applymap(_renklendir_guven, subset=["Güven"])
+  if kar_sutun:
+    styled_tablo = styled_tablo.applymap(_renklendir_kar, subset=kar_sutun)
 
 st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
 
@@ -316,9 +328,14 @@ st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
 # Yapay Zeka Battlecard (Biz vs Onlar)
 # ---------------------------------------------------------------------------
 if benim_bankam != "(Seçilmedi)" and sirali:
-  st.subheader("⚔️ Yapay Zeka Battlecard: Biz vs Onlar")
-  st.caption("Seçilen filtrelerdeki ürünler için EVREN (vLLM) ile hazırlanan rekabet analizi")
-  
+  st.subheader("Yapay Zeka Battlecard: Biz vs Onlar")
+  st.caption(
+    "Serbest metin özetidir — sayısal iddia tablodaki yapısal kayıtlardan gelir. "
+    "Hava boşluğu demosunda EVREN yoksa bu düğme çalışmaz; sıra tabloda kalır."
+  )
+  st.warning(
+    "Bu çıktı sayısal doğrulama kalkanından geçmez. Oran ve vade için yukarıdaki tabloyu kullanın."
+  ) 
   if st.button("Battlecard Üret (EVREN API)"):
     biz_data = [k for k in sirali if format_bank_name(k.banka_adi) == format_bank_name(benim_bankam)]
     onlar_data = [k for k in sirali if format_bank_name(k.banka_adi) != format_bank_name(benim_bankam) and format_bank_name(k.banka_adi) in [format_bank_name(b) for b in secili_bankalar]]
@@ -441,8 +458,6 @@ for kayit in sirali[:20]:
       st.markdown("---")
       st.caption("**API Yanıtı (JSON)**")
       st.json(kampanya.model_dump())
-
-st.divider()
 
 st.divider()
 

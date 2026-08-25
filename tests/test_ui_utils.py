@@ -32,3 +32,9 @@ def test_format_bank_name_bos():
     """Boş değerlerin 'Belirtilmemiş' döndürdüğünü test eder."""
     assert format_bank_name(None) == "Belirtilmemiş"
     assert format_bank_name("") == "Belirtilmemiş"
+
+
+def test_format_bank_name_ornek_uydurulmaz():
+    """'Örnek' banka adı Albaraka'ya çevrilmez — jüriye sahte etiket gösterme."""
+    assert format_bank_name("Örnek") != "Albaraka Türk"
+    assert format_bank_name("ornek") != "Albaraka Türk"

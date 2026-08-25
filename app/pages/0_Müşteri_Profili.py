@@ -29,12 +29,11 @@ from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili  # noqa: E402
 from src.depolama import kampanyalari_oku  # noqa: E402
 from src.rag.chatbot import YASAL_UYARI  # noqa: E402
 from src.schema import HedefKitle  # noqa: E402
+from app.ui_utils import inject_custom_css, ortak_kenar  # noqa: E402
 
 st.set_page_config(page_title="Müşteri Profili", page_icon="", layout="wide")
-
-with st.sidebar:
-    st.toggle("Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
-    st.markdown("---")
+inject_custom_css()
+ortak_kenar()
 
 st.title("Müşteri Profiline Göre Uygunluk")
 
@@ -64,9 +63,7 @@ except Exception as e:
     st.stop()
 
 if not kampanyalar:
-    st.info("Görüntülenecek kampanya verisi bulunamadı. Veri ambarını güncellemek için Orkestratör Ajanı tetikleyin.")
-    if st.button("Veri Toplamayı Başlat", type="primary"):
-        st.toast("Veri toplama komutu kuyruğa eklendi. (Geliştirici notu: make extract çalıştırılmalıdır)", icon="⏳")
+    st.info("Görüntülenecek kampanya verisi bulunamadı. Önce `make crawl` ve `make extract` çalıştırın.")
     st.stop()
 
 MUSTERI_TIPI_ETIKETLERI = {

@@ -21,7 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.collector.toplayici import bankalari_yukle # noqa: E402
 from src.depolama import istatistikler, tum_kayitlar # noqa: E402
-from app.ui_utils import format_bank_name, inject_custom_css, format_kategori # noqa: E402
+from app.ui_utils import (  # noqa: E402
+  format_bank_name,
+  format_kategori,
+  inject_custom_css,
+  ortak_kenar,
+  sonuclari_oku,
+  tr_sayi,
+)
 
 st.set_page_config(
   page_title="Katılım Bankacılığı Kampanya Analizi",
@@ -30,10 +37,7 @@ st.set_page_config(
 )
 
 inject_custom_css()
-
-with st.sidebar:
-  st.toggle("Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
-  st.markdown("---")
+ortak_kenar()
 
 
 @st.cache_data(ttl=60)
@@ -48,6 +52,11 @@ def _bankalar():
 
 
 st.title("Katılım Bankacılığı Kampanya Analizi")
+st.markdown(
+  '<div class="kl-serit">Banka çalışanı aracı — rakip kampanyalar, kanıt zinciri, '
+  "karşılaştırma. Tüketici uygulaması değil.</div>",
+  unsafe_allow_html=True,
+)
 st.caption(
   "TEKNOFEST 2026 · Yapay Zekâ Dil Ajanları · Katılım Bankacılığı Finansal Metin Madenciliği · "
   "Takım SVARTAL"
@@ -156,20 +165,56 @@ with tab_sistem:
     "kullanıcıyı hangi veriye ne kadar güvenebileceği konusunda şeffafça bilgilendirir."
   )
 
+  eval_ozet = sonuclari_oku()
   k1, k2, k3 = st.columns(3)
   with k1:
-    # Gerçek değer: docs/SONUCLAR.md — halüsinasyon oranı ölçüldü
-    st.metric("Halüsinasyon Oranı (n=1536)", "%0.98", "Hedef ≤%3 ",
-         help="96 kampanya × 16 alan = 1536 alan. Sayısal doğrulama kalkanından geçen 0 adet gerçek dışı sayı. "
-            "Kaynak: docs/SONUCLAR.md, make eval.")
+    if eval_ozet.halusinasyon_orani is None:
+      st.metric("Halüsinasyon oranı", "—", help="docs/SONUCLAR.md bulunamadı. `make eval` çalıştırın.")
+    else:
+      n_kamp = eval_ozet.kampanya_sayisi or ozet["kampanya_sayisi"]
+      st.metric(
+        "Halüsinasyon oranı",
+        f"%{tr_sayi(eval_ozet.halusinasyon_orani * 100, 2)}",
+        "hedef ≤ %3",
+        help=(
+          f"Ölçüm `make eval` / docs/SONUCLAR.md. "
+          f"İşlenen kampanya: {n_kamp}. Bu sayı elle yazılmaz."
+        ),
+      )
   with k2:
-    st.metric("Buluta Aktarılan Veri", "0 Byte", "Tamamen Yerel Mimarî", delta_color="off",
-         help="Mevcut konfigürasyonda tüm veriler cihazınızda (on-premise) kalır. (Not: LLM sağlayıcısı ayarlara göre 'evren' seçilirse tahsisli sunucuya, 'ollama' seçilirse yerel sunucuya bağlanır.)")
+    if eval_ozet.sema_gecerliligi is None:
+      st.metric("Şema geçerliliği", "—")
+    else:
+      st.metric(
+        "Şema geçerliliği",
+        tr_sayi(eval_ozet.sema_gecerliligi, 2),
+        "hedef 1,00",
+        help="Her kayıt şema sözleşmesini geçti. Kaynak: docs/SONUCLAR.md.",
+      )
   with k3:
-    # Gerçek değer: docs/SONUCLAR.md — Makro-F1 bootstrap güven aralığıyla
-    st.metric("Makro-F1 (n=60)", "0.778", "%95 GA: 0.645–0.847",
-         help="Altın set üzerinde bootstrap örnekleme ile hesaplandı. Hedef ≥0.78 — sınırda ama "
-            "güven aralığı hedefi kapsıyor. Kaynak: docs/SONUCLAR.md.")
+    n_altin = eval_ozet.altin_set_n
+    etiket = f"Makro-F1 (n={n_altin})" if n_altin else "Makro-F1"
+    if eval_ozet.makro_f1 is None:
+      st.metric(etiket, "—")
+    else:
+      delta = None
+      if eval_ozet.makro_f1_ga:
+        lo, hi = eval_ozet.makro_f1_ga
+        delta = f"%95 GA: {tr_sayi(lo, 2)}–{tr_sayi(hi, 2)}"
+      st.metric(
+        etiket,
+        tr_sayi(eval_ozet.makro_f1, 2),
+        delta,
+        help=(
+          "Altın set, bootstrap güven aralığıyla. Hedef ≥ 0,78. "
+          "Sunumda tek basamak iddia etme — aralık ve n ile söyle. "
+          "Kaynak: docs/SONUCLAR.md."
+        ),
+      )
+    if eval_ozet.sayisal_dogruluk is not None:
+      st.caption(
+        f"Sayısal alan doğruluğu: **{tr_sayi(eval_ozet.sayisal_dogruluk, 3)}** (hedef ≥ 0,90)"
+      )
 
   st.write("") # Boşluk
   q1, q2 = st.columns(2)
@@ -180,7 +225,6 @@ with tab_sistem:
     guvenler = [k.ortalama_guven for k in kayitlar if k.ortalama_guven > 0]
     if guvenler:
       hist_df = pd.DataFrame({"Güven Skoru": guvenler})
-      # Jüri tavsiyesi üzerine nbins=10 kullanıldı
       fig_hist = px.histogram(hist_df, x="Güven Skoru", nbins=10, color_discrete_sequence=["#00A86B"])
       fig_hist.update_layout(height=300, margin={"l": 0, "r": 0, "t": 10, "b": 0}, xaxis_title="Güven Skoru", yaxis_title="Kampanya Adedi", bargap=0.1, template="plotly_dark")
       fig_hist.update_xaxes(showgrid=False)
@@ -213,12 +257,16 @@ with tab_sistem:
       fig_bar.update_xaxes(showgrid=False)
       fig_bar.update_yaxes(showgrid=False)
       st.plotly_chart(fig_bar, use_container_width=True, theme=None)
+      belirtilmemis = {ad: toplam - say for ad, say in alan_doluluk.items()}
+      st.caption(
+        "Belirtilmemiş (kaynakta yok): "
+        + " · ".join(f"{ad} {say}" for ad, say in belirtilmemis.items())
+        + ". Ürün türü %0 ise model uydurmuyor; sayfalarda bu alan yazmıyor."
+      )
     else:
       st.info("Hesaplanacak veri yok.")
 
 st.divider()
-
-# Sidebar: Geliştirici Modu taşındı
 
 # ---------------------------------------------------------------------------
 # Banka kayıt defteri — şartname 5.1 kanıtı
@@ -240,7 +288,7 @@ defter = pd.DataFrame(
       "Kod": {"0211": "0208", "0212": "0302"}.get(b.kod, b.kod),
       "Banka": b.ad,
       "Durum": b.durum.value.replace('_', ' ').title(),
-      "Kampanya": kampanya_sayaci.get(b.kod, (3 if b.durum.value == "faal" else 0)),
+      "Kampanya": kampanya_sayaci.get(b.kod, 0),
       "Site": b.site or "—",
     }
     for b in bankalar

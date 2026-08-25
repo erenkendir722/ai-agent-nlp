@@ -25,6 +25,7 @@ from src.comparison.karsilastirma import Agirliklar, avantaj_skorla, uyarilar
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
 from src.schema import BIRIM_GOSTERIMLERI, SAYISAL_ALANLAR, Birim
+from src.vektor_db import vektor_ara
 
 log = logging.getLogger(__name__)
 
@@ -652,7 +653,6 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     )
 
 
-from src.vektor_db import vektor_ara
 
 def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     """Metinsel sorular — Qdrant vektör benzerlik araması (EVREN Embedding) ile getirilir."""

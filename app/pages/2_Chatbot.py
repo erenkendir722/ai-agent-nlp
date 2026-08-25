@@ -17,10 +17,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.depolama import tum_kayitlar # noqa: E402
 from src.rag.chatbot import YASAL_UYARI, Niyet, sor # noqa: E402
-from app.ui_utils import inject_custom_css # noqa: E402
+from app.ui_utils import inject_custom_css, ortak_kenar # noqa: E402
 
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
 inject_custom_css()
+ortak_kenar(demo_ipuclari=True)
 st.title("Kampanya Asistanı")
 
 st.caption(
@@ -35,10 +36,10 @@ if not kayitlar:
   st.stop()
 
 NIYET_ETIKETLERI = {
-  Niyet.TEKIL_SORGU: ("", "Tekil sorgu", "Yapısal veritabanı sorgusu"),
-  Niyet.KARSILASTIRMA: ("", "Karşılaştırma", "Deterministik karşılaştırma motoru"),
-  Niyet.KOSUL_SORGUSU: ("", "Koşul sorgusu", "Metin arama (RAG)"),
-  Niyet.KAPSAM_DISI: ("", "Kapsam dışı", "Kibar ret"),
+  Niyet.TEKIL_SORGU: ("①", "Tekil sorgu", "Yapısal veritabanı sorgusu"),
+  Niyet.KARSILASTIRMA: ("②", "Karşılaştırma", "Deterministik karşılaştırma motoru"),
+  Niyet.KOSUL_SORGUSU: ("③", "Koşul sorgusu", "Metin arama (RAG)"),
+  Niyet.KAPSAM_DISI: ("④", "Kapsam dışı", "Kibar ret"),
 }
 
 ORNEK_SORULAR = [
@@ -47,12 +48,19 @@ ORNEK_SORULAR = [
   "En uzun vade hangi bankada?",
   "Taşıt finansmanı sunan bankalar hangileri?",
 ]
+KALKAN_ORNEGI = "Kampanya koşulları neler?"
 
 with st.sidebar:
   st.header("Örnek sorular")
   for ornek in ORNEK_SORULAR:
     if st.button(ornek, use_container_width=True):
       st.session_state.bekleyen_soru = ornek
+  if st.button("Kalkan gösterimi: " + KALKAN_ORNEGI, use_container_width=True):
+    st.session_state.bekleyen_soru = KALKAN_ORNEGI
+  st.caption(
+    "İlk dört soru yapısal yoldan cevaplanır. Son düğme kalkanı göstermek içindir "
+    "(kırmızı kutu hata değil, uydurma sayının yayına çıkmamasıdır)."
+  )
 
   st.divider()
   st.header("Mimari")
@@ -71,7 +79,6 @@ Soru
     """
   )
   st.markdown("---")
-  st.toggle("Geliştirici Modu (API)", key="dev_mode", help="JSON ve cURL çıktılarını aktif eder (B2B API demosu).")
 
 if "gecmis" not in st.session_state:
   st.session_state.gecmis = []
@@ -79,19 +86,29 @@ if "gecmis" not in st.session_state:
 def cevap_renderla(cevap, gecen_sure=None):
   simge, etiket, aciklama = NIYET_ETIKETLERI[cevap.niyet]
   
-  # ES-05 Ajan Düşünce Süreci (Agent Trace)
+  # Sayısal doğrulama kalkanı — bu yolda Eleştirmen Ajan yok.
   with st.expander("Ajanın Düşünce Süreci (Loglar)", expanded=False):
     st.caption(f"**Log 1:** Niyet anlaşıldı: `{etiket}` ({aciklama})")
     kaynak_sayisi = len(cevap.kaynaklar) if cevap.kaynaklar else 0
-    st.caption(f"**Log 2:** SQLite veritabanından RAG bağlamı için {kaynak_sayisi} ilgili kayıt filtrelendi...")
+    st.caption(f"**Log 2:** SQLite veritabanından {kaynak_sayisi} ilgili kayıt getirildi.")
     if cevap.dogrulama_gecti:
-      st.caption("**Log 3:** Sayısal Doğrulama Kalkanından geçildi (Halüsinasyon tespit edilmedi). Yanıt üretiliyor...")
+      st.caption("**Log 3:** Sayısal doğrulama kalkanı geçti (yapısal kayıtta karşılığı olmayan sayı yok).")
     else:
-      st.caption(f"**Log 3:** Sayısal Doğrulama Kalkanı devreye girdi! Hatalı sayılar ({', '.join(cevap.reddedilen_sayilar)}) yapısal kayıt ile eşleşmediği için reddedildi.")
+      tekil = list(dict.fromkeys(cevap.reddedilen_sayilar))
+      st.caption(
+        f"**Log 3:** Sayısal doğrulama kalkanı reddetti. "
+        f"Doğrulanamayan sayılar: {', '.join(tekil)}."
+      )
     
   st.caption(f"{simge} **{etiket}** — {aciklama}")
   if gecen_sure is not None:
-    st.caption(f"Yanıt {gecen_sure:.1f} saniyede üretildi | Model: Yerel Qwen (Ollama) | Donanım: Yerel CPU/GPU")
+    if cevap.niyet in (Niyet.TEKIL_SORGU, Niyet.KARSILASTIRMA):
+      motor = "LLM yok — yapısal sorgu / karşılaştırma motoru"
+    elif cevap.niyet == Niyet.KOSUL_SORGUSU:
+      motor = "Metin arama + sayısal kalkan"
+    else:
+      motor = "Kapsam dışı ret"
+    st.caption(f"Yanıt {gecen_sure:.1f} saniyede · {motor}")
 
   st.markdown(cevap.metin)
 
@@ -106,7 +123,7 @@ def cevap_renderla(cevap, gecen_sure=None):
   else:
     st.error(
       f"Sayısal doğrulama başarısız. Doğrulanamayan değerler: "
-      f"{', '.join(cevap.reddedilen_sayilar)}. Cevap verilmedi."
+      f"{', '.join(dict.fromkeys(cevap.reddedilen_sayilar))}. Cevap verilmedi."
     )
 
   if cevap.kaynaklar:
@@ -141,10 +158,9 @@ if soru:
       try:
         cevap = sor(soru, kayitlar)
         gecen_sure = time.time() - baslangic
-        if gecen_sure < 0.5:
-          import random
-          gecen_sure = random.uniform(0.7, 1.4)
       except ConnectionError as e:
+        # Yerleşik ConnectionError — Ollama/vektör yolu kapalıyken yakalanır.
+        # requests.exceptions.ConnectionError da bunun alt sınıfıdır.
         st.error("Yerel dil modeli sunucusuna (Ollama) veya vektör veritabanına şu anda erişilemiyor.")
         if st.session_state.get("dev_mode", False):
           with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):

@@ -8,11 +8,65 @@ yedi bankada ayrışmıştı ("Türkiye Emlak Katılım Bankası A.Ş." kayıt d
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
 from functools import lru_cache
+from pathlib import Path
 
 import streamlit as st
 
 from src.collector.toplayici import bankalari_yukle
+
+_SONUC_DOSYASI = Path(__file__).resolve().parents[1] / "docs" / "SONUCLAR.md"
+
+
+@dataclass(frozen=True)
+class EvalOzeti:
+    """`docs/SONUCLAR.md` — sunum ve arayüz aynı kaynaktan okur."""
+
+    halusinasyon_orani: float | None = None
+    makro_f1: float | None = None
+    makro_f1_ga: tuple[float, float] | None = None
+    sayisal_dogruluk: float | None = None
+    sema_gecerliligi: float | None = None
+    altin_set_n: int | None = None
+    kampanya_sayisi: int | None = None
+
+
+def sonuclari_oku(yol: Path | None = None) -> EvalOzeti:
+    """`make eval` çıktısını parse eder. Elle yazılmış sayı kullanılmaz."""
+    dosya = yol or _SONUC_DOSYASI
+    if not dosya.is_file():
+        return EvalOzeti()
+    metin = dosya.read_text(encoding="utf-8")
+
+    def _ara(desen: str) -> str | None:
+        m = re.search(desen, metin)
+        return m.group(1) if m else None
+
+    def _float(ham: str | None) -> float | None:
+        if ham is None or ham == "ölçülmedi":
+            return None
+        return float(ham.replace(",", "."))
+
+    ga = re.search(
+        r"\*\*Makro-F1\*\* \| [0-9.]+ _\(%95 GA: ([0-9.]+)[–-]([0-9.]+)\)_",
+        metin,
+    )
+    return EvalOzeti(
+        halusinasyon_orani=_float(_ara(r"\*\*Halüsinasyon oranı\*\* \| %([0-9.,]+)")),
+        makro_f1=_float(_ara(r"\*\*Makro-F1\*\* \| ([0-9.]+)")),
+        makro_f1_ga=(float(ga.group(1)), float(ga.group(2))) if ga else None,
+        sayisal_dogruluk=_float(_ara(r"Sayısal alan doğruluğu \| ([0-9.]+|ölçülmedi)")),
+        sema_gecerliligi=_float(_ara(r"Şema geçerliliği \| ([0-9.]+)")),
+        altin_set_n=int(n) if (n := _ara(r"Altın set boyutu: \*\*(\d+)\*\*")) else None,
+        kampanya_sayisi=int(k) if (k := _ara(r"İşlenen kampanya: \*\*(\d+)\*\*")) else None,
+    )
+
+
+def tr_sayi(deger: float, basamak: int = 2) -> str:
+    """0.724 → '0,72' — sunumda sahte kesinlik yok."""
+    return f"{deger:.{basamak}f}".replace(".", ",")
 
 # Kayıt defterinde olmayan bir banka için başlığı kısaltırken atılan ekler.
 _EKLER = (
@@ -38,9 +92,6 @@ def format_bank_name(bank_name: str | None) -> str:
         return "Belirtilmemiş"
 
     temiz_girdi = bank_name.strip()
-    if temiz_girdi.lower() == 'örnek' or temiz_girdi.lower() == 'ornek':
-        return 'Albaraka Türk'
-
     kisa = _kisa_adlar().get(temiz_girdi)
     if kisa:
         return kisa
@@ -92,22 +143,52 @@ def format_kategori(kategori_adi: str | None) -> str:
     return _KATEGORI_ISIMLERI.get(temiz, temiz.replace('_', ' ').title())
 
 
+def ortak_kenar(*, demo_ipuclari: bool = True) -> None:
+    """Her sayfada aynı kimlik + geliştirici anahtarı.
+
+    Kenar çubuğunun geri kalanı (ağırlık, müşteri formu, örnek soru) sayfaya
+    aittir; burası yalnız ortak başlığı yazar. `dev_mode` anahtarı tek kez
+    tanımlanır — aynı key ile ikinci `st.toggle` Streamlit'te DuplicateWidgetID
+    fırlatır.
+    """
+    with st.sidebar:
+        st.markdown("**Katılım Lens**")
+        st.caption("Takım SVARTAL · banka çalışanı aracı")
+        if demo_ipuclari:
+            st.caption(
+                "Demo sırası: Genel Bakış → Metin Analizi → "
+                "Karşılaştırma → Müşteri Profili → Chatbot"
+            )
+        st.toggle(
+            "Geliştirici Modu (API)",
+            key="dev_mode",
+            help="JSON ve cURL çıktılarını açar. Uçlar: GET /compare, POST /ask, POST /extract (localhost:8000).",
+        )
+        st.markdown("---")
+
+
 def inject_custom_css():
-    """Kurumsal SaaS arayüz standartlarına uygun özel CSS (glassmorphism, Inter font)."""
+    """On-prem koyu tema — dış font CDN'si yok (hava boşluğu)."""
     st.markdown(
         """
         <style>
-        /* Google Fonts - Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
         html, body, [class*="css"] {
-            font-family: 'Inter', sans-serif !important;
+            font-family: "Segoe UI", system-ui, sans-serif !important;
         }
 
-        /* Hide Streamlit Default Elements */
         #MainMenu {visibility: hidden;}
-        header {visibility: hidden;}
         footer {visibility: hidden;}
+        /* Üst çubuğu gizleme: projeksiyonda sayfa adı ve menü okunur kalsın. */
+
+        .kl-serit {
+            background: linear-gradient(90deg, rgba(0,168,107,0.18), transparent);
+            border: 1px solid rgba(0, 168, 107, 0.35);
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+            color: #E0E0E0;
+            font-size: 0.92rem;
+        }
         
         /* Metric Cards Styling (Glassmorphism & Elevation) */
         [data-testid="stMetric"] {
@@ -181,14 +262,6 @@ def inject_custom_css():
             border-radius: 8px !important;
             background-color: #25252D !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Containers */
-        [data-testid="stVerticalBlock"] > [style*="flex-direction: column;"] > [data-testid="stVerticalBlock"] {
-            background-color: #1A1A1F;
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         /* Inputs & Selectboxes */
