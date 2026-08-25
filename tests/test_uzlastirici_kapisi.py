@@ -190,3 +190,56 @@ def test_dilim_baypasi_llm_uydurmasini_gecirmez() -> None:
     kampanya, _ = uzlastir({}, llm, kayit=kayit)
 
     assert kampanya.finansman_tutari_max.var_mi is False
+
+
+BSMV_METNI = (
+    "İhtiyaç Finansmanı Kampanyası. "
+    "İhtiyaç Finansmanı tahsis ücreti finansman tutarının %0,5'idir. "
+    "Tahsis ücreti %15 BSMV içermektedir."
+)
+
+
+def test_komsu_cumledeki_bsmv_dogru_orani_elemez() -> None:
+    """Vergi vetosu KENDİ cümlesinde aranır — 26 Ağustos'ta ölçülen kayıp.
+
+    `bsmv` ±140 karakterlik pencerede aranıyordu. Doğru değer (%0,5) bir
+    önceki cümlede olduğu için o da eleniyordu; altın setin beş kaydında
+    kural katmanı doğru cevabı üretip kapıda kaybediyordu.
+
+    Veto kalkmadı, DARALDI: %15 hâlâ elenir (kendi cümlesinde `bsmv` geçer),
+    %0,5 geçer.
+    """
+    kayit = _kayit(BSMV_METNI)
+    kural = kurallarla_cikar(BSMV_METNI, kayit.url, CEKIM)
+
+    kampanya, _ = uzlastir(kural, {}, kayit=kayit)
+
+    assert kampanya.tahsis_ucreti.deger == pytest.approx(0.5)
+
+
+def test_bsmv_orani_kendi_cumlesinde_hala_elenir() -> None:
+    """Daraltma bir delik açmamalı: BSMV oranının kendisi tahsis ücreti değildir."""
+    metin = "Kampanya koşulları geçerlidir. Tahsis ücreti %15 BSMV içermektedir."
+    kayit = _kayit(metin)
+    kural = kurallarla_cikar(metin, kayit.url, CEKIM)
+
+    kampanya, _ = uzlastir(kural, {}, kayit=kayit)
+
+    assert kampanya.tahsis_ucreti.var_mi is False
+
+
+def test_binde_yazimi_tahsis_ucreti_olarak_okunur() -> None:
+    """«binde 5» = %0,5 — işaretsiz oran yazımı.
+
+    Üç ayrı yerde birden eksikti ve üçü de sessizdi: `D_ORAN` aday üretmiyor,
+    üretilse `birim_belirle` birimi çözemiyor, çözülmezse çok birimli alanın
+    boyut kapısı değeri düşürüyordu. Bankaların standart deyimi bu.
+    """
+    metin = "Tahsis ücreti vergiler hariç finansman tutarının binde 5'i oranındadır."
+    kayit = _kayit(metin)
+    kural = kurallarla_cikar(metin, kayit.url, CEKIM)
+
+    kampanya, _ = uzlastir(kural, {}, kayit=kayit)
+
+    assert kampanya.tahsis_ucreti.deger == pytest.approx(0.5)
+    assert kampanya.tahsis_ucreti.birim is not None, "birimsiz değer boyut kapısında düşer"

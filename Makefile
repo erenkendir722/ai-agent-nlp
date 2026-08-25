@@ -1,7 +1,7 @@
 .PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar lisanslar-teyit temiz temiz-db docker-up docker-down \
         birim-goc ablasyon eval-gorulmemis \
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
-        altin-tur2 altin-tur2-fark \
+        altin-tur2 altin-tur2-fark kural-olc \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
         suresi-gecenleri-ele kanit kanit-robots kanit-kvkk
 
@@ -175,6 +175,9 @@ altin-tur2:  ## ikinci (KÖR) etiketleme turu için boş sayfa (ad=Eren)
 
 altin-tur2-fark:  ## tur-2'yi altın setle karşılaştır -> uzlaştırma listesi (ad=Eren)
 	@$(PYTHON) tools/altin_set.py tur2-fark --ad $(or $(ad),Eren)
+
+kural-olc:  ## kural katmanının altın set skoru — LLM yok, saniyeler, deterministik
+	@$(PYTHON) tools/kural_olc.py
 
 birim-goc:  ## eski veritabanına birim ekler (şema v1.1.0 -> v1.2.0)
 	$(PYTHON) tools/birim_goc.py $(if $(deneme),--deneme)

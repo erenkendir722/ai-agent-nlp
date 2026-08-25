@@ -659,6 +659,8 @@ def birim_belirle(ham_ifade: str | None, alan_adi: str) -> Birim | None:
     'yuzde'
     >>> birim_belirle("500 TL", "tahsis_ucreti").value
     'tl'
+    >>> birim_belirle("binde 5", "tahsis_ucreti").value
+    'yuzde'
     >>> birim_belirle("belirsiz", "tahsis_ucreti") is None
     True
     """
@@ -672,7 +674,16 @@ def birim_belirle(ham_ifade: str | None, alan_adi: str) -> Birim | None:
 
     # Yüzde işareti TL'den önce sınanır: «%0,50 TL» gibi karma yazımda
     # belirleyici olan oran işaretidir (maliyet tablolarında görülüyor).
-    if Birim.YUZDE in izinli and ("%" in ham_ifade or _YUZDE_SOZCUGU.search(ham_ifade)):
+    #
+    # «binde» de bir ORAN yazımıdır ve işaretsizdir. `oran_ayristir` onu zaten
+    # yüzdeye çeviriyor (binde 5 -> 0,5), ama birim çözümü yalnız «%» ve
+    # «yüzde» arıyordu: değer doğru üretilip BİRİMSİZ kalıyor, çok birimli
+    # `tahsis_ucreti` boyut kapısında düşüyordu. 26 Ağustos'ta ölçüldü —
+    # dört kayıtta doğru cevap («finansman tutarının binde 5'i») böyle
+    # kayboluyordu.
+    if Birim.YUZDE in izinli and (
+        "%" in ham_ifade or _YUZDE_SOZCUGU.search(ham_ifade) or _BINDE.search(ham_ifade)
+    ):
         return Birim.YUZDE
     if Birim.TL in izinli and _PARA_BIRIMI.search(ham_ifade):
         return Birim.TL

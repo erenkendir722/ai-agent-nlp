@@ -45,6 +45,18 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 D_ORAN = re.compile(r"(?:%|y[üu]zde)\s*\d[\d.,\s]*|\d[\d.,]*\s*%", re.IGNORECASE)
+D_BINDE = re.compile(r"\bbinde\s+\d[\d.,]*", re.IGNORECASE)
+"""«binde 5», «binde beş» — bindelik oran, yüzde işareti YOKTUR.
+
+`D_ORAN` `%` ya da «yüzde» arıyor, bu yüzden bu kalıbı hiç görmüyordu.
+`oran_ayristir` ise onu zaten 0,5'e çeviriyor (bkz. `normalizasyon._BINDE`) —
+eksik olan ayrıştırıcı değil, ADAYIN ÜRETİLMESİYDİ.
+
+Yalnız `tahsis_ucreti`'ne bağlı: bankaların tahsis ücretini bindelik yazması
+standart deyimdir («finansman tutarının binde 5'i»), kâr payını bindelik
+yazması değildir. 26 Ağustos ölçümü — altın setin üç kaydında doğru cevap
+buydu ve hiç aday üretilmediği için üçü de kaçırılıyordu."""
+
 D_PARA = re.compile(
     r"\d[\d.,]*\s*(?:milyar|milyon|bin)?\s*(?:₺|TL\b|TRY\b|T[üu]rk\s+Liras[ıi])",
     re.IGNORECASE,
@@ -107,6 +119,27 @@ class KuralTanimi:
     olumsuzlama_reddet: bool = False
     """True ise "alınmaz / yok / ücretsiz" içeren bağlamdan sayı çıkarılmaz."""
     kolonun_asabilecegi_vetolar: tuple[str, ...] = field(default=())
+    cumle_ici_vetolar: tuple[str, ...] = field(default=())
+    """Yalnız değerin KENDİ CÜMLESİNDE geçerse eleyen vetolar.
+
+    `veto_ifedeleri` ±`baglam_penceresi` karakterlik pencerede çalışır. O
+    genişlik çoğu bağlam için doğru, ama bir SINIF ifade için yanlış: komşu
+    cümlede geçmesi değeri suçlamayan ifadeler.
+
+    26 Ağustos'ta ölçüldü — `bsmv` vetosu `tahsis_ucreti`'nin doğru cevabını
+    kesiyordu:
+
+        "İhtiyaç Finansmanı tahsis ücreti finansman tutarının %0,5'idir.
+         Tahsis ücreti %15 BSMV içermektedir."
+
+    Veto %15'i elemek için yazılmıştı; pencere iki cümleyi birden kapsadığı
+    için %0,5'i de eliyordu. Altın setin beş kaydında aynı kalıp var ve
+    beşinde de doğru değer kural katmanında ÜRETİLİP kapıda ölüyordu.
+
+    `MALIYET_TABLOSU` regresyonuyla (25 Ağu) aynı sınıf hata: bir vetonun
+    hedeflediği yanlış değerle birlikte doğru değeri de kesmesi. Oradaki
+    çözüm hücrenin KENDİ kolon başlığına sormaktı; buradaki, değerin KENDİ
+    cümlesine sormak."""
     """`veto_ifadeleri` gibi, ama KOLON BAŞLIĞI alanı adlandırıyorsa düşer.
 
     Bir veto pencerede ifade arar; pencere ise tablo satırında komşu kolonların
@@ -441,7 +474,8 @@ KURALLAR: tuple[KuralTanimi, ...] = (
     KuralTanimi(
         alan="tahsis_ucreti",
         deger_deseni=re.compile(
-            rf"(?:{D_PARA.pattern})|(?:{D_ORAN.pattern})", re.IGNORECASE
+            rf"(?:{D_PARA.pattern})|(?:{D_ORAN.pattern})|(?:{D_BINDE.pattern})",
+            re.IGNORECASE,
         ),
         ayristirici=lambda s: para_ayristir(s, birim_zorunlu=True) or oran_ayristir(s),
         baglam_sozcukleri=("tahsis ucreti", "tahsis", "dosya masrafi", "komisyon"),
@@ -478,7 +512,15 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # aynı bağlam türünü bir alanda eleyip diğerinde geçirmek, bugün
         # düzeltilen tutarsızlığın ta kendisiydi. Nötr olması zarar değil;
         # kapsam dışı bırakmak ise bilinen bir hataya açık kapı bırakmaktır.
-        veto_ifadeleri=SAYISAL_ALAN_VETOLARI
+        # VERGİ VETOLARI CÜMLE ÖLÇEĞİNE ALINDI (26 Ağu) — gerekçesi
+        # `cumle_ici_vetolar` tanımının yanında. Pencerede kaldıkları sürece
+        # "Tahsis ücreti %15 BSMV içermektedir." komşu cümlesi, bir önceki
+        # cümledeki doğru %0,5'i de eliyordu (altın sette 5 kayıt).
+        cumle_ici_vetolar=VERGI_VE_MEVZUAT + HESAP_ARACI_CIKTISI,
+        veto_ifadeleri=tuple(
+            v for v in SAYISAL_ALAN_VETOLARI
+            if v not in VERGI_VE_MEVZUAT and v not in HESAP_ARACI_CIKTISI
+        )
         + (
             # "PTT ATM'sinden komisyon ÖDEMEDEN 10.000 TL'ye kadar para
             # çekebilir" — olumsuzlama cümlesi; buradaki tutar ücret değil,
@@ -648,6 +690,20 @@ def _cumle_araligi(metin: str, baslangic: int, bitis: int, azami: int = 300) -> 
 
     onceki = list(_CUMLE_SONU.finditer(metin, sol, baslangic))
     alinti_bas = onceki[-1].end() if onceki else sol
+
+    # SPAN ZATEN NOKTALAMAYLA BİTİYORSA UZATMA (26 Ağu).
+    #
+    # Arama `bitis`ten başlıyordu; span'ın kendisi cümle sonuyla bitiyorsa
+    # bu, BİR SONRAKİ cümlenin sonunu buluyor ve aralık iki cümleyi birden
+    # kapsıyordu. Ölçülen zarar:
+    #
+    #     "...tahsis ücreti finansman tutarının %0,5'idir."   <- span
+    #     " Tahsis ücreti %15 BSMV içermektedir."             <- de kapsanıyordu
+    #
+    # «Aynı cümle» kısıtı böylece kendi anlamını kaybediyordu: komşu cümlede
+    # geçen bir ifade, değerin cümlesinde geçmiş sayılıyordu.
+    if bitis > baslangic and _CUMLE_SONU.match(metin, bitis - 1):
+        return alinti_bas, bitis
 
     sonraki = _CUMLE_SONU.search(metin, bitis, sag)
     alinti_bit = sonraki.end() if sonraki else sag
@@ -995,6 +1051,16 @@ def _baglam_skoru(
     if any(ifade in pencere for ifade in kural.veto_ifadeleri):
         return None
 
+    # CÜMLE ÖLÇEKLİ VETO: aday seçiminde de geçerli, ama YALNIZ adayın kendi
+    # cümlesinde aranır. Pencerede aranırsa komşu cümledeki doğru değeri de
+    # eler; cümlede aranırsa yalnız suçlu adayı eler
+    # (bkz. `KuralTanimi.cumle_ici_vetolar`).
+    if kural.cumle_ici_vetolar:
+        c_sol, c_sag = _cumle_araligi(metin, baslangic, bitis, azami=kural.baglam_penceresi)
+        if any(ifade in _konum_koruyan_anahtar(metin[c_sol:c_sag])
+               for ifade in kural.cumle_ici_vetolar):
+            return None
+
     # KOLONUN AŞABİLECEĞİ VETO: pencere tablo satırında komşu kolonların
     # başlıklarını da görür, o yüzden bu vetolar pencereye değil HÜCRENİN KENDİ
     # KOLON BAŞLIĞINA sorulur (bkz. `KuralTanimi.kolonun_asabilecegi_vetolar`).
@@ -1188,6 +1254,12 @@ def deger_makul_mu(
         sag = min(len(metin), bitis + kural.baglam_penceresi)
         pencere = _konum_koruyan_anahtar(metin[sol:sag])
         if any(ifade in pencere for ifade in kural.veto_ifadeleri):
+            return False
+
+    if kural.cumle_ici_vetolar:
+        c_sol, c_sag = _cumle_araligi(metin, baslangic, bitis)
+        cumle = _konum_koruyan_anahtar(metin[c_sol:c_sag])
+        if any(ifade in cumle for ifade in kural.cumle_ici_vetolar):
             return False
 
     return True

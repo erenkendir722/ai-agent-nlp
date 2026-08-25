@@ -51,11 +51,23 @@ def test_her_sayisal_alan_ortak_vetolari_tasir(alan_adi: str):
     düştüğü bunu değiştirmez.
     """
     kural = _ALAN_KURALI[alan_adi]
-    # Veto İKİ listeden birinde olabilir. `kolonun_asabilecegi_vetolar` da bir
-    # vetodur — yalnız pencerede değil, hücrenin KENDİ kolon başlığında aranır
-    # (bkz. `KuralTanimi.kolonun_asabilecegi_vetolar`). Bağlam türü yine
-    # eleniyor; eleme kanıtı daha isabetli bir yerden okunuyor.
-    tasinan = set(kural.veto_ifadeleri) | set(kural.kolonun_asabilecegi_vetolar)
+    # Veto ÜÇ listeden birinde olabilir; ölçüt "eleniyor mu", "hangi pencerede
+    # aranıyor" değil. Üçü de aynı bağlam türünü eler, yalnız eleme kanıtını
+    # farklı yerden okur:
+    #
+    #   veto_ifadeleri             ±baglam_penceresi karakterlik pencere
+    #   kolonun_asabilecegi_...    hücrenin KENDİ kolon başlığı
+    #   cumle_ici_vetolar          değerin KENDİ cümlesi
+    #
+    # Son ikisi pencerenin fazla geniş kaldığı iki vakada eklendi ve ikisi de
+    # ölçülmüş bir zararı geri aldı (25 Ağu `MALIYET_TABLOSU`, 26 Ağu `bsmv`).
+    # Bu testin koruduğu şey kapsamdır: bir bağlam türü bir alanda eleniyorsa
+    # hepsinde elenmeli. Daraltmayı serbest bırakmak o kapsamı bozmaz.
+    tasinan = (
+        set(kural.veto_ifadeleri)
+        | set(kural.kolonun_asabilecegi_vetolar)
+        | set(kural.cumle_ici_vetolar)
+    )
     eksik = set(SAYISAL_ALAN_VETOLARI) - tasinan
     assert not eksik, f"{alan_adi} ortak vetoları taşımıyor: {sorted(eksik)}"
 
