@@ -7,7 +7,7 @@ Sayısal cevaplar buradan GELMEZ — onlar yapısal veriden gelir. Bu ayrım
 **Neden harici vektör veritabanı yok:** ADR 014. Kısası — `qdrant.ssyz.org.tr`
 DNS'te çözülmüyor, öyle bir servisin bize tahsis edildiğine dair belge de yok.
 Proje planı Qdrant altyapısını bütçe dışı ilan etmiş, S-09 zaten "kosinüs
-benzerlik" istiyor. 15.519 paragraf × 1024 boyut = 61 MB; numpy ile tek nokta
+benzerlik" istiyor. 15.151 paragraf × 1024 boyut; numpy ile tek nokta
 çarpımı milisaniyeler sürer. Sunucu bu ölçekte hiçbir şey kazandırmıyor,
 demoyu ağ bağlantısına bağımlı kılmak dışında.
 
