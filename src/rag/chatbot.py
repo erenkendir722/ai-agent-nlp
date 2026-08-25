@@ -17,7 +17,6 @@ Akış:
 from __future__ import annotations
 
 import logging
-from src.vektor_db import vektor_ara
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -653,6 +652,7 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     )
 
 
+from src.vektor_db import vektor_ara
 
 def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     """Metinsel sorular — Qdrant vektör benzerlik araması (EVREN Embedding) ile getirilir."""

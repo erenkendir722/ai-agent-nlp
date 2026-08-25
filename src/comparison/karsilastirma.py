@@ -324,20 +324,9 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
         )
 
     turler = {k.kampanya_turu for k in kayitlar if k.kampanya_turu}
-    TUR_MAP = {
-        "alisveris_puani": "Alışveriş Puanı",
-        "diger": "Diğer",
-        "finansman": "Finansman",
-        "ihtiyac_finansmani": "İhtiyaç Finansmanı",
-        "kart": "Kredi Kartı",
-        "konut_finansmani": "Konut Finansmanı",
-        "tasit_finansmani": "Taşıt Finansmanı",
-        "yatirim_urunu": "Yatırım Ürünü",
-        "yeni_musteri": "Yeni Müşteri"
-    }
     if len(turler) > 1:
         mesajlar.append(
-            f"Farklı kampanya türleri karşılaştırılıyor ({', '.join(TUR_MAP.get(t, t.replace('_', ' ').title()) for t in sorted(turler))}). "
+            f"Farklı kampanya türleri karşılaştırılıyor ({', '.join(t.replace('_', ' ').title() for t in sorted(turler))}). "
             "Aynı tür içinde karşılaştırma daha anlamlıdır."
         )
 

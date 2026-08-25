@@ -98,7 +98,16 @@ def cevap_renderla(cevap, gecen_sure=None):
   for mesaj in cevap.uyarilar:
     st.warning(mesaj)
 
-
+  if cevap.dogrulama_gecti:
+    st.success(
+      "Sayısal doğrulama geçti — cevaptaki her sayının yapısal "
+      "kayıtta karşılığı var."
+    )
+  else:
+    st.error(
+      f"Sayısal doğrulama başarısız. Doğrulanamayan değerler: "
+      f"{', '.join(cevap.reddedilen_sayilar)}. Cevap verilmedi."
+    )
 
   if cevap.kaynaklar:
     st.markdown("**Kaynaklar**")
