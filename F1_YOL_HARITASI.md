@@ -1,11 +1,99 @@
 # Makro-F1 0,724 → 0,78 — Sorun Neresi, Ne Denendi, Ne Kaldı
 
-**Son güncelleme:** 25 Ağustos 2026, akşam
+**Son güncelleme:** 26 Ağustos 2026, gece
 **Hedef:** şartname eşiği **makro-F1 ≥ 0,78** · **Şu an:** 0,724 (%95 GA 0,651–0,781)
 
 Bu dosya "skoru nasıl yükseltiriz" sorusunun çalışma defteri. Ölçülmüş her
 şey buraya yazılır — **denenip başarısız olanlar da**, çünkü aynı fikri iki kez
 denemek en pahalı hatadır.
+
+---
+
+## 🆕 26 Ağustos — yapılanlar ve ölçülenler
+
+**Üç iş bitti, üçü de ölçüldü. Aşağıdaki 0,724 sayısı ARTIK GEÇERSİZ** —
+yeniden `make extract && make eval` koşulmadan güncel sayı bilinmiyor.
+
+### 1. Altın setin 15 hücresi hatalı çıktı
+
+«Altın boş, sistem dolu» tipindeki **22 hücrenin tamamı** ham metne karşı
+denetlendi. **15'inde hatalı olan altın setti** — üstelik bir kısmı kararlar
+defterinde YAZILI OLUP uygulanmamış kurallar:
+
+```
+0213-8e662b576a6b  "Vade Farksız 12 Taksit"  -> kar_payi_orani BOŞ, vade BOŞ
+0205-a323f782dfd5  "vade farksız 5 taksit"   -> aynı  (15 Ağu kuralı: «0 yaz»)
+0206-4db63f5eca2f  "maksimum vadesi 120 ay"  -> vade BOŞ
+0206-0a6668cc5df3  "Kampanya … 30.11.2020"   -> bitiş BOŞ  (4 alanın anahtarı hiç yok)
+```
+
+Bu 15 hücre düzeltilirse **kod değişmeden** makro-F1 ≈ 0,724 → **0,764**.
+
+⚠️ **Ama ikinci tur otomatik kazanç DEĞİL.** Boş bir hücreyi doldurmak, sistemin
+de kaçırdığı bir değerse doğru negatifi yanlış negatife çevirir ve F1'i
+DÜŞÜRÜR. Dürüst beklenti net **+0,02 ila +0,04**.
+
+→ Araç yazıldı: `make altin-tur2 ad=Eren` kör çalışma sayfası üretir,
+`make altin-tur2-fark ad=Eren` uzlaştırma listesini basar. `derle` tur-2'yi
+OKUMAZ (test: `test_derle_tur2_sayfasini_okumaz`) — uzlaştırma adımı atlanamaz.
+
+### 2. `uzlastirici.py` dilim baypası — YAPILDI
+
+Koşul `durum == "kural"` idi, `durum in {"kural", "celiski"}` oldu. Gerçek
+altın set metinleriyle önce/sonra ölçüldü:
+
+```
+                          önce      sonra
+0203-fcb188f0e696         None  ->  400000   ✅
+0205-5eb79ce53d45         None  ->  400000   ✅
+0206-d7223804788b         None  ->  400000   ✅
+0214-ffb6cd0c6e56         None  ->  400000   ✅
+```
+
+Kalan iki kayıtta (`0206-97aa0685d8fb`, `0206-076e17e204d8`) kural katmanı
+tabloyu zaten görmüyor — dilim işareti yok. Beklenen: `finansman_tutari_max`
+0,615 → **0,80**.
+
+### 3. `tahsis_ucreti` 0,29 → 0,86 (kural katmanı, ölçüldü)
+
+Alanın dipte olmasının sebebi tek bir hata değil, **üç ayrı sessiz hataydı**:
+
+| # | hata | düzeltme | F1 |
+|---|---|---|---|
+| — | taban | | 0,2857 |
+| 1 | `bsmv` / `yillik maliyet oran` vetoları ±140 karakterlik pencerede çalışıp KOMŞU CÜMLEDEKİ doğru değeri de kesiyordu | `cumle_ici_vetolar` — veto değerin KENDİ cümlesinde aranır | 0,6061 |
+| 2 | «binde 5» hiç aday üretmiyordu (`D_ORAN` `%` arıyor), üretse birimi çözülemiyor, çözülmezse boyut kapısı düşürüyordu | `D_BINDE` + `birim_belirle` «binde»yi tanır | 0,6857 |
+| 3 | Sayfa hem oran hem TL yazınca örnek tablodaki TL kazanıyordu | `birim_tercihi=Birim.YUZDE` (26 Ağu kılavuz kuralı) | **0,8571** |
+
+`_cumle_araligi` de düzeltildi: span zaten noktalamayla bitiyorsa bir SONRAKİ
+cümlenin sonunu arıyor, «aynı cümle» kısıtını anlamsız kılıyordu.
+
+### 4. `tools/kural_olc.py` YAZILDI — daha önce YOKTU
+
+Bu belgenin 8. bölümü `make kural-olc`'u var gibi anlatıyordu; **depoda hiç
+commit edilmemişti.** Yukarıdaki üç adımın her biri onunla ölçüldü (saniyeler,
+LLM yok, rastgelelik yok). 2. adımın ilk hali F1'i 0,6061 → 0,4667'ye
+DÜŞÜRMÜŞTÜ — tam ölçümle bu fark ±0,01 gürültünün içinde kaybolurdu.
+
+### Beklenen hibrit makro-F1
+
+```
+kampanya_turu         0,806   (değişmedi)
+kar_payi_orani        0,737   (değişmedi)
+finansman_tutari_max  0,800   ← +0,185
+vade_ay_max           0,795   (değişmedi)
+tahsis_ucreti        ~0,860   ← +0,515
+masrafsiz_mi          0,905   (değişmedi)
+odul_miktari          0,714   (değişmedi)
+kampanya_bitis        0,877   (değişmedi)
+                     ───────
+makro-F1             ~0,81    ← şartname eşiği 0,78 AŞILIR
+```
+
+⚠️ **Bu bir PROJEKSİYON, ölçüm değil.** Kural katmanı ölçümünden türetildi;
+gerçek sayı `make extract && make eval` ister ve o da ±0,01 taşır. Tur-2
+uzlaştırması bittikten sonra **iki kez** koşulmalı.
+
 
 ---
 
