@@ -243,3 +243,38 @@ def test_binde_yazimi_tahsis_ucreti_olarak_okunur() -> None:
 
     assert kampanya.tahsis_ucreti.deger == pytest.approx(0.5)
     assert kampanya.tahsis_ucreti.birim is not None, "birimsiz değer boyut kapısında düşer"
+
+
+ORAN_VE_TL = (
+    "Konut Finansmanı Kampanyası. "
+    "Finansmanın maksimum vadesi 120 ay olup, tahsis ücreti vergiler hariç "
+    "finansman tutarının binde 5'i oranındadır. "
+    "Alınacak ücretler: 60 ay vadede 500 TL tahsis ücreti tahsil edilir."
+)
+
+
+def test_tahsis_ucretinde_oran_TLye_tercih_edilir() -> None:
+    """Sayfa ikisini birden yazıyorsa kampanyanın koşulu ORANDIR.
+
+    TL tutarı ÖRNEK finansman tutarına bağlıdır («60 ay vadede 500 TL»), oran
+    her tutarda geçerlidir. Etiketleme kılavuzu 26 Ağustos'ta böyle karara
+    bağladı; bu test kılavuz ile kodun ayrışmamasını korur — ayrışırlarsa
+    ölçüm sessizce bozulur, çünkü altın set kılavuza göre etiketlenir.
+    """
+    kayit = _kayit(ORAN_VE_TL)
+    kural = kurallarla_cikar(ORAN_VE_TL, kayit.url, CEKIM)
+
+    kampanya, _ = uzlastir(kural, {}, kayit=kayit)
+
+    assert kampanya.tahsis_ucreti.deger == pytest.approx(0.5)
+
+
+def test_yalniz_TL_yazan_sayfa_etkilenmez() -> None:
+    """Tercih bir FİLTRE değil: oran adayı yoksa TL yine okunur."""
+    metin = "Kampanya kapsamında 750 TL tahsis ücreti tahsil edilir."
+    kayit = _kayit(metin)
+    kural = kurallarla_cikar(metin, kayit.url, CEKIM)
+
+    kampanya, _ = uzlastir(kural, {}, kayit=kayit)
+
+    assert kampanya.tahsis_ucreti.deger == pytest.approx(750.0)

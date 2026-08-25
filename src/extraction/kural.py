@@ -35,6 +35,7 @@ from src.schema import (
     AYLIK_KAR_PAYI_UST_SINIRI,
     EN_AZ_FINANSMAN_TUTARI,
     Alan,
+    Birim,
     Kaynak,
 )
 
@@ -119,6 +120,23 @@ class KuralTanimi:
     olumsuzlama_reddet: bool = False
     """True ise "alınmaz / yok / ücretsiz" içeren bağlamdan sayı çıkarılmaz."""
     kolonun_asabilecegi_vetolar: tuple[str, ...] = field(default=())
+    birim_tercihi: Birim | None = None
+    """ÇOK BİRİMLİ alanda hangi birim yazımı tercih edilir.
+
+    `tahsis_ucreti` hem TL hem oran olarak yazılıyor ve sayfa çoğu kez İKİSİNİ
+    BİRDEN taşıyor:
+
+        "Tahsis ücreti vergiler hariç finansman tutarının binde 5'i oranındadır."
+        "Alınacak ücretler: 60 ay vadede 500 TL tahsis ücreti…"
+
+    İkisi aynı şeyi söylemez: TL tutarı ÖRNEK finansman tutarına bağlıdır,
+    oran her tutarda geçerlidir — yani kampanyanın koşulu orandır. Etiketleme
+    kılavuzu bunu 26 Ağustos'ta karara bağladı; buradaki tercih o kararın kod
+    tarafıdır, ikisinin ayrışması ölçümü sessizce bozardı.
+
+    Tercih edilen birimden EN AZ BİR aday varsa yarışma onlarla sınırlanır;
+    yoksa tüm adaylar yarışır (TL-only sayfalar etkilenmez)."""
+
     cumle_ici_vetolar: tuple[str, ...] = field(default=())
     """Yalnız değerin KENDİ CÜMLESİNDE geçerse eleyen vetolar.
 
@@ -516,6 +534,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
         # `cumle_ici_vetolar` tanımının yanında. Pencerede kaldıkları sürece
         # "Tahsis ücreti %15 BSMV içermektedir." komşu cümlesi, bir önceki
         # cümledeki doğru %0,5'i de eliyordu (altın sette 5 kayıt).
+        birim_tercihi=Birim.YUZDE,
         cumle_ici_vetolar=VERGI_VE_MEVZUAT + HESAP_ARACI_CIKTISI,
         veto_ifadeleri=tuple(
             v for v in SAYISAL_ALAN_VETOLARI
@@ -1326,9 +1345,25 @@ def _tek_atama(adaylar: dict[str, list[Aday]]) -> dict[str, list[Aday]]:
     }
 
 
-def _sec(adaylar: list[Aday], secim: Secim) -> Aday | None:
+def _sec(
+    adaylar: list[Aday],
+    secim: Secim,
+    *,
+    alan_adi: str | None = None,
+    birim_tercihi: Birim | None = None,
+) -> Aday | None:
     if not adaylar:
         return None
+
+    # BİRİM TERCİHİ mesafeden ve değerden ÖNCE gelir: aynı sayfada hem oran
+    # hem TL varsa, hangisinin "daha yakın" olduğu alanın anlamını değiştirmez
+    # (bkz. `KuralTanimi.birim_tercihi`).
+    if birim_tercihi is not None and alan_adi is not None:
+        tercihli = [
+            a for a in adaylar if birim_belirle(a.ham_ifade, alan_adi) is birim_tercihi
+        ]
+        if tercihli:
+            adaylar = tercihli
     if secim == "ilk":
         return adaylar[0]
     if secim == "en_yakin":
@@ -1360,7 +1395,12 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
     sahiplenilmis = _tek_atama(tum_adaylar)
 
     for kural in KURALLAR:
-        secilen = _sec(sahiplenilmis[kural.alan], kural.secim)
+        secilen = _sec(
+            sahiplenilmis[kural.alan],
+            kural.secim,
+            alan_adi=kural.alan,
+            birim_tercihi=kural.birim_tercihi,
+        )
         if secilen is None:
             continue
         alinti_bas, alinti_bit = _cumle_araligi(metin, secilen.baslangic, secilen.bitis)
