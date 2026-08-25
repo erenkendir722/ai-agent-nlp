@@ -8,6 +8,7 @@ ile '?' hücresinin farkı, ölçüme girip girmemeyi belirliyor.
 from __future__ import annotations
 
 import csv
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -864,3 +865,184 @@ class TestOkumaKagidi:
         icerik = (gold_dizini / "okuma_eren.md").read_text(encoding="utf-8")
         assert "etiketleme_uyum_eren.csv" in icerik
         assert "etiketleme_eren.csv" in icerik
+
+
+# ---------------------------------------------------------------------------
+# Genişletme turu — `derle` ve `denetle` HER TURUN dosyasını görmeli
+# ---------------------------------------------------------------------------
+
+
+class TestGenisletmeTuruDosyalari:
+    """Genişletme turunun dört ön eki iki kez sessizce düştü, ikisi de ölçüldü.
+
+    25 Ağustos, `derle` yolunda: `EK_UYUM_ONEK` okunmuyordu ve genişletme
+    turunun 5 ortak kaydı altın sete hiç girmiyordu — 93 kayıt derlendi, 98
+    değil. Aynı gün `denetle` yolunda: `onekler` demeti yalnız ilk turu
+    taşıyordu, sekiz dosya HİÇ AÇILMADAN «✅ Pushlayabilirsin» basılıyordu.
+
+    İkisinin de ortak kusuru aynı: ön ek listesi iki yerde ayrı ayrı yazılı ve
+    biri güncellenince öteki unutuluyor. Bu testler listeleri birbirine
+    bağlar — yeni bir tur eklenirse ikisi birden kırılır."""
+
+    def _tur_dosyalari_yaz(self, gold_dizini):
+        """İlk tur + genişletme turu; her ön ek bir kayıt taşır."""
+        kampanyalar = [_kampanya(f"02{i:02d}", s) for i in range(4) for s in range(6)]
+        onek_kaydi = {
+            "etiketleme_": kampanyalar[0],
+            altin_set.UYUM_ONEK: kampanyalar[1],
+            altin_set.EK_ONEK: kampanyalar[2],
+            altin_set.EK_UYUM_ONEK: kampanyalar[3],
+        }
+        for onek, kampanya in onek_kaydi.items():
+            for kisi in altin_set.KISILER:
+                yol = gold_dizini / f"{onek}{kisi.lower()}.csv"
+                altin_set._csv_yaz(yol, [kampanya])
+                _csv_doldur(yol, [{"kampanya_turu": "finansman"}])
+        return kampanyalar, onek_kaydi
+
+    def test_derle_dort_onekin_dordunu_de_okur(self, gold_dizini) -> None:
+        _, onek_kaydi = self._tur_dosyalari_yaz(gold_dizini)
+        kayitlar, _ = altin_set.derle()
+
+        derlenen = {k["kampanya_id"] for k in kayitlar}
+        for onek, kampanya in onek_kaydi.items():
+            assert kampanya.kampanya_id in derlenen, f"{onek}* derlemeye girmedi"
+
+    def test_denetle_dort_onekin_dordunu_de_acar(self, gold_dizini, capsys) -> None:
+        self._tur_dosyalari_yaz(gold_dizini)
+        altin_set.komut_denetle(None)
+
+        basilan = capsys.readouterr().out
+        for onek in ("etiketleme_", altin_set.UYUM_ONEK, altin_set.EK_ONEK,
+                     altin_set.EK_UYUM_ONEK):
+            for kisi in altin_set.KISILER:
+                ad = f"{onek}{kisi.lower()}.csv"
+                assert ad in basilan, f"{ad} denetlenmeden 'pushlayabilirsin' dendi"
+
+    def test_okuma_kagidi_dort_onekin_dordunu_de_kapsar(self, gold_dizini) -> None:
+        """Kâğıt etiketlemeyi ucuzlatan tek şey; eksik tur, elle okunan tur demek.
+
+        Genişletme turunda kâğıt üretilmiyordu ve o turun en az dolan sayfası
+        `etiketleme_ek_esra.csv` %20'de kaldı (denetim bulgusu 9)."""
+        self._tur_dosyalari_yaz(gold_dizini)
+        altin_set.okuma_kagitlari_yaz(("Esra",))
+
+        kagit = (gold_dizini / "okuma_esra.md").read_text(encoding="utf-8")
+        for onek in ("etiketleme_", altin_set.UYUM_ONEK, altin_set.EK_ONEK,
+                     altin_set.EK_UYUM_ONEK):
+            assert f"{onek}esra.csv" in kagit, f"{onek}* kâğıda girmedi"
+
+    def test_denetle_ek_dosyadaki_ihlali_yakalar(self, gold_dizini) -> None:
+        """Kapının asıl işi: yalnız dosyayı açmak değil, ihlali görüp 1 dönmek."""
+        self._tur_dosyalari_yaz(gold_dizini)
+        _csv_doldur(
+            gold_dizini / f"{altin_set.EK_ONEK}esra.csv",
+            [{"kampanya_turu": "zurna"}],
+        )
+        assert altin_set.komut_denetle(None) == 1
+
+
+# ---------------------------------------------------------------------------
+# Örneklem defteri — "bu örnekleri nasıl seçtiniz?" sorusunun kanıtı
+# ---------------------------------------------------------------------------
+
+
+class TestOrneklemDefteri:
+    """Defter HER turu belgelemeli; eksik tur, cevaplanamayan bir jüri sorusudur.
+
+    25 Ağustos'ta ölçüldü: `komut_genislet` `ORNEK_KAYDI`'nı hiç yazmıyordu.
+    Defter `"adet": 60` diyordu, altın sette 98 kayıt vardı — setin %39'u için
+    tohum / dağılım / atama kaydı yoktu. `TOHUM` docstring'inin vaat ettiği
+    *«rastgele değil, şu tohumla katmanlı»* cevabı o kayıtlar için verilemezdi.
+    """
+
+    # `hedefli_ornekle` yalnız HAM METİNDE yüzey işareti arayan kayıtları seçer
+    # (bkz. ZAYIF_ALAN_ISARETLERI). İşaretsiz metinle koşan test sıfır kayıt
+    # seçer ve hiçbir şey ölçmez.
+    ISARETLI_METIN = "Aylık kâr payı oranı %1,89 ile 36 aya kadar vade."
+
+    def _genislet_kos(self, gold_dizini, monkeypatch, kampanyalar):
+        for kampanya in kampanyalar:
+            kampanya.ham_metin = self.ISARETLI_METIN
+        monkeypatch.setattr(altin_set, "_kampanyalari_al", lambda: kampanyalar)
+        monkeypatch.setattr(
+            altin_set, "alan_doluluk_raporu", lambda altin: dict.fromkeys(ALAN_ADLARI, 0)
+        )
+        monkeypatch.setattr(
+            "eval.calistir.altin_seti_yukle",
+            lambda: [{"kampanya_id": kampanyalar[0].kampanya_id}],
+        )
+        # hedef_n, UYUM_ADET (5) üstünde tutulur; altındaki her şey uyum
+        # bloğuna gider ve kişisel atama boş kalır — atamayı ölçemezdik.
+        return altin_set.komut_genislet(hedef_n=8, uygula=True)
+
+    def _defter(self, gold_dizini):
+        return json.loads(
+            (gold_dizini / "ornek_listesi.json").read_text(encoding="utf-8")
+        )
+
+    def test_ornekle_defteri_ilk_turla_baslatir(self, gold_dizini) -> None:
+        _, secilen = _hazirla(gold_dizini)
+        defter = self._defter(gold_dizini)
+
+        assert defter["surum"] == 2
+        assert [t["tur"] for t in defter["turlar"]] == ["ornekle"]
+        assert defter["toplam_adet"] == len(secilen)
+        assert defter["turlar"][0]["tohum"] == altin_set.TOHUM
+
+    def test_genislet_turu_deftere_EKLER(self, gold_dizini, monkeypatch) -> None:
+        """Asıl bulgu: genişletme turu deftere hiç yazılmıyordu."""
+        kampanyalar, ilk_secilen = _hazirla(gold_dizini)
+        self._genislet_kos(gold_dizini, monkeypatch, kampanyalar)
+        defter = self._defter(gold_dizini)
+
+        assert [t["tur"] for t in defter["turlar"]] == ["ornekle", "genislet"]
+        genislet = defter["turlar"][1]
+        assert genislet["adet"] > 0
+        assert genislet["tohum"] == altin_set.TOHUM
+        assert genislet["hedef_n"] == 8
+        assert any(genislet["atama"].values())
+
+    def test_genislet_ilk_turun_kaydini_EZMEZ(self, gold_dizini, monkeypatch) -> None:
+        """İlk turun kökeni silinirse 60 kaydın seçimi belgesiz kalır."""
+        kampanyalar, _ = _hazirla(gold_dizini)
+        once = self._defter(gold_dizini)["turlar"][0]
+        self._genislet_kos(gold_dizini, monkeypatch, kampanyalar)
+
+        assert self._defter(gold_dizini)["turlar"][0] == once
+
+    def test_defter_altin_setteki_HER_kaydi_belgeler(
+        self, gold_dizini, monkeypatch
+    ) -> None:
+        """Defterin tek işi bu: her kimliğin hangi turdan, kime düştüğünü söylemek."""
+        kampanyalar, _ = _hazirla(gold_dizini)
+        self._genislet_kos(gold_dizini, monkeypatch, kampanyalar)
+
+        defterdeki = {
+            kimlik
+            for tur in self._defter(gold_dizini)["turlar"]
+            for kimlik in [*tur["uyum_blogu"], *(k for p in tur["atama"].values() for k in p)]
+        }
+        sayfadaki = {
+            (satir.get("kampanya_id") or "").strip()
+            for yol in gold_dizini.glob("etiketleme_*.csv")
+            for satir in csv.DictReader(yol.open(encoding="utf-8-sig", newline=""))
+        } - {""}
+
+        assert defterdeki == sayfadaki
+
+    def test_v1_defter_v2ye_gocurulur(self, gold_dizini) -> None:
+        """Elde v1 defter var; göç kodda olmalı — `ornekle`yi yeniden koşturmak
+        etiketli sayfaları yeniden üretmek demektir."""
+        (gold_dizini / "ornek_listesi.json").write_text(
+            json.dumps({"olusturma": "2026-08-15T15:26:41", "tohum": 1, "adet": 60,
+                        "uyum_blogu": ["a"], "dagilim_tur": {}, "dagilim_banka": {},
+                        "atama": {"Eren": ["b"]}}),
+            encoding="utf-8",
+        )
+        defter = altin_set._ornek_defteri_oku()
+
+        assert defter["surum"] == 2
+        assert defter["toplam_adet"] == 60
+        assert defter["turlar"][0]["tur"] == "ornekle"
+        assert defter["turlar"][0]["atama"] == {"Eren": ["b"]}

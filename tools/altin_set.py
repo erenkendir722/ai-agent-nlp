@@ -347,6 +347,65 @@ def _etiketli_mi(yol: Path) -> bool:
     return yol.exists() and any(dokunuldu for _, _, _, dokunuldu in _csv_oku(yol))
 
 
+def _ornek_defteri_oku() -> dict[str, Any]:
+    """Örneklem defterini v2 biçiminde döndürür; v1 dosyayı `turlar[0]`'a taşır.
+
+    v1 tek turluk düz bir sözlüktü (`{olusturma, tohum, adet, …}`). İkinci tur
+    gelince o biçim yetmedi: 25 Ağustos'ta defter hâlâ `"adet": 60` diyordu,
+    genişletme turunun 38 kaydı için tohum / dağılım / atama kaydı yoktu. Yani
+    `TOHUM` docstring'indeki *«jüri "bu örnekleri nasıl seçtiniz?" diye
+    sorduğunda cevap "rastgele" değil, "şu tohumla katmanlı" olmalı»* iddiası
+    setin %39'u için verilemiyordu.
+
+    Göç kodda yapılır, elle değil: `ornekle`yi yeniden koşturup defteri
+    tazelemek etiketli sayfaları yeniden üretmek demektir.
+    """
+    if not ORNEK_KAYDI.exists():
+        return {"surum": 2, "toplam_adet": 0, "turlar": []}
+
+    defter = json.loads(ORNEK_KAYDI.read_text(encoding="utf-8"))
+    if defter.get("surum") == 2:
+        return defter
+
+    ilk_tur = {"tur": "ornekle", **defter}
+    return {"surum": 2, "toplam_adet": defter.get("adet", 0), "turlar": [ilk_tur]}
+
+
+def _ornek_kaydi_yaz(
+    tur: str,
+    secilen: list[Kampanya],
+    uyum_blogu: list[Kampanya],
+    paylar: dict[str, list[Kampanya]],
+    *,
+    yeni_defter: bool = False,
+    **ek_alanlar: Any,
+) -> None:
+    """Bir örnekleme turunun kökenini deftere yazar.
+
+    `yeni_defter` yalnız `ornekle` içindir: o komut seti BAŞTAN kurar, önceki
+    turların kaydı da anlamını yitirir. `genislet` var olanın eksiğini
+    tamamladığı için turu deftere EKLER — sildiği an ilk turun kökeni kaybolur.
+    """
+    defter = {"surum": 2, "toplam_adet": 0, "turlar": []} if yeni_defter else _ornek_defteri_oku()
+    defter["turlar"].append(
+        {
+            "tur": tur,
+            "olusturma": datetime.now().isoformat(timespec="seconds"),
+            "tohum": TOHUM,
+            "adet": len(secilen),
+            **ek_alanlar,
+            "uyum_blogu": [k.kampanya_id for k in uyum_blogu],
+            "dagilim_tur": dict(Counter(_tur(k) for k in secilen)),
+            "dagilim_banka": dict(Counter(k.banka_adi for k in secilen)),
+            "atama": {kisi: [k.kampanya_id for k in pay] for kisi, pay in paylar.items()},
+        }
+    )
+    defter["toplam_adet"] = sum(t["adet"] for t in defter["turlar"])
+    ORNEK_KAYDI.write_text(
+        json.dumps(defter, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
 def calisma_sayfalari_yaz(
     secilen: list[Kampanya], kisiler: tuple[str, ...], zorla: bool = False
 ) -> tuple[list[Kampanya], dict[str, int], list[str]]:
@@ -386,22 +445,7 @@ def calisma_sayfalari_yaz(
             kampanya.ham_metin, encoding="utf-8"
         )
 
-    ORNEK_KAYDI.write_text(
-        json.dumps(
-            {
-                "olusturma": datetime.now().isoformat(timespec="seconds"),
-                "tohum": TOHUM,
-                "adet": len(secilen),
-                "uyum_blogu": [k.kampanya_id for k in uyum_blogu],
-                "dagilim_tur": dict(Counter(_tur(k) for k in secilen)),
-                "dagilim_banka": dict(Counter(k.banka_adi for k in secilen)),
-                "atama": {kisi: [k.kampanya_id for k in pay] for kisi, pay in paylar.items()},
-            },
-            ensure_ascii=False,
-            indent=2,
-        ),
-        encoding="utf-8",
-    )
+    _ornek_kaydi_yaz("ornekle", secilen, uyum_blogu, paylar, yeni_defter=True)
     return uyum_blogu, sayilar, korunan
 
 
@@ -971,9 +1015,24 @@ def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
             kampanya.ham_metin or "", encoding="utf-8"
         )
 
+    # Hiçbir kayıt seçilemediyse (korpus yetmiyor) deftere tur YAZILMAZ: altın
+    # set değişmemiştir ve "adet 0" turları üst üste birikip defteri okunmaz
+    # hâle getirir.
+    if secilen:
+        _ornek_kaydi_yaz(
+            "genislet",
+            secilen,
+            uyum,
+            paylar,
+            hedef_n=hedef_n,
+            gerekli={a: n for a, n in gerekli.items() if n},
+            havuz=len(havuz),
+        )
+
     print("\n✅ Genişletme çalışma sayfaları yazıldı:")
     for satir in yazilan:
         print(f"     data/gold/{satir}")
+    print(f"     {_kisa_yol(ORNEK_KAYDI)} (turun tohumu, dağılımı, ataması)")
     print(
         f"\n  1️⃣  UYUM BLOĞU — ilk {len(uyum)} kayıt, herkes etiketler"
         f"\n  2️⃣  KİŞİSEL PAY — kişi başı ~{len(kisisel) // max(1, len(KISILER))} kayıt"
@@ -1435,9 +1494,14 @@ def okuma_kagitlari_yaz(kisiler: tuple[str, ...] = KISILER) -> list[Path]:
     """
     uretilen: list[Path] = []
     for kisi in kisiler:
+        # HER TURUN dosyası kâğıda girer — `derle` ve `denetle` ile aynı liste.
+        # 25 Ağustos'ta ölçüldü: bu demet de yalnız ilk turu taşıyordu, yani
+        # genişletme turunun 38 kaydı için okuma kâğıdı hiç üretilmiyordu.
+        # Kâğıt etiketlemeyi ucuzlatan tek şey; en çok ihtiyaç duyulduğu turda
+        # yoktu ve `etiketleme_ek_esra.csv` %20'de kaldı.
         yollar = [
             yol
-            for onek in (UYUM_ONEK, "etiketleme_")
+            for onek in (UYUM_ONEK, "etiketleme_", EK_UYUM_ONEK, EK_ONEK)
             if (yol := GOLD / f"{onek}{kisi.lower()}.csv").exists()
         ]
         if not yollar:
@@ -1451,7 +1515,13 @@ def okuma_kagitlari_yaz(kisiler: tuple[str, ...] = KISILER) -> list[Path]:
 def komut_denetle(ad: str | None) -> int:
     """Kişi CSV'sini pushlamadan önce denetler — H-01'in kalite kapısı."""
     kisiler = (ad,) if ad else KISILER
-    onekler = ("etiketleme_", UYUM_ONEK)
+    onekler = ("etiketleme_", UYUM_ONEK, EK_ONEK, EK_UYUM_ONEK)
+    """HER TURUN dosyası denetlenir — `derle` neyi okuyorsa `denetle` de onu açar.
+
+    25 Ağustos'ta ölçüldü: bu demet yalnız ilk turun iki ön ekini taşıyordu ve
+    genişletme turunun sekiz dosyası hiç AÇILMADAN «✅ Pushlayabilirsin»
+    basılıyordu. Sözleşme ihlali denetlenmeyen dosyada kalırsa kapı işe
+    yaramaz — `EK_UYUM_ONEK` docstring'indeki `derle` açığının aynısı."""
 
     # Atlanma uyarısı sistemin çıkarımıyla karşılaştırma gerektiriyor; veritabanı
     # yoksa denetimin geri kalanı yine de çalışmalı (kılavuz koşusu, CI vb.).
@@ -1514,6 +1584,14 @@ def komut_denetle(ad: str | None) -> int:
 
 
 def main() -> int:
+    # Windows konsolu cp1254; çıktıdaki 📊/✅/🛡️ işaretleri orada
+    # UnicodeEncodeError fırlatıyordu — `altin-uyum` uyum oranını hesaplayıp
+    # tam da onu basacağı satırda çöküyordu (25 Ağustos). Aynı düzeltme
+    # `tools/gorevler.py:main` içinde de var. Yalnız CLI yolunda; testler
+    # modülü içe aktarırken dokunulmaz.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     ap = argparse.ArgumentParser(description="Altın set araçları (H-01)")
     alt = ap.add_subparsers(dest="komut", required=True)
 

@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import sys
 from collections import Counter
 from datetime import datetime
 from pathlib import Path
@@ -716,6 +717,13 @@ def _ablasyon_notu() -> str:
 
 
 def main() -> int:
+    # Windows konsolu cp1254; son satırdaki ✅ orada UnicodeEncodeError
+    # fırlatıyordu. `make eval` SONUCLAR.md'yi YAZDIKTAN sonra çöküyor, yani
+    # kabuğa hata dönüyor ve metrikler tazelenmemiş sanılıyor. Aynı düzeltme
+    # `tools/gorevler.py` ve `tools/altin_set.py` içinde de var.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     ap = argparse.ArgumentParser(description="Değerlendirme koşum takımı")
     ap.add_argument("--ablasyon", action="store_true", help="ablasyon bölümünü ekle")
     return calistir(ap.parse_args().ablasyon)
