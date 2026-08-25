@@ -1,5 +1,5 @@
-kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0212-cb6a4dc1dc98,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/arkadasini-getir-avantajli-hesap-ac-nakit-odul-kazan,yeni_musteri,,,,,,2000,2026-09-17,"Arkadaşını Davet Et, Avantajlı Hesapla Kazanmaya Başla!
+﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0212-cb6a4dc1dc98,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/arkadasini-getir-avantajli-hesap-ac-nakit-odul-kazan,yeni_musteri,,,,,,2000,2026-08-16,"Arkadaşını Davet Et, Avantajlı Hesapla Kazanmaya Başla!
 Arkadaşlarınızı Hayat Finans'a davet edin. Davet ettiğiniz arkadaşlarınız ilk Avantajlı Hesaplarını açtığında nakit ödül kazanın, arkadaşlarınız ise Hayat Finans Banka Kartı ile gerçekleştirecekleri harcamalarda nakit ödül avantajından yararlansın!
 ✅ Avantajlı Hesap Nedir?
 Avantajlı Hesap, katılım finans ilkelerine uygun olarak yönetilen, her yatırımcıya eşit ve sürdürülebilir avantaj sunan özel bir katılma hesabıdır. Detaylar için tıklayınız.
@@ -63,7 +63,7 @@ Kullandırım Aşaması:
 - Onay sonrası taşıt finansmanı kapsamında Çevreci Araç Finansmanı kullandırılır. Noter işlemlerinden sonra süreç tamamlanır ve araca Bankamızca rehin konulur.
 Detaylı bilgi ve başvuru için size en yakın şubemizi ziyaret edebilirsiniz.
 Şubelerimiz için tıklayınız."
-0206-d08e26c033db,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/hizli-finansman/Sayfalar/default.aspx,ihtiyac_finansmani,1.00,,,,,,,"Kâr Oranı | %1.00 |
+0206-d08e26c033db,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/hizli-finansman/Sayfalar/default.aspx,ihtiyac_finansmani,0.99,,,,,,,"Kâr Oranı | %1.00 |
 ---|---|
 Toplam Geri Ödenen | 66.066,24 TL |
 Tüm ihtiyaçlarınız için ihtiyaç finansmanına SMS ile anında başvurun!
@@ -71,13 +71,13 @@ Hayalinizdeki araca kavuşmanız için anlaşmalı bayilerimizden anında başvu
 Tüm ihtiyaçlarınız için anlaşmalı Hızlı Finansman bayilerine gelin, 0.99% oran avantajları ile ihtiyaçlarınızı ertelemeyin.
 Detaylı Bilgi
 © Copyright 2012 StarterBranding"
-0205-9f9ed7696f23,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti,kart,,,,,,,,"Sağlam Kart Kampüs
+0205-9f9ed7696f23,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti,kart,0,6,,,,,,"Sağlam Kart Kampüs
 Sağlam Kart Kampüs'te kart ücreti yok, sürprizler ve avantajlar çok!
 Sağlam Kart
 Sağlam Kart ile yıllık kart ücreti olmadan tüm eğitim ve sağlık harcamalarınızı vade farksız taksitlendirebilir, ekstra ödüller kazanabilirsiniz!
 Miles&Smiles Kuveyt Türk Kart
 Alışverişlerde vade farksız 6 taksit ve mil biriktirme avantajlarından Miles&Smiles Kredi Kartı ile yararlanın."
-0203-cfc1e9a26a6c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani,konut_finansmani,,,,,,,,"Hayalinizdeki eve kira öder gibi sahip olun!
+0203-cfc1e9a26a6c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani,finansman,,,,,,,,"Hayalinizdeki eve kira öder gibi sahip olun!
 Uzun vade ve size özel ödeme seçenekleri ile Albaraka Türk Konut Finansmanı tam size göre!
 Albaraka Türk’ten ihtiyaçlarınızı alışveriş anında karşılayan finansman fırsatı. Alışverişlerinizde Bayide Finansman’ı tercih edin, 36 aya varan vadelerle ödeyin. Üstelik elektronikten ev tekstiline kadar birçok sektörde geçerli.
 İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!

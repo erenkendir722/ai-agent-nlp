@@ -1,5 +1,5 @@
-kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0206-0a6668cc5df3,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/hesaplama-araclari/Sayfalar/finansman-odeme-plani.aspx?financeID=16,diger,,,,,,,,"Finansman Hesaplama Aracı
+﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0206-0a6668cc5df3,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/hesaplama-araclari/Sayfalar/finansman-odeme-plani.aspx?financeID=16,diger,?,?,?,?,hayır,,,"Finansman Hesaplama Aracı
 Finansman(Kâr Oranı: %)
 Finansman Tutarı | Taksit Tutarı | Vade(ay) | Kâr Oranı | Tahsis Ücreti | İpotek Tesis ücreti | Ekspertiz Ücreti | Toplam Geri Ödenen Tutar |
 Dijital İhtiyaç finansmanı örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Ödeme tablosu hesaplamasında yer alan kâr payı oranı; Finansman Güvence Sigortası’nın finansman başvurusu ile birlikte alınması 300.000 TL'ye kadar kullandırılacak finansmanlar için geçerlidir. Kâr Payı Oranları , finansman vadesi ve müşterinin kkb skoruna göre değişiklik gösterebilmektedir Finansman tutarı; 50.000TL’ye kadar olması durumunda maksimum vade 36 ayı 50.000 - 100.000 TL’ye kadar olması durumunda 24 ayı, 100.000 TL’den fazla olması durumunda 12 ayı aşamaz. Tahsis ücreti finansman fiyatlamasının bir parçasıdır. Tahsis ücreti vergiler hariç finansman tutarının binde 5'i oranındadır. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. İnternet Şubesi, Mobil Şube ve kurumsal web sitesi ile yapılan başvurularda geçerli oranlardır. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz.
@@ -63,7 +63,7 @@ Daha sonrasında telefon, tablet gibi cihazlardan ilgili aboneliğe giriş yapı
 Tabii Premium üyelik kampanyasında sunulan kod tek kullanımlıktır ve her müşteri tarafından yalnızca bir kez kullanılabilir. Kampanyaya katılım ilk 1.000 kişi için geçerlidir.
 Kazanılan Premium üyelik kodlarının kullanım süresi bir aydır. Bu tarihten sonra kullanılmayan kodlar geçersiz olacaktır.
 Vakıf Katılım Bankası AŞ ve tabii, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0205-8f21909fe25c,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart-kampus,kart,,,,,,,,"Sağlam Kart Kampüs Nedir?
+0205-8f21909fe25c,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart-kampus,kart,0,5,100,,,,,"Sağlam Kart Kampüs Nedir?
 Sağlam Kart Kampüs, 18-25 yaş arasındaki üniversite öğrencilerinin finansal bağımsızlığını destekleyen ücretsiz bir kredi kartıdır. Kart ücreti ödemeden, Sağlam Kart Kampüs ile eğitim ve sağlık harcamalarına 5 taksit yapabilir, kampanyalara katılarak altın puan kazanabilirsin. Hayatının en heyecan verici döneminde Sağlam Kart Kampüs’ten yararlanmak için başvurunu buradan hemen gerçekleştirebilirsiniz.
 Sağlam Kart Kampüs Avantajları
 Sağlam Kart Kampüs, Kuveyt Türk müşterilerine aşağıdaki avantajları sağlar:

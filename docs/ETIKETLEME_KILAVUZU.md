@@ -304,6 +304,11 @@ Tartışıp karara bağladığımız her kenar durum buraya, tarihiyle yazılır
 | 15 Ağu | Bankanın oran tablosu (`Vade \| Kâr Payı Oranı \| …`)? | **Kullanılır**, en düşük oran yazılır. `Tahsis Ücreti` kolonu karıştırılmaz |
 | 15 Ağu | Tek satırlık örnek ödeme planındaki oran? | Sayfa ayrıca oran ilan ediyorsa o yazılır; **örnek tek kaynaksa** o yazılır. Boş bırakmak "sayfada oran yok" demektir |
 | 15 Ağu | "Arkadaşını davet et" kampanyası? | `yeni_musteri` — ödülün yatırıldığı hesap araçtır, konu değil |
+| 25 Ağu | Değer metinde VAR ama hangi ürüne ait olduğu seçilemiyorsa? | **`?`** — boş hücre "metinde yok" iddiasıdır ve burada yanlıştır. Sayı gerçekten yazıyor, atfedilemiyor. `0206-0a6668cc5df3` (hesaplama aracı: 500 TL konut, 1000 TL arsa, "binde 5" bir arada), `0206-32cbb264a824` (altı kategoriye altı ayrı bonus) |
+| 25 Ağu | Sayfa "masrafsız bankacılık" diyor ama finansmandan hiç söz etmiyorsa? | **Boş.** 15 Ağu kuralı aynen geçerli: hesap işletim ücreti / EFT / kart aidatı muafiyeti `masrafsiz_mi` değildir. Başlıktaki iddia kuralı değiştirmez (`0203-4a4c087b579a`) |
+| 25 Ağu | "Dosya masrafı olmadan" — dipnot "dosya masrafı = tahsis ücreti" diyorsa? | `masrafsiz_mi = evet` **ve** `tahsis_ucreti = 0`. Muaf tutulan şey finansman masrafının ta kendisi; yukarıdaki kuralın diğer yüzü (`0206-32cbb264a824`) |
+| 25 Ağu | Tabloda `%1.00`, düz yazıda `0.99%` — hangisi? | **%0,99.** Tablo örnek ödeme planıdır; sayfa oranı ayrıca ilan ediyor (15 Ağu kuralı) ve düşük uç müşteri lehinedir. Uyum turunda 4 kişiden 3'ü zaten böyle yazmıştı (`0206-d08e26c033db`) |
+| 25 Ağu | Kredi kartı nakit avans tavanı `finansman_tutari_max` mı? | **Evet** — bankanın verdiği tutar ve açık bir üst sınır. Kart limitinin kendisi değil, "maksimum X TL" ifadesi yazılır (`0205-a323f782dfd5` → 20.000) |
 
 ---
 

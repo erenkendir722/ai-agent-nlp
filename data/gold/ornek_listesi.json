@@ -1,98 +1,175 @@
 {
-  "olusturma": "2026-08-15T15:26:41",
-  "tohum": 20260812,
-  "adet": 60,
-  "uyum_blogu": [
-    "0212-cb6a4dc1dc98",
-    "0211-872a8d2d7577",
-    "0206-d08e26c033db",
-    "0205-9f9ed7696f23",
-    "0203-cfc1e9a26a6c"
-  ],
-  "dagilim_tur": {
-    "yeni_musteri": 1,
-    "tasit_finansmani": 4,
-    "ihtiyac_finansmani": 5,
-    "kart": 6,
-    "konut_finansmani": 6,
-    "alisveris_puani": 9,
-    "yatirim_urunu": 10,
-    "finansman": 10,
-    "diger": 9
-  },
-  "dagilim_banka": {
-    "Hayat Finans Katılım Bankası A.Ş.": 8,
-    "Türkiye Emlak Katılım Bankası A.Ş.": 7,
-    "Türkiye Finans Katılım Bankası A.Ş.": 8,
-    "Kuveyt Türk Katılım Bankası A.Ş.": 7,
-    "Albaraka Türk Katılım Bankası A.Ş.": 8,
-    "Vakıf Katılım Bankası A.Ş.": 7,
-    "Dünya Katılım Bankası A.Ş.": 7,
-    "Ziraat Katılım Bankası A.Ş.": 8
-  },
-  "atama": {
-    "Eren": [
-      "0210-bda0f693a1df",
-      "0214-ffb6cd0c6e56",
-      "0205-51a65757c195",
-      "0206-d7223804788b",
-      "0210-a009d6e68e4b",
-      "0209-181fcb40fc04",
-      "0212-edcd2aaa0445",
-      "0203-15db77051556",
-      "0206-7965278e4024",
-      "0203-d7b3a1e8609d",
-      "0211-c8d3cbb226ad",
-      "0214-22a9e31406ec",
-      "0209-fa6ca7d275c0",
-      "0214-ab3545caa00c"
-    ],
-    "Samet": [
-      "0214-58cf4ca75ced",
-      "0211-4b3897c08177",
-      "0210-ae68b0cabf44",
-      "0203-3c707bd12c98",
-      "0209-ca6752bb1e0d",
-      "0211-6c7bd2bc7373",
-      "0210-6b1029c52e14",
-      "0210-f044a4c8a626",
-      "0205-6ffd7be261ce",
-      "0210-1556b5645fe5",
-      "0212-e62736ec77eb",
-      "0210-5174ebf9b2b6",
-      "0212-f618de03d508",
-      "0209-0e420abeb1da"
-    ],
-    "Görkem": [
-      "0206-58784db119eb",
-      "0209-d07dc61fca38",
-      "0212-7910f6e3d2a8",
-      "0212-d12608b3c384",
-      "0206-51a8d9cdce06",
-      "0214-13513a3c7742",
-      "0203-3cbd45442150",
-      "0214-3ce33cd651ce",
-      "0211-294dcdfdbab9",
-      "0209-2577e321e86b",
-      "0209-a65498d20786",
-      "0206-55c5393fc72f",
-      "0211-fe0d36df1542",
-      "0203-7ab986a92e91"
-    ],
-    "Esra": [
-      "0209-7201b97fc48c",
-      "0203-6ff69597d9db",
-      "0205-22df955e1dda",
-      "0211-805c18fc26f9",
-      "0214-b8f297f72f42",
-      "0205-54bc08fa0088",
-      "0212-35aa6e0c7c00",
-      "0205-735109071c75",
-      "0212-273063a66570",
-      "0206-016254a2c9b8",
-      "0203-fcb188f0e696",
-      "0205-9e2afc07063a",
-      "0206-61006b35204e"
-    ]
-  }
+  "surum": 2,
+  "toplam_adet": 98,
+  "turlar": [
+    {
+      "tur": "ornekle",
+      "olusturma": "2026-08-15T15:26:41",
+      "tohum": 20260812,
+      "adet": 60,
+      "uyum_blogu": [
+        "0212-cb6a4dc1dc98",
+        "0211-872a8d2d7577",
+        "0206-d08e26c033db",
+        "0205-9f9ed7696f23",
+        "0203-cfc1e9a26a6c"
+      ],
+      "dagilim_tur": {
+        "yeni_musteri": 1,
+        "tasit_finansmani": 4,
+        "ihtiyac_finansmani": 5,
+        "kart": 6,
+        "konut_finansmani": 6,
+        "alisveris_puani": 9,
+        "yatirim_urunu": 10,
+        "finansman": 10,
+        "diger": 9
+      },
+      "dagilim_banka": {
+        "Hayat Finans Katılım Bankası A.Ş.": 8,
+        "Türkiye Emlak Katılım Bankası A.Ş.": 7,
+        "Türkiye Finans Katılım Bankası A.Ş.": 8,
+        "Kuveyt Türk Katılım Bankası A.Ş.": 7,
+        "Albaraka Türk Katılım Bankası A.Ş.": 8,
+        "Vakıf Katılım Bankası A.Ş.": 7,
+        "Dünya Katılım Bankası A.Ş.": 7,
+        "Ziraat Katılım Bankası A.Ş.": 8
+      },
+      "atama": {
+        "Eren": [
+          "0210-bda0f693a1df",
+          "0214-ffb6cd0c6e56",
+          "0205-51a65757c195",
+          "0206-d7223804788b",
+          "0210-a009d6e68e4b",
+          "0209-181fcb40fc04",
+          "0212-edcd2aaa0445",
+          "0203-15db77051556",
+          "0206-7965278e4024",
+          "0203-d7b3a1e8609d",
+          "0211-c8d3cbb226ad",
+          "0214-22a9e31406ec",
+          "0209-fa6ca7d275c0",
+          "0214-ab3545caa00c"
+        ],
+        "Samet": [
+          "0214-58cf4ca75ced",
+          "0211-4b3897c08177",
+          "0210-ae68b0cabf44",
+          "0203-3c707bd12c98",
+          "0209-ca6752bb1e0d",
+          "0211-6c7bd2bc7373",
+          "0210-6b1029c52e14",
+          "0210-f044a4c8a626",
+          "0205-6ffd7be261ce",
+          "0210-1556b5645fe5",
+          "0212-e62736ec77eb",
+          "0210-5174ebf9b2b6",
+          "0212-f618de03d508",
+          "0209-0e420abeb1da"
+        ],
+        "Görkem": [
+          "0206-58784db119eb",
+          "0209-d07dc61fca38",
+          "0212-7910f6e3d2a8",
+          "0212-d12608b3c384",
+          "0206-51a8d9cdce06",
+          "0214-13513a3c7742",
+          "0203-3cbd45442150",
+          "0214-3ce33cd651ce",
+          "0211-294dcdfdbab9",
+          "0209-2577e321e86b",
+          "0209-a65498d20786",
+          "0206-55c5393fc72f",
+          "0211-fe0d36df1542",
+          "0203-7ab986a92e91"
+        ],
+        "Esra": [
+          "0209-7201b97fc48c",
+          "0203-6ff69597d9db",
+          "0205-22df955e1dda",
+          "0211-805c18fc26f9",
+          "0214-b8f297f72f42",
+          "0205-54bc08fa0088",
+          "0212-35aa6e0c7c00",
+          "0205-735109071c75",
+          "0212-273063a66570",
+          "0206-016254a2c9b8",
+          "0203-fcb188f0e696",
+          "0205-9e2afc07063a",
+          "0206-61006b35204e"
+        ]
+      }
+    },
+    {
+      "tur": "genislet",
+      "olusturma": "2026-08-24T17:45:23",
+      "tohum": 20260812,
+      "adet": 38,
+      "hedef_n": 20,
+      "havuz": 963,
+      "uyum_blogu": [
+        "0206-d2ea9ee0f388",
+        "0205-5eb79ce53d45",
+        "0206-baa959e7ae07",
+        "0205-d7c603458fb1",
+        "0206-4db63f5eca2f"
+      ],
+      "dagilim_banka": {
+        "Türkiye Finans Katılım Bankası A.Ş.": 10,
+        "Kuveyt Türk Katılım Bankası A.Ş.": 8,
+        "T.O.M. Katılım Bankası A.Ş.": 3,
+        "Albaraka Türk Katılım Bankası A.Ş.": 5,
+        "Ziraat Katılım Bankası A.Ş.": 5,
+        "Türkiye Emlak Katılım Bankası A.Ş.": 3,
+        "Hayat Finans Katılım Bankası A.Ş.": 1,
+        "Vakıf Katılım Bankası A.Ş.": 2,
+        "Dünya Katılım Bankası A.Ş.": 1
+      },
+      "atama": {
+        "Eren": [
+          "0205-261cd5e6559a",
+          "0205-60f356ef43f0",
+          "0213-8e662b576a6b",
+          "0203-271c2684d15c",
+          "0205-a323f782dfd5",
+          "0209-94ec1cab6486",
+          "0211-cb5067a35e8f",
+          "0203-4a4c087b579a",
+          "0206-32cbb264a824"
+        ],
+        "Samet": [
+          "0206-97aa0685d8fb",
+          "0206-b5db11e3633c",
+          "0203-787911faa20e",
+          "0211-902a391aebff",
+          "0212-07d26882fdf8",
+          "0210-f4010a63c94b",
+          "0209-0e21bbc75f76",
+          "0209-87903d3dc7ad"
+        ],
+        "Görkem": [
+          "0205-d30fbe132516",
+          "0206-076e17e204d8",
+          "0209-37d4f728834c",
+          "0205-c8222f2d9a62",
+          "0214-01404b3ac3be",
+          "0213-586518fd3ac5",
+          "0203-728a78c925e5",
+          "0206-f1f0329f98d2"
+        ],
+        "Esra": [
+          "0206-0a6668cc5df3",
+          "0211-56a6a96b0516",
+          "0210-963c04bc483b",
+          "0205-8f21909fe25c",
+          "0213-c754cef91758",
+          "0203-629c9e572113",
+          "0209-627b6d4a57ef",
+          "0206-d6bcd057e40e"
+        ]
+      },
+      "kaynak": "24 Ağustos'ta `make altin-genislet uygula=1` ile üretildi; o koşu defteri yazmıyordu (bkz. docs/ALTIN_SET_DENETIMI.md bulgu 6). Bu tur kaydı 25 Ağustos'ta çalışma sayfalarının KENDİSİNDEN geri çatıldı — kimlikler, atama ve banka dağılımı `etiketleme_ek_*.csv` dosyalarında dondurulmuş hâliyle duruyor. `dagilim_tur` bilerek YAZILMADI: örnekleme anındaki tür model tahminiydi ve korpus o tarihten sonra yeniden çıkarıldı; bugünkü türü yazmak, o günkü katmanlamayı yanlış belgelemek olurdu."
+    }
+  ]
 }
