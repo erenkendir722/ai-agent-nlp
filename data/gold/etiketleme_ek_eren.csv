@@ -1,5 +1,5 @@
-﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0205-261cd5e6559a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/dijital-arac-finansmani,,,,,,,,,"Beğendiğiniz bir araca vakit kaybetmeden sahip olmak mı istiyorsunuz? Kuveyt Türk Dijital Araç Finansmanı ile ihtiyacınız olan finansman desteğine cazip oranlar ve vade seçeneklerinden faydalanarak hızlıca kavuşabilirsiniz. Dijital Araç Finansmanı fırsatlarından yararlanmak için Kuveyt Türk Mobil’i telefonunuza şimdi indirebilirsiniz!
+kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0205-261cd5e6559a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/dijital-arac-finansmani,tasit_finansmani,,48,400000,"0,5",hayır,,,"Beğendiğiniz bir araca vakit kaybetmeden sahip olmak mı istiyorsunuz? Kuveyt Türk Dijital Araç Finansmanı ile ihtiyacınız olan finansman desteğine cazip oranlar ve vade seçeneklerinden faydalanarak hızlıca kavuşabilirsiniz. Dijital Araç Finansmanı fırsatlarından yararlanmak için Kuveyt Türk Mobil’i telefonunuza şimdi indirebilirsiniz!
 Dijital Araç Finansmanı Nedir?
 Dijital Araç Finansmanı, Kuveyt Türk Mobil aracılığıyla başvurabileceğiniz, finansman işlemlerinizin hızlıca tamamlanmasına imkan veren bir araç finansmanı türüdür. Hem sıfır hem 2. el araçlar için Dijital Araç Finansmanı başvurusu yapabilirsiniz. Satın almayı planladığınız aracın kullanım durumuna bağlı olarak 48 aya kadar vade seçeneklerinden faydalanabilirsiniz.
 Dijital Araç Finansmanı’na Nasıl Başvurulur?
@@ -62,7 +62,7 @@ Araç finansmanlarında araca rehin konulması zorunlu mudur?
 Kuveyt Türk, satın alınan araca teminat karşılığı olarak rehin koyar. Bu süreç, Noterler Birliği’ne ödenmek amacıyla rehin tesis masrafı temin edildikten sonra tarafımızdan yürütülür. Finansman ödemesi bittiğinde araç üzerindeki rehin otomatikman kalkar.
 Dosya masrafı nedir?
 Finansman tahsis ücreti finansman tutarının 0,5%’i (binde beş) olacak şekilde hesaplanmaktadır."
-0205-60f356ef43f0,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/hac-umre-finansmani,,,,,,,,,"Kutsal topraklara ziyaretlerinizi maddi sıkıntılardan uzaklaşarak huzurla gerçekleştirmek mi istiyorsunuz? Birçok ihtiyacınızda olduğu gibi bu konuda da Kuveyt Türk her zaman yanınızdadır. Hac/Umre Finansmanı ile ziyaretlerinizi herhangi bir finansal kaygı yaşamadan gerçekleştirebilirsiniz. Eğer Kuveyt Türk müşterisi değilseniz, hızlı ve pratik bir şekilde Kuveyt Türk Mobil ile Kuveyt Türk müşterisi olabilirsiniz.
+0205-60f356ef43f0,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/hac-umre-finansmani,ihtiyac_finansmani,"4,82",36,,"0,5",hayır,,,"Kutsal topraklara ziyaretlerinizi maddi sıkıntılardan uzaklaşarak huzurla gerçekleştirmek mi istiyorsunuz? Birçok ihtiyacınızda olduğu gibi bu konuda da Kuveyt Türk her zaman yanınızdadır. Hac/Umre Finansmanı ile ziyaretlerinizi herhangi bir finansal kaygı yaşamadan gerçekleştirebilirsiniz. Eğer Kuveyt Türk müşterisi değilseniz, hızlı ve pratik bir şekilde Kuveyt Türk Mobil ile Kuveyt Türk müşterisi olabilirsiniz.
 Hac/Umre Finansmanı Nedir?
 Kuveyt Türk Hac/Umre Finansmanı, kutsal topraklara yönelik ziyaretlerinizi nakit sorunu olmaksızın gerçekleştirmenizi sağlamaya yönelik bir destektir. Finansman desteği, T.C. Diyanet İşler Başkanlığı veya tur operatörüne hac/umre hizmetinden dolayı yapılması gereken ödemeleri kapsar.
 Hac/Umre Finansmanına Nasıl Başvurulur?
@@ -87,7 +87,7 @@ Finansman Tutarı | Vade | Kâr Oranı | Taksit Tutarı | Toplam Masraflar | Ayl
 Hac/Umre Finansmanı İçin Hangi Kanallardan Başvuru Yapılabilir?
 Hac/Umre Finansmanı’ndan yararlanmak için size en yakın Kuveyt Türk şubesini ziyaret edebilirsiniz.
 Kutsal toprakları ziyaret etme hayaliniz ile aranızdaki finansal sorunları aşmak için hemen finansman desteğine başvurun!"
-0213-8e662b576a6b,T.O.M. Katılım Bankası A.Ş.,https://tombankhadi.com/cok-kazananlar-kulubu-kampanya/a101lerde-meyve-sebze-alisverislerinde-10-nakit-iade,,,,,,,,,"A101’lerde meyve sebze alışverişlerinde %10 nakit iade! 
+0213-8e662b576a6b,T.O.M. Katılım Bankası A.Ş.,https://tombankhadi.com/cok-kazananlar-kulubu-kampanya/a101lerde-meyve-sebze-alisverislerinde-10-nakit-iade,alisveris_puani,,,,,,250,2026-12-31,"A101’lerde meyve sebze alışverişlerinde %10 nakit iade! 
                 
         
                     
@@ -141,7 +141,7 @@ Kutsal toprakları ziyaret etme hayaliniz ile aranızdaki finansal sorunları a�
                                 
                             
                             A101’lerde süt ürünleri harcamalarında %50 Hediye Bakiye kazan!"
-0203-271c2684d15c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/taksitliocom-alisveris-finansmani,,,,,,,,,"Albaraka Türk ve Taksitlio.com İş Birliği ile İhtiyaçlarınızı Ertelemeden Avantajlı Alışveriş Finansmanı Fırsatı!
+0203-271c2684d15c,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/taksitliocom-alisveris-finansmani,ihtiyac_finansmani,"2,99",6,150000,"0,5",hayır,,,"Albaraka Türk ve Taksitlio.com İş Birliği ile İhtiyaçlarınızı Ertelemeden Avantajlı Alışveriş Finansmanı Fırsatı!
 Türkiye’de katılım bankacılığının öncüsü Albaraka Türk olarak, finansal çözümlerimizi hayatınızın her alanına ulaştırma misyonumuz çerçevesinde çalışmalarımızı sürdürüyoruz. Bu kapsamda, Türkiye'nin önde gelen fiziksel perakende noktalarını bir araya getiren Taksitlio.com ile gerçekleştirdiğimiz güçlü iş birliği sayesinde, alışverişlerinizi kolaylıkla finanse etme imkânı sunuyoruz.
 Kredi kartı limitlerine takılma endişesi yaşamadan, nakit paranızı kullanma zorunluluğu olmaksızın; elektronikten mobilyaya, beyaz eşyadan küçük ev aletlerine kadar yüzlerce mağazada binlerce ürüne, uygun kâr oranları ve esnek vade seçenekleriyle anında sahip olabilirsiniz.
 Taksitlio.com Alışveriş Finansmanı Nedir?
@@ -172,7 +172,7 @@ Görüşmeyi Sonlandır
 Görüntülü Görüşme Talep Et 🖥️
 Yapmış olduğunuz görüşmeyi değerlendirebilir misiniz?
 Merhaba, ben Alba! Size nasıl yardımcı olabilirim?"
-0205-a323f782dfd5,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart,,,,,,,,,"Ödemelerinizi kolaylaştırmak mı istiyorsunuz? Şubelerimizden hemen Sağlam Kart başvurunuzu gerçekleştirerek alışveriş yükünüzü hafifletin!
+0205-a323f782dfd5,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart,kart,,,,,,,,"Ödemelerinizi kolaylaştırmak mı istiyorsunuz? Şubelerimizden hemen Sağlam Kart başvurunuzu gerçekleştirerek alışveriş yükünüzü hafifletin!
 Sağlam Kart Nedir?
 Sağlam Kart; sağlık ve eğitim harcamalarınız için vade farksız 5 taksit seçeneğinden yararlanabileceğiniz Kuveyt Türk kredi kart ürünüdür.
 Sağlam Kart Nasıl Alınır?
@@ -278,7 +278,7 @@ Banka ve Kredi Kartları Hakkında Yönetmelik ve Bankacılık uygulamamız gere
 - Bilgisayar donanım, yazılım ve hizmet alımlarında ve THY ile yurtiçi bilet alımlarında ödeme esnasında belirtilen seçenekler dahilinde en fazla 6; elektrik ekipman ve elektronik eşya alımında en fazla 4 taksit yapılabilir.
 - Yasal düzenlemeler gereği; telekomünikasyon, doğrudan pazarlama ile ilgili harcamalar, yurt dışında yapılan harcamalar ve yemek, gıda, alkollü içecek, akaryakıt, fatura ödemeleri, sigorta ödemeleri, vergi ödemeleri, kozmetik, ofis malzemesi ve kuyum harcamaları, hediye kart, hediye çeki, havayolları, seyahat acenteleri, taşımacılık ve benzeri şekillerde herhangi somut bir mal veya hizmeti içermeyen ürünlerin alımları sonradan taksitlendirme uygulamasına dahil değildir.
 - Mevzuatın öngördüğü taksit sayılarının üzerinde taksitlendirme yapılamayacaktır."
-0209-94ec1cab6486,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari/pazaramada-6-taksit,,,,,,,,,"Pazarama'da 6 Taksit
+0209-94ec1cab6486,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari/pazaramada-6-taksit,kart,,,,,,,2026-08-31,"Pazarama'da 6 Taksit
 Pazarama'da 6 Taksit
 Kampanya Dönemi
 11-08-2026
@@ -294,7 +294,7 @@ Kampanya Koşulları:
 - Bireysel kartlar için uygulanan azami taksit sayısı yasal düzenlemelere göre farklılık gösterebilmektedir.
 - Kampanya, Bankacılık Düzenleme ve Denetleme Kurulu tarafından taksit yasağı kapsamında yer almayan ürünlerde geçerlidir. BDDK tarafından yayınlanan kredi kartları taksit sınırlaması kapsamında, satılan ürünlere göre taksit geçerli olmayabilir veya taksit sayıları değişiklik gösterebilir. Bireysel kredi kartlarıyla gerçekleştirilecek basılı ve külçe altın alımına ilişkin kuyum, telekomünikasyon, doğrudan pazarlama ile ilgili harcamalar, yurt dışında yapılan harcamalar ve yemek, gıda, alkollü içecek, akaryakıt, kozmetik, ofis malzemesi ile hediye kart, hediye çeki ve benzeri şekillerde herhangi somut bir mal veya hizmeti içermeyen ürünlerin alımlarında taksit uygulanamaz.
 - Bankamız kampanya koşullarını değiştirme ve kampanyayı durdurma hakkına sahiptir."
-0211-cb5067a35e8f,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-secili-e-ticaret-alisverislerinize-2000-tlye-varan-parafpara,,,,,,,,,"Paraf ile Seçili E-Ticaret Alışverişlerinize 2.000 TL'ye varan ParafPara!
+0211-cb5067a35e8f,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/paraf-ile-secili-e-ticaret-alisverislerinize-2000-tlye-varan-parafpara,alisveris_puani,,,,,,2000,2026-08-31,"Paraf ile Seçili E-Ticaret Alışverişlerinize 2.000 TL'ye varan ParafPara!
 Kampanyaya Nasıl Katılırım?
 Kampanyaya katılmak için “KAZAN” yazıp 6026’ya SMS gönderilmesi gerekmektedir.
 Kampanya katılımının başarılı sayılabilmesi için banka sisteminde adınıza tanımlı telefon numarasından katılım sağlanmalıdır.
@@ -319,7 +319,7 @@ ParafPara Yüklenmesi Ne Zaman Yapılır?
 - Kampanya kapsamında kazanılan ParafPara’lar, kampanyayı takip eden ayın 10‘unda, kampanya koşullarını sağlayan müşterilerimizin işlem yaptığı ve kullanıma açık kartına yansıtılacaktır.
 - Kazanılan ParafPara’lar puan kullanımına uygun tüm Paraf üye iş yerlerinde kullanılabilecektir.
 - Kullanılmayan ParafPara’lar 15 Ekim 2026 tarihinde geri alınacaktır."
-0203-4a4c087b579a,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/albarakada-masraflara-son,,,,,,,,,"Kampanya Başlangıç ve Bitiş
+0203-4a4c087b579a,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/albarakada-masraflara-son,diger,,,,,,,2026-12-31,"Kampanya Başlangıç ve Bitiş
 01.01.2020 - 31.12.2026
 01.01.2020 - 31.12.2026
 Albaraka Türk olarak dijitalleşen dünyada müşterilerimizin finansal ihtiyaçlarına çözüm üretmenin tutkusuyla masrafsız bir bankacılık sunuyoruz.
@@ -362,7 +362,7 @@ Aylık 10.000 TL’ye kadar
 Günlük 200.000 TL'ye kadar ve aylık limit olmadan gerçekleştirilebilir.
 - Kredi kartı borç ödeme işlemleri
 Limit olmadan gerçekleştirilebilir."
-0206-32cbb264a824,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/ayin-hayata-katilani.aspx,,,,,,,,,"Ayın Hayata Katılanı
+0206-32cbb264a824,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/ayin-hayata-katilani.aspx,diger,,,,,,,,"Ayın Hayata Katılanı
 Bankacılık işlemlerini tamamla, ayın ayrıcalıklı müşterileri arasında yerini al.
 Ayın Hayata Katılanı; Türkiye Finans müşterilerinin bankacılık deneyimini daha avantajlı, etkileşimli ve sürdürülebilir hale getirmek için tasarlanmış bir sadakat programıdır.
 Her ay belirlenen işlemleri tamamlayan müşterilerimiz, Ayın Hayata Katılanı olarak özel kampanya ve avantajlardan yararlanabilir.

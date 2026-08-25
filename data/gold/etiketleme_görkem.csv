@@ -1,5 +1,5 @@
 ﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0206-58784db119eb,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/arsa-finansmani.aspx,finansman,3.8,84,,500,hayir,,,"Arsa Finansmanı (Arsa Kredisi)*
+0206-58784db119eb,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/arsa-finansmani.aspx,finansman,3.80,84,,0.50,hayır,,,"Arsa Finansmanı (Arsa Kredisi)*
 Yatırım amaçlı arsa satın almak isteyen bireysel kişiler için sağlanan finansman (bankacılık kanununa göre kredi) desteğidir.
 Katılım bankacılığı prensipleri çerçevesinde satın almak istediğiniz gayrimenkul Türkiye Finans tarafından satın alınır, istenilen vadeye göre üzerine kâr payı ilave edilerek tarafınıza satışı yapılır.
 EN YAKIN ŞUBE HESAPLAMA ARAÇLARI- Nüfus cüzdanı veya ehliyet,
@@ -44,7 +44,7 @@ Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelli�
 Hayat Finans Banka Kartları ile bankacılık işlemlerinizi, temassız özelliğimizle de alış verişlerinizi hızlıca gerçekleştirebilirsiniz.
 Çerezleri Yönet
 Size en iyi deneyimi sağlamak ve hizmetlerin tercihlerinize göre kişiselleştirilmiş içerikler olarak sunulabilmesi için web sitemizde çerezler ve benzeri takip teknolojileri kullanılmaktadır. Daha fazla bilgi için Çerez Aydınlatma Metni’ni inceleyebilirsiniz."
-0206-51a8d9cdce06,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/ihtiyac-finansmani/Sayfalar/ihtiyac-finansmani.aspx,ihtiyac_finansmani,3.8,36,,0.5,hayir,,,"İhtiyaç Finansmanı (İhtiyaç Kredisi)*
+0206-51a8d9cdce06,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/bireysel/ihtiyac-finansmani/Sayfalar/ihtiyac-finansmani.aspx,ihtiyac_finansmani,3.80,36,,0.50,hayır,,,"İhtiyaç Finansmanı (İhtiyaç Kredisi)*
 Herkesin İhtiyacı Farklı, Finansmanı Aynı!
 İhtiyaç finansmanına şubelerden, mobilden, internet şubesinden veya çağrı merkezinden başvur, Türkiye Finans'ın sunduğu avantajlardan sen de yararlan.
 Türkiye Finans İhtiyaç Finansmanı (İhtiyaç Kredisi)* Sizinle!
@@ -146,7 +146,7 @@ Bayide Finansman’ın Avantajları Nelerdir?
 Bayide Finansman Nasıl Kullanılır?
 Bayide Finansman’ın avantajlarından yararlanabilmek için alışverişlerinizde anlaşmalı olduğumuz iş yerlerini tercih etmeniz yeterli. Finansman talep etmeniz hâlinde iş yerindeki yetkili aracılığıyla “Bayide Finansman Platformu” üzerinden başvurunuz yapılır. Anlık değerlendirme süreci ile hızlı bir şekilde başvurunuza cevap gelir. Başvurunuz onaylandıktan sonra ödemeniz finansman ile sağlanır. Böylece ek ödeme yapmadan kolayca alışverişinizi tamamlayabilirsiniz.
 Albaraka Türk Bayide Finansman’ı hemen kullanın, ihtiyaçlarınızı kolayca karşılayın, ödemeyi ise rahat rahat yapın."
-0214-3ce33cd651ce,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/konut-finansmani,konut_finansmani,,,,,hayir,,,"Dünya Katılım Konut Finansmanı Nedir?
+0214-3ce33cd651ce,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/konut-finansmani,konut_finansmani,,,,,hayır,,,"Dünya Katılım Konut Finansmanı Nedir?
 Konut finansmanı, ev sahibi olmak isteyen kişilere katılım esasları ile finansman çözümleri sunan bir üründür. Dünya Katılım Bankası olarak, katılım esaslı esnek seçeneklerimizle ev sahibi olma sürecinizin her adımında sizlere destek oluyoruz.
 Finansal Hesaplama
 *Tahsis ücreti müşteriden peşin olarak tahsil edilecektir. Ödenecek toplam tutar finansman tahsis ücretini içermemektedir. Bu tablo bilgi amaçlıdır. Dünya Katılım Bankası A.Ş.'ni hiçbir şekilde taahhüt altına sokmaz.
@@ -383,7 +383,7 @@ Ortaklığa Dayalı Kira Sertifikası
 Tasarruflarınızı; Emlak Katılım’ın, katılım finans prensiplerine uygun olarak profesyonelce yönettiği Özel Fon Hesabı Havuzlarında değerlendirebilirsiniz.
 Borsa İstanbul A.Ş.
 Borsa İstanbul'un katılım finansa dair detaylı bilgiler sunduğu sayfaya ulaşmak için tıklayınız."
-0203-7ab986a92e91,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-musterilere-ozel-pratik-finansman-kart,kart,0,36,150000,,,,,"Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!
+0203-7ab986a92e91,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/dijital-musterilere-ozel-pratik-finansman-kart,ihtiyac_finansmani,0,36,150000,,,,2026-12-31,"Vade farksız 40.000 TL ve uygun oranlı hoş geldin finansmanı Albaraka'da!
 Beyaz eşyadan eğitim ve sağlık harcamalarına, ev eşyalarına kadar birçok ihtiyacınız için Pratik Finansman Kart yanınızda!
 Siz de Albaraka Mobil’de yer alan “Müşteri Olmak İstiyorum” butonuna tıklayarak görüntülü görüşme ile hemen müşterimiz olun, vade farksız ve uygun oranlı Pratik Finansman Kart ’ta ile daha birçok ayrıcalıktan yararlanın!
 - Pratik Finansman Kart; Albaraka Türk tarafından sunulan tüm bireysel ihtiyaçlarınıza hemen çözüm sağlayan kart formunda alışveriş finansmanıdır. Pratik finansman Kartınızı kullanabileceğiniz başlıca sektörler; Mobilya ve Beyaz Eşya, Oto Servis ve Bakım, Teknoloji Marketler, Ulaşım Bileti Alımı, Sağlık, Okul, Kırtasiyedir.

@@ -102,6 +102,17 @@ Aynı dosyalara yazmak, 15 Ağustos'ta doldurulmuş 60 kaydı ezme riski taşır
 Ayrı dosya, `derle`nin ikisini birden okumasıyla birleşir; etiketleyen ise
 yalnız yeni satırları görür, eskileri tekrar gözden geçirmek zorunda kalmaz."""
 
+EK_UYUM_ONEK = EK_ONEK + "uyum_"
+"""Genişletme turunun ortak bloğu — `derle` bunu da okumak ZORUNDA.
+
+25 Ağustos'ta ölçüldü: bu ön ek `derle` yolunda yoktu ve genişletme turunun
+5 ortak kaydı altın sete hiç girmiyordu (93 kayıt derlendi, 98 değil). Kaybolan
+kayıtlar setin en güvenilirleriydi — dördü birden etiketleyip çoğunlukla
+uzlaştığı kayıtlar. Kişisel paylar zaten okunuyordu, açık yalnız ortak bloktaydı.
+
+Ölçüm ön eki (`uyum_hesapla`) bilerek AYRI bırakıldı: «etiketleme uzlaşmamız
+%X» cümlesi tek bir turun oranıdır, iki turu harmanlamak o sayıyı bozar."""
+
 UYUM_ADET = 5
 """Örneklemin ilk 5'ini DÖRDÜ BİRDEN etiketler (H-02).
 
@@ -636,13 +647,18 @@ def uyum_uzlasisi(kisiler: tuple[str, ...] = KISILER) -> tuple[list[dict[str, An
 
     Çoğunluk yoksa (2-2 bölünme gibi) o alan YAZILMAZ. Bölünmüş bir alanı
     rastgele bir tarafa yazmak, cevap anahtarına yazı-tura sokmak olurdu.
+
+    HER TURUN ortak bloğu okunur (bkz. `EK_UYUM_ONEK`); kayıtlar kampanya
+    kimliğiyle ayrıldığı için turlar birbirine karışmaz.
     """
-    dosyalar = uyum_dosyalari(kisiler)
+    dosyalar: list[list[tuple[int, str, dict[str, Any], bool]]] = []
+    for onek in (UYUM_ONEK, EK_UYUM_ONEK):
+        dosyalar.extend(uyum_dosyalari(kisiler, onek).values())
     if not dosyalar:
         return [], []
 
     tablo: dict[str, dict[str, list[Any]]] = defaultdict(lambda: defaultdict(list))
-    for satirlar in dosyalar.values():
+    for satirlar in dosyalar:
         for _, kimlik, etiketler, _dokunuldu in satirlar:
             if not kimlik:
                 continue

@@ -1,4 +1,4 @@
-﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
 0206-d2ea9ee0f388,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ihtiyac-finansmani-kampanyasi.aspx,ihtiyac_finansmani,0,3,50000,0.5,hayır,11000,2026-08-31,"Mobilden Türkiye Finanslı Ol, Kâr Paysız 50.000 TL'ye Varan İhtiyaç Finansmanını Kaçırma!
 Şimdi mobilden Türkiye Finanslı olanlar
 %0 kar payı ile 50.000 TL'ye varan İhtiyaç Finansmanından yararlanıyor.
@@ -169,7 +169,7 @@ Banka gerekli gördüğü durumlarda kefil ve ek belge isteme hakkına sahiptir.
 - Şubenizden yapmış olduğunuz finansman başvurunuzun sonucunu Şubenizden,
 - İnternet/Mobil Şubenizden yapmış olduğunuz başvuru sonucunuzu ""Başvuru İzleme"" seçeneğinden öğrenebilirsiniz.
 - Kurumsal web sitemiz üzerinden ve/veya SMS ile yapacağınız başvurularınızın sonuçları hemen SMS olarak bildirilecektir. Başvurunuzun olumsuz sonuçlandırılması durumunda Banka tarafından sisteme kayıtlı e-mail adresinize veya cep telefonunuza bildirim yapılacaktır."
-0205-d7c603458fb1,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/seyahat-finansmani,diger,4.82,36,,0.5,hayır,,,"Gerek yurt içi gerekse yurt dışı seyahatler için bütçe oluşturmak kimi zaman zorlayıcı olabilmektedir. Böyle bir sorunla karşılaştığınızda, en hızlı çözüm niteliği taşıyan Kuveyt Türk Seyahat Finansmanı’na başvurabilirsiniz. Eğer Kuveyt Türk müşterisi değilseniz, hızlı ve pratik bir şekilde Kuveyt Türk Mobil ile Kuveyt Türk müşterisi olabilirsiniz.
+0205-d7c603458fb1,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/seyahat-finansmani,ihtiyac_finansmani,4.82,36,,0.5,hayır,,,"Gerek yurt içi gerekse yurt dışı seyahatler için bütçe oluşturmak kimi zaman zorlayıcı olabilmektedir. Böyle bir sorunla karşılaştığınızda, en hızlı çözüm niteliği taşıyan Kuveyt Türk Seyahat Finansmanı’na başvurabilirsiniz. Eğer Kuveyt Türk müşterisi değilseniz, hızlı ve pratik bir şekilde Kuveyt Türk Mobil ile Kuveyt Türk müşterisi olabilirsiniz.
 Seyahat Finansmanı Nedir?
 Kuveyt Türk Seyahat Finansmanı, hem iş hem de tatil amaçlı gezileriniz için gereken desteğe kavuşmanızı mümkün kılar. Seyahat acentelerine yapacağınız ödemeleri, söz konusu finansman desteği ile rahatça gerçekleştirebilirsiniz.
 Seyahat Finansmanı’na Nasıl Başvurulur?

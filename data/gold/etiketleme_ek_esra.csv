@@ -1,5 +1,5 @@
-﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0206-0a6668cc5df3,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/hesaplama-araclari/Sayfalar/finansman-odeme-plani.aspx?financeID=16,,,,,,,,,"Finansman Hesaplama Aracı
+kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0206-0a6668cc5df3,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/hesaplama-araclari/Sayfalar/finansman-odeme-plani.aspx?financeID=16,diger,,,,,,,,"Finansman Hesaplama Aracı
 Finansman(Kâr Oranı: %)
 Finansman Tutarı | Taksit Tutarı | Vade(ay) | Kâr Oranı | Tahsis Ücreti | İpotek Tesis ücreti | Ekspertiz Ücreti | Toplam Geri Ödenen Tutar |
 Dijital İhtiyaç finansmanı örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Ödeme tablosu hesaplamasında yer alan kâr payı oranı; Finansman Güvence Sigortası’nın finansman başvurusu ile birlikte alınması 300.000 TL'ye kadar kullandırılacak finansmanlar için geçerlidir. Kâr Payı Oranları , finansman vadesi ve müşterinin kkb skoruna göre değişiklik gösterebilmektedir Finansman tutarı; 50.000TL’ye kadar olması durumunda maksimum vade 36 ayı 50.000 - 100.000 TL’ye kadar olması durumunda 24 ayı, 100.000 TL’den fazla olması durumunda 12 ayı aşamaz. Tahsis ücreti finansman fiyatlamasının bir parçasıdır. Tahsis ücreti vergiler hariç finansman tutarının binde 5'i oranındadır. Banka finansman başvurularını serbestçe değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. İnternet Şubesi, Mobil Şube ve kurumsal web sitesi ile yapılan başvurularda geçerli oranlardır. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz.
@@ -17,7 +17,7 @@ Kâr Payı Oranları , finansman vadesi ve müşterinin KKB skoruna göre deği�
 40.000 TL. baz alınarak oluşturulan örnek ödeme tablosunda yasal vergiler toplam komisyon tutarına dahildir. Maliyet tablosu hesaplamasında yer alan kar oranları; Yedek Hesap, Finansör, Kasko, Finansman Güvence Sigortası, Otomatik Fatura Ödeme Talimatı ürünlerinin tamamının finansman başvurusu ile birlikte alınması şartıyla uygulanmaktadır. İlgili ürünlere halihazırda sahip olma veya ilgili ür
 
 [... 32868 karakter kırpıldı — tam metin: data/gold/metinler/<kampanya_id>.txt ...]"
-0211-56a6a96b0516,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara-hediye,,,,,,,,,"Market Alışverişlerinize 800 TL ParafPara Hediye!
+0211-56a6a96b0516,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/market-alisverislerinize-800-tl-parafpara-hediye,alisveris_puani,,,,,,800,2026-08-31,"Market Alışverişlerinize 800 TL ParafPara Hediye!
 Market Alışverişlerinize 800 TL ParafPara Hediye!
 Kampanyaya Nasıl Katılırım?
 Kampanyaya katılmak için “MARKET” yazıp 6026’ya SMS gönderilmesi gerekmektedir.
@@ -46,7 +46,7 @@ ParafPara Yüklenmesi Ne Zaman Yapılır?
 - Kazanılan ParafPara’lar puan kullanımına uygun tüm Paraf üye iş yerlerinde kullanılabilecektir.
 - Kullanılmayan ParafPara’lar 15 Ekim 2026 tarihinde geri alınacaktır.
 Türkiye Emlak Katılım Bankası A.Ş. kampanyayı dilediği zaman durdurma ve/veya kampanya koşullarını değiştirme hakkına sahiptir."
-0210-963c04bc483b,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vakif-katilimli-olanlara-tabiiden-premium-uyelik,,,,,,,,,"SİZE ÖZEL ÇÖZÜMLER
+0210-963c04bc483b,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vakif-katilimli-olanlara-tabiiden-premium-uyelik,yeni_musteri,,,,,,,2026-11-30,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -63,7 +63,7 @@ Daha sonrasında telefon, tablet gibi cihazlardan ilgili aboneliğe giriş yapı
 Tabii Premium üyelik kampanyasında sunulan kod tek kullanımlıktır ve her müşteri tarafından yalnızca bir kez kullanılabilir. Kampanyaya katılım ilk 1.000 kişi için geçerlidir.
 Kazanılan Premium üyelik kodlarının kullanım süresi bir aydır. Bu tarihten sonra kullanılmayan kodlar geçersiz olacaktır.
 Vakıf Katılım Bankası AŞ ve tabii, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0205-8f21909fe25c,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart-kampus,,,,,,,,,"Sağlam Kart Kampüs Nedir?
+0205-8f21909fe25c,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart-kampus,kart,,,,,,,,"Sağlam Kart Kampüs Nedir?
 Sağlam Kart Kampüs, 18-25 yaş arasındaki üniversite öğrencilerinin finansal bağımsızlığını destekleyen ücretsiz bir kredi kartıdır. Kart ücreti ödemeden, Sağlam Kart Kampüs ile eğitim ve sağlık harcamalarına 5 taksit yapabilir, kampanyalara katılarak altın puan kazanabilirsin. Hayatının en heyecan verici döneminde Sağlam Kart Kampüs’ten yararlanmak için başvurunu buradan hemen gerçekleştirebilirsiniz.
 Sağlam Kart Kampüs Avantajları
 Sağlam Kart Kampüs, Kuveyt Türk müşterilerine aşağıdaki avantajları sağlar:
@@ -111,7 +111,7 @@ Kuveyt Türk Mobil üzerinden,
 Asistans Hizmetleri
 Aracınızla yolda mı kaldınız, çilingire mi ihtiyacınız var Sağlam Kart her zaman yanınızda!
 Sağlam Kart sahipleri; ihtiyaç duyacakları her anda konut yardımı, yol yardımı, seyahat yardımı, concierge hizmetleri gibi birçok konuda 444 0 123 numaralı Müşteri İletişim Merkezi'mize bağlandıktan sonra asistans destek hattımıza ulaşabilir ve hizmet alabilirler. Detaylı bilgi için tıklayınız."
-0213-c754cef91758,T.O.M. Katılım Bankası A.Ş.,https://tombankhadi.com/kampanyalar/ucak-bileti-alimlarinda-ayda-3-500-tl-kazan,,,,,,,,,"Uçak bileti alımlarında ayda 3.500 TL kazan!
+0213-c754cef91758,T.O.M. Katılım Bankası A.Ş.,https://tombankhadi.com/kampanyalar/ucak-bileti-alimlarinda-ayda-3-500-tl-kazan,alisveris_puani,,,,,,3500,2026-08-31,"Uçak bileti alımlarında ayda 3.500 TL kazan!
 Hadi’de birikimlerini değerlendirenler, hep kazanır!
 Özel Bankacılık Hadi birikim segmentine göre uçak bileti alımlarında %22.5’e varan iade ile ayda 3.500 TL’ye kadar iade kazanman mümkün!
 Hadi Özel Bankacılık ayrıcalıkları hep sizinle!
@@ -133,7 +133,7 @@ Kampanya Detayları:
 - Kampanya kapsamında aynı gün aynı iş yerinden yapılan ilk işlem kampanyaya dahildir.
 - Kampanya kapsamındaki alışverişlerin iptal/iade olması durumlarında, nakit iade kazanılmaz. Önceki dönemden bir kazanım var ise, kazanım tutarı kredi kartına borç olarak yansıtılır.
 - T.O.M. Bank, kredi kartı limiti belirleme, kampanyayı durdurma, iptal etme veya koşullarında değişiklik yapma hakkını saklı tutar."
-0203-629c9e572113,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/albaraka-sadakat-programi,,,,,,,,,"Bankamızla kurduğunuz güçlü bağı ödüllendirmek için sizi özel bir dünyaya davet ediyoruz. Albaraka Sadakat Programı, bankacılık işlemlerinizden kazandığınız puanlarla sadakat seviyenizi yükselttiğiniz, her adımda ayrıcalıklarla dolu bir deneyim sunan yepyeni bir programdır.
+0203-629c9e572113,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/albaraka-sadakat-programi,diger,,,,,,,,"Bankamızla kurduğunuz güçlü bağı ödüllendirmek için sizi özel bir dünyaya davet ediyoruz. Albaraka Sadakat Programı, bankacılık işlemlerinizden kazandığınız puanlarla sadakat seviyenizi yükselttiğiniz, her adımda ayrıcalıklarla dolu bir deneyim sunan yepyeni bir programdır.
 Sadakat Program Nedir?
 Her ay size özel olarak tanımlanan görevleri tamamladıkça sadakat puanları kazanırsınız.
 Ay sonunda elde ettiğiniz toplam puan, hangi sadakat segmentinde yer aldığınızı belirler.
@@ -185,7 +185,7 @@ Görüşmeyi Sonlandır
 Görüntülü Görüşme Talep Et 🖥️
 Yapmış olduğunuz görüşmeyi değerlendirebilir misiniz?
 Merhaba, ben Alba! Size nasıl yardımcı olabilirim?"
-0209-627b6d4a57ef,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/kartlar/banka-karti,,,,,,,,,"Banka Kartı Nedir?
+0209-627b6d4a57ef,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/kartlar/banka-karti,kart,,,,,,,,"Banka Kartı Nedir?
 Banka kartı, Bankamız tarafından müşterilere açılan cari hesaplara tanımlanan ve günlük belirlenen limitler dâhilinde alışveriş ve para çekme işlemi yapılmasına olanak sağlayan bir ödeme aracıdır.
 Neden Banka Kartı Almalıyım?
 - Temassız özelliği bulunan kartlar ile 2.500 TL ve altındaki alışveriş işlemleri şifre tuşlamaya gerek kalmadan hızlı ve güvenli şekilde gerçekleştirilebilmektedir.
@@ -214,7 +214,7 @@ Kartınızın bağlı olduğu ana hesabınızda bakiye olması durumunda kartın
 Herhangi bir başvuru işlemine gerek olmadan, yurt dışında kartınızın üzerindeki logonun bulunduğu ATM’lerden para çekebilir ve alışveriş yapabilirsiniz. Yurt dışındaki ATM’lerde kartınıza bağlı ana hesap dışındaki hesaplar görüntülenemez. Bu nedenle banka kartınızla yurt dışındaki ATM’lerden para çekebilmek, alışveriş yapabilmek için bakiyenizin bulunduğu hesap banka kartınıza bağlı ana hesap olmalıdır.
 İnternet Şube, Katılım Mobil ve 0850 220 5000 numaralı Müşteri İletişim Merkezi aracılığıyla şifre oluşturulabilir
 Banka kartı şifrenizi unutmanız halinde 0850 220 5000 numaralı Müşteri İletişim Merkezimiz aracılığı ile şifrenizi değiştirebilirsiniz."
-0206-d6bcd057e40e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/masraflara-degil-hayata-katilin-kampanyasi.aspx,,,,,,,,,"Masrafsızlık Zaten Cepte Dahası Sizi Beklemekte
+0206-d6bcd057e40e,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/masraflara-degil-hayata-katilin-kampanyasi.aspx,diger,,,,,,,,"Masrafsızlık Zaten Cepte Dahası Sizi Beklemekte
 Avantajlı Dijital Bankacılık Dünyasına Bekliyoruz
 Birlikte kazanan, kazandığını paylaşan bir bankada temel bankacılık işlemlerinde masraf olmaz, nasıl mı? Tabii ki Masrafsız 3’lü ile!
 Türkiye Finans’a Gelin; EFT, Havale ve FAST İşlemleriniz İçin Para Ödemeyin!

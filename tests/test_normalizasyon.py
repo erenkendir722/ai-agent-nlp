@@ -169,13 +169,49 @@ class TestTarih:
 class TestMasrafsizlik:
     @pytest.mark.parametrize(
         "girdi",
-        ["masraf alınmaz", "masrafsız", "Dosya masrafı yok!", "TAHSİS ÜCRETİ ALINMAZ"],
+        [
+            "finansman masrafı alınmaz",
+            "masrafsız ihtiyaç finansmanı",
+            "Dosya masrafı yok!",
+            "TAHSİS ÜCRETİ ALINMAZ",
+        ],
     )
     def test_masrafsiz(self, girdi: str) -> None:
         assert masrafsiz_mi(girdi) is True
 
+    @pytest.mark.parametrize(
+        "girdi",
+        ["masraf alınmaz", "masrafsız", "Masraf yok, kazanç var", "İşlemlerin Masrafsız!"],
+    )
+    def test_finansman_baglami_yoksa_none(self, girdi: str) -> None:
+        """«Masrafsız» NEYİN masrafsız olduğunu söylemez.
+
+        25 Ağustos ölçümü (altın set 98 kayıt): bu alan 16 yanlış pozitif
+        üretti ve hepsi finansman dışı bir ücretsizlikti — SMS, Lounge, ATM'den
+        para çekme, kart aidatı. Alan yalnız finansmanın tahsis/dosya masrafını
+        taşır (`docs/ETIKETLEME_KILAVUZU.md`), dolayısıyla finansman bağlamı
+        olmayan beyan bu alana YAZILMAZ. Bu testler önce `True` bekliyordu;
+        ölçüm o sözleşmenin yanlış olduğunu gösterdi.
+        """
+        assert masrafsiz_mi(girdi) is None
+
     def test_masrafli(self) -> None:
         assert masrafsiz_mi("Dosya masrafı alınır.") is False
+
+    @pytest.mark.parametrize(
+        "girdi",
+        [
+            "Tahsis ücreti, finansman tutarının %0,5'i kadardır.",
+            "Finansman tahsis ücreti %0,5 oranında tahsil edilecektir.",
+        ],
+    )
+    def test_ucretin_varligi_beyan_edilmisse_false(self, girdi: str) -> None:
+        """Ücretin VARLIĞINI bildiren yüklemler de bir beyandır.
+
+        Sistem bu kalıpları tanımadığı için 9 kayıtta hiçbir şey üretmiyordu;
+        etiketçiler aynı kayıtlara doğru şekilde «hayır» yazmıştı.
+        """
+        assert masrafsiz_mi(girdi) is False
 
     def test_belirsiz_none_doner(self) -> None:
         """None ile False farklıdır: None = bilgi yok, False = masraf var."""

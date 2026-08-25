@@ -263,7 +263,13 @@ def uzlastir(
         # makullüğünden geçer. Bu kapı olmadan kural katmanının elediği bir
         # değer LLM yolundan geri giriyordu (bkz. `deger_makul_mu`): eleme,
         # hatayı önlemek yerine kaynağını değiştiriyordu.
-        if not _makul_mu(alan_adi, sonuc, kayit.govde_metin):
+        from src.extraction.kural import dilim_turevi_mi  # döngüsel içe aktarım
+
+        tablo_turevi = durum == "kural" and dilim_turevi_mi(
+            alan_adi, sonuc, kayit.govde_metin
+        )
+
+        if not tablo_turevi and not _makul_mu(alan_adi, sonuc, kayit.govde_metin):
             sonuc = Alan.yok()
             durum = "elendi"
             rapor.elenen_alan_sayisi += 1
@@ -296,7 +302,12 @@ def uzlastir(
         # HİBRİTE UYGULANMAZ: iki katmanın aynı sonuca varması zaten daha güçlü
         # bir kanıttır; gereksiz LLM çağrısı hem yavaşlatır hem yeni bir hata
         # kaynağı açar.
-        elif durum == "kural" and yuklem is not None and sonuc.deger is not None:
+        elif (
+            durum == "kural"
+            and not tablo_turevi
+            and yuklem is not None
+            and sonuc.deger is not None
+        ):
             karar = yuklem.denetle(
                 alan_adi, sonuc.deger, sonuc.ham_ifade or "", kayit.govde_metin
             )
