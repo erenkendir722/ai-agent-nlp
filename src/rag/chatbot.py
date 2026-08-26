@@ -776,7 +776,156 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     )
 
 
+# Sorunun HANGİ ÖLÇÜTÜ sorduğunu yakalayan ipuçları — sıralı, ilk eşleşen kazanır.
+#
+# `arama_anahtari` ile aynı normalizasyona (ı→i, ü→u, küçük harf) tabidir;
+# ipuçları o yüzden noktasız yazılır.
+#
+# Sıra özeldir: «tahsis ücreti yok mu» sorusunda hem "ucret" hem "oran"
+# geçebilir; masraf önce denenir çünkü daha özgül bir istektir.
+_OLCUT_ETIKETLERI = {
+    "kar_payi_orani": "Kâr payı oranı",
+    "vade_ay_max": "Vade",
+    "finansman_tutari_max": "Finansman tutarı",
+    "odul_miktari": "Ek ödül",
+    "masrafsiz_mi": "Masraf",
+}
+"""Alan adı → kullanıcıya gösterilen ölçüt etiketi. Tek kaynak: iki yerde
+ayrı yazılırsa liste ile karşılaştırma farklı isim kullanmaya başlar."""
+
+_OLCUT_IPUCLARI: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("masrafsiz_mi", ("masrafsiz", "masraf", "ucret", "komisyon", "tahsis")),
+    ("vade_ay_max", ("vade", "kac ay", "kac taksit", "taksit sayisi", "en uzun sure")),
+    ("odul_miktari", ("odul", "hediye", "bonus", "puan iade", "para iade")),
+    ("finansman_tutari_max", ("ne kadar finansman", "ne kadar kredi", "azami tutar",
+                              "finansman tutari", "limit")),
+    ("kar_payi_orani", ("kar payi", "oran", "faiz")),
+)
+
+
+def _sorulan_olcut(soru: str) -> str | None:
+    """Soru belirli bir ölçüt soruyorsa o alanın adını döndürür.
+
+    NEDEN VAR — 26 Ağustos'ta ölçüldü: `_karsilastirma_cevabi` `soru`
+    parametresini alıyordu ama gövdesinde SIFIR kez kullanıyordu. Ne sorulursa
+    sorulsun aynı beş kriterlik döküm, aynı sırayla dönüyordu:
+
+        soru  : "En uzun vadeyi kim veriyor?"
+        cevap : "- Kâr payı oranı açısından ..."   ← ilk madde
+                "- Vade açısından ..."             ← sorulan şey, ikinci
+
+    Kullanıcı tek şey soruyor, beş cevap alıyordu ve sorduğu şey başta değildi.
+    Karşılaştırmanın kendisi doğruydu; sırası soruyla ilgisizdi.
+
+    Ölçüt bulunamazsa None döner ve cevap eski genel döküm biçimini korur —
+    «hangi banka daha iyi?» gibi ölçüt belirtmeyen sorular için doğrusu odur.
+    """
+    anahtar = arama_anahtari(soru)
+    for alan, ipuclari in _OLCUT_IPUCLARI:
+        if any(ipucu in anahtar for ipucu in ipuclari):
+            return alan
+    return None
+
+
+# LİSTE SORUSU İŞARETLERİ — «hangi bankalar X sunuyor?» bir SIRALAMA sorusu değil.
+#
+# 26 Ağustos'ta ölçüldü: bu sorular karşılaştırma niyetine düşüyor (doğrusu da
+# odur, korpusun tamamına sorulurlar) ama cevap SIRALAMA biçiminde dönüyordu:
+#
+#     soru  : "Hangi bankalar konut finansmanı sunuyor?"
+#     cevap : "- Kâr payı oranı açısından Albaraka Türk daha avantajlıdır..."
+#
+# Kullanıcı liste istiyor, "kim kazandı" cevabı alıyordu. Niyet DEĞİŞMİYOR
+# (`karsilastirma` kalıyor, `eval/chatbot_sorulari.yaml` de öyle bekliyor);
+# değişen yalnız cevabın biçimi.
+_LISTE_IPUCLARI = (
+    "hangi bankalar", "bankalar hangi", "hangi bankalarin", "bankalari hangi",
+    "bankalar hangileri", "hangileri",
+)
+
+# Bunlardan biri geçiyorsa soru liste değil KIYAS istiyor: «en uzun vadeyi
+# hangi bankalar veriyor?» sıralama sorusudur, listeye çevrilirse ölçüt kaybolur.
+_SIRALAMA_ISARETLERI = (
+    "daha ", "en ", "avantajli", "karsilastir", "kiyasla", "hangisi", " vs ", "fark",
+)
+
+
+def _liste_sorusu_mu(soru: str) -> bool:
+    anahtar = arama_anahtari(soru)
+    if not any(ipucu in anahtar for ipucu in _LISTE_IPUCLARI):
+        return False
+    return not any(isaret in anahtar for isaret in _SIRALAMA_ISARETLERI)
+
+
+def _liste_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
+    """«Hangi bankalar X sunuyor?» — banka listesi, banka başına bir kanıt.
+
+    SÜZGEÇ: banka ve ürün süzgeci çağrıdan ÖNCE uygulanmış oluyor
+    (`sor` içinde `_bankalari_bul` + `_urun_filtrele`). Burada yalnız sorulan
+    ÖLÇÜT süzülür — «masrafsız kampanya sunan bankalar» sorusunda ürün süzgeci
+    daralmaz, çünkü masrafsızlık bir ürün türü değil koşuldur; süzülmezse dokuz
+    bankanın hepsi listelenirdi.
+
+    SAYI YAZILMAZ. Giriş cümlesi `Koken.DUZ`, liste `Koken.YAPISAL`; ikisinde de
+    rakam yok. Kampanya BAŞLIĞI da yazılmıyor — başlıklar «500 TL Hediye» gibi
+    sayı taşıyor ve kalkanın yapısal denetiminden geçmesi gerekirdi. Tür etiketi
+    (enum karşılığı) sayısızdır, güvenlidir.
+    """
+    odak = _sorulan_olcut(soru)
+    if odak == "masrafsiz_mi":
+        uygun = [k for k in kayitlar if k.masrafsiz_mi]
+    elif odak is not None:
+        uygun = [k for k in kayitlar if getattr(k, odak, None) is not None]
+    else:
+        uygun = list(kayitlar)
+
+    if not uygun:
+        return Cevap(
+            parcalar=[CevapParcasi(
+                "Bu ölçüte uyan bir kampanya veri setinde bulunmuyor.",
+                Koken.DUZ,
+            )],
+            niyet=Niyet.KARSILASTIRMA,
+        )
+
+    # Banka başına EN DOLU kayıt: kanıt olarak en çok alan taşıyanı göster.
+    banka_kayit: dict[str, KampanyaKaydi] = {}
+    for kayit in uygun:
+        mevcut = banka_kayit.get(kayit.banka_adi)
+        if mevcut is None or kayit.doluluk_orani > mevcut.doluluk_orani:
+            banka_kayit[kayit.banka_adi] = kayit
+
+    secilen = [banka_kayit[ad] for ad in sorted(banka_kayit)]
+
+    odak_etiket = "Masraf" if odak == "masrafsiz_mi" else _OLCUT_ETIKETLERI.get(odak)
+    giris = (
+        f"Sorduğunuz ölçüte (**{odak_etiket}**) uyan bankalar:"
+        if odak_etiket
+        else "Sorunuza uyan bankalar:"
+    )
+
+    satirlar = []
+    for kayit in secilen:
+        tur = tur_etiketi(kayit.urun_turu or kayit.kampanya_turu) or "Kampanya"
+        satirlar.append(f"- **{kayit.banka_adi}** — {tur}")
+
+    return Cevap(
+        parcalar=[
+            CevapParcasi(giris, Koken.DUZ),
+            CevapParcasi("\n".join(satirlar), Koken.YAPISAL),
+        ],
+        niyet=Niyet.KARSILASTIRMA,
+        kaynaklar=[_kaynakca(k) for k in secilen],
+        kullanilan_kayitlar=secilen,
+        uyarilar=uyarilar(secilen),
+    )
+
+
 def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
+    # Liste sorusu sıralama DEĞİL; biçimi ayrı (bkz. `_liste_sorusu_mu`).
+    if kayitlar and _liste_sorusu_mu(soru):
+        return _liste_cevabi(soru, kayitlar)
+
     if len(kayitlar) < 2:
         return Cevap(
             parcalar=[CevapParcasi(
@@ -790,39 +939,94 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     skorlar = avantaj_skorla(kayitlar, Agirliklar())
     kimlik_kayit = {k.kampanya_id: k for k in kayitlar}
 
+    # CEVAPTA ADI GECEN KAYITLAR — kaynakca bunlardan kurulur (26 Agustos).
+    #
+    # Onceden kaynaklar `skorlar[:5]`ten, yani AGIRLIKLI SKORDA ilk beşten
+    # seciliyordu. Cevap govdesi ise kriter kriter kazanani yaziyor. Iki
+    # bagimsiz secim oldugu icin cevapta adi gecen bir banka kaynaklarda hic
+    # olmayabiliyordu. Olculdu:
+    #
+    #     "En uzun vadeyi kim veriyor?"
+    #       cevapta  : Albaraka Turk, Turkiye Finans, Kuveyt Turk
+    #       kaynakta : Turkiye Finans, Kuveyt Turk
+    #       -> Albaraka bes kriterin ucunde kazanan ilan ediliyor, kaynakta yok
+    #
+    # Projenin merkez iddiasi «kanitsiz deger uretilemez». Juri kaynaklara
+    # bakip cevaptaki bankayi bulamiyorsa iddia orada kirilir.
+    gosterilen: list[KampanyaKaydi] = []
+
     # Cevap biçimi şartname madde 11, Senaryo 2'deki örnekle aynı şekildedir:
     # kriter kriter, hangi bankanın neden öne çıktığı gerekçesiyle birlikte.
-    satirlar = ["Bu kampanyalar farklı avantajlar sunmaktadır.", ""]
-
-    for etiket, alan, yon, kalip in (
+    #
+    # SORULAN ÖLÇÜT BAŞA ALINIR (26 Ağustos). Ölçütler eskiden sabit sırayla
+    # yazılıyordu; «en uzun vade» sorusunun cevabı ikinci maddede kalıyordu.
+    # Karşılaştırmanın tamamı yine veriliyor — kullanıcı yalnız sorduğunu değil,
+    # kararı etkileyen diğer ölçütleri de görmeli — ama sıralama artık soruya bağlı.
+    olcutler = [
         ("Kâr payı oranı", "kar_payi_orani", "dusuk", "oran {}'dir"),
         ("Vade", "vade_ay_max", "yuksek", "{} vade sunmaktadır"),
         ("Finansman tutarı", "finansman_tutari_max", "yuksek", "{}'ye kadar finansman sağlamaktadır"),
         ("Ek ödül", "odul_miktari", "yuksek", "{} ödül vermektedir"),
-    ):
+    ]
+    odak = _sorulan_olcut(soru)
+    if odak is not None:
+        # Kararlı sıralama: odak öne geçer, kalanların göreli sırası korunur.
+        olcutler.sort(key=lambda olcut: olcut[1] != odak)
+
+    odak_etiket = "Masraf" if odak == "masrafsiz_mi" else next(
+        (etiket for etiket, alan, _, _ in olcutler if alan == odak), None
+    )
+    if odak_etiket is not None:
+        satirlar = [
+            f"Sorduğunuz ölçüt **{odak_etiket}**; önce onu yanıtlıyorum, "
+            "diğer ölçütler karşılaştırma için altında.",
+            "",
+        ]
+    else:
+        satirlar = ["Bu kampanyalar farklı avantajlar sunmaktadır.", ""]
+
+    olcut_satirlari: list[str] = []
+    for etiket, alan, yon, kalip in olcutler:
         adaylar = [k for k in kayitlar if getattr(k, alan) is not None]
         if not adaylar:
-            satirlar.append(f"- **{etiket}** açısından karşılaştırma yapılamıyor: bu bilgi hiçbir kampanyada belirtilmemiş.")
+            olcut_satirlari.append(f"- **{etiket}** açısından karşılaştırma yapılamıyor: bu bilgi hiçbir kampanyada belirtilmemiş.")
             continue
 
         kazanan = min(adaylar, key=lambda k: getattr(k, alan)) if yon == "dusuk" \
             else max(adaylar, key=lambda k: getattr(k, alan))
         deger = getattr(kazanan, alan)
-        satirlar.append(
+        gosterilen.append(kazanan)
+        olcut_satirlari.append(
             f"- **{etiket}** açısından **{kazanan.banka_adi}** daha avantajlıdır, "
             f"çünkü {kalip.format(alan_goster(alan, deger, kazanan.birim(alan)))}."
         )
 
+    masraf_satiri: str | None = None
     masrafsizlar = [k for k in kayitlar if k.masrafsiz_mi]
     if masrafsizlar:
-        adlar = ", ".join(sorted({k.banka_adi for k in masrafsizlar}))
-        satirlar.append(f"- **Masraf** açısından **{adlar}** öne çıkmaktadır, çünkü masraf alınmamaktadır.")
+        banka_adlari = sorted({k.banka_adi for k in masrafsizlar})
+        # Bu satir birden cok bankanin adini yaziyor; her biri icin BIR
+        # temsilci kayit kaynakcaya girer, yoksa adi gecen banka kaynaksiz kalir.
+        for ad in banka_adlari:
+            gosterilen.append(next(k for k in masrafsizlar if k.banka_adi == ad))
+        adlar = ", ".join(banka_adlari)
+        masraf_satiri = f"- **Masraf** açısından **{adlar}** öne çıkmaktadır, çünkü masraf alınmamaktadır."
+
+    # Masraf ayrı üretiliyor (bool alan, kazananı tek değil çoğul); sorulan
+    # ölçüt oysa o da başa alınır.
+    if odak == "masrafsiz_mi" and masraf_satiri is not None:
+        satirlar.extend([masraf_satiri, *olcut_satirlari])
+    else:
+        satirlar.extend(olcut_satirlari)
+        if masraf_satiri is not None:
+            satirlar.append(masraf_satiri)
 
     # Buraya kadarki satırlar VERİ İDDİASIDIR; kalkan bunları yapısal kayda
     # karşı denetler.
     veri_bolumu = "\n".join(satirlar)
 
     en_iyi = kimlik_kayit[skorlar[0].kampanya_id]
+    gosterilen.append(en_iyi)  # «genel degerlendirme» satirinda adi geciyor
     agirliklar = Agirliklar().normalize()
     hesap = {
         "agirlik_kar_payi": agirliklar.kar_payi * 100,
@@ -849,7 +1053,11 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             CevapParcasi(aciklama, Koken.SISTEM, hesap=hesap),
         ],
         niyet=Niyet.KARSILASTIRMA,
-        kaynaklar=[_kaynakca(kimlik_kayit[d.kampanya_id]) for d in skorlar[:5]],
+        # Sirasi cevaptaki gecis sirasi; yineleme kampanya kimligiyle elenir.
+        kaynaklar=[
+            _kaynakca(k)
+            for k in {kayit.kampanya_id: kayit for kayit in gosterilen}.values()
+        ],
         kullanilan_kayitlar=kayitlar,
         uyarilar=uyarilar(kayitlar),
     )
