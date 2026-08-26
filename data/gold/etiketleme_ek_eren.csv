@@ -1,4 +1,4 @@
-kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
 0205-261cd5e6559a,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/dijital-arac-finansmani,tasit_finansmani,,48,400000,"0,5",hayır,,,"Beğendiğiniz bir araca vakit kaybetmeden sahip olmak mı istiyorsunuz? Kuveyt Türk Dijital Araç Finansmanı ile ihtiyacınız olan finansman desteğine cazip oranlar ve vade seçeneklerinden faydalanarak hızlıca kavuşabilirsiniz. Dijital Araç Finansmanı fırsatlarından yararlanmak için Kuveyt Türk Mobil’i telefonunuza şimdi indirebilirsiniz!
 Dijital Araç Finansmanı Nedir?
 Dijital Araç Finansmanı, Kuveyt Türk Mobil aracılığıyla başvurabileceğiniz, finansman işlemlerinizin hızlıca tamamlanmasına imkan veren bir araç finansmanı türüdür. Hem sıfır hem 2. el araçlar için Dijital Araç Finansmanı başvurusu yapabilirsiniz. Satın almayı planladığınız aracın kullanım durumuna bağlı olarak 48 aya kadar vade seçeneklerinden faydalanabilirsiniz.
@@ -172,7 +172,7 @@ Görüşmeyi Sonlandır
 Görüntülü Görüşme Talep Et 🖥️
 Yapmış olduğunuz görüşmeyi değerlendirebilir misiniz?
 Merhaba, ben Alba! Size nasıl yardımcı olabilirim?"
-0205-a323f782dfd5,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart,kart,,,20000,,,,,"Ödemelerinizi kolaylaştırmak mı istiyorsunuz? Şubelerimizden hemen Sağlam Kart başvurunuzu gerçekleştirerek alışveriş yükünüzü hafifletin!
+0205-a323f782dfd5,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/kartlar/kredi-karti/saglam-kart,kart,0,5,20000,,,,,"Ödemelerinizi kolaylaştırmak mı istiyorsunuz? Şubelerimizden hemen Sağlam Kart başvurunuzu gerçekleştirerek alışveriş yükünüzü hafifletin!
 Sağlam Kart Nedir?
 Sağlam Kart; sağlık ve eğitim harcamalarınız için vade farksız 5 taksit seçeneğinden yararlanabileceğiniz Kuveyt Türk kredi kart ürünüdür.
 Sağlam Kart Nasıl Alınır?
@@ -278,7 +278,7 @@ Banka ve Kredi Kartları Hakkında Yönetmelik ve Bankacılık uygulamamız gere
 - Bilgisayar donanım, yazılım ve hizmet alımlarında ve THY ile yurtiçi bilet alımlarında ödeme esnasında belirtilen seçenekler dahilinde en fazla 6; elektrik ekipman ve elektronik eşya alımında en fazla 4 taksit yapılabilir.
 - Yasal düzenlemeler gereği; telekomünikasyon, doğrudan pazarlama ile ilgili harcamalar, yurt dışında yapılan harcamalar ve yemek, gıda, alkollü içecek, akaryakıt, fatura ödemeleri, sigorta ödemeleri, vergi ödemeleri, kozmetik, ofis malzemesi ve kuyum harcamaları, hediye kart, hediye çeki, havayolları, seyahat acenteleri, taşımacılık ve benzeri şekillerde herhangi somut bir mal veya hizmeti içermeyen ürünlerin alımları sonradan taksitlendirme uygulamasına dahil değildir.
 - Mevzuatın öngördüğü taksit sayılarının üzerinde taksitlendirme yapılamayacaktır."
-0209-94ec1cab6486,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari/pazaramada-6-taksit,kart,,,,,,,2026-08-31,"Pazarama'da 6 Taksit
+0209-94ec1cab6486,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari/pazaramada-6-taksit,kart,0,6,,,,,2026-08-31,"Pazarama'da 6 Taksit
 Pazarama'da 6 Taksit
 Kampanya Dönemi
 11-08-2026

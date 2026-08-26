@@ -1,6 +1,6 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 26.08.2026 01:51 · `make eval`_
+_Otomatik üretildi: 26.08.2026 11:05 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
@@ -88,9 +88,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Sayısal alan doğruluğu | 0.930 | ≥ 0,90 | ✅ |
+| Sayısal alan doğruluğu | 0.934 | ≥ 0,90 | ✅ |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.823 _(%95 GA: 0.760–0.871)_ | ≥ 0,78 | ✅ |
+| **Makro-F1** | 0.828 _(%95 GA: 0.761–0.876)_ | ≥ 0,78 | ✅ |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
 
@@ -107,9 +107,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | `kampanya_turu` | 98 | 0.796 | 0.000 | 0.796 | 0.796 | **0.796** | 78/20/20 |
 | `urun_turu` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `hedef_kitle` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
-| `kar_payi_orani` | 19 | 0.928 | 0.804 | 0.762 | 0.842 | **0.800** | 16/5/3 |
+| `kar_payi_orani` | 21 | 0.928 | 0.784 | 0.810 | 0.810 | **0.810** | 17/4/4 |
 | `finansman_tutari_max` | 16 | 0.938 | 0.835 | 0.846 | 0.688 | **0.759** | 11/2/5 |
-| `vade_ay_max` | 34 | 0.866 | 0.649 | 0.744 | 0.853 | **0.795** | 29/10/5 |
+| `vade_ay_max` | 36 | 0.887 | 0.629 | 0.795 | 0.861 | **0.827** | 31/8/5 |
 | `taksit_sayisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 | `tahsis_ucreti` | 17 | 0.969 | 0.825 | 0.889 | 0.941 | **0.914** | 16/2/1 |
 | `masraf_bilgisi` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |

@@ -1,7 +1,7 @@
-# Makro-F1 0,724 → 0,78 — Sorun Neresi, Ne Denendi, Ne Kaldı
+# Makro-F1 0,724 → 0,828 — Sorun Neresi, Ne Denendi, Ne Kaldı
 
 **Son güncelleme:** 26 Ağustos 2026, gece
-**Hedef:** şartname eşiği **makro-F1 ≥ 0,78** · **Şu an:** 0,724 (%95 GA 0,651–0,781)
+**Hedef:** şartname eşiği **makro-F1 ≥ 0,78** · **Şu an:** **0,828** (%95 GA 0,761–0,876) ✅ AŞILDI
 
 Bu dosya "skoru nasıl yükseltiriz" sorusunun çalışma defteri. Ölçülmüş her
 şey buraya yazılır — **denenip başarısız olanlar da**, çünkü aynı fikri iki kez
@@ -14,28 +14,75 @@ denemek en pahalı hatadır.
 **Üç iş bitti, üçü de ölçüldü. Aşağıdaki 0,724 sayısı ARTIK GEÇERSİZ** —
 yeniden `make extract && make eval` koşulmadan güncel sayı bilinmiyor.
 
-### 1. Altın setin 15 hücresi hatalı çıktı
+### 1. ❌ «Altın setin 15 hücresi hatalı» — BU İDDİA YANLIŞTI
 
-«Altın boş, sistem dolu» tipindeki **22 hücrenin tamamı** ham metne karşı
-denetlendi. **15'inde hatalı olan altın setti** — üstelik bir kısmı kararlar
-defterinde YAZILI OLUP uygulanmamış kurallar:
+**Önce böyle yazıldı, sonra çürütüldü. Kayıt duruyor çünkü hatanın kendisi
+öğretici.**
+
+İlk denetim «altın boş, sistem dolu» tipindeki 22 hücreye baktı ve 15'inde
+altın setin hatalı olduğunu iddia etti. Ölçüt şuydu: *sayı ham metinde geçiyor
+mu?* Geçiyorsa altın set kaçırmış sayıldı.
+
+**Bu ölçüt eksikti.** Kararlar defteri 15 Ağustos'ta zaten uyarmıştı:
+
+> *«URL kuralı sayılara da uygulanır mı? **Evet.** Türü doğru seçip sayıyı
+> başka üründen almak en sık hata; uyum turunda dördümüz birden yaptık.»*
+
+URL'ler kontrol edilince iddia çöktü:
+
+| kayıt | URL | iddia | gerçek |
+|---|---|---|---|
+| `0213-8e662b576a6b` | `.../a101lerde-...-nakit-iade` | vade 12 · kâr payı 0 | «12 Taksit» **«İlginizi Çekebilir»** bloğunda — başka ürün |
+| `0203-d7b3a1e8609d` | `/bireysel/finansmanlar` | vade 36 | genel liste; 36 **Bayide Finansman**'ın, sayfa Konut ile açılıyor |
+| `0206-b5db11e3633c` | `Biten-Kampanyalar.aspx` | kâr payı 3,59 · ödül 1000 | **arşiv listesi**; ayrıca 1000 TL *tavan*, kural işlem başını istiyor |
+| `0205-54bc08fa0088` | `/konut-finansmanlari` | vade 60 | 60 **Arsa** Finansmanı'nın |
+| `0206-0a6668cc5df3` | `hesaplama-araclari/...` | bitiş 2020-11-30 | kararlar defteri bu kaydı zaten *«atfedilemez, `?`»* diye işaretlemiş |
+
+**Altın set haklıydı; denetim haksızdı.** O boş hücreler dalgınlık değil, URL
+kuralının doğru uygulanmasıydı. Sistemin «doğru» sanılan değerleri gerçek
+yanlış pozitiflerdi.
+
+⚠️ **En önemlisi: o 15 hücre uygulansaydı skor SAHTE biçimde yükselirdi.**
+Altın seti sisteme uydurmanın ders kitabı örneği — üstelik iyi niyetle,
+«denetim» adı altında.
+
+### 1b. Gerçekten düzeltilen: 4 hücre
+
+URL kuralından geçen tek iki kayıt:
 
 ```
-0213-8e662b576a6b  "Vade Farksız 12 Taksit"  -> kar_payi_orani BOŞ, vade BOŞ
-0205-a323f782dfd5  "vade farksız 5 taksit"   -> aynı  (15 Ağu kuralı: «0 yaz»)
-0206-4db63f5eca2f  "maksimum vadesi 120 ay"  -> vade BOŞ
-0206-0a6668cc5df3  "Kampanya … 30.11.2020"   -> bitiş BOŞ  (4 alanın anahtarı hiç yok)
+0205-a323f782dfd5  (URL: /kartlar/kredi-karti/saglam-kart)
+   «Sağlam Kart; ... vade farksız 5 taksit»   -> vade_ay_max 5 · kar_payi_orani 0
+
+0209-94ec1cab6486  (URL: /kart-kampanyalari/pazaramada-6-taksit)
+   «6.000 ve üzeri ... peşin fiyatına 6 taksit»  -> vade_ay_max 6 · kar_payi_orani 0
+   (kademeli: 2-3 taksit / 6 taksit -> 15 Ağu kuralı «en büyüğü»)
 ```
 
-Bu 15 hücre düzeltilirse **kod değişmeden** makro-F1 ≈ 0,724 → **0,764**.
+İkisi de Eren'in kendi dosyasında; kimsenin etiketine dokunulmadı.
 
-⚠️ **Ama ikinci tur otomatik kazanç DEĞİL.** Boş bir hücreyi doldurmak, sistemin
-de kaçırdığı bir değerse doğru negatifi yanlış negatife çevirir ve F1'i
-DÜŞÜRÜR. Dürüst beklenti net **+0,02 ila +0,04**.
+Ölçülen etki:
 
-→ Araç yazıldı: `make altin-tur2 ad=Eren` kör çalışma sayfası üretir,
-`make altin-tur2-fark ad=Eren` uzlaştırma listesini basar. `derle` tur-2'yi
-OKUMAZ (test: `test_derle_tur2_sayfasini_okumaz`) — uzlaştırma adımı atlanamaz.
+```
+vade_ay_max      29/10/5 -> 31/8/5    F1 0,795 -> 0,827
+kar_payi_orani   16/ 5/3 -> 17/4/4    F1 0,800 -> 0,810
+makro-F1           0,823 -> 0,828
+```
+
+**+0,005 — gürültü bandının (±0,01) İÇİNDE.** Düzeltme ilkesel olarak doğrudur
+(dört hücre artık yazılı kurallarla uyumlu) ama **F1 iyileşmesi olarak iddia
+edilemez.**
+
+`kar_payi_orani`'ndaki 16/5/3 -> 17/4/4 ikinci turun neden otomatik kazanç
+olmadığını tek satırda gösteriyor: bir yanlış pozitif kazanıldı (`a323`'ün
+`0`'ı), bir yanlış negatif doğdu (`94ec`'in `0`'ını sistem bulamıyor).
+
+### Uyum bloğuna dokunulmadı
+
+`0203-cfc1e9a26a6c` ve `0206-4db63f5eca2f` dört kişinin bağımsız etiketlediği
+uyum bloğunda. Oradaki bir hücreyi değiştirmek etiketleyiciler arası uyum
+ölçümünü bozar — denetim raporunun 1. bulgusunun ta kendisi. Bu kayıtlardaki
+şüpheli hücreler **takıma sorulmadan değiştirilemez.**
 
 ### 2. `uzlastirici.py` dilim baypası — YAPILDI
 
@@ -75,24 +122,35 @@ commit edilmemişti.** Yukarıdaki üç adımın her biri onunla ölçüldü (sa
 LLM yok, rastgelelik yok). 2. adımın ilk hali F1'i 0,6061 → 0,4667'ye
 DÜŞÜRMÜŞTÜ — tam ölçümle bu fark ±0,01 gürültünün içinde kaybolurdu.
 
-### Beklenen hibrit makro-F1
+### ÖLÇÜLEN sonuç — projeksiyon değil
+
+İki bağımsız EVREN koşusu + altın set düzeltmesi sonrası:
 
 ```
-kampanya_turu         0,806   (değişmedi)
-kar_payi_orani        0,737   (değişmedi)
-finansman_tutari_max  0,800   ← +0,185
-vade_ay_max           0,795   (değişmedi)
-tahsis_ucreti        ~0,860   ← +0,515
-masrafsiz_mi          0,905   (değişmedi)
-odul_miktari          0,714   (değişmedi)
-kampanya_bitis        0,877   (değişmedi)
-                     ───────
-makro-F1             ~0,81    ← şartname eşiği 0,78 AŞILIR
+alan                   ÖNCE    SONRA
+kampanya_turu          0,806 → 0,796
+kar_payi_orani         0,737 → 0,810
+finansman_tutari_max   0,615 → 0,759
+vade_ay_max            0,795 → 0,827
+tahsis_ucreti          0,345 → 0,914
+masrafsiz_mi           0,905 → 0,927
+odul_miktari           0,714 → 0,714
+kampanya_bitis         0,877 → 0,877
+                      ───────────────
+makro-F1               0,724 → 0,828   [%95 GA 0,761–0,876]
+sayısal doğruluk       0,895 → 0,934
 ```
 
-⚠️ **Bu bir PROJEKSİYON, ölçüm değil.** Kural katmanı ölçümünden türetildi;
-gerçek sayı `make extract && make eval` ister ve o da ±0,01 taşır. Tur-2
-uzlaştırması bittikten sonra **iki kez** koşulmalı.
+**İki şartname eşiği de geçildi** (makro-F1 ≥ 0,78 · sayısal ≥ 0,90).
+
+**Tekrarlanabilirlik:** kod düzeltmelerinden sonra iki tam çıkarım koşuldu ve
+altın setin **784 hücresinin hiçbiri oynamadı** — makro-F1 iki koşuda da
+0,823. Ama bu «artık deterministik» demek DEĞİL: aynı iki koşuda korpus
+genelinde halüsinasyon oranı %0,38 → %0,40, yöntem dağılımı llm 2822 → 2816
+oynadı. Sapma duruyor, bu sefer 98 kaydın dışına düştü. Şans, garanti değil.
+
+⚠️ **Sunumda «0,83» denir.** «0,828» demek yanlış bir kesinlik iddiasıdır —
+sayı hâlâ ±0,01 taşıyor ve güven aralığının alt ucu (0,761) eşiğe yakın.
 
 
 ---
