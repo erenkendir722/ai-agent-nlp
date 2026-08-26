@@ -1,31 +1,31 @@
 # Veri Kalitesi Raporu
 
-_Otomatik üretildi: 26.08.2026 16:45 · `make veri-kalitesi`_
+_Otomatik üretildi: 26.08.2026 18:22 · `make veri-kalitesi`_
 
 > Bu dosya elle düzenlenmez. `make veri-kalitesi` her koşuda yeniden üretir.
 
-> ✅ **Güncel.** Çıkarım 26.08.2026 16:25'de `hibrit` yapılandırmasıyla koştu (1020 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> ✅ **Güncel.** Çıkarım 26.08.2026 17:54'de `hibrit` yapılandırmasıyla koştu (1023 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
-**1024 kampanya denetlendi.** 6 kontrol eşiği aştı, 8 kontrol temiz.
+**931 kampanya denetlendi.** 6 kontrol eşiği aştı, 8 kontrol temiz.
 
 ## Özet
 
 | | Kontrol | Bulgu | Eşik |
 |---|---|---|---|
 | 🔴 | Kâr payı oranı > %5 | 1 | 0 |
-| ℹ️ | Kâr payı oranı = 0 | 130 | 0 |
+| ℹ️ | Kâr payı oranı = 0 | 119 | 0 |
 | ✅ | Finansman tutarı < 5.000 TL | 0 | 0 |
-| 🔴 | Finansman tutarı > 10.000.000 TL | 3 | 0 |
+| 🔴 | Finansman tutarı > 10.000.000 TL | 2 | 0 |
 | ✅ | Vade > 360 ay veya < 1 | 0 | 0 |
 | ✅ | Taksit sayısı > 24 | 0 | 0 |
 | ✅ | İndirim oranı > %100 | 0 | 0 |
-| 🔴 | Kampanya bitişi geçmişte | 97 | 0 |
+| 🔴 | Kampanya bitişi geçmişte | 5 | 0 |
 | 🔴 | Kampanya bitişi 5 yıldan uzak | 1 | 0 |
 | ✅ | Masrafsız işaretli ama tahsis ücreti var | 0 | 0 |
 | 🔴 | Banka içi kâr payı aralığı > 5 puan | 1 | 0 |
 | ✅ | Aynı URL'den birden çok kayıt | 0 | 0 |
 | ✅ | Hiçbir alanı çıkarılamayan kayıt | 0 | 0 |
-| 🔴 | Kampanya türü `diger` | 433 | 358 |
+| 🔴 | Kampanya türü `diger` | 416 | 325 |
 
 ## Aykırı değerler
 
@@ -37,7 +37,7 @@ Katılım bankaları kâr payını aylık ilan eder. Üstü ya yıllık orandır
 |---|---|---|
 | 0206 | 11.0 | …efinans.com.tr/tr-tr/bireysel/Sayfalar/gunluk-hesap.aspx |
 
-### ℹ️ Kâr payı oranı = 0 — 130 kayıt
+### ℹ️ Kâr payı oranı = 0 — 119 kayıt
 
 Hata DEĞİL sayılır: vade farksız kampanyalarda kâr payı gerçekten sıfırdır. Sayının ani yükselmesi ayrıştırmanın bozulduğunu gösterir.
 
@@ -45,7 +45,7 @@ Hata DEĞİL sayılır: vade farksız kampanyalarda kâr payı gerçekten sıfı
 
 Bu tutarın altı kampanya limiti değil, büyük olasılıkla taksit ya da ücret rakamıdır.
 
-### 🔴 Finansman tutarı > 10.000.000 TL — 3 kayıt
+### 🔴 Finansman tutarı > 10.000.000 TL — 2 kayıt
 
 Bireysel kampanyada beklenmez; dilim tablosundan yanlış hücre alınmış olabilir.
 
@@ -53,7 +53,6 @@ Bireysel kampanyada beklenmez; dilim tablosundan yanlış hücre alınmış olab
 |---|---|---|
 | 0203 | doluluk %31 | …smanlar/ticari-gayri-nakdi-finansman/jet-teminat-mektubu |
 | 0203 | doluluk %31 | …ansmanlar/kobi-gayri-nakdi-finansman/jet-teminat-mektubu |
-| 0205 | 0.49 | …nsman/savunma-sanayii-baskanligi-finansman-destek-paketi |
 
 ### ✅ Vade > 360 ay veya < 1 — 0 kayıt
 
@@ -67,18 +66,17 @@ Kart taksitlendirmesinde üst sınır; aşılıyorsa vade ile karışmıştır.
 
 Tanımsız değer.
 
-### 🔴 Kampanya bitişi geçmişte — 97 kayıt
+### 🔴 Kampanya bitişi geçmişte — 5 kayıt
 
 Süresi dolmuş kampanya karşılaştırmayı yanıltır. Çok eski bir tarih kampanya tarihi değil, sayfadaki başka bir tarihtir.
 
 | Banka | Değer | Kaynak |
 |---|---|---|
-| 0206 | 2023-08-05 | …r/kampanyalar/Sayfalar/gunluk-hesap-vade-kampanyasi.aspx |
-| 0211 | 2026-06-30 | …kampanya/paraf-ile-ds-damatta-6-aya-varan-taksit-firsati |
-| 0211 | 0.0 | …er-notebookta-pesin-fiyatina-12-aya-varan-taksit-firsati |
-| 0213 | 2026-07-30 | …-limitini-artir-harcamalarindan-toplam-500-tl-iade-kazan |
-| 0213 | 2026-07-30 | …-limitini-artir-harcamalarindan-toplam-500-tl-iade-kazan |
-| … | | *92 kayıt daha* |
+| 0214 | 2026-03-31 | …https://dunyakatilim.com.tr/kampanyalar/fiziki-altin |
+| 0206 | 2020-11-30 | …raclari/Sayfalar/finansman-odeme-plani.aspx?financeID=16 |
+| 0206 | 2020-11-30 | …araclari/Sayfalar/finansman-odeme-plani.aspx?financeID=1 |
+| 0209 | 2026-07-09 | …rislerinize-toplam-1500-tl-bankkart-lira?IsArchived=true |
+| 0209 | 2026-07-09 | …lya-alisverisinize-1500-tl-bankkart-lira?IsArchived=true |
 
 ### 🔴 Kampanya bitişi 5 yıldan uzak — 1 kayıt
 
@@ -112,34 +110,34 @@ Kimlik URL'den deterministik üretilir; mükerrer varsa toplayıcı aynı sayfay
 
 Doluluk sıfırsa sayfa büyük olasılıkla kampanya değildir ya da sitenin yapısı değişmiştir.
 
-### 🔴 Kampanya türü `diger` — 433 kayıt
+### 🔴 Kampanya türü `diger` — 416 kayıt
 
 Sınıflandırılamayan kayıt. Oranın yükselmesi ya toplayıcının kampanya olmayan sayfa getirdiğini ya da sınıflandırmanın kırıldığını gösterir.
 
 | Banka | Değer | Kaynak |
 |---|---|---|
 | 0203 | 0.0 | …/detay/limitsiz-imm-sigortasinda-vade-farksiz-3-taksit-2 |
-| 0203 | 2026-08-31 | ….com.tr/tr/kampanyalar/detay/emekli-promosyon-kampanyasi |
 | 0203 | 0.5 | …r/tr/kampanyalar/detay/taksitliocom-alisveris-finansmani |
 | 0203 | 2026-12-31 | …detay/restoran-harcamalariniza-ozel-10-indirim-firsati-1 |
 | 0203 | doluluk %6 | …/tr/kampanyalar/detay/8-taksit-firsatiyla-kasko-zamani-3 |
-| … | | *428 kayıt daha* |
+| 0203 | 0.0 | …https://www.albaraka.com.tr/tr/kampanyalar |
+| … | | *411 kayıt daha* |
 
 ## Alan doluluk oranları
 
 | Alan | Boş | Boş oranı |
 |---|---|---|
-| `taksit_sayisi` | 1024 | %100 |
-| `alisveris_puani` | 991 | %97 |
-| `tahsis_ucreti` | 982 | %96 |
-| `masrafsiz_mi` | 967 | %94 |
-| `finansman_tutari_max` | 959 | %94 |
-| `indirim_orani` | 956 | %93 |
-| `kar_payi_orani` | 863 | %84 |
-| `odul_miktari` | 847 | %83 |
-| `hedef_kitle` | 767 | %75 |
-| `vade_ay_max` | 644 | %63 |
-| `kampanya_bitis` | 571 | %56 |
+| `taksit_sayisi` | 931 | %100 |
+| `alisveris_puani` | 906 | %97 |
+| `tahsis_ucreti` | 890 | %96 |
+| `masrafsiz_mi` | 877 | %94 |
+| `finansman_tutari_max` | 870 | %93 |
+| `indirim_orani` | 866 | %93 |
+| `odul_miktari` | 815 | %88 |
+| `kar_payi_orani` | 784 | %84 |
+| `hedef_kitle` | 702 | %75 |
+| `vade_ay_max` | 574 | %62 |
+| `kampanya_bitis` | 570 | %61 |
 | `kampanya_turu` | 0 | %0 |
 
 ## Banka kapsamı
@@ -148,12 +146,12 @@ Dengesizlik gizlenmez: bir bankadan 100, diğerinden 16 kampanya varsa karşıla
 
 | Kod | Banka | Kampanya | Ort. doluluk | `diger` |
 |---|---|---|---|---|
-| 0203 | Albaraka Türk Katılım Bankası A.Ş. | 136 | %29 | 44 (%32) |
-| 0205 | Kuveyt Türk Katılım Bankası A.Ş. | 209 | %32 | 41 (%20) |
-| 0206 | Türkiye Finans Katılım Bankası A.Ş. | 173 | %16 | 110 (%64) |
-| 0209 | Ziraat Katılım Bankası A.Ş. | 217 | %24 | 38 (%18) |
-| 0210 | Vakıf Katılım Bankası A.Ş. | 36 | %28 | 24 (%67) |
-| 0211 | Türkiye Emlak Katılım Bankası A.Ş. | 80 | %31 | 53 (%66) |
-| 0212 | Hayat Finans Katılım Bankası A.Ş. | 16 | %29 | 6 (%38) |
-| 0213 | T.O.M. Katılım Bankası A.Ş. | 103 | %34 | 70 (%68) |
-| 0214 | Dünya Katılım Bankası A.Ş. | 54 | %10 | 47 (%87) |
+| 0203 | Albaraka Türk Katılım Bankası A.Ş. | 126 | %28 | 38 (%30) |
+| 0205 | Kuveyt Türk Katılım Bankası A.Ş. | 190 | %31 | 33 (%17) |
+| 0206 | Türkiye Finans Katılım Bankası A.Ş. | 172 | %16 | 111 (%65) |
+| 0209 | Ziraat Katılım Bankası A.Ş. | 162 | %21 | 37 (%23) |
+| 0210 | Vakıf Katılım Bankası A.Ş. | 36 | %29 | 24 (%67) |
+| 0211 | Türkiye Emlak Katılım Bankası A.Ş. | 78 | %30 | 51 (%65) |
+| 0212 | Hayat Finans Katılım Bankası A.Ş. | 16 | %28 | 6 (%38) |
+| 0213 | T.O.M. Katılım Bankası A.Ş. | 97 | %34 | 69 (%71) |
+| 0214 | Dünya Katılım Bankası A.Ş. | 54 | %13 | 47 (%87) |

@@ -145,8 +145,14 @@ varsayılanı buydu ve sessizce 404 alıyordu.
 DNS'te çözülmüyordu ve öyle bir servisin tahsis edildiğine dair belge yoktu.
 15.151 paragraf yerel bir `.npz` dosyasında duruyor, arama numpy nokta çarpımı
 — milisaniyeler. `make vektor` ile kurulur (~70 sn), `make durum` kurulu olup
-olmadığını gösterir. İndeks 36 MB, depoda durmuyor; **çevrimdışı pakete elle
-konmalı** (E-14).
+olmadığını gösterir. **İndeks 26 Ağustos'ta depoya alındı** (32 MB): ağsız
+kurulamıyor — gömmeler EVREN'den geliyor — dolayısıyla türetilmiş değil,
+taşınması gereken bir varlık. Çevrimdışı pakete elle kopyalama adımı kalktı.
+
+`make durum` artık indeksin **bayat olup olmadığını** da söyler: indeks
+kurulduğu korpusun izini (`vektor_db.korpus_izi`) taşır, `make extract` ya da
+kayıt silme sonrası iz tutmaz ve uyarı çıkar. Bu denetim olmadan chatbot
+silinmiş kampanyaları kaynak göstererek cevap veriyordu.
 
 **Sessiz yutma yasak.** Gömme hatası da, arama hatası da fırlatılır. Bu kural
 bedava öğrenilmedi: `embed_text` sıfır vektörü, `vektor_ara` boş liste
