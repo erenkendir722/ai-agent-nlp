@@ -183,6 +183,17 @@ Bağımlılıkları elle takip etme, komutu çalıştır: `make gorev ad=<adın>
 
 ## ⏰ GECİKMİŞ — 12 Ağustos denetimi
 
+> 🗄️ **ARŞİV — 12 Ağustos 2026 denetimi. GÜNCEL DEĞİLDİR.**
+>
+> Aşağıdaki tablo, "Bugün bu sırayla" listesi ve 🚨 kritik yol alarmı
+> **12 Ağustos'un gerçeğidir.** O gün geçerliydi; bugün değil. Listedeki
+> ❌'lerin tamamı kapandı — `docs/ETIKETLEME_KILAVUZU.md` var, `docs/kanit/`
+> var, `data/gold/` 98 kayıt taşıyor, depo 26 Ağustos'ta public yapıldı.
+>
+> **Güncel durum için `make gorev` çalıştırın**; o araç bu bölümü okumaz,
+> aşağıdaki `[ ]` / `[x]` listesinden üretir. Bölüm silinmedi çünkü o gün
+> yapılan denetim projenin ölçüm dürüstlüğü kaydının parçası.
+
 **Denetim yöntemi:** Bu liste tahmin değil. 12 Ağustos'ta depo tek tek kontrol
 edildi — commit geçmişi, dosya varlığı, `banks.yaml` içeriği, git etiketleri,
 GitHub API. Bulgu: **9 Ağustos'tan sonra ürün tarafında hiçbir değişiklik yok.**
@@ -413,7 +424,8 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Her önemli kararı `docs/kararlar/NNN-baslik.md` olarak kaydedin
       ↳ 24 Ağustos'ta derlemesi 30 dakika sürer; yoksa 4 saat
 
-- [ ] **H-06** 📏 **ALTIN SET GENİŞLETME — 38 kayıt** · 24 Ağu'da eklendi
+- [x] **H-06** ✅ **ALTIN SET GENİŞLETME — 38 kayıt, BİTTİ** · 26 Ağu
+      ↳ Altın set 98 kayıt (60 çekirdek + 38 genişletme), `altin_set.jsonl` derlendi
       ↳ **Neden:** makro-F1 sekiz alanın düz ortalaması ve dördünde N ≤ 7.
         `finansman_tutari_max` N=5 — o beş hücre tek başına %80 hedefini
         geçip geçmediğimizi belirliyor. Sistem tarafında yapılabilecekler
@@ -492,7 +504,7 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **E-01** 🔴 **DEPOYU PUBLIC YAP** · 📅 **27 Ağu — TESLİM GÜNÜ**
+- [x] **E-01** ✅ **DEPO PUBLIC YAPILDI** · 26 Ağu (GitHub API 200 ile doğrulandı)
       ↳ 🔴 **KARAR (24 Ağu): bilerek teslim gününe bırakıldı.** Depo o zamana
         kadar private kalacak. **27 Ağustos sabahı ilk iş budur** — E-03 ve
         E-18 buna bağlı, unutulursa teslim edilecek bir şey kalmaz.
