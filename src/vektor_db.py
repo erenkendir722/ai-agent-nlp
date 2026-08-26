@@ -44,6 +44,31 @@ EVREN_API_KEY = os.getenv("EVREN_API_ANAHTARI", "")
 #      ada ek olarak kimlik teyidi sayılır. Lisans: MIT (ADR 013).
 GOMME_MODELI = os.getenv("EVREN_EMBEDDING_MODEL", "bge-m3-embed")
 
+# --- GÖMME SAĞLAYICISI (26 Ağu) --------------------------------------------
+# `LLM_SAGLAYICI` çıkarım katmanı için ne yapıyorsa bu da gömme katmanı için
+# aynısını yapar. Ayrı bir değişken, çünkü ikisi BAĞIMSIZ seçilebilmeli:
+# çıkarımı EVREN'de koşup gömmeyi yerelde tutmak meşru bir yapılandırmadır.
+#
+# NEDEN EKLENDİ — ölçülmüş boşluk:
+#     `indeks_kur` ADR 015 ile depoya alınınca «RAG artık çevrimdışı çalışır»
+#     sanıldı. Ama indeksin HAZIR olması yetmiyor: `vektor_ara` her sorguda
+#     SORGUYU gömmek zorunda ve o çağrı EVREN'e gidiyordu. Yani hava boşluğu
+#     demosunda chatbot'un koşul sorusu yolu, indeks depoda dururken bile
+#     çalışmıyordu. İndeksi taşımak gerekli ama YETERLİ değildi.
+#
+# Ollama'nın OpenAI uyumlu `/v1` ucu kullanılıyor: aynı istemci, aynı kod
+# yolu, yalnız taban adres ve model adı değişiyor. Ayrı bir istemci sınıfı
+# yazmak iki ayrı hata yüzeyi açardı.
+GOMME_SAGLAYICI = os.getenv("GOMME_SAGLAYICI", "evren").strip().lower()
+
+OLLAMA_GOMME_MODELI = os.getenv("OLLAMA_GOMME_MODELI", "bge-m3")
+"""Yerel gömme modeli. `bge-m3` — EVREN'deki `bge-m3-embed` ile AYNI model.
+
+İkisi de `BAAI/bge-m3` (MIT, ADR 013) ve ikisi de 1024 boyut veriyor, yani
+`BOYUT` sabiti ve depodaki indeks ikisiyle de uyumlu. Adların farklı olması
+servislerin adlandırma tercihidir, farklı model değildir —
+`_model_ailesi()` bu ayrımı yönetir."""
+
 BOYUT = 1024  # bge-m3-embed'in ölçülen boyutu — model değişirse burası da değişir
 YIGIN = 64  # tek istekte gömülecek paragraf sayısı (ölçüldü: 64 metin ≈ 0,46 sn)
 ASGARI_PARAGRAF = 40  # bundan kısa satırlar bağlam taşımıyor
@@ -57,10 +82,47 @@ class IndeksYok(RuntimeError):
     """Vektör indeksi kurulmamış. `make vektor` ile kurulur."""
 
 
+def gomme_ucu() -> tuple[str, str, str]:
+    """Seçili gömme sağlayıcısının (temel_url, anahtar, model) üçlüsü.
+
+    Bilinmeyen sağlayıcı SESSİZCE EVREN'e düşmez: yapılandırma hatasını
+    fark edilmeyen bir dış çağrıya çevirmek, bu dosyanın `gom_toplu`
+    docstring'inde anlatılan sıfır-vektörü hatasının aynısı olurdu.
+    """
+    if GOMME_SAGLAYICI == "ollama":
+        from src.extraction.saglayici import OLLAMA_SUNUCU
+
+        # Ollama anahtar istemez ama OpenAI istemcisi boş dize kabul etmez.
+        return f"{OLLAMA_SUNUCU.rstrip('/')}/v1", "ollama-yerel", OLLAMA_GOMME_MODELI
+    if GOMME_SAGLAYICI == "evren":
+        return EVREN_API_URL, EVREN_API_KEY or "anahtar-yok", GOMME_MODELI
+    raise ValueError(
+        f"Bilinmeyen gömme sağlayıcı: {GOMME_SAGLAYICI!r}. Beklenen: 'evren' veya 'ollama'."
+    )
+
+
+def aktif_gomme_modeli() -> str:
+    """Şu anda kullanılan gömme modelinin adı — indekse bu ad yazılır."""
+    return gomme_ucu()[2]
+
+
+def _model_ailesi(ad: str) -> str:
+    """Model adını AİLESİNE indirger: `bge-m3-embed` ve `bge-m3` aynı ailedir.
+
+    İndeks kendi model adını taşıyor. Aile karşılaştırması olmadan, EVREN'de
+    kurulmuş bir indeksi Ollama ile sorgulamak sahte bir uyumsuzluk uyarısı
+    üretirdi; tersine, ham ad karşılaştırması yapmamak gerçekten farklı bir
+    modele geçildiğinde sessiz kalırdı. İkisinin arasındaki tek dürüst yol
+    adı normalleştirmek.
+    """
+    return ad.strip().lower().removesuffix("-embed").removesuffix(":latest")
+
+
 def istemci_al() -> OpenAI:
     global _istemci
     if _istemci is None:
-        _istemci = OpenAI(base_url=EVREN_API_URL, api_key=EVREN_API_KEY or "anahtar-yok")
+        temel_url, anahtar, _ = gomme_ucu()
+        _istemci = OpenAI(base_url=temel_url, api_key=anahtar)
     return _istemci
 
 
@@ -69,12 +131,17 @@ def istemci_al() -> OpenAI:
 # ---------------------------------------------------------------------------
 
 
-def _boyut_denetle(vektorler: list[list[float]]) -> None:
-    """Model sessizce değişirse indeks bozulur; erken ve yüksek sesle patlat."""
+def _boyut_denetle(vektorler: list[list[float]], model: str | None = None) -> None:
+    """Model sessizce değişirse indeks bozulur; erken ve yüksek sesle patlat.
+
+    `model` verilmezse AKTİF modele düşer — varsayılan uydurma bir ad değil,
+    çağrının gerçekten kullanacağı addır, dolayısıyla hata metni yanıltmaz.
+    """
+    model = model or aktif_gomme_modeli()
     for v in vektorler:
         if len(v) != BOYUT:
             raise ValueError(
-                f"Gömme boyutu beklenenden farklı: {GOMME_MODELI} {len(v)} boyut "
+                f"Gömme boyutu beklenenden farklı: {model} {len(v)} boyut "
                 f"verdi, BOYUT {BOYUT}. Model değiştiyse BOYUT da güncellenmeli."
             )
 
@@ -85,12 +152,16 @@ def gom_toplu(metinler: list[str]) -> list[list[float]]:
     Hata YUTULMAZ. Eskiden burada sıfır vektörü dönülüyordu; yanlış model
     adının 404'ü o yüzden görülmedi. Sıfır vektörü de uydurma bir değerdir —
     bu depoda kanıtsız değer üretilmez.
+
+    Hangi uca gittiği `GOMME_SAGLAYICI`'ya bağlı (EVREN ya da yerel Ollama);
+    boyut denetimi ikisinde de aynı, çünkü denetlenen şey servis değil MODEL.
     """
     if not metinler:
         return []
-    yanit = istemci_al().embeddings.create(input=metinler, model=GOMME_MODELI)
+    model = aktif_gomme_modeli()
+    yanit = istemci_al().embeddings.create(input=metinler, model=model)
     vektorler = [d.embedding for d in yanit.data]
-    _boyut_denetle(vektorler)
+    _boyut_denetle(vektorler, model)
     return vektorler
 
 
@@ -203,7 +274,7 @@ def indeks_kur(kayitlar: list[KampanyaKaydi], ilerleme: bool | None = None) -> i
         kampanya_id=np.asarray(kampanya_idleri, dtype=object),
         banka_adi=np.asarray(banka_adlari, dtype=object),
         metin=np.asarray(paragraflar, dtype=object),
-        model=np.asarray([GOMME_MODELI], dtype=object),
+        model=np.asarray([aktif_gomme_modeli()], dtype=object),
         korpus_izi=np.asarray([korpus_izi(kayitlar)], dtype=object),
     )
     global _indeks
@@ -296,6 +367,20 @@ def vektor_ara(
     veri = indeks_yukle()
     dizey: np.ndarray = veri["vektorler"]
 
+    # MODEL AİLESİ KAPISI — indeks bir modelle kurulup başka bir modelle
+    # sorgulanırsa skorlar anlamsızlaşır ama HATA VERMEZ: kosinüs yine bir
+    # sayı döndürür, yalnız ilgisiz paragrafları getirir. Sessiz bozulmanın
+    # en sinsi biçimi bu, o yüzden burada yüksek sesle söyleniyor.
+    # `bge-m3-embed` (EVREN) ile `bge-m3` (Ollama) AYNI ailedir, uyarı çıkmaz.
+    indeks_modeli = str(veri["model"][0]) if "model" in veri else ""
+    if indeks_modeli and _model_ailesi(indeks_modeli) != _model_ailesi(aktif_gomme_modeli()):
+        log.warning(
+            "Gömme modeli uyuşmuyor: indeks %r ile kuruldu, sorgu %r ile "
+            "gömülüyor. Sonuçlar güvenilmezdir — `make vektor` ile indeksi "
+            "yeniden kurun.",
+            indeks_modeli, aktif_gomme_modeli(),
+        )
+
     maske = None
     if kampanya_idleri is not None:
         istenen = set(kampanya_idleri)
@@ -349,10 +434,14 @@ def vektor_ara(
 __all__ = [
     "BOYUT",
     "GOMME_MODELI",
+    "GOMME_SAGLAYICI",
+    "OLLAMA_GOMME_MODELI",
     "INDEKS_DOSYASI",
     "IndeksYok",
+    "aktif_gomme_modeli",
     "gom",
     "gom_toplu",
+    "gomme_ucu",
     "indeks_durumu",
     "korpus_izi",
     "indeks_kur",

@@ -9,19 +9,25 @@
 #   servislerin dışarıya çıkışını ALTYAPI DÜZEYİNDE engeller — bu bir vaat
 #   değil, uygulanmış bir kısıttır.
 #
-# ⚠️ KAPSAMI TAM YAZIYORUZ — «hiçbir çağrı yapılmaz» demek bugün YANLIŞ olur:
+# KAPSAM — hangi yol nerede koşuyor, tam liste:
 #
-#   ✅ Kural katmanı, normalizasyon, karşılaştırma, muhakeme, chatbot'un
-#      YAPISAL sorgu yolu ve `LLM_SAGLAYICI=ollama` ile çıkarım: kapalı devre.
-#      Ölçümü `tests/test_sizinti_yok.py`.
-#   ❌ Chatbot'un KOŞUL SORGUSU yolu: `src/vektor_db.gom()` sorgu ANINDA EVREN
-#      gömme ucuna çıkar ve yerel yedeği YOKTUR. İnternetsiz demoda o yol
-#      çalışmaz; kullanıcı «gömme servisine ulaşılamadı» mesajı alır (sessizce
-#      yanlış cevap vermez — `chatbot._kosul_cevabi`).
+#   ✅ Kural katmanı, normalizasyon, karşılaştırma, muhakeme ve chatbot'un
+#      YAPISAL sorgu yolu: hiç ağ kullanmaz. Ölçümü `tests/test_sizinti_yok.py`.
+#   ✅ Çıkarım: `LLM_SAGLAYICI=ollama` ile `ic-ag` üzerinden yerel modele.
+#   ✅ RAG metin araması: `GOMME_SAGLAYICI=ollama` ile yerel `bge-m3`.
 #
-#   Yani hava boşluğu iddiası ÇIKARIM ve KARŞILAŞTIRMA için geçerlidir,
-#   RAG metin araması için değildir. Kapatmanın yolu yerel bir gömme
-#   sağlayıcısıdır (ollama `bge-m3`, 1024 boyut — `vektor_db.BOYUT` ile uyar).
+#      Bu üçüncüsü 26 Ağustos'ta kapandı. ADR 015 indeksi depoya almıştı ama
+#      YETMİYORDU: `vektor_ara` her sorguda SORGUYU gömmek zorunda ve o çağrı
+#      EVREN'e gidiyordu. Yani indeks hazırken bile internetsiz demoda
+#      chatbot'un koşul sorusu yolu çalışmıyordu. İndeksi taşımak gerekliydi,
+#      yeterli değildi; eksik parça gömme sağlayıcısının kendisiydi.
+#
+#      `bge-m3` (Ollama) ile `bge-m3-embed` (EVREN) AYNI modeldir
+#      (`BAAI/bge-m3`, MIT — ADR 013) ve ikisi de 1024 boyut verir, yani
+#      depodaki indeks iki sağlayıcıyla da uyumludur.
+#
+# ⚠️ Ollama modelleri BİR KEZ indirilmiş olmalı (`ollama pull qwen3.5:4b-q4_K_M`
+#    ve `ollama pull bge-m3`). O adım internet ister; sonrası istemez.
 
 services:
   ollama:
@@ -82,6 +88,12 @@ services:
       # Bu dosya hava boşluğu kanıtıdır (E-07); iki işi birden yapmaya
       # çalışması zaten bu hatanın kaynağıydı.
       LLM_SAGLAYICI: "ollama"
+      # GÖMME de yerel — RAG'ın hava boşluğundaki son dış bağı buydu (26 Ağu).
+      # ADR 015 indeksi depoya aldı ama `vektor_ara` her sorguda SORGUYU
+      # gömmek zorunda; o çağrı EVREN'e gidiyordu ve internetsiz demoda
+      # chatbot'un koşul sorusu yolu indeks hazırken bile çalışmıyordu.
+      GOMME_SAGLAYICI: "ollama"
+      OLLAMA_GOMME_MODELI: "bge-m3"
       # EVREN_* DEĞİŞKENLERİ BİLEREK GEÇİRİLMİYOR: sağlayıcı yerel olduğu için
       # gereksizler ve bankacılık ortamına giden bir konteynerin ortamında
       # duran bir API anahtarı `docker inspect` ile okunabilir.
@@ -124,6 +136,8 @@ services:
       # Yalnız birine koymak, arayüz yereldeyken API'nin dışarı çıktığı bir
       # yarım hava boşluğu üretirdi.
       LLM_SAGLAYICI: "ollama"
+      GOMME_SAGLAYICI: "ollama"
+      OLLAMA_GOMME_MODELI: "bge-m3"
       OLLAMA_HOST: "http://ollama:11434"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:4b-q4_K_M}"
       VERITABANI_URL: "sqlite:///data/katilim.db"

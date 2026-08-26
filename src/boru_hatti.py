@@ -343,14 +343,16 @@ def komut_vektor(_: argparse.Namespace) -> int:
     gömülüp yerel bir `.npz` dosyasına yazılır, arama numpy ile yapılır.
     """
     from src.depolama import tum_kayitlar
-    from src.vektor_db import GOMME_MODELI, INDEKS_DOSYASI, indeks_kur
+    from src.vektor_db import GOMME_SAGLAYICI, INDEKS_DOSYASI, aktif_gomme_modeli, indeks_kur
 
     kayitlar = tum_kayitlar()
     if not kayitlar:
         print("Veritabanı boş — önce `make extract` koşun.")
         return 1
 
-    print(f"{len(kayitlar)} kayıt, gömme modeli: {GOMME_MODELI}")
+    print(
+        f"{len(kayitlar)} kayıt, gömme: {GOMME_SAGLAYICI} / {aktif_gomme_modeli()}"
+    )
     adet = indeks_kur(kayitlar)
     print(f"✅ {adet} paragraf indekslendi → {INDEKS_DOSYASI}")
     return 0

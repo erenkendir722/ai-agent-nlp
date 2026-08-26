@@ -183,6 +183,16 @@ def test_compose_uygulama_katmanina_saglayici_gecirir() -> None:
             "okur ve oradaki `evren` değeri varsayılanı sessizce ezer."
         )
 
+        # GÖMME de yerel olmalı — RAG'ın hava boşluğundaki son dış bağıydı.
+        # ADR 015 indeksi depoya aldı ama `vektor_ara` her sorguda SORGUYU
+        # gömüyor; o çağrı EVREN'e giderse indeks hazırken bile chatbot'un
+        # koşul sorusu yolu internetsiz demoda çalışmaz (26 Ağu).
+        assert str(ortam.get("GOMME_SAGLAYICI", "")).strip() == "ollama", (
+            f"`{servis}` servisinde GOMME_SAGLAYICI yerel değil: "
+            f"{ortam.get('GOMME_SAGLAYICI')!r}. İndeksin depoda olması yetmez; "
+            "sorgunun kendisi de yerelde gömülmeli."
+        )
+
         # Sır sızıntısı: sağlayıcı yerelken EVREN anahtarının konteyner
         # ortamında işi yok; `docker inspect` ile okunabilir hâle gelir.
         sizanlar = [ad for ad in ortam if ad.startswith("EVREN_")]
@@ -191,6 +201,49 @@ def test_compose_uygulama_katmanina_saglayici_gecirir() -> None:
             "Sağlayıcı yerel; bu değişkenler gereksiz ve anahtar konteyner "
             "ortamında görünür olur. EVREN ile koşmanın yolu yerel sanal ortamdır."
         )
+
+
+def test_yerel_gomme_ucu_izinli_host_listesinde(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`GOMME_SAGLAYICI=ollama` seçildiğinde RAG dışarı ÇIKAMAMALI.
+
+    NEDEN VAR — ADR 015 yanlış anlaşılmaya çok müsaitti (26 Ağustos):
+        İndeks depoya alınınca «RAG artık çevrimdışı çalışır» sanıldı. Ama
+        indeksin hazır olması YETMİYOR: `vektor_ara` her sorguda SORGUNUN
+        KENDİSİNİ gömmek zorunda. O çağrı EVREN'e gidiyordu, yani hava boşluğu
+        demosunda chatbot'un koşul sorusu yolu indeks depoda dururken bile
+        çalışmıyordu.
+
+    ÖLÇÜLDÜ — aynı soru, aynı indeks, tek fark sağlayıcı:
+
+        GOMME_SAGLAYICI=evren   -> 3 dış bağlantı denemesi (195.142.26.68),
+                                   cevap: «gömme servisine ulaşılamadı»
+        GOMME_SAGLAYICI=ollama  -> 0 dış bağlantı, 3 kaynaklı gerçek cevap
+
+    Bu test ağ İSTEMEZ: gömme yapmaz, yalnız çözümlenen ucun host'una bakar.
+    Canlı Ollama gerektiren uçtan uca ölçüm CI'da koşamaz; burada denetlenen
+    şey YAPILANDIRMANIN doğru yeri gösterdiğidir.
+    """
+    import importlib
+    from urllib.parse import urlparse
+
+    from src import vektor_db
+
+    monkeypatch.setenv("GOMME_SAGLAYICI", "ollama")
+    modul = importlib.reload(vektor_db)
+    try:
+        temel_url, _, model = modul.gomme_ucu()
+        sunucu = urlparse(temel_url).hostname or ""
+        assert sunucu in IZINLI_HOSTLAR, (
+            f"Yerel gömme sağlayıcısı izinli host listesinin dışına bakıyor: "
+            f"{temel_url}. İzinli: {sorted(IZINLI_HOSTLAR)}"
+        )
+        # Ölçülen boyut 1024 — `vektor_db.BOYUT` ve depodaki indeksle uyumlu.
+        assert model == "bge-m3"
+    finally:
+        # Modül global durumu taşıyor (`_istemci`, `_indeks`); sonraki testler
+        # varsayılan sağlayıcıyla koşmalı.
+        monkeypatch.delenv("GOMME_SAGLAYICI", raising=False)
+        importlib.reload(vektor_db)
 
 
 def test_kodda_sabit_kodlanmis_dis_api_ucu_yok() -> None:

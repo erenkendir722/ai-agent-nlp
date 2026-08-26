@@ -254,3 +254,68 @@ def test_indeks_durumu_korpus_verilmezse_denetlemedigini_soyler(sahte_evren):
     durum = vektor_db.indeks_durumu()
     assert durum["bayat"] is None
     assert "denetlenmedi" in durum["sebep"]
+
+
+# ---------------------------------------------------------------------------
+# Gömme sağlayıcısı — hava boşluğunun son dış bağı (26 Ağustos)
+# ---------------------------------------------------------------------------
+
+
+def _saglayiciyla(monkeypatch, ad: str):
+    """Modülü verilen sağlayıcıyla yeniden yükler ve döndürür."""
+    import importlib
+
+    monkeypatch.setenv("GOMME_SAGLAYICI", ad)
+    return importlib.reload(vektor_db)
+
+
+def test_gomme_ucu_evren_disariya_bakar(monkeypatch):
+    """Varsayılan yol EVREN — ölçüm koşularının kullandığı uç."""
+    v = _saglayiciyla(monkeypatch, "evren")
+    url, _, model = v.gomme_ucu()
+    assert "evren" in url
+    assert model == "bge-m3-embed"
+
+
+def test_gomme_ucu_ollama_yerele_bakar(monkeypatch):
+    """Hava boşluğu yolu: sorgu gömmesi de yerelde kalmalı.
+
+    NEDEN VAR — ADR 015 indeksi depoya aldı ve «RAG artık çevrimdışı çalışır»
+    sanıldı. Ama indeksin hazır olması YETMİYOR: `vektor_ara` her sorguda
+    sorguyu gömmek zorunda ve o çağrı EVREN'e gidiyordu. İndeksi taşımak
+    gerekliydi, yeterli değildi.
+    """
+    from urllib.parse import urlparse
+
+    v = _saglayiciyla(monkeypatch, "ollama")
+    url, _, model = v.gomme_ucu()
+
+    sunucu = urlparse(url).hostname or ""
+    assert sunucu in {"127.0.0.1", "localhost", "ollama"}, (
+        f"Yerel gömme sağlayıcısı dışarı bakıyor: {url}"
+    )
+    assert model == "bge-m3"
+
+
+def test_bilinmeyen_gomme_saglayicisi_sessizce_evrene_dusmez(monkeypatch):
+    """Yapılandırma hatası, fark edilmeyen bir dış çağrıya dönüşmemeli.
+
+    Sessiz yedeğe düşmek, bu modülün `gom_toplu` docstring'inde anlatılan
+    sıfır-vektörü hatasının aynısı olurdu: sistem çalışıyor görünür, yanlış
+    yere gider.
+    """
+    v = _saglayiciyla(monkeypatch, "sacmasapan")
+    with pytest.raises(ValueError, match="Bilinmeyen gömme sağlayıcı"):
+        v.gomme_ucu()
+
+
+def test_model_ailesi_evren_ve_ollama_adlarini_esitler(monkeypatch):
+    """`bge-m3-embed` ile `bge-m3` AYNI modeldir — sahte uyarı üretilmemeli.
+
+    İkisi de `BAAI/bge-m3` (MIT, ADR 013), ikisi de 1024 boyut. EVREN'de
+    kurulmuş indeksi Ollama ile sorgulamak meşrudur; ham ad karşılaştırması
+    yapılsaydı her sorguda yanlış bir «model uyuşmuyor» uyarısı basılırdı.
+    """
+    v = _saglayiciyla(monkeypatch, "evren")
+    assert v._model_ailesi("bge-m3-embed") == v._model_ailesi("bge-m3")
+    assert v._model_ailesi("bge-m3") != v._model_ailesi("nomic-embed-text")
