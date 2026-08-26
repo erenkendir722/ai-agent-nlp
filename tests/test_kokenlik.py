@@ -64,6 +64,39 @@ def test_parmak_izi_ilgisiz_dosyadan_etkilenmez(tmp_path):
     assert kod_parmak_izi(tmp_path) == onceki
 
 
+def test_parmak_izi_satir_sonundan_etkilenmez(tmp_path):
+    """CRLF ve LF AYNI izi vermeli — 26 Ağustos'ta ölçülen yanlış «BAYAT».
+
+    Depoda `core.autocrlf=true` olan makinelerde git, `.py` dosyalarını
+    çalışma ağacına CRLF yazar. İz ham bayttan hesaplandığı sürece aynı
+    commit Windows'ta ve macOS'ta farklı iz üretir; `cikarim_durumu()` kod
+    hiç değişmemişken «bayat» der ve `make eval`, jüriye giden
+    `docs/SONUCLAR.md`'ye yanlış «sunuma kopyalamayın» uyarısı yazar.
+
+    Ölçülen (aynı commit, aynı kod, 26 Ağu korpusu):
+        Windows CRLF : 785decb4399f01bc
+        macOS   LF   : 82d5d492c9ba5ae2   <- veritabanına yazılan
+
+    Ekip iki işletim sistemini birlikte kullandığı için hata her pull'da
+    yeniden ortaya çıkıyordu; bu yüzden testi kalıcı.
+    """
+    (tmp_path / "src" / "extraction").mkdir(parents=True)
+
+    lf = "a = 1\nb = 2\n"
+    (tmp_path / "src" / "schema.py").write_bytes(lf.encode())
+    (tmp_path / "src" / "extraction" / "kural.py").write_bytes(lf.encode())
+    iz_lf = kod_parmak_izi(tmp_path)
+
+    crlf = lf.replace("\n", "\r\n")
+    (tmp_path / "src" / "schema.py").write_bytes(crlf.encode())
+    (tmp_path / "src" / "extraction" / "kural.py").write_bytes(crlf.encode())
+    iz_crlf = kod_parmak_izi(tmp_path)
+
+    assert iz_lf == iz_crlf, (
+        "Satır sonu izi değiştirdi: Windows ve macOS aynı kodu bayat sanar."
+    )
+
+
 def test_parmak_izi_izlenen_kaynaklari_kapsar():
     """Liste daralırsa bayatlık tespiti sessizce körleşir — sözleşme testi."""
     assert "src/schema.py" in CIKARIM_KAYNAKLARI

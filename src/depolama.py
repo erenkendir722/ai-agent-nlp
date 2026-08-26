@@ -273,7 +273,29 @@ def kod_parmak_izi(kok: Path = KOK) -> str:
     """`CIKARIM_KAYNAKLARI` dosyalarının içerik özeti (kısa sha256).
 
     Aynı kod her makinede aynı izi verir: yollar göreli ve sıralıdır, mutlak
-    yol ya da dosya tarihi karışmaz.
+    yol, dosya tarihi ya da SATIR SONU karışmaz.
+
+    SATIR SONU NEDEN NORMALLEŞTİRİLİYOR — 26 Ağustos'ta ölçüldü:
+        Depoda `core.autocrlf=true` kullanan makinelerde git, `.py` dosyalarını
+        çalışma ağacına CRLF olarak yazar. `read_bytes()` o baytları okuduğu
+        için aynı commit, Windows'ta ve macOS'ta FARKLI iz üretiyordu:
+
+            Windows (CRLF) : 785decb4399f01bc
+            macOS   (LF)   : 82d5d492c9ba5ae2   <- veritabanına yazılan
+
+        Sonuç: kod hiç değişmemişken `cikarim_durumu()` «BAYAT» diyordu ve
+        `make eval`, jüriye giden `docs/SONUCLAR.md`'nin en başına
+        «🔴 BAYAT — bu sayıları sunuma kopyalamayın» uyarısını yazıyordu.
+        Uyarı yanlıştı; veritabanı günceldi. Ekip macOS ve Windows karışık
+        çalıştığı için hata her pull'da yeniden ortaya çıkıyordu.
+
+        Aynı sınıf hata `.gitattributes` içinde robots kanıtları için zaten
+        belgeliydi — orada dönüşüm sha256 özetlerini bozuyordu. Burada da
+        bozuyor; çözüm aynı: baytı değil, İÇERİĞİ özetle.
+
+        Normalleştirme geriye dönük uyumludur: LF makinelerde iz DEĞİŞMEZ,
+        dolayısıyla veritabanındaki koşu kayıtları geçerli kalır ve yeniden
+        çıkarım GEREKMEZ.
     """
     yollar: list[Path] = []
     for gosterge in CIKARIM_KAYNAKLARI:
@@ -286,7 +308,7 @@ def kod_parmak_izi(kok: Path = KOK) -> str:
     ozet = hashlib.sha256()
     for yol in sorted(yollar):
         ozet.update(yol.relative_to(kok).as_posix().encode())
-        ozet.update(yol.read_bytes())
+        ozet.update(yol.read_bytes().replace(b"\r\n", b"\n"))
     return ozet.hexdigest()[:16]
 
 
