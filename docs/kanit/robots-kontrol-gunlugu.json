@@ -1,5 +1,5 @@
 {
-  "uretildi": "2026-08-24T22:54:45+03:00",
+  "uretildi": "2026-08-26T12:11:33+03:00",
   "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
   "asgari_istek_araligi_sn": 2.0,
   "uretici": "tools/robots_kanit.py",
@@ -396,19 +396,25 @@
       "robots": {
         "adres": "https://www.iktisatkatilim.com.tr/robots.txt",
         "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
-        "durum": null,
-        "hata": "ConnectTimeout: _ssl.c:983: The handshake operation timed out",
+        "durum": 404,
+        "hata": null,
         "uzunluk": 0,
         "sha256": null,
         "dosya": null,
-        "gonderilen_basliklar": null,
+        "gonderilen_basliklar": {
+          "host": "www.iktisatkatilim.com.tr",
+          "accept": "*/*",
+          "accept-encoding": "gzip, deflate",
+          "connection": "keep-alive",
+          "user-agent": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
+        },
         "beyan_edilen_gecikme": null,
         "sitemapler": []
       },
       "kararlar": [
         {
           "url": "https://www.iktisatkatilim.com.tr",
-          "izinli": false,
+          "izinli": true,
           "uygulanan_bekleme_sn": 2.0
         }
       ],
@@ -449,7 +455,7 @@
         "adres": "https://www.bddk.org.tr/robots.txt",
         "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
         "durum": null,
-        "hata": "ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)",
+        "hata": "ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)",
         "uzunluk": 0,
         "sha256": null,
         "dosya": null,

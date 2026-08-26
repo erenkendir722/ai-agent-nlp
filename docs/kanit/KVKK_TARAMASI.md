@@ -1,6 +1,6 @@
 # KVKK Taraması — toplanan metinde kişisel veri var mı?
 
-_Otomatik üretildi: 2026-08-25T13:27:18+03:00 · `tools/kvkk_taramasi.py`_
+_Otomatik üretildi: 2026-08-26T12:11:34+03:00 · `tools/kvkk_taramasi.py`_
 
 Bu rapor **G-14** (veri toplama etiği kanıtı) kapsamındadır ve
 `docs/kanit/VERI_TOPLAMA_ETIGI.md` tarafından kanıt olarak gösterilir.

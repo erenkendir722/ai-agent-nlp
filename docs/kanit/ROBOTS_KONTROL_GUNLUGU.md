@@ -1,6 +1,6 @@
 # robots.txt Kontrol Günlüğü
 
-_Otomatik üretildi: 2026-08-24T22:54:45+03:00 · `tools/robots_kanit.py`_
+_Otomatik üretildi: 2026-08-26T12:11:33+03:00 · `tools/robots_kanit.py`_
 
 Bu günlük **G-14** (veri toplama etiği kanıtı) kapsamındadır;
 `docs/kanit/VERI_TOPLAMA_ETIGI.md` onu kanıt olarak gösterir.
@@ -47,14 +47,14 @@ büyüğü uygulanır (`RobotsBekcisi.bekleme_suresi`).
 | TOM Katılım (faal)<br>`tombank.com.tr` | HTTP 404 · robots.txt yok | yok | 2 sn | 2 | 2 | 0 |
 | Dünya Katılım (faal)<br>`dunyakatilim.com.tr` | HTTP 200 · 111 bayt | yok | 2 sn | 2 | 2 | 0 |
 | Adil Katılım (faaliyete_gecmedi)<br>`www.adilkatilim.com.tr` | HTTP 200 · 1 bayt | yok | 2 sn | 1 | 1 | 0 |
-| İktisat Katılım (faaliyete_gecmedi)<br>`www.iktisatkatilim.com.tr` | ⚠️ çekilemedi (ConnectTimeout) | yok | 2 sn | 1 | 0 | 1 |
+| İktisat Katılım (faaliyete_gecmedi)<br>`www.iktisatkatilim.com.tr` | HTTP 404 · robots.txt yok | yok | 2 sn | 1 | 1 | 0 |
 | Halk Katılım (kurulus_asamasinda) | — | — | — | 0 | — | _site yok — kuruluş aşamasında_ |
 | Fuzul Katılım (kurulus_asamasinda) | — | — | — | 0 | — | _site yok — kuruluş aşamasında_ |
 | Dost Katılım (kurulus_asamasinda) | — | — | — | 0 | — | _site yok — kuruluş aşamasında_ |
 | Katılımevim Katılım (kurulus_asamasinda) | — | — | — | 0 | — | _site yok — kuruluş aşamasında_ |
 | BDDK — kayıt defteri kaynağı (kampanya için taranmaz)<br>`www.bddk.org.tr` | ⚠️ çekilemedi (ConnectError) | yok | 2 sn | 1 | 0 | 1 |
 
-**Toplam:** 24 URL izinli, 2 URL çekilmiyor.
+**Toplam:** 25 URL izinli, 1 URL çekilmiyor.
 Çekilmeyen URL toplayıcıya hiç gitmez — kapı `Toplayici._getir` içindedir
 ve isteğe çıkmadan önce sorulur. İki farklı sebep aynı sonucu verir:
 robots.txt `Disallow` ile reddetmiştir, ya da robots.txt okunamamıştır
@@ -179,14 +179,13 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 ### İktisat Katılım (faaliyete_gecmedi)
 
-- robots.txt: `https://www.iktisatkatilim.com.tr/robots.txt` → ⚠️ çekilemedi (ConnectTimeout)
-- Hata ayrıntısı: `ConnectTimeout: _ssl.c:983: The handshake operation timed out`
-- **Sonuç: bu alan adı otomatik taranmaz.** `RobotsBekcisi.izinli_mi`,
-  robots.txt okunamadığında `False` döner — temkinli taraf seçilir.
+- robots.txt: `https://www.iktisatkatilim.com.tr/robots.txt` → HTTP 404 · robots.txt yok
+- robots.txt **yok**. RFC 9309: dosya yoksa erişim kısıtlanmamıştır;
+  yine de kendi hız sınırımız ve kapsam kısıtlarımız uygulanır.
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.iktisatkatilim.com.tr` | ⛔ çekilmez — robots.txt okunamadı (temkinli davranış) | 2 sn |
+| `https://www.iktisatkatilim.com.tr` | ✅ izinli | 2 sn |
 
 ### Halk Katılım (kurulus_asamasinda)
 
@@ -207,7 +206,7 @@ Atlandı: site yok — kuruluş aşamasında.
 ### BDDK — kayıt defteri kaynağı (kampanya için taranmaz)
 
 - robots.txt: `https://www.bddk.org.tr/robots.txt` → ⚠️ çekilemedi (ConnectError)
-- Hata ayrıntısı: `ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1000)`
+- Hata ayrıntısı: `ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)`
 - **Sonuç: bu alan adı otomatik taranmaz.** `RobotsBekcisi.izinli_mi`,
   robots.txt okunamadığında `False` döner — temkinli taraf seçilir.
 

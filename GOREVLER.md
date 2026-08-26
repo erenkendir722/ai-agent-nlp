@@ -237,15 +237,37 @@ de yok. **Panoda tik olmamasının sebebi tiklemeyi unutmak değil; iş yapılma
 | Sprint | Tarih | Durum |
 |---|---|---|
 | **S0** — Dikey dilim | 7–9 Ağu | ✅ **BİTTİ** — sistem uçtan uca çalışıyor |
-| **S1** — Veri + çıkarım | 10–16 Ağu | 🟠 **Sürüyor — 3 gün gecikmeli** |
-| **S2** — Zekâ katmanı | 17–21 Ağu | ⚪ |
-| **S3** — Ölçüm + on-prem | 22–23 Ağu | ⚪ |
-| **S4** — Teslim | 24–26 Ağu | ⚪ |
+| **S1** — Veri + çıkarım | 10–16 Ağu | ✅ **BİTTİ** — 1024 kampanya, 9 faal bankanın hepsi |
+| **S2** — Zekâ katmanı | 17–21 Ağu | ✅ **BİTTİ** — ajanlar, RAG, kalkan |
+| **S3** — Ölçüm + on-prem | 22–23 Ağu | ✅ **BİTTİ** — ablasyon, hava boşluğu, Docker |
+| **S4** — Teslim | 24–27 Ağu | 🟠 **Sürüyor** — kalan: PPTX, iki video, `v1.0` etiketi |
 
-**Bugünkü durum (14 Ağustos):** 96 kampanya (hedef 300+) · 8 banka ·
-halüsinasyon %0,25 · **253 test geçiyor** · depo **PUBLIC** ✅ ·
-şema **v1.1.0** · `src/ajanlar/` kuruldu
-Ayrıntı: [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
+**Bugünkü durum (26 Ağustos, teslime 1 gün):** 1024 kampanya · 9 banka ·
+makro-F1 **0,82** (%95 GA 0,76–0,87) · sayısal doğruluk **0,93** ·
+halüsinasyon **%0,43** · kalkan yanlış blok **0/35** · **787 test geçiyor** ·
+depo **PUBLIC** ✅ · şema **v1.2.0** · uygunluk çıkarımı **%70,1**
+Ayrıntı: [`docs/SONUCLAR.md`](docs/SONUCLAR.md)
+
+### 📌 26 Ağustos — teslim öncesi kapatma turu
+
+Bir oturumda kapatılan işler (hepsi ölçülerek, hepsi testli):
+
+| Görev | Ne yapıldı |
+|---|---|
+| **A-08** | Uygunluk ajanı yazıldı — kayıtların **%70,1'ünde** kısıt çıkıyor; müşteri profili ekranı artık gerçekten süzüyor |
+| **A-09** | Ablasyon **5 kola** çıktı ve paralelleşti; eleştirmen ve yüklem ajanlarının katkısı ayrı ayrı ölçüldü |
+| **G-08** | `docs/KAPSAM_RAPORU.md` — kapsam dengesizliği 13,6× ölçüldü ve yayımlandı (şartname 15.1) |
+| **G-10** | Terim sözlüğü isteme bağlandı; koddaki ikinci kopya silindi, istem baytı korundu |
+| **G-11 · G-12** | `data/exports/` — CSV + JSONL + veri kartı; madde 9'un indirme bağlantısı karşılandı |
+| **G-15 · E-16 · ES-15 · ES-16** | Dokümantasyon başlıkları **3, 4, 8, 9** ve kullanım kılavuzu tamamlandı |
+| **ES-19 (K1–K7)** | Arayüz doğruluk düzeltmeleri kodda doğrulandı, pano tikleri düzeltildi |
+| **E-05** | Karşılaştırma motorunun kendi test dosyası yoktu — 18 test yazıldı (`tests/test_karsilastirma.py`) |
+| **S-04** | Yüklem düzeltmesinin makullük kapısını atladığı bulundu (%11 → %44); düzeltildi ve teste bağlandı |
+| **Ölçüm bütünlüğü** | Ablasyon koşucusu ağ düşünce ESKİ sayıları yeni damgayla yazıyordu; kol veritabanı artık siliniyor ve %90 altı başarıda koşu patlıyor |
+| **Sunum** | `docs/sunum/` **10 sayfaya** yeniden yazıldı: ajanlar, RAG, veritabanı, terim kutuları, sonuçlar. Slayttaki sayılar artık **testle** ölçüm dosyalarına bağlı (`tests/test_sunum_sayilari.py`) |
+
+**Kalan (teslim için):** `v1.0` etiketi (E-03/E-18) · PPTX (ES-13) · iki video
+(ES-17, ES-18) · fiziki final hazırlığı (E-08, E-11, E-13) · jüri provası (E-19).
 
 ### 🔴 ALTIN SET — 14 Ağustos denetimi: sanılandan çok geride
 
@@ -348,7 +370,14 @@ Gerekçe [ADR 005](docs/kararlar/005-ajan-mimarisi.md); şema değişikliği
 
 **Açık:**
 
-- [ ] **A-08** `uygunluk` alanlarının ÇIKARIMI — *Samet* · 📅 19 Ağu
+- [x] **A-08** ✅ **`uygunluk` çıkarımı bitti** *(26 Ağu)* — kayıtların **%70,1'ünde** kısıt var
+      ↳ `src/ajanlar/uygunluk.py` — LLM'siz, deterministik. `max_tutar` ← `finansman_tutari_max`,
+        `musteri_tipi` ← `hedef_kitle`; `min_tutar`/`zorunlu_urun`/segment metinden.
+      ↳ Mevcut 1024 kayıt için göç: `make uygunluk-goc` (yeniden çıkarım gerekmedi)
+      ↳ ⚠️ **Yanlış pozitif kapısı ölçüldü:** ilk sürüm ürün adını görmeyi zorunluluk sayıyordu
+        (%59). «…sahip olmak gerekmektedir» gibi yükümlülük kanıtı şartı eklendi → %24,3.
+        `min_tutar`'da «X TL ve üzeri» kalıbı tamamen kaldırıldı (kademe tablosu yanlış pozitifi).
+      ↳ 13 test: `tests/test_uygunluk.py` — çoğu «bulmamalı» testi
       ⛔ Önce bitmeli: A-01
       ↳ Bitti sayılır: `make extract` sonrası kayıtların ≥%60'ında `uygunluk` dolu
       → Çoğu alan mevcut alanlardan türetilir (`max_tutar` ← `finansman_tutari_max`,
@@ -356,7 +385,13 @@ Gerekçe [ADR 005](docs/kararlar/005-ajan-mimarisi.md); şema değişikliği
       Yalnız `min_tutar`, `min_vade_ay`, `zorunlu_urun` yeni çıkarım ister.
       **Bu bitmeden müşteri profili ekranı süzme yapmıyor** — şu an tüm kayıtlar
       "uygunluk çıkarılamadı" uyarısıyla listeleniyor.
-- [ ] **A-09** Yeni ablasyon tablosu — *Samet* · 📅 22 Ağu
+- [x] **A-09** ✅ **Beş kollu ablasyon tablosu** *(26 Ağu)* — ajan katkısı ölçüldü
+      ↳ `make ablasyon` artık 5 yapılandırma koşuyor: kural · llm · hibrit ·
+        **hibrit_elestirmensiz** · **tam**. Tek süreç, tek kod izi (ADR 011 korundu).
+      ↳ Koşucu paralelleşti (16 işçi): 1024 kayıt × 5 kol ≈ 25 dk. `altin=1` ile altın korpus.
+      ↳ **Bulgu:** eleştirmen kapatılınca makro-F1 DEĞİŞMİYOR ama halüsinasyon
+        %0,35 → %0,49 çıkıyor. Eleştirmenin işi skoru yükseltmek değil, uydurmayı kesmek.
+      ↳ **Bulgu:** yüklem ajanı +0,02 makro-F1 (0,797 → 0,819) ve sayısal doğruluk 0,915 → 0,930
       ⛔ Önce bitmeli: A-04, H-01
       ↳ Üç yapılandırma: `--yalniz-llm --elestirmen-yok` / `--elestirmen-yok` / varsayılan
       → Eski tablo (kural/llm/hibrit) da korunacak; ikisi iki ayrı soruyu cevaplıyor
@@ -550,17 +585,26 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ ⚠️ 12 Ağu denetimi: depoda **hiç git etiketi yok**, `v0.1` atılmamış
       ↳ Şartname madde 9 zorunlu tutuyor, commit geçmişi kanıt
 
-- [ ] **E-04** Boru hattını tüm faal bankalar için sağlamlaştır · 📅 14 Ağu
+- [x] **E-04** ✅ **Boru hattı 9 faal bankanın hepsinde koşuyor** *(26 Ağu doğrulandı)*
+      ↳ `make durum`: **1024 kampanya · 9 banka** — hedef 300+ aşıldı, T.O.M. ve Dünya dahil
+      ↳ Şartname 5.1 (BDDK listesindeki kuruluşların tümü) karşılandı; kalan 6 kuruluş
+        `faaliyete_gecmedi` / `kurulus_asamasinda` durumunda, kampanya sayfaları yok
       ⛔ **Önce bitmeli:** G-02 (Görkem)
       ↳ Bitti sayılır: `make crawl && make extract` 300+ kampanyayı tek komutta işliyor
 
 ### Sprint 2 (17–21 Ağustos)
 
-- [ ] **E-05** Karşılaştırma motorunu altın setle doğrula, kenar durumları kapat · 📅 19 Ağu
+- [x] **E-05** ✅ **Karşılaştırma motoru testle sabitlendi** *(26 Ağu)* — `tests/test_karsilastirma.py`
+      ↳ 18 test: beş kriterin **her biri** ayrı ayrı · eksik verinin sona gitmesi ·
+        ADR 012 (sıfır kâr payı boş sayılmaz) · ağırlık değişince sıralamanın değişmesi ·
+        karışık birim uyarısı · ortak taban senaryosu · **manşet oran tuzağının ~4.204 TL farkı**
+      ↳ Motorun kendi test dosyası YOKTU: `toplam_maliyet` dolaylı, `sirala`/`avantaj_skorla`/
+        `uyarilar` hiç sınanmıyordu. Sunumdaki cümleler artık koda bağlı.
       ⛔ **Önce bitmeli:** H-01 (Herkes)
       ↳ Bitti sayılır: 5 kriterin her biri gerçek veriyle test edildi
 
-- [ ] **E-06** Toplam maliyet hesaplayıcısını arayüze tam bağla · 📅 20 Ağu
+- [x] **E-06** ✅ **Toplam maliyet arayüze bağlı** — `1_Karşılaştırma.py:536`
+      ↳ Ortak anapara + vade girilip tüm kampanyalar aynı tabana indirgeniyor
       ↳ Motor hazır (`toplam_maliyet`), arayüzde tablo satırından tetiklenmeli
 
 ### Sprint 3 — ölçüm ve sertleştirme (22–23 Ağustos)
@@ -698,8 +742,12 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         bölümü "92 test geçmeli" diyordu — gerçek sayı 700'ün üzerinde.
         Sabit sayı yerine komutun kendi çıktısına yönlendirildi.
 
-- [ ] **E-16** Dokümantasyon başlığı 8'i derle · 📅 24 Ağu
-      ⛔ **Önce bitmeli:** H-04 (Herkes)
+- [x] **E-16** ✅ **Dokümantasyon başlığı 8 derlendi** *(26 Ağu)*
+      ↳ [`docs/PROBLEMLER_VE_COZUMLER.md`](docs/PROBLEMLER_VE_COZUMLER.md) — 5 başlık,
+        24 ölçülmüş problem; her biri teste ya da ADR'ye bağlı. Sonunda «üç yinelenen kalıp».
+      ↳ H-04 (sürekli problem günlüğü) BEKLENMEDİ: malzeme zaten `SPRINT0_RAPORU.md`
+        bölüm 5, 14 ADR ve kod içi ölçüm notlarındaydı. H-04 açık kalmaya devam eder —
+        yeni problem çıktıkça bu dosyaya eklenir.
       ↳ (8) Karşılaşılan problemler ve çözüm yaklaşımları
       ↳ `docs/SPRINT0_RAPORU.md` bölüm 5'te 6 hata zaten yazılı + `docs/kararlar/`
         altındaki ADR'ler. **Derlemesi 30 dakika**, sıfırdan yazmak 4 saat.
@@ -771,8 +819,15 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Sebep muhtemelen: çekilen sayfaların bir kısmı kampanya değil, genel ürün
         sayfası. İki yol: (a) istemi iyileştir, (b) kampanya olmayan sayfaları ele
 
-- [ ] **S-04** Sayısal alanlara akıl sağlığı sınırları · 📅 14 Ağu
-      ↳ Bitti sayılır: "1000 TL finansman limiti" gibi saçma değerler kalmadı
+- [x] **S-04** ✅ **Akıl sağlığı sınırları uygulanıyor ve ölçüldü** *(26 Ağu)*
+      ↳ Sınırlar şemada (`AYLIK_KAR_PAYI_ALT/UST_SINIRI`, `EN_AZ_FINANSMAN_TUTARI`) ve
+        kapı ALAN düzeyinde: `deger_makul_mu` — değer hangi katmandan gelirse gelsin denetlenir
+      ↳ **26 Ağu bulgusu:** yüklem ajanının düzeltmesi bu kapıyı ATLIYORDU; bir katılma hesabı
+        sayfasında `kar_payi_orani` %11 → **%44** olarak yeniden kuruluyordu. Düzeltildi,
+        iki testle sabitlendi (`tests/test_uzlastirici_kapisi.py`)
+      ↳ **Ölçüm (1024 kayıt, `make veri-kalitesi`):** 5.000 TL altı finansman **0** ·
+        %5 üstü kâr payı **1** (katılma hesabı getiri tablosu, aylık oran değil) ·
+        10 Milyon TL üstü finansman **3** (teminat mektubu ve savunma sanayii paketi — gerçek)
       ↳ Ör: finansman tutarı < 5.000 TL ise şüpheli, tahsis ücreti > 100.000 TL ise şüpheli
       ↳ `src/extraction/kural.py` içindeki `KuralTanimi`'ye alt/üst sınır alanı ekle
 
@@ -1234,7 +1289,10 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Jürinin "bankalar sitelerini değiştirirse?" sorusunun cevabı bu rapor:
         kırılma olduğunda uyarı üretiyoruz
 
-- [ ] **G-08** Banka bazlı kapsam raporu · 📅 16 Ağu
+- [x] **G-08** ✅ **Kapsam raporu** *(26 Ağu)* — `make kapsam`
+      ↳ [`docs/KAPSAM_RAPORU.md`](docs/KAPSAM_RAPORU.md): banka × tür dağılımı,
+        **dengesizlik 13,6×** ve bunun sıralamayı neden doğrudan bozmadığı
+      ↳ Şartname 15.1 (yanlılık) maddesinin cevabı bu rapor
       ⛔ **Önce bitmeli:** G-04 (Görkem)
       ↳ Bitti sayılır: Hangi bankadan kaç kampanya, hangi türlerde — tablo halinde
       ↳ Bir bankadan 40, diğerinden 2 kampanya varsa karşılaştırma yanlı olur.
@@ -1250,13 +1308,19 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bu sözlük LLM istemine de besleniyor (`src/extraction/llm.py`, `TERIMLER`) —
         yani doğrudan model başarısını etkiliyor, süs değil
 
-- [ ] **G-10** Terim sözlüğünü LLM istemine bağla · 📅 20 Ağu
+- [x] **G-10** ✅ **Sözlük isteme bağlandı** *(26 Ağu)*
+      ↳ İstem bloğu artık `docs/TERIM_SOZLUGU.md` §12'de, `<!-- ISTEM:BASLA -->` işaretçileri
+        arasında. `llm.py::terimleri_yukle()` oradan okur — koddaki ikinci kopya SİLİNDİ.
+      ↳ Dosya yoksa **hata fırlatır**; terimsiz istemle sessizce koşmaz. Docker imajı sözlüğü kopyalar.
+      ↳ ⚠️ Blok bilerek birebir korundu: istem baytı değişmediği için mevcut ölçümler geçerli kaldı
       ⛔ **Önce bitmeli:** G-09 (Görkem)
       ↳ Bitti sayılır: `TERIMLER` sabiti `docs/TERIM_SOZLUGU.md`'den besleniyor,
         sözlük büyüyünce istem kendiliğinden güncelleniyor
       ↳ **Samet ile birlikte yap** — çıkarım doğruluğu ölçülerek karşılaştırılsın
 
-- [ ] **G-11** Veri seti dışa aktarım sürümü + `DATASET_CARD.md` · 📅 21 Ağu
+- [x] **G-11** ✅ **Veri seti dışa aktarımı + veri kartı** *(26 Ağu)* — `make veri-seti`
+      ↳ `data/exports/`: **CSV** (insan) + **JSONL** (kanıt zinciriyle) + `DATASET_CARD.md`
+      ↳ Tam sayfa metni yok; yapısal alanlar + URL + **300 karakterlik alıntı** → telif riski sıfır
       ⛔ **Önce bitmeli:** G-04 (Görkem)
       ↳ Bitti sayılır: `data/exports/` altında yayınlanabilir veri seti var
       ↳ ⚠️ **Tam sayfa metni koyma** — yapısal alanlar + URL + alıntı parçası.
@@ -1265,7 +1329,10 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 3 (22–23 Ağustos)
 
-- [ ] **G-12** 🔴 Veri setini yayınla — GitHub Release ve/veya Hugging Face · 📅 **22 Ağu**
+- [x] **G-12** ✅ **Veri seti yayında** *(26 Ağu)* — depo public, dosyalar depoda
+      ↳ Şartname madde 9'un istediği «herkese açık indirme bağlantısı»: `data/exports/`
+        README'de «Veri seti — indirme ve içerik» bölümünden bağlantılı
+      ↳ 🔵 İsteğe bağlı: sürüm etiketiyle birlikte bir GitHub Release açmak (E-03 ile aynı anda)
       ⛔ **Önce bitmeli:** G-11 (Görkem)
       ↳ Bitti sayılır: Herkese açık indirme bağlantısı var ve README'de duruyor
       ↳ Bağlantı yoksa şartname madde 9 ihlal edilmiş olur
@@ -1308,12 +1375,17 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Sprint 4 (24–26 Ağustos)
 
-- [ ] **G-15** Dokümantasyon başlıkları 3, 4 · 📅 24 Ağu
+- [x] **G-15** ✅ **Dokümantasyon başlıkları 3 ve 4 güncel** *(26 Ağu)*
+      ↳ `docs/VERI_METODOLOJISI.md` §0 eklendi: 1024 kayıt · 9 banka · doluluk %25,8 ·
+        uygunluk %70,1 · yayın sürümü bağlantıları
+      ↳ Bayat sınır düzeltildi: «T.O.M.'da kampanya bulunamadı» → o bankadan 103 kayıt var
       ⛔ **Önce bitmeli:** G-04 (Görkem)
       ↳ (3) Kullanılan veri seti ve açıklaması · (4) Veri ön işleme adımları
       ↳ `docs/VERI_METODOLOJISI.md` hazır, gerçek sayılarla güncelle
 
-- [ ] **G-16** Veri seti bağlantılarını son kontrol · 📅 25 Ağu
+- [x] **G-16** ✅ **Bağlantılar kontrol edildi** *(26 Ağu)*
+      ↳ Depo kimliksiz istekte **HTTP 200** (public), README'deki veri seti ve doküman
+        bağlantılarının hedef dosyaları depoda mevcut
       ⛔ **Önce bitmeli:** G-12 (Görkem)
       ↳ Bitti sayılır: README'deki veri seti ve lisans bağlantıları çalışıyor,
         gizli/özel depo değil
@@ -1339,7 +1411,9 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ## 🔴 ES-19 — METİN YAPIŞTIRMA EKRANI · en acil, 19 Ağu'da eklendi
 
-- [ ] **ES-19** «Metin ver → yapısal çıktı» ekranı · 📅 **21 Ağu** · ⚡ **çift amaçlı**
+- [x] **ES-19** ✅ **«Metin ver → yapısal çıktı» ekranı** — `app/pages/3_Metin_Analizi.py`
+      ↳ Şartname madde 11'in örnek metni hazır düğmeyle yükleniyor; sonuç tablosu
+        alan · değer · birim · güven · yöntem ve kaynak alıntısı gösteriyor
 
 **NEDEN BİRDEN ACİL OLDU.** 19 Ağustos soru-cevap toplantısında jüri şunu
 söyledi:
@@ -1453,7 +1527,9 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
         kampanya türü + tarih aralığı filtreleri çalışıyor
       ↳ 300 kampanyaya çıkınca tabloyu gözle taramak imkânsız olacak
 
-- [ ] **ES-05** **Veri kalitesi paneli** · 📅 14 Ağu
+- [x] **ES-05** ✅ **Veri kalitesi paneli** — Genel Bakış «Veri Kalitesi ve Şeffaflık»
+      ↳ Doluluk oranları, güven skoru dağılımı ve `Belirtilmemiş` sayıları ekranda
+      ↳ K3'teki uydurma metrik kartları kaldırıldı (26 Ağu denetimi: kodda artık yok)
       ↳ Bitti sayılır: Genel Bakış'ta alan doluluk oranları, güven skoru dağılımı
         ve `Belirtilmemiş` sayıları görünüyor
       ↳ Bu ekran banka çalışanına "hangi veriye ne kadar güvenebilirim" der.
@@ -1466,7 +1542,9 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
 
 ### Sprint 2 — zekâ katmanı arayüzü (17–21 Ağustos)
 
-- [ ] **ES-06** Chatbot paneli — kaynak kartları ve doğrulama rozeti · 📅 18 Ağu
+- [x] **ES-06** ✅ **Chatbot paneli bitti** — niyet etiketi + rozet + kaynak kartları
+      ↳ K5 ve K7 kapandı: «Eleştirmen Ajan» ifadesi düzeltildi, kalkan örneği
+        bilinçli «kalkan gösterimi»ne çevrildi (`KALKAN_ORNEGI`)
       ↳ İskelet hazır (`app/pages/2_Chatbot.py`)
       ↳ Bitti sayılır: Her cevapta niyet etiketi, ✅/⛔ doğrulama rozeti ve
         kaynak kartları görünüyor; sohbet geçmişi korunuyor
@@ -1476,7 +1554,8 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
         "Eleştirmen Ajan" ifadesi yanlış (o kod yolunda yok, `sayisal_dogrulama`
         var) · reddedilen sayılar tekrarlı basılıyor.
 
-- [ ] **ES-07** Ağırlık kaydırıcıları + vade farkı uyarısı · 📅 19 Ağu
+- [x] **ES-07** ✅ **Ağırlık kaydırıcıları + uyarılar** — `1_Karşılaştırma.py:155-158`
+      ↳ K1'deki ters ifade düzeltildi; uyarılar `uyarilar()`'dan geliyor
       ↳ Kenar çubuğunda kaydırıcılar var; gerçek veriyle test et
       ↳ Jüri "en avantajlıyı nasıl belirliyorsunuz?" diye **kesin soracak** —
         cevap: "kullanıcı ağırlıkları belirliyor, formül dokümantasyonda"
@@ -1487,35 +1566,39 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
         `sirala()`'da YOK. Gerçek vade farkı uyarısı zaten `uyarilar()`'dan
         geliyor ve zaten ekranda (satır 166) — o kısım aslında bitmişti.
 
-- [ ] **ES-19** 🔴 **Arayüz doğruluk düzeltmeleri (K1–K7)** · 📅 **19 Ağu**
+- [x] **ES-19** ✅ **Arayüz doğruluk düzeltmeleri (K1–K7) bitti** *(26 Ağu denetimi)*
+      ↳ Kodda doğrulandı: K2 («eşitlikte güven skoru») ve K6 (hayali `api.svartal.bank`)
+        metinleri artık YOK · K1 vade ifadesi düzeltilmiş · K3 uydurma metrik kartları
+        kaldırılmış · K4 `format_bank_name()` kullanılıyor · K5 adlandırma düzeltilmiş ·
+        K7 kalkan örneği bilinçli gösterime çevrilmiş
       ↳ Tam gerekçe ve her madde için doğrulama komutu: **`docs/ARAYUZ_INCELEME.md`**
       ↳ Bitti sayılır: aşağıdaki yedi maddenin hepsi kapandı ve `make test` yeşil
 
       **🔴 Jüri riski — önce bunlar (~30 dk):**
-      - [ ] **K1** `1_Karsilastirma.py:146` ve `:260` — "uzun vade skoru düşürülür"
+      - [x] **K1** `1_Karsilastirma.py:146` ve `:260` — "uzun vade skoru düşürülür"
             metni kodun TERSİ. Motor `yuksek_iyi` (3 ay → 0,0 · 120 ay → 0,20).
             Gerçek vade farkı uyarısı zaten `uyarilar()`'dan geliyor (satır 166).
-      - [ ] **K2** `1_Karsilastirma.py:276` — "eşitlikte güven skoru yüksek olan
+      - [x] **K2** `1_Karsilastirma.py:276` — "eşitlikte güven skoru yüksek olan
             üste çıkar" kuralı `sirala()`'da YOK. Ya metni çıkar, ya motora
             gerçekten ekle (o zaman Eren'e haber ver, E-06 alanı).
-      - [ ] **K3** `Genel_Bakis.py:149,153-155` — üç metrik kartı uydurma
+      - [x] **K3** `Genel_Bakis.py:149,153-155` — üç metrik kartı uydurma
             (%14 · 42 halüsinasyon · GPT-4 tasarrufu). `docs/SONUCLAR.md`'den besle:
             halüsinasyon **%0,32** · sayısal doğruluk **0,933** · şema geçerliliği **1,00**.
             Makro-F1'i güven aralığıyla yaz: **0,736 (%95 GA: 0,610–0,810), n=60**.
 
       **🟠 Sonra (~45 dk):**
-      - [ ] **K4** `1_Karsilastirma.py:195` — ham `.replace()` yerine
+      - [x] **K4** `1_Karsilastirma.py:195` — ham `.replace()` yerine
             `format_bank_name()`. 8 bankanın 4'ü iki sayfada farklı görünüyor
             (Ziraat Katılım/Ziraat · Vakıf Katılım/Vakıf · Dünya Katılım/Dünya ·
             Emlak Katılım/Türkiye Emlak). *Bu satır Sprint 0'dan kalma (`ec313d8`),
             Esra'nın commit'lerinden gelmiyor — ama sayfa onun alanı.*
-      - [ ] **K5** `2_Chatbot.py:88` + `Genel_Bakis.py:149` — "Eleştirmen Ajan"
+      - [x] **K5** `2_Chatbot.py:88` + `Genel_Bakis.py:149` — "Eleştirmen Ajan"
             o kod yolunda yok; `sayisal_dogrulama` kalkanı yapıyor. Adını düzelt.
-      - [ ] **K6** `1_Karsilastirma.py:329`, `2_Chatbot.py:169` — hayali
+      - [x] **K6** `1_Karsilastirma.py:329`, `2_Chatbot.py:169` — hayali
             `api.svartal.bank` yerine gerçek uçlar: `GET /compare`, `POST /ask`
             (`src/api/sunucu.py`, `make api` ile 8000 portunda). Jüri önünde
             canlı çalıştırılabilir olmalı.
-      - [ ] **K7** `2_Chatbot.py:46` — "Kampanya koşulları neler?" örneği kalkanı
+      - [x] **K7** `2_Chatbot.py:46` — "Kampanya koşulları neler?" örneği kalkanı
             tetikliyor, jürinin ilk tıkladığı butonda kırmızı ⛔ çıkıyor. Ya çıkar,
             ya "🛡️ Kalkan gösterimi" etiketiyle kasıtlı demo hamlesine çevir.
             Ayrıca reddedilen sayılar tekrarlı basılıyor — tekilleştir.
@@ -1527,14 +1610,14 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
       ↳ Küçük temizlik listesi (ölü kod, çift `st.divider()`, ölü yorumlar) da
         `docs/ARAYUZ_INCELEME.md` sonunda — bunlar acil değil, sırası gelince.
 
-- [ ] **ES-08** **Yan yana karşılaştırma + toplam maliyet** · 📅 20 Ağu
+- [x] **ES-08** ✅ **Yan yana karşılaştırma + toplam maliyet** — ortak anapara/vade ile aynı taban
       ⛔ **Önce bitmeli:** E-06 (Eren)
       ↳ Bitti sayılır: İki (veya üç) kampanya seçilip yan yana konabiliyor,
         her biri için toplam maliyet hesaplanıp tabloda gösteriliyor
       ↳ Motor hazır: `src/comparison/karsilastirma.py::toplam_maliyet`
       ↳ Şartname madde 11'in örnek çıktı tablosu tam olarak bu — jüri bunu görmek istiyor
 
-- [ ] **ES-09** **Dışa aktarma: CSV / Excel indir** · 📅 21 Ağu
+- [x] **ES-09** ✅ **CSV dışa aktarma** — `1_Karşılaştırma.py:225` (`utf-8-sig`, Excel uyumlu)
       ↳ Bitti sayılır: Karşılaştırma tablosu tek tıkla indiriliyor, indirilen
         dosyada kaynak URL ve çekim tarihi de var
       ↳ Banka çalışanı raporu Excel'e alıp toplantıya götürür — gerçek ihtiyaç.
@@ -1581,7 +1664,10 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
       ↳ Jürinin ilk 30 saniyesi README'de geçiyor; ekran görüntüsü olmayan bir
         README "çalışıyor mu acaba" sorusu bıraktırır
 
-- [ ] **ES-15** Model çıktı örnekleri (doküman başlığı 9) · 📅 24 Ağu
+- [x] **ES-15** ✅ **Model çıktı örnekleri** *(26 Ağu, Görkem)* — `make cikti-ornekleri`
+      ↳ `docs/CIKTI_ORNEKLERI.md` artık **veritabanından üretiliyor**, elle yazılmıyor
+      ↳ 6 örnek: şartname madde 11 (kural katmanı, ağsız/deterministik) · temiz kayıt ·
+        sayısal alanlar · dolaylı ifade · eksik bilgili kayıt · uygunluk koşullu kayıt
       🔄 **24 Ağu: GÖRKEM'E DEVREDİLDİ.** Kod değişmedi (`ES-15` referansları
         `docs/` ve `⛔` satırlarında geçiyor), yalnız sahibi değişti —
         `tools/gorevler.py` → `GOREV_DEVRI`.
@@ -1594,8 +1680,11 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
         eşleşmeleri, kanıt zinciriyle (alıntı + güven + yöntem)
       ↳ En az 5 örnek: biri temiz, biri eksik bilgili, biri dolaylı ifadeli
 
-- [ ] **ES-16** Kullanım kılavuzu (banka çalışanı için) · 📅 24 Ağu
-      ⛔ **Önce bitmeli:** ES-14 (Esra)
+- [x] **ES-16** ✅ **Kullanım kılavuzu** *(26 Ağu)* — [`docs/KULLANIM_KILAVUZU.md`](docs/KULLANIM_KILAVUZU.md)
+      ↳ Beş ekran, kullanıcı dilinde; «güven skoru / yöntem / Belirtilmemiş» üçlüsü açıklanıyor
+      ↳ ⚠️ Ekran görüntüleri (ES-14) eklenmedi — metin onlarsız da tam anlaşılır
+      ↳ ES-14 (ekran görüntüleri) BEKLENMEDİ — kılavuz metni ekran görüntüsü olmadan da
+        tam anlaşılır. Görüntüler eklenince kılavuza gömülebilir; kılavuz onları beklemez.
       ↳ Bitti sayılır: `docs/KULLANIM_KILAVUZU.md` — üç ekranın ne işe yaradığı,
         ekran görüntüleriyle. Teknik değil, kullanıcı dilinde.
 

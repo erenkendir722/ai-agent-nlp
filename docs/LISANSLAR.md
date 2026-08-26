@@ -1,6 +1,6 @@
 # Bağımlılık ve Model Lisans Raporu
 
-_Otomatik üretildi: 25.08.2026 23:03 · `make lisanslar`_
+_Otomatik üretildi: 26.08.2026 12:10 · `make lisanslar`_
 
 Şartname 5.10: *"Açık kaynaklı gözüküp, uygulama aşamasında lisans problemi çıkarma potansiyeli olan çözümler kullanılmamalıdır."*
 
@@ -17,14 +17,14 @@ _Otomatik üretildi: 25.08.2026 23:03 · `make lisanslar`_
 Modeller pip paketi değildir; yukarıdaki tarama onları görmez. Şartname
 5.10'un asıl hedefi ise model lisanslarıdır — bu bölüm o yüzden var.
 
-Lisanslar **2026-08-25** tarihinde Hugging Face depo üst verisinden çekilmiştir; ham yanıt: [`docs/kanit/model-lisanslari.json`](kanit/model-lisanslari.json). Modelin kendi beyanına ya da bizim hafızamıza dayanılmıyor.
+Lisanslar **2026-08-26** tarihinde Hugging Face depo üst verisinden çekilmiştir; ham yanıt: [`docs/kanit/model-lisanslari.json`](kanit/model-lisanslari.json). Modelin kendi beyanına ya da bizim hafızamıza dayanılmıyor.
 
 | Kullanım | Nerede koşuyor | Hugging Face deposu | Lisans | Teyit |
 |---|---|---|---|---|
-| Çıkarım — varsayılan, ölçüm koşuları | EVREN `llm-large` | `Qwen/Qwen3.5-122B-A10B` | **apache-2.0** | ✅ HF API · 2026-08-25 |
-| Çıkarım — seçilebilir hızlı uç, **varsayılan değil** | EVREN `llm-fast` (`--model llm-fast`) | `Qwen/Qwen3.6-35B-A3B` | **apache-2.0** | ✅ HF API · 2026-08-25 |
-| Çıkarım — yerel yedek, hava boşluğu demosu | Ollama `qwen3.5:4b-q4_K_M` | `Qwen/Qwen3.5-4B` | **apache-2.0** | ✅ HF API · 2026-08-25 |
-| RAG gömme — **kullanılıyor** (`src/vektor_db.py`) | EVREN `bge-m3-embed` · yerel `BAAI/bge-m3` | `BAAI/bge-m3` | **mit** | ✅ HF API · 2026-08-25 |
+| Çıkarım — varsayılan, ölçüm koşuları | EVREN `llm-large` | `Qwen/Qwen3.5-122B-A10B` | **apache-2.0** | ✅ HF API · 2026-08-26 |
+| Çıkarım — seçilebilir hızlı uç, **varsayılan değil** | EVREN `llm-fast` (`--model llm-fast`) | `Qwen/Qwen3.6-35B-A3B` | **apache-2.0** | ✅ HF API · 2026-08-26 |
+| Çıkarım — yerel yedek, hava boşluğu demosu | Ollama `qwen3.5:4b-q4_K_M` | `Qwen/Qwen3.5-4B` | **apache-2.0** | ✅ HF API · 2026-08-26 |
+| RAG gömme — **kullanılıyor** (`src/vektor_db.py`) | EVREN `bge-m3-embed` · yerel `BAAI/bge-m3` | `BAAI/bge-m3` | **mit** | ✅ HF API · 2026-08-26 |
 
 Notlar:
 
