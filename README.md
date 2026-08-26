@@ -14,7 +14,7 @@
 ## 30 saniyede kurulum
 
 ```bash
-git clone <depo-adresi> && cd katilim-lens
+git clone https://github.com/erenkendir722/ai-agent-nlp.git && cd ai-agent-nlp
 docker compose up -d          # Streamlit: http://localhost:8501 · API: http://localhost:8000/docs
 ```
 
@@ -32,7 +32,7 @@ make crawl && make extract && make run
 
 ```mermaid
 flowchart LR
-    A[banks.yaml<br/>kayıt defteri] --> B[Jenerik Toplayıcı<br/>httpx + trafilatura]
+    A[banks.yaml<br/>kayıt defteri] --> B[Selenium Kazıyıcıları<br/>9 banka · ortak taban sınıf]
     B --> C[Türkçe Normalizasyon<br/>İ/ı · sayı · para · tarih]
     C --> D1[Kural Katmanı<br/>regex, yüksek kesinlik]
     C --> D2[LLM Katmanı<br/>Qwen3.5 + JSON şema kısıtı]
@@ -99,7 +99,7 @@ hedefliyor; ikisini de **kullanmıyoruz**.
 | Veritabanı | SQLite + SQLAlchemy | Public Domain / MIT |
 | Arayüz | Streamlit | Apache 2.0 |
 | API | FastAPI | MIT |
-| Toplama | httpx · trafilatura · selectolax | BSD · **Apache 2.0** · MIT |
+| Toplama | Selenium · httpx · trafilatura · selectolax | **Apache 2.0** · BSD · **Apache 2.0** · MIT |
 
 Tam bağımlılık ve model lisans raporu: [`docs/LISANSLAR.md`](docs/LISANSLAR.md)
 (`make lisanslar`). **Kurulu 85 paketin tamamı izin verici (permissive)
