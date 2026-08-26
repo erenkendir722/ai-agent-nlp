@@ -217,7 +217,7 @@ make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka, RAG indeksi kurulu mu
 make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make run          # Streamlit arayüzü
-make test         # testler (814 test)
+make test         # testler (840 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)
