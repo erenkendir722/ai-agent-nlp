@@ -25,3 +25,12 @@ docs/kanit/robots/*.txt -text
 #            güncelken `make eval` jüriye giden rapora «BAYAT» yazdı
 *.npz binary
 *.db binary
+
+# Vendorlanan ucuncu taraf varliklar — BAYT BAYT upstream'le ayni kalmali.
+#
+# `src/api/statik/` altindaki Swagger UI dosyalari swagger-ui-dist 5.17.14'ten
+# (Apache-2.0) oldugu gibi alindi. Satir sonu donusumu islevi bozmaz — tarayici
+# ikisini de okur — ama dosyayi upstream'den AYIRIR: surum/butunluk dogrulamasi
+# (sha256, `docs/LISANSLAR.md`'deki vendorlanan varlik tablosu) anlamsizlasir.
+# Ayni gerekce yukaridaki robots kanitlarinda da gecerli.
+src/api/statik/* -text
