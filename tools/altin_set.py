@@ -98,6 +98,15 @@ UYUM_ONEK = "etiketleme_uyum_"
 EK_ONEK = "etiketleme_ek_"
 """Genişletme turunun çalışma sayfaları — ilk turdan AYRI dosyalar.
 
+📁 26 AĞUSTOS: 24 Ağustos turunun KİŞİSEL payları taban dosyaya birleştirildi
+(`etiketleme_<ad>.csv`, `tur` kolonu turu ayırıyor) ve `etiketleme_ek_<ad>.csv`
+dosyaları silindi. Birleştirme ölçüye dokunmadı — `altin_set.jsonl` bayt
+düzeyinde aynı kaldı, makro-F1 0,828 ve uyum %79,2 değişmedi. Ön ek burada
+KALIYOR: `komut_genislet` yeni bir tur açtığında yine bu adla yazar ve `derle`
+varsa okumaya devam eder, yani eski ve yeni yerleşim bir arada çalışır.
+
+Uyum bloğu (`EK_UYUM_ONEK`) birleştirilmedi; gerekçesi orada yazılı.
+
 Aynı dosyalara yazmak, 15 Ağustos'ta doldurulmuş 60 kaydı ezme riski taşır.
 Ayrı dosya, `derle`nin ikisini birden okumasıyla birleşir; etiketleyen ise
 yalnız yeni satırları görür, eskileri tekrar gözden geçirmek zorunda kalmaz."""

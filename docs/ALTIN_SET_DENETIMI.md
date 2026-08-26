@@ -1,5 +1,14 @@
 # Altın Set Denetimi — 25 Ağustos 2026
 
+> 📁 **26 Ağustos notu — dosya yerleşimi değişti.** Aşağıdaki metin
+> `etiketleme_ek_<ad>.csv` dosyalarından söz ediyor; o dosyalar 26 Ağustos'ta
+> `etiketleme_<ad>.csv` içine birleştirildi (`tur` kolonu turu ayırıyor).
+> Rapor 25 Ağustos'un kaydı olduğu için dosya adları **bilerek değiştirilmedi**
+> — o gün gerçekten öyleydi. Uyum bloğu (`etiketleme_uyum_*`,
+> `etiketleme_ek_uyum_*`) birleştirilmedi: bulgu 1'in konusu olan
+> etiketleyici uyum ölçümü tam da o dosyaların ayrı olmasına dayanıyor.
+
+
 Bu dosya `data/gold/` altındaki 16 etiketleme CSV'sinin, `altin_set.jsonl`'in,
 `metinler/` klasörünün ve `ornek_listesi.json`'ın tam denetimidir. Denetim
 çalışma ağacı ile `HEAD` karşılaştırılarak yapıldı; denetim sırasında hiçbir

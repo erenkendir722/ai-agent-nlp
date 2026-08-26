@@ -430,11 +430,15 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         `finansman_tutari_max` N=5 — o beş hücre tek başına %80 hedefini
         geçip geçmediğimizi belirliyor. Sistem tarafında yapılabilecekler
         bitti (dört fikir ölçülüp geri alındı); kalan darboğaz ölçüm aracı.
-      ↳ Çalışma sayfaları HAZIR, `make altin-genislet uygula=1` ile üretildi:
+      ↳ 📁 **26 Ağu: kişisel paylar taban dosyaya BİRLEŞTİRİLDİ.**
         ```
-        data/gold/etiketleme_ek_<adın>.csv        ~8 kayıt (kişisel pay)
+        data/gold/etiketleme_<adın>.csv           çekirdek + genişletme
+                                                  (`tur` kolonu ayırıyor)
         data/gold/etiketleme_ek_uyum_<adın>.csv    5 kayıt (HERKES etiketler)
         ```
+        Uyum bloğunun dosyaları AYRI kaldı: `uyum_hesapla` onları kişi kişi
+        okuyor ve «etiketleme uzlaşmamız %79,2» cümlesi oradan çıkıyor.
+        Birleştirmek o ölçümü yok ederdi (bkz. ALTIN_SET_DENETIMI bulgu 1).
       ↳ ⚠️ **Samet çalışamaz durumda; ona düşen 8 kayıt dağıtılmalı.**
         Eren ve Görkem 4'er kayıt alsın (Esra video/slaytta).
       ↳ Kılavuz aynı: `docs/ETIKETLEME_KILAVUZU.md`. **Sıfır geçerli bir

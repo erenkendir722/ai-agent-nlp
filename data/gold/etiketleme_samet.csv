@@ -1,5 +1,5 @@
-﻿kampanya_id,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
-0214-58cf4ca75ced,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/fiziki-altin,yatirim_urunu,,,,,,,2026-03-31,"⏰ Kampanya Süresi Dolmuştur!
+﻿kampanya_id,tur,banka_adi,kaynak_url,kampanya_turu,kar_payi_orani,vade_ay_max,finansman_tutari_max,tahsis_ucreti,masrafsiz_mi,odul_miktari,kampanya_bitis,metin
+0214-58cf4ca75ced,cekirdek,Dünya Katılım Bankası A.Ş.,https://dunyakatilim.com.tr/kampanyalar/fiziki-altin,yatirim_urunu,,,,,,,2026-03-31,"⏰ Kampanya Süresi Dolmuştur!
 ✨ Yeni Kampanyalarımız İçin Bizi Takip Etmeyi Unutmayın!
 Dünya Katılım’dan Yeni Müşterilere Altın Değerinde Fırsat!
 Dünya Katılım, yeni müşterilerine özel yepyeni bir kampanya ile karşınızda!
@@ -45,7 +45,7 @@ Hemen Dünya Katılım Mobil Şube’sini indirerek avantajlı hizmetlerimizden 
 👉 Dijitalden Fiziki Altın İşlemleri
 Bu kampanya ile hem altın yatırımınıza hemen başlayabilir hem de yatırımlarınızı daha kazançlı hale getirebilirsiniz. Dünya Katılım ailesine katılın, altın değerindeki avantajları kaçırmayın!
 🔸 Dünya Katılım Bankası, kampanya süresi boyunca şartları değiştirme ve sonlandırma hakkını saklı tutar."
-0211-4b3897c08177,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani,ihtiyac_finansmani,1.69,12,,,,,,"İhtiyaç Finansmanı
+0211-4b3897c08177,cekirdek,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani,ihtiyac_finansmani,1.69,12,,,,,,"İhtiyaç Finansmanı
 Emlak Katılım İhtiyaç Finansmanlarıyla Yanınızda
 - İhtiyaç Finansmanı Katılım Bankacılığı esaslarına uygun olarak bireysel ihtiyaçlarınız için gereken finansman desteğini sağlar.
 - Beyaz eşyadan mobilyaya, teknoloji ihtiyacınızdan eğitim ihtiyacınıza, hacdan umreye birçok konuda size özel çözümler getiren finansman modellerimiz hizmetinizdedir
@@ -106,7 +106,7 @@ Finansman Tutarı | Vade | Kar Oranı | Taksit Tutarı | Finansman Tahsis Ücret
 ---|---|---|---|---|
 30.000,00 ₺ | 12 Ay | 1,69% | 2,841.66 ₺ | 157.50 ₺ |
 * İhtiyaç Finansmanı başvurusu için şubelerimizi ziyaret edebilirsiniz. |"
-0210-ae68b0cabf44,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/dijitalden-musteri-ol-hisse-senedi-islemlerinde-75-komisyon-indirimi-kazan,yatirim_urunu,,,,,,,2027-12-31,"SİZE ÖZEL ÇÖZÜMLER
+0210-ae68b0cabf44,cekirdek,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/dijitalden-musteri-ol-hisse-senedi-islemlerinde-75-komisyon-indirimi-kazan,yatirim_urunu,,,,,,,2027-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -117,7 +117,7 @@ SİZE ÖZEL ÇÖZÜMLER
 - Kampanyaya yalnızca görüntülü görüşme ile müşteri olan ve dijital kanallardan yatırım hesabı açan müşteriler katılabilir.
 - Kampanya, bireysel müşteriler için geçerlidir. Ticari ve tüzel müşteriler kampanyaya dahil değildir.
 - Vakıf Katılım Bankası AŞ önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0203-3c707bd12c98,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/birikimlerinizi-koruyan-bes-teminatli-finansman-albarakada,ihtiyac_finansmani,,,,,,,,"İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
+0203-3c707bd12c98,cekirdek,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/bireysel/finansmanlar/birikimlerinizi-koruyan-bes-teminatli-finansman-albarakada,ihtiyac_finansmani,,,,,,,,"İhtiyaç anında BES’inizi bozdurmayın, şimdi Albaraka ile birikimleriniz ve devlet katkılarını koruyan BES teminatlı finansman var!
 Beyaz eşyadan eğitim ve sağlık harcamalarına, ev eşyalarına kadar birçok ihtiyacınız için BES Teminatlı İhtiyaç Finansmanınız Albaraka’da!
 Sizde birikimlerimi bozmak istemiyorum ama bu eşyalar nasıl yenilenecek diyorsanız, Türkiye’nin ilk BES birikimlerinizi bozmayan taksitli finansmanı BES Teminatlı Finansman ile tanışın. Hem kafanız hem geleceğiniz rahat olsun!
 Müşterimiz değilseniz Albaraka Mobil’de yer alan “Müşteri Olmak İstiyorum” butonuna tıklayarak görüntülü görüşme ile hemen müşterimiz olun, BES Teminatlı Finansman ve daha birçok ayrıcalıktan yararlanın!
@@ -144,7 +144,7 @@ BES Teminatlı Finansman işlemlerinizi yalnızca şubelerimizden gerçekleştir
 Şu anda sadece İhtiyaç Finansmanı ürünümüz için faydalanabilirsiniz.
 Evet. Ayrı bir fona aktarılacak ve o fonda BES birikiminiz değerlenmeye devam edecektir.
 BES Blokesi, finansman vadesi sona erdiğinde veya borcun tamamı mahsup edildiğinde sonlanacaktır."
-0209-ca6752bb1e0d,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/aninda-gunluk-hesap,yatirim_urunu,,,,,,,,"Anında Günlük Hesap Nedir?
+0209-ca6752bb1e0d,cekirdek,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/aninda-gunluk-hesap,yatirim_urunu,,,,,,,,"Anında Günlük Hesap Nedir?
 Özel cari hesap özelliği ile Müşterilerimizin gün içerisinde günlük ihtiyaçları için tüm Bankacılık işlemlerini yapmasına imkân vermekte, aynı zamanda müşterilerimizin hiç bir işlem yapmasına gerek kalmadan otomatik olarak bakiyesinin bir bölümünün saat 16:00’da günlük olarak vaat ürününde değerlendirilmesi ile getiri almasını sağlamaktadır.
 Özellikleri:
 - Anında Günlük Hesap; Şubelerimiz, İnternet Şubemiz ve Katılım Mobil kanallarımız üzerinden yalnızca Türk Lirası (TL) para birimi ile açılabilmektedir.
@@ -180,7 +180,7 @@ Saat 16:00’da Anında Günlük Hesapta bulunan bakiye, belirlenen bakiye skala
 Hesapta bulunan bakiye ile gün içinde para çekme, hesaba para yatırma gibi tüm bankacılık işlemlerini istediğiniz sıklıkta gerçekleştirebilirsiniz.
 Anında Günlük Hesap, açma/kapama işlemleri Şubelerimiz,Katılım Mobil ve İnternet Şube üzerinden yapılabilmektedir.
 Bakiyenin saat 16:00’da Kira Sertifikalarının Geri Alım Vaadi ile Satımı işlemlerine transferinden ertesi iş günü bakiyenin aktarılacağı saat 07:00’ a kadar a Kira Sertifikalarının Geri Alım Vaadi ile Satımı işlemlerindeki bakiyeden para çekme ve kapama yapılamamaktadır"
-0211-6c7bd2bc7373,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/isyeri-finansmani,finansman,,60,,,,,,"İşyeri Finansmanı
+0211-6c7bd2bc7373,cekirdek,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/isyeri-finansmani,finansman,,60,,,,,,"İşyeri Finansmanı
 ×
 Satın almak istediğiniz büro, dükkan, mağaza, depo gibi gayrimenkuller için finansal ihtiyaçlarınızı “Emlak Katılım İşyeri Finansmanı” ile karşılayabilirsiniz.
 - Finansman geri ödemeleriniz için 60 aya kadar vade imkanı sunulmaktadır.
@@ -194,7 +194,7 @@ Gerekli Belgeler
 - Alınacak işyerine ait tapu fotokopisi
 - Gerekirse azami iki ay öncesine ait müşteri adına kayıtlı sabit telefon, elektrik, su veya doğalgaz faturalarından herhangi birinin fotokopisi
 - Gerekli görülmesi hâlinde kefil ve kefile ilişkin belgeler"
-0210-6b1029c52e14,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan,diger,,,,,,,2029-12-31,"SİZE ÖZEL ÇÖZÜMLER
+0210-6b1029c52e14,cekirdek,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/tamamla-kazan,diger,,,,,,,2029-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -215,7 +215,7 @@ tabii platformunda 1 aylık Premium hediye üyelik kodunu kullanabilirsiniz.
 • Her avantajın kullanım süresi farklılık gösterir. Vakıf Katılım Mobil Şube’de yer alan “avantaj görselleri”nin üzerinde süreyle ilgili bilgi bulunur.
 • Tamamla Kazan kapsamında hak kazanılan ödüller kriterlerin tamamlandığı ayı takip eden ayın ilk haftasında müşterilere gönderilecektir.
 •Müşteri, mevcut bir avantajdan yararlanırken ilgili kriterleri yeniden sağlarsa, aynı avantajı tercih etmesi durumunda, mevcut avantajının kullanım süresi uzatılır. Farklı bir avantaj seçmesi hâlindeyse mevcut avantajı geçerliliğini korur, ayrıca yeni seçtiği avantajdan da faydalanır."
-0210-f044a4c8a626,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kartlar,kart,,,,,,,,"Kolay ve Hızlı para transferi FAST Vakıf Katılım'da ücretsiz!
+0210-f044a4c8a626,cekirdek,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kartlar,kart,,,,,,,,"Kolay ve Hızlı para transferi FAST Vakıf Katılım'da ücretsiz!
 VKart Business ile harcamalarınız kontrolü sizde!
 VKart dünyasında masraf yok!
 Bağlı hesaplarınızdan alışverişin keyfini çıkarın!
@@ -226,7 +226,7 @@ VKart, Vakıf Katılım'ın kredi kartı markasıdır.
 İnternet ve Mobil Şubelerimizde yer alan kart ayarları alanından kart şifrenizi değiştirebilirsiniz.
 İnternet ve Mobil Şubelerimizde yer alan kart ayarları alanından kartınızın istediğiniz kadarını internet alışverişine açabilirsiniz.
 Mobil Şubeyi indirip görüntülü görüşmeyle müşterimiz olun; havale, EFT ve FAST işlemlerinize para ödemekten kurtulun."
-0205-6ffd7be261ce,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar,konut_finansmani,,,,,,,,"Yeşil Konut Finansmanı
+0205-6ffd7be261ce,cekirdek,Kuveyt Türk Katılım Bankası A.Ş.,https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar,konut_finansmani,,,,,,,,"Yeşil Konut Finansmanı
 Kuveyt Türk Yeşil Konut Finansmanı ile çevre dostu ve enerji verimli bir yuvaya gönül rahatlığıyla sahip olun!
 Sürdürülebilir Araç Finansmanı
 Sürdürülebilir Araç Finansmanı ile çevre dostu ve enerji verimli araçlara, 48 aya varan vade seçeneklerinden faydalanarak sahip olun!
@@ -238,7 +238,7 @@ Bisiklet Finansmanı
 Sürdürülebilir yaşam, sürdürülebilir gelecek!
 Çatı GES Finansmanı
 Çatı GES Finansmanı ile doğa dostu enerji çözümlerini kullanmanın avantajlarından faydalanın!"
-0210-1556b5645fe5,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vclub-dunyasi-artik-vakif-katilim-mobilde,diger,,,,,,,2026-12-31,"SİZE ÖZEL ÇÖZÜMLER
+0210-1556b5645fe5,cekirdek,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/vclub-dunyasi-artik-vakif-katilim-mobilde,diger,,,,,,,2026-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -257,7 +257,7 @@ VClub, Vakıf Katılım Bankası müşterilerine özel sunulan; restoran ve kafe
 - VClub müşteriye özel sadakat programı sunması sebebiyle, her müşteri için sunulan ayrıcalıklar değişiklik gösterebilmektedir. VClub kapsamında yararlanabileceğiniz indirim oranları; uygulamada yer alan kayıtlı süpermarket, seyahat, giyim, teknoloji markaları, kafe ve restoranlarda değişiklik gösterebilmektedir.
 - VClub kapsamında bankamıza iletilen kredi kartı talepleri bankamız kredi ve tahsis politikaları çerçevesinde; müşterinin aylık gelir bilgileri, kredi skoru gibi kriterler göz önünde bulundurularak müşteri özelinde değerlendirilecektir. Bankamız uygun görmediği başvuruları reddetme, kampanya koşullarını değiştirme, gerekli görmesi hâlinde ek bilgi ve belge talebinde bulunma ve kampanyayı durdurma hakkını saklı tutar.
 - VClub, Vakıf Katılım ile GastroClub iş birliğiyle oluşturulmuş bir sadakat programıdır. Vakıf Katılım ve GastroClub, kampanyayı dilediği zaman durdurma ve/veya kampanya koşullarını değiştirme yetkisine sahiptir."
-0212-e62736ec77eb,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari,ihtiyac_finansmani,,3,80000,,,,2026-08-31,"Bana Bunu Al İş Ortağım ile Troy Mağazalarında Finansman Fırsatı!
+0212-e62736ec77eb,cekirdek,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/bana-bunu-al-is-ortagim-ile-troy-magaza-firsatlari,ihtiyac_finansmani,,3,80000,,,,2026-08-31,"Bana Bunu Al İş Ortağım ile Troy Mağazalarında Finansman Fırsatı!
 Hayat Finanslılara özel Troy mağazalarında 3 aya varan taksit fırsatı Bana Bunu Al İş Ortağımda!
 Kampanya Koşulları
 - Kampanya 31 Ağustos 2026 tarihine kadar geçerlidir.
@@ -266,7 +266,7 @@ Kampanya Koşulları
 - Satın alınan ürünün sipariş, teslimat, iptal ve iade işlemlerinde yaşanabilecek sorunlardan Hayat Finans sorumlu değildir.
 - Banka uygun görmediği kredi başvurularını serbestçe değerlendirme, kefil ve ek belge isteme, uygun görmediği kredi başvurularını onaylamama hakkına sahiptir.
 - Hayat Finans kampanyayı dilediği zaman durdurma ve/veya kampanya koşullarını değiştirme yetkisine sahiptir."
-0210-5174ebf9b2b6,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/muhikuda-20-indirim,diger,,,,,,,2026-12-31,"SİZE ÖZEL ÇÖZÜMLER
+0210-5174ebf9b2b6,cekirdek,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/muhikuda-20-indirim,diger,,,,,,,2026-12-31,"SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
 SİZE ÖZEL ÇÖZÜMLER
 ÜRÜN VE HİZMETLERİMİZ
@@ -280,7 +280,7 @@ Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek �
 • Deneyim & aktivite hediyeleri, taze çiçek, söz & nişan hediyelikleri kategorileri indirim kampanyasına dâhil değildir.
 • Kampanya 31.12.2026 tarihine kadar geçerlidir.
 • Vakıf Katılım Bankası AŞ ve Muhiku, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
-0212-f618de03d508,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-yemek-harcamasi-nakit-iade-kampanyasi,kart,,,,,,1000,2026-08-31,"Biz Kart ile Yemek Harcamalarına 1.000 TL’ye Varan Nakit İade!
+0212-f618de03d508,cekirdek,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-yemek-harcamasi-nakit-iade-kampanyasi,kart,,,,,,1000,2026-08-31,"Biz Kart ile Yemek Harcamalarına 1.000 TL’ye Varan Nakit İade!
 Yakınlarınıza verdiğiniz Biz Kart ile yemek sektöründe yapılan harcamaların %10’una kadar nakit iade kazanın. Kampanya kapsamında günlük en fazla 100 TL, aylık toplamda ise 1.000 TL’ye kadar nakit iade alabilirsiniz.
 Kampanya Dönemi: 6 Şubat - 31 Ağustos 2026
 Kampanya Dönemi: 6 Şubat - 31 Ağustos 2026
@@ -303,5 +303,289 @@ Mobil Uygulama Tüm İşlemler> Kartlar> Biz Kart Başvurusu adımlarını takip
 - Hayat Finans kampanya koşullarında değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
 - Hayat Finans tarafından tespit edilen usulsüzlük durumlarında kazanılan ödül iptali ve/veya geri alma hakkı saklıdır.
 - Hayat Finansta yasal/idari takipte bulunan veya haciz süreci başlatılmış müşteriler kampanyadan yararlanamaz."
-0209-0e420abeb1da,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/altin-hesaplar,yatirim_urunu,,,,,,,,"Altın cari hesabı, birikimlerinizi altın olarak değerlendirmenize olanak sağlayan, dilediğiniz zaman gram bazında altın alım satımı yapabileceğiniz vadesiz bir hesap türüdür.
+0209-0e420abeb1da,cekirdek,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/hesaplar/altin-hesaplar,yatirim_urunu,,,,,,,,"Altın cari hesabı, birikimlerinizi altın olarak değerlendirmenize olanak sağlayan, dilediğiniz zaman gram bazında altın alım satımı yapabileceğiniz vadesiz bir hesap türüdür.
 Altın Katılma hesabı, altının değer kazanmasından ve belirlemiş olduğunuz vadelerde açmış olduğunuz katılım hesabınızdan kâr payı elde edebileceğiniz faizsiz getiri sağlayan hesap türüdür."
+0206-97aa0685d8fb,genisletme,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx,ihtiyac_finansmani,,36,400000,0.5,hayır,,,"Türkiye Finans, avantajlı İhtiyaç  Finansmanı ve bankacılık çözümleriyle her zaman kamu çalışanlarının yanında. 
+İhtiyaç  Finansmanı* başvurunuzu hemen yapın ,  hem size özel kâr  payı oranlarından hem de 3 ay öteleme fırsatından yararlanın. Beyaz eşyadan  mobilyaya, eğitim masraflarından tadilat harcamalarına kadar tüm  ihtiyaçlarınızı kolayca karşılayın.
+Kamu Çalışanlarına Özel Avantajlı İhtiyaç  Finansmanı Nedir?
+Kamu Çalışanlarına Özel İhtiyaç Finansmanı *;  kamu çalışanlarının eşya, eğitim, sağlık, tatil, tadilat, cep telefonu, bilgisayar  ve benzeri harcamalarını rahatlıkla yapmaları için özel  kâr payı oranları sunan bir finansman kampanyasıdır.
+Kampanya kapsamında 50.000 TL-400.000 TL  arasında ihtiyaçlarınız için size özel koşularla ve 3 ay öteleme avantajıyla İhtiyaç  Finansmanı başvurusu yapabilirsiniz.
+Kamu Çalışanlarına Özel  İhtiyaç Finansmanı Kampanyasının  Avantajları
+- İhtiyaç  Finansmanınızı kredi notunuzdan bağımsız olarak size özel kâr  payı oranlarıyla kullanabilir, geri ödemelerinizi bütçenize uygun koşullarla  yapabilirsiniz. 
+- Kampanya  kapsamında 50.000 TL – 400.000 TL arasındaki ihtiyaçlarını için finansman  başvurusu yapabilirsiniz. 
+- Finansman  geri ödemelerinizde ilk taksiniz için 3 ay öteleme hakkınızı kullanabilir,  ödemesiz dönem avantajıyla ihtiyaçlarınızı rahatça karşılayabilirsiniz.
+- Mobilden  Türkiye Finanslı olarak kampanyanın sunduğu İhtiyaç Finansmanı avantajının yanı  sıra hem 
+      Kazancı Bol Hoş Geldin Paketi’nden hem de kâr paysız  2.500 TL ‘ye kadar 
+      Yedek Hesap finansman desteğinden  yararlanabilirsiniz. 
+Kamu Çalışanlarına Özel İhtiyaç Finansmanı  Kampanyasından Kimler Yararlanabilir?
+İhtiyaç Finansmanı kampanyasından  aşağıda belirtilen meslek gruplarından birinde çalışan, halihazırda müşterimiz  olan ve müşterimiz olacak olan tüm bireysel bankacılık müşterilerimiz  yararlanabilir. 
+Henüz Türkiye Finans müşterisi değilseniz 
+   Görüntülü Görüşme ile dakikalar içinde müşterimiz  olabilir ve size özel sunduğumuz avantajlardan yararlanmaya başlayabilirsiniz. 
+- Tüm kamu çalışanları  (idari, teknik, hizmet vb. kadrolar)
+- Kamu iştirakleri 
+- Devlet memurları/işçileri 
+- Devlet okullarında kadrolu çalışan öğretmenler 
+- Devlet üniversitelerinde çalışan öğretim görevlileri
+- Polisler
+- Belediye çalışanları  (iştirakler dahil) 
+- Kamuda çalışan avukat/hakim/  avcılar
+- İl/içe tarım müdürlükleri ve belediyelere  bağlı veterinerler
+- Din görevlileri
+- Emniyet görevlileri, mecburi askerlik görevi haricindeki askerler, jandarma  ve bekçiler 
+- Kamu bankası çalışanları 
+Kamu Çalışanlarına Özel İhtiyaç Finansmanı Kampanyasına Nasıl  Başvurabilirim? 
+Başvurunuzu  gerekli belgelerle birlikte size en yakın Türkiye Finans şubesinden  yapabilirsiniz.
+EN YAKIN ŞUBE 
+ 
+         İhtiyaç Finansmanı (İhtiyaç Kredisi)* Başvurusu için Gerekli Belgeler 
+- Nüfus cüzdanı, ehliyet veya pasaport, 
+- Gelir belgesi/maaş bordrosu,
+- Serbest meslek sahipleri ve işletme sahipleri için son yıla ait vergi levhası ve onaylı bilanço, gelir tabloları, mizan, imza sirküleri, kuruluş ve en son ortaklık payını gösteren Ticaret Sicil Gazetesi,
+- Ücretli çalışan kişiler için, maaş bordrosu antetli kağıt ile bildiriliyor ise firmanın imza sirküleri beyanı gerekmektedir.
+ 
+         
+Banka gerekli gördüğü durumlarda kefil ve ek belge isteme hakkına sahiptir. Kefil için de aynı belgeler talep edilecektir.
+ 
+Kampanya  Koşulları 
+- Kampanya  kapsamında başvuru yapan ve başvurusu onaylanan kamu çalışanı müşterilerimize,  var olan avantajlı koşullarla İhtiyaç Finansmanı başvurusu yapma olanağı  sunulacaktır. 
+- İhtiyaç  Finansmanına uygulanacak maksimum vade süresi 36 aydır. 
+- Kampanya  kapsamında müşterilerimize finansman geri ödemelerinde ilk taksit için 3 aya  varan ödemesiz dönem hakkı tanınacaktır. 
+- Kampanyadan  kamu çalışanı olan bireysel mevcut ve yeni müşterilerimiz yararlanabilir.
+- Finansman  tutarının 125.000 TL’ ye kadar olması durumunda maksimum vade 36 aydır.
+- Finansman  tutarının 125.000 TL – 250.000 TL arasında olması durumunda maksimum vade 24  ayı aşamaz.
+- Finansman  tutarının 250.000 TL’nin üzerinde olması durumunda maksimum vade 12 ayı aşamaz. 
+- Banka,  kampanya koşullarında değişiklik yapma veya kampanyayı durdurma hakkını saklı  tutar.
+- Banka finansman başvurularını serbestçe  değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği  başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. 
+Kamu Çalışanlarına Özel Sigortalı İhtiyaç Finansmanı Kampanyası  Maliyet Tablosu 
+     
+Kamu Çalışanlarına Özel Sigortasız İhtiyaç Finansmanı Kampanyası  Maliyet Tablosu 
+     
+50.000 TL. baz alınarak  oluşturulan ihtiyaç finansmanı örnek ödeme tablosunda yasal vergiler toplam  komisyon tutarına dahildir. Finansman tutarı; 125.000TL’ye kadar olması  durumunda maksimum vade 36 ayı, 125.001-250.000 TL’ye kadar olması durumunda 24  ayı, 250.000 TL’den fazla olması durumunda 12 ayı aşamaz. Bankanın ilan ettiği  sigortasız ihtiyaç finansmanı kar oranı üzerinden uygulayacağı maksimum indirim  oranı olup, finansmana bağlı Finansman Güvence Sigortası alınması durumunda  geçerlidir.Tahsis ücreti finansman fiyatlamasının bir parçasıdır. Tahsis ücreti  vergiler hariç finansman tutarının binde 5'i oranındadır. Aylık ve yıllık  maliyet oranlarına komisyon ve yasal vergiler dahil edilmiş olup, sigorta  masrafları dahil edilmemiştir. Banka finansman başvurularını serbestçe  değerlendirme, kefil ve başkaca teminatlar ile ek belge isteme, uygun görmediği  başvuruları onaylamama, fiyatlamada değişiklik yapma hakkına sahiptir. Yukarıda  yazılı ürünlere sahip olmaksızın kullanılacak finansmana uygulanan genel ücret  ve masraflara ilişkin bilgiyi Ürün ve Hizmet Ücretleri sayfamızdan  ulaşabilirsiniz. Detaylı bilgi için Şubelerimizi ziyaret edebilirsiniz.
+*Katılım  bankacılığı kuruluş esas ve faaliyetleri doğrultusunda İhtiyaç Finansmanı  sağlamaktadır. Ancak bankacılık kanuna göre resmi olarak İhtiyaç Kredisi olarak  da nitelendirilmektedir."
+0206-b5db11e3633c,genisletme,Türkiye Finans Katılım Bankası A.Ş.,https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/Biten-Kampanyalar.aspx,diger,,,,,,,,"Biten Kampanyalar
+Bu bölümdeki kampanyalar sona ermiştir.
+|
+|
+|
+Emekliler Haftasına Özel Avantajlar Türkiye Finans'ta!
+Emekli müşterilerimizin Türkiye Finans’ın ayrıcalıklı bankacılık hizmetlerinden yararlanmalarını, avantajlı oranlarla bakiyelerini değerlendirmelerini ve dosya masrafı ödemeden İhtiyaç Finansmanı kullanabilecekleri özel bir avantaj paketidir. Detaylı Bilgi
+Babalar Günü'ne Özel Avantajlar Türkiye Finans'ta!
+Babalar Günü’ne Özel Avantajlar kampanyası kapsamındaki ürün ve hizmetlerimizden halihazırda müşterimiz olan ve yeni müşterimiz olacak olan 25-70 yaş aralığındaki erkek müşterilerimiz yararlanabilir. Detaylı Bilgi
+1 Haziran Dünya Bankacılar Günü'ne Özel Avantajlar Türkiye Finans'ta!
+Dünya Bankacılar Günü’ne Özel Avantajlar kampanyası kapsamındaki ürün ve hizmetlerimizden halihazırda müşterimiz olan ve yeni müşterimiz olacak olan Bankacılar yararlanabilir. Detaylı Bilgi
+Bayramda Yüzleri Güldüren Finansman Türkiye Finans'ta
+Bayrama özel İhtiyaç Finansmanı’nda KKB skorundan bağımsız tüm vadelerde sabit %4.09 kâr payı oranı, 3 ay erteleme fırsatı ve yeni müşterilere özel dosya masrafsızlık avantajı sizi bekliyor. Detaylı Bilgi
+Avukatlar Günü'ne Özel Avantajlar Türkiye Finans'ta!
+Avukat müşterilerimizin Türkiye Finans’ın ayrıcalıklı bankacılık hizmetlerinden yararlanmalarını, avantajlı oranlarla bakiyelerini değerlendirmelerini ve kredi kartı kampanyalarıyla harcamalarında kazanç sağlamalarını amaçlayan özel bir avantaj paketidir. Detaylı Bilgi
+Kadınlar Gününe Özel Avantajlar Türkiye Finansta!
+Hayatın her alanında değer üreten tüm kadınların 8 Mart Dünya Kadınlar Günü kutlu olsun! Detaylı Bilgi
+Tıp Bayramına Özel Sağlık Çalışanlarına Avantajlar Türkiye Finans'ta!
+Sağlık çalışanlarının Türkiye Finans’ın ayrıcalıklı bankacılık hizmetlerinden yararlanmalarını amaçlayan özel bir avantaj paketidir. Detaylı Bilgi
+3 Ay Ertelemeli Katılım Bankacılığına Uygun İhtiyaç Finansmanı Fırsatı + 1.000 TL'ye Varan Bonus!
+Bu kampanya ile %3,59'dan başlayan kar payı oranları ile 3 ay öteleme fırsatından yararlanarak finansman kullanılabilir ve finansman kullanan müşteriler market ve giyim alışverişlerinde her 1.000 TL’lik alışverişine 100 TL bonus kazanabilir. Detaylı Bilgi"
+0203-787911faa20e,genisletme,Albaraka Türk Katılım Bankası A.Ş.,https://www.albaraka.com.tr/tr/kampanyalar/detay/vade-farksiz-kampanyasi,ihtiyac_finansmani,0,6,40000,,,,2026-12-31,"Kâr payı yok. Beklemek yok. 140.000 TL’ye kadar vade farksız destek Albaraka’da!
+Şimdi Albaraka Mobil’den müşteri olanlar, %0 kâr payı ile 40.000 TL’ye kadar Pratik Finansman Kart (İhtiyaç Finansmanı) kullanabiliyor ve 100.000 TL’ye varan seçili sektörlerde vade farksız taksitli alışveriş fırsatından yararlanabiliyor.
+Hemen siz de şubeye gitmeden Albaraka Türk müşterisi olun;
+- %0 kâr paylı 40.000 TL’ye kadar, 3 aya varan ödemesiz dönem ve 4 taksitli Pratik Finansman Kart ve,
+- 100.000 TL’ye kadar vade farksız taksitli alışveriş fırsatını bir arada yakalayın.
+Toplamda 140.000 TL’ye kadar vade farksız finansman desteği için Albaraka Türk sizleri bekliyor.
+*Detaylı bilgi almak için “Pratik Finansman Kart” sayfasını ziyaret edebilirsiniz.
+*Pratik Finansman Kart nakit bir finansman ürünü değildir. Pratik Finansman Kart ile banka ATM'leri üzerinden nakit çekim yapamazsınız.
+*Kampanya kapsamında Bankamıza iletilen Pratik Finansman Kart ve Kredi Kartı talepleri bankamız kredi ve tahsis politikaları çerçevesinde, müşterinin aylık gelir bilgileri, kredi skoru vb. kriterler göz önünde bulundurularak müşteri özelinde değerlendirilecektir. Bu doğrultuda, başvurunun olumsuz sonuçlanması durumunda kampanyadan faydalanılması mümkün olmayacaktır. Bankamız uygun görmediği başvuruları reddetme, kampanya koşullarını değiştirme, gerekli görmesi halinde ek bilgi ve belge talebinde bulunma ve kampanyayı durdurma hakkını saklı tutar.
+-
+Kampanya 1 Ocak 2026 – 31 Aralık 2026 tarihlerinde geçerlidir.
+40.000 TL’ye Kadar Vade Farksız Finansman Desteği
+- Tutar: 40.000 TL
+- Vade: 6 aya kadar
+- Kar Payı: Vade Farksız
+- Kullanım Alanları (Sektörler): Mobilya ve Beyaz Eşya, Oto Servis ve Bakım, Teknoloji Marketler, Ulaşım Bileti Alımı, Sağlık, Okul, Kırtasiye, Giyim
+- Başvuru: Yalnızca dijitalden müşteri olanlar.
+Vade Farksız Pratik Finansman Kart Kampanyasından Nasıl Yararlanabilirim?
+- Albaraka Mobil’e giriş yaptıktan sonra; Başvurular sekmesinden, ""Tüm Kampanyalar"" sayfasına giriş yapın.
+- Kampanyalar sayfasında bulunan ""Dijital Müşterilere Özel Pratik Finansman Kart"" kampanyasından kod alın.
+- Kampanyadan kod aldıktan sonra; İşlem>Finansman İşlemleri>Pratik Finansman Kart> “Dijital Müşterilere Özel Pratik Finansman Kart” adımlarını izleyerek menüden işleminizi tamamlayın.
+Vade farksız 40.000 TL ihtiyaç finansmanı kampanyası hakkında detaylı bilgi almak için:
+Dijital Müşterilere Özel Pratik Finansman Kart | Albaraka Türk
+Vade Farksız Taksit Kampanyası – Kredi Kartı
+- Tutar: 100.000 TL’ye kadar
+- Vade: Seçili sektörlerde vade farksız 6 taksit
+- Kart: Albaraka Word Kredi Kartları
+- Kullanım Alanları (Sektörler): Sağlık, Eğitim
+Kredi kartına vade farksız taksit kampanyaları hakkında detaylı bilgi almak için:
+Sağlık Kampanyası | Albaraka Türk
+""Albaraka Mobil'den Kampanyalar sayfasından kampanyaya katılım sağlayarak, World kartlarınız ile yapacağınız 1.000 TL- 100.000 TL arası sağlık harcamalarınıza vade farksız 6 taksit fırsatını kaçırmayın!""
+Eğitim Kampanyası | Albaraka Türk
+""Siz de hemen Albaraka Mobil üzerinden “Eğitim Harcamalarına Vade Farksız 6 Taksit!” kampanyasına katılın, Albaraka World kartlarınız ile yapacağınız 30.000 TL - 500.000 TL arası Okul ödemelerinize vade farksız 6 taksit fırsatını kaçırmayın!""
+- Avantajlı Kampanyalar
+- Masrafsız Banka ve Kredi Kartı
+- Ücretsiz EFT ve Havale
+- 8.500’den Fazla ATM’den İşlem Fırsatı"
+0211-902a391aebff,genisletme,Türkiye Emlak Katılım Bankası A.Ş.,https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar/kampanya/Paraf%20ile%20Hepsiburada%E2%80%99da%20Pe%C5%9Fin%20Fiyat%C4%B1na%206%20Aya%20Varan%20Taksit%20F%C4%B1rsat%C4%B1!,yeni_musteri,,,,,,500,,"İlk Harcamanızın Yarısı İade!
+Emlak Katılım Mobil uygulaması üzerinden görüntülü görüşme ile müşteri olanlar, ilk harcamalarının yarısı kadar, toplamda 500 TL’ye varan nakit iade kazanıyor.
+| Finansman Tahsis Ücreti | Ödenecek Toplam Tutar | Taksit Sayısı | Taksit Tutarı | Finansman Tutarı | Ekspertiz Ücreti | İpotek Tesis Bedeli | Toplam Masraf | Kâr Oranı % | 
+|---|---|---|---|---|---|---|---|---|
+| 5,75 TL | 2.890,88 TL | 48 | 60,22 TL | 1.000 TL | 0 TL | 0 TL | 5,75 TL | 4.29 | 
+| Taksit No | Taksit Tutarı | Kalan Ana Para | Ana Para | Kâr Tutarı | KKDF | BSMV | 
+|---|---|---|---|---|---|---|
+| 1 | 60.22 TL | 995.56 TL | 4.44 TL | 42.900000000000006 TL | 6.44 TL | 6.44 TL | 
+| 2 | 60.22 TL | 990.87 TL | 4.69 TL | 42.71 TL | 6.41 TL | 6.41 TL | 
+| 3 | 60.22 TL | 985.92 TL | 4.95 TL | 42.51 TL | 6.38 TL | 6.38 TL | 
+| 4 | 60.22 TL | 980.68 TL | 5.24 TL | 42.3 TL | 6.34 TL | 6.34 TL | 
+| 5 | 60.22 TL | 975.15 TL | 5.53 TL | 42.07 TL | 6.31 TL | 6.31 TL | 
+| 6 | 60.22 TL | 969.3 TL | 5.85 TL | 41.83 TL | 6.27 TL | 6.27 TL | 
+| 7 | 60.22 TL | 963.14 TL | 6.16 TL | 41.58 TL | 6.24 TL | 6.24 TL | 
+| 8 | 60.22 TL | 956.64 TL | 6.5 TL | 41.32 TL | 6.2 TL | 6.2 TL | 
+| 9 | 60.22 TL | 949.78 TL | 6.86 TL | 41.04 TL | 6.16 TL | 6.16 TL | 
+| 10 | 60.22 TL | 942.53 TL | 7.25 TL | 40.75 TL | 6.11 TL | 6.11 TL | 
+| 11 | 60.22 TL | 934.86 TL | 7.67 TL | 40.43 TL | 6.06 TL | 6.06 TL | 
+| 12 | 60.22 TL | 926.79 TL | 8.07 TL | 40.11 TL | 6.02 TL | 6.02 TL | 
+| 13 | 60.22 TL | 918.25 TL | 8.54 TL | 39.76 TL | 5.96 TL | 5.96 TL | 
+| 14 | 60.22 TL | 909.24 TL | 9.01 TL | 39.39 TL | 5.91 TL | 5.91 TL | 
+| 15 | 60.22 TL | 899.73 TL | 9.51 TL | 39.01 TL | 5.85 TL | 5.85 TL | 
+| 16 | 60.22 TL | 889.69 TL | 10.04 TL | 38.6 TL | 5.79 TL | 5.79 TL | 
+| 17 | 60.22 TL | 879.1 TL | 10.59 TL | 38.17 TL | 5.73 TL | 5.73 TL | 
+| 18 | 60.22 TL | 867.91 TL | 11.19 TL | 37.71 TL | 5.66 TL | 5.66 TL | 
+| 19 | 60.22 TL | 856.08 TL | 11.83 TL | 37.23 TL | 5.58 TL | 5.58 TL | 
+| 20 | 60.22 TL | 843.61 TL | 12.47 TL | 36.73 TL | 5.51 TL | 5.51 TL | 
+| 21 | 60.22 TL | 830.44 TL | 13.17 TL | 36.19 TL | 5.43 TL | 5.43 TL | 
+| 22 | 60.22 TL | 816.53 TL | 13.91 TL | 35.63 TL | 5.34 TL | 5.34 TL | 
+| 23 | 60.22 TL | 801.84 TL | 14.69 TL | 35.03 TL | 5.25 TL | 5.25 TL | 
+| 24 | 60.22 TL | 786.34 TL | 15.5 TL | 34.4 TL | 5.16 TL | 5.16 TL | 
+| 25 | 60.22 TL | 769.97 TL | 16.37 TL | 33.73 TL | 5.06 TL | 5.06 TL | 
+| 26 | 60.22 TL | 752.68 TL | 17.29 TL | 33.03 TL | 4.95 TL | 4.95 TL | 
+| 27 | 60.22 TL | 734.43 TL | 18.25 TL | 32.29 TL | 4.84 TL | 4.84 TL | 
+| 28 | 60.22 TL | 715.18 TL | 19.25 TL | 31.51 TL | 4.73 TL | 4.73 TL | 
+| 29 | 60.22 TL | 694.84 TL | 20.34 TL | 30.68 TL | 4.6 TL | 4.6 TL | 
+| 30 | 60.22 TL | 673.37 TL | 21.47 TL | 29.81 TL | 4.47 TL | 4.47 TL | 
+| 31 | 60.22 TL | 650.7 TL | 22.67 TL | 28.89 TL | 4.33 TL | 4.33 TL | 
+| 32 | 60.22 TL | 626.78 TL | 23.92 TL | 27.92 TL | 4.19 TL | 4.19 TL | 
+| 33 | 60.22 TL | 601.51 TL | 25.27 TL | 26.89 TL | 4.03 TL | 4.03 TL | 
+| 34 | 60.22 TL | 574.83 TL | 26.68 TL | 25.8 TL | 3.87 TL | 3.87 TL | 
+| 35 | 60.22 TL | 546.67 TL | 28.16 TL | 24.66 TL | 3.7 TL | 3.7 TL | 
+| 36 | 60.22 TL | 516.94 TL | 29.73 TL | 23.45 TL | 3.52 TL | 3.52 TL | 
+| 37 | 60.22 TL | 485.56 TL | 31.38 TL | 22.18 TL | 3.33 TL | 3.33 TL | 
+| 38 | 60.22 TL | 452.41 TL | 33.15 TL | 20.83 TL | 3.12 TL | 3.12 TL | 
+| 39 | 60.22 TL | 417.42 TL | 34.99 TL | 19.41 TL | 2.91 TL | 2.91 TL | 
+| 40 | 60.22 TL | 380.49 TL | 36.93 TL | 17.91 TL | 2.69 TL | 2.69 TL | 
+| 41 | 60.22 TL | 341.49 TL | 39 TL | 16.32 TL | 2.45 TL | 2.45 TL | 
+| 42 | 60.22 TL | 300.32 TL | 41.17 TL | 14.65 TL | 2.2 TL | 2.2 TL | 
+| 43 | 60.22 TL | 256.84 TL | 43.48 TL | 12.88 TL | 1.93 TL | 1.93 TL | 
+| 44 | 60.22 TL | 210.94 TL | 45.9 TL | 11.02 TL | 1.65 TL | 1.65 TL | 
+| 45 | 60.22 TL | 162.49 TL | 48.45 TL | 9.05 TL | 1.36 TL | 1.36 TL | 
+| 46 | 60.22 TL | 111.34 TL | 51.15 TL | 6.97 TL | 1.05 TL | 1.05 TL | 
+| 47 | 60.22 TL | 57.34 TL | 54 TL | 4.78 TL | 0.72 TL | 0.72 TL | 
+| 48 | 60.54 TL | 0 TL | 57.34 TL | 2.46 TL | 0.37 TL | 0.37 TL | 
+| Toplam Ödeme : | 2890.88 TL |  |  |  |  |  |"
+0212-07d26882fdf8,genisletme,Hayat Finans Katılım Bankası A.Ş.,https://hayatfinans.com.tr/kampanyalar/biz-kart-ile-arkadasini-getir-kazan,yeni_musteri,,,,,,500,2026-08-31,"Biz Kart Arkadaşını Getir & Kazan
+Kampanya Dönemi: 16 Haziran - 31 Ağustos 2026
+Kampanya Koşulları
+1. Bu kampanya Hayat Finans bireysel müşterileri için geçerlidir.
+2. Hayat Finans müşterisi olan kişiler Hayat Finans Mobil Uygulaması > Profil > Davet Kodu alanından alacakları kod ile yakınlarını davet edebilir.
+3. Kampanya dönemi içerisinde davet edilen kişi, davet kodu ile müşteri olduktan sonra 8-25 yaş aralığındaki çocukları için yapacakları ilk Biz Kart başvurusu için davet eden müşteri 500 TL nakit ödül kazanır. Kazanılan nakit ödül bir gün sonra davet eden kişinin cari hesabına aktarılır.
+4. Davet edilen müşteri, birden fazla Biz Kart başvurusu yapsa dahi davet eden kişi, davet edilen kişinin yapmış olduğu yalnızca ilk Biz Kart başvurusundan nakit ödül kazanımı sağlayabilir.
+5. Davet eden kişi, davet ettiği kişinin kampanya koşullarını sağlaması halinde kişi başı maksimum 500 TL, toplamda 50 kişi için maksimum 25.000 TL nakit ödül kazanabilir.
+6. Davet kodu ile müşteri olan kişiler, Biz Kart başvurusunu yaptıkları günden itibaren 7 gün içerisinde 8-25 yaş arasındaki Biz Kart verdikleri tüm çocukları için, Biz Kartın bağlı olduğu cari hesaba EFT/Havale/FAST/Virman yoluyla yapılacak net para transferi toplamının 1.000 TL ve üzeri olması durumunda, 500 TL nakit ödül kazanır. Kampanya koşulları sağlandığında kazanılan 500 TL tutarındaki nakit ödül, Biz Kart tanımlandıktan 7 gün sonra (8. Gün) hesaba yatırılır.
+Nakit ödülün yatırılması için net para transferi tutarının 7.günün sonunda * 1.000 TL ve üstü olması gerekmektedir.
+*Net ParaTransferi Tutarı = Biz Kartın tanımlandığı tarihten itibaren 7 gün boyunca Biz Kartın bağlı olduğu cari hesaba gelen toplam para transfer tutarı (EFT/FAST/Havale yoluyla) – Biz Kartın bağlı olduğu cari hesaptan giden toplam para transfer tutar(EFT/FAST/Havale yoluyla)
+7. Kampanya, Nisan ayı Biz Kart Arkadaşını Getir kampanyasının devamı niteliğinde olup önceki dönemde (7-30 Nisan) hak edilen kazanımlar da kampanya kapsamına dahildir. Davet kodu ile arkadaşını getiren kişiler toplamda maksimum 25.000 TL kazanım sağlayabilir.
+8. Davet koduyla müşteri olan kişi 8-25 aralığındaki en fazla 5 çocuğuna Biz Kart başvurusunda bulunabilir. Her Biz Kart için 1000 TL ve üzeri net para transfer koşulu 6. maddede belirtilen şekilde sağlandığında, her Biz Kart başına 500 TL nakit ödül Biz Kart'ın bağlı olduğu hesaplara yatırılır.
+9. Davet edilen kişinin yapacağı Biz Kart başvurusu davet eden kişi adına olursa kazanım sağlanamaz.
+10. Çocuklarınıza verdiğiniz Biz Kart'ın kampanya süresi boyunca aktif olması gerekmektedir.
+11. Kampanya süresi içerisinde iptal edilen kartlar için nakit ödül kazanımı sağlanamaz.
+12. Banka Biz Kart başvurularını değerlendirme konusunda serbest olup Bankaca uygun görülmeyen başvurular kabul edilmeyecektir.
+13. İptal, iade işlemleri kampanya kapsamında değerlendirilmeyecektir. İlgili kampanya döneminde paranın anlık yatırılıp/çekilmesi, başka hesaplara virmanlanarak tekrar hesaba gönderilmesi gibi Banka ürünlerini kullanmaya yönelik olmayıp kampanya koşullarını yanıltmaya yönelik işlemler tespit edildiğinde Bankanın bu işlemleri kampanyaya dahil etmeme, bu işlemler sonucu hesaba yatan ödülleri geri alma hakkı saklıdır.
+14. Kampanya 6.000 kişi ve 6.000 adet Biz Kart ile sınırlıdır.
+15. Bu kampanya Hayat Finans'ın diğer kampanyaları ile birleştirilemez.
+16. Kampanya süresince müşteri ilişiğini sonlandırıp yeniden müşteri olan bireyler kampanyadan yararlanamaz.
+17. Hayat Finans kampanya koşullarında herhangi bir bildirimde bulunulmaksızın değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
+18. Hayat Finans tarafından tespit edilen usulsüzlük durumlarında kazanılan ödül iptali ve/veya geri alma hakkı saklıdır.
+19. Hayat Finansta yasal/idari takipte bulunan veya haciz süreci başlatılmış müşteriler kampanyadan yararlanamaz.
+Kampanya Koşulları
+1. Bu kampanya Hayat Finans bireysel müşterileri için geçerlidir.
+2. Hayat Finans müşterisi olan kişiler Hayat Finans Mobil Uygulaması > Profil > Davet Kodu alanından alacakları kod ile yakınlarını davet edebilir.
+3. Kampanya dönemi içerisinde davet edilen kişi, davet kodu ile müşteri olduktan sonra 8-25 yaş aralığındaki çocukları için yapacakları ilk Biz Kart başvurusu için davet eden müşteri 500 TL nakit ödül kazanır. Kazanılan nakit ödül bir gün sonra davet eden kişinin cari hesabına aktarılır.
+4. Davet edilen müşteri, birden fazla Biz Kart başvurusu yapsa dahi davet eden kişi, davet edilen kişinin yapmış olduğu yalnızca ilk Biz Kart başvurusundan nakit ödül kazanımı sağlayabilir.
+5. Davet eden kişi, davet ettiği kişinin kampanya koşullarını sağlaması halinde kişi başı maksimum 500 TL, toplamda 50 kişi için maksimum 25.000 TL nakit ödül kazanabilir.
+6. Davet kodu ile müşteri olan kişiler, Biz Kart başvurusunu yaptıkları günden itibaren 7 gün içerisinde 8-25 yaş arasındaki Biz Kart verdikleri tüm çocukları için, Biz Kartın bağlı olduğu cari hesaba EFT/Havale/FAST/Virman yoluyla yapılacak net para transferi toplamının 1.000 TL ve üzeri olması durumunda, 500 TL nakit ödül kazanır. Kampanya koşulları sağlandığında kazanılan 500 TL tutarındaki nakit ödül, Biz Kart tanımlandıktan 7 gün sonra (8. Gün) hesaba yatırılır.
+Nakit ödülün yatırılması için net para transferi tutarının 7.günün sonunda * 1.000 TL ve üstü olması gerekmektedir.
+*Net ParaTransferi Tutarı = Biz Kartın tanımlandığı tarihten itibaren 7 gün boyunca Biz Kartın bağlı olduğu cari hesaba gelen toplam para transfer tutarı (EFT/FAST/Havale yoluyla) – Biz Kartın bağlı olduğu cari hesaptan giden toplam para transfer tutar(EFT/FAST/Havale yoluyla)
+7. Kampanya, Nisan ayı Biz Kart Arkadaşını Getir kampanyasının devamı niteliğinde olup önceki dönemde (7-30 Nisan) hak edilen kazanımlar da kampanya kapsamına dahildir. Davet kodu ile arkadaşını getiren kişiler toplamda maksimum 25.000 TL kazanım sağlayabilir.
+8. Davet koduyla müşteri olan kişi 8-25 aralığındaki en fazla 5 çocuğuna Biz Kart başvurusunda bulunabilir. Her Biz Kart için 1000 TL ve üzeri net para transfer koşulu 6. maddede belirtilen şekilde sağlandığında, her Biz Kart başına 500 TL nakit ödül Biz Kart'ın bağlı olduğu hesaplara yatırılır.
+9. Davet edilen kişinin yapacağı Biz Kart başvurusu davet eden kişi adına olursa kazanım sağlanamaz.
+10. Çocuklarınıza verdiğiniz Biz Kart'ın kampanya süresi boyunca aktif olması gerekmektedir.
+11. Kampanya süresi içerisinde iptal edilen kartlar için nakit ödül kazanımı sağlanamaz.
+12. Banka Biz Kart başvurularını değerlendirme konusunda serbest olup Bankaca uygun görülmeyen başvurular kabul edilmeyecektir.
+13. İptal, iade işlemleri kampanya kapsamında değerlendirilmeyecektir. İlgili kampanya döneminde paranın anlık yatırılıp/çekilmesi, başka hesaplara virmanlanarak tekrar hesaba gönderilmesi gibi Banka ürünlerini kullanmaya yönelik olmayıp kampanya koşullarını yanıltmaya yönelik işlemler tespit edildiğinde Bankanın bu işlemleri kampanyaya dahil etmeme, bu işlemler sonucu hesaba yatan ödülleri geri alma hakkı saklıdır.
+14. Kampanya 6.000 kişi ve 6.000 adet Biz Kart ile sınırlıdır.
+15. Bu kampanya Hayat Finans'ın diğer kampanyaları ile birleştirilemez.
+16. Kampanya süresince müşteri ilişiğini sonlandırıp yeniden müşteri olan bireyler kampanyadan yararlanamaz.
+17. Hayat Finans kampanya koşullarında herhangi bir bildirimde bulunulmaksızın değişiklik yapma veya kampanyayı sonlandırma hakkını saklı tutar.
+18. Hayat Finans tarafından tespit edilen usulsüzlük durumlarında kazanılan ödül iptali ve/veya geri alma hakkı saklıdır.
+19. Hayat Finansta yasal/idari takipte bulunan veya haciz süreci başlatılmış müşteriler kampanyadan yararlanamaz."
+0210-f4010a63c94b,genisletme,Vakıf Katılım Bankası A.Ş.,https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/detay/avvada-tum-indirimlere-ek-10-indirim,diger,,,,,,,2026-12-31,"SİZE ÖZEL ÇÖZÜMLER
+                                            
+                                    ÜRÜN VE HİZMETLERİMİZ
+                                            
+                                    18 Ağustos 2026 - 31 Aralık 2026
+                    Vakıf Katılım müşterileri, AVVA’da yapacakları alışverişlerde tüm indirimlere ek %10 indirimden yararlanıyor!
+Mobil şube üzerinden “Kampanyalar” alanında yer alan AVVA kampanyasındaki “İndirim Kodu Oluştur” butonuna tıklayarak alacağınız size özel indirim kodunu, www.avva.com.tr adresi veya AVVA mağazalarından yapacağınız alışverişlerde kullanabilirsiniz.
+Vakıf Katılım müşterisi değilseniz Vakıf Katılım Mobil’i indirerek “Vakıf Katılımlı Ol” adımından ya da en yakın şubeye giderek müşteri olabilirsiniz.
+- Mevcut indirim ve kampanyalara ek %10 indirim uygulanır.
+- İndirim, Türkiye içerisindeki tüm AVVA mağazalarında ve avva.com.tr ‘de geçerlidir.
+- avva.com.tr ‘de indirimden faydalanmak isteyen müşteriler sepette Hediye Çeki Kullan seçeneğine tıkladıktan sonra “Hediye Çeki” bölümüne mobil şubeden alacakları indirim kodunu yazmalıdır.
+- Müşteriler, bu kampanyadan yalnızca 1 kez faydalanabilir.
+- İndirim çeki kodu tek kullanımlıktır.
+- Başka indirim çeki kampanyalarıyla birleştirilemez.
+- Başka sadakat programı kampanyalarıyla birleştirilemez.
+- Kampanya kullanımında minimum alışveriş sınırı yoktur.
+- İndirim kodu para yerine geçmez.
+- Kampanya, 31 Aralık 2026 tarihine kadar geçerlidir.
+- Vakıf Katılım Bankası AŞ ve AVVA, önceden haber vermeksizin kampanyayı durdurma, sona erdirme, kampanya kapsamını ve koşullarını değiştirme hakkını saklı tutar."
+0209-0e21bbc75f76,genisletme,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/kart-kampanyalari/market-alisverislerinize-toplam-1500-tl-bankkart-lira?IsArchived=true,alisveris_puani,,,,,,1500,2026-07-09,"Market Alışverişlerinize Toplam 1.500 TL Bankkart Lira!
+Market Alışverişlerinize Toplam 1.500 TL Bankkart Lira!
+Kampanya
+09-07-2026
+Tarihinde Sona Ermiştir.
+Kampanya Koşulları:
+- Ziraat Katılım Bankkart kredi kartınız ile 9 Haziran 2026 - 9 Temmuz 2026 tarihleri arasında market, bakkal, kasap, manav ve şarküteri üye işyerlerinde Bankkart POS'undan tek seferde yapacağınız 2.500 TL ve üzeri her alışverişiniz ile 125 TL, toplam 1.500 TL Bankkart Lira kazanabilirsiniz.
+- Bankkart Lira kazanabilmek için alışveriş yapmadan önce Ziraat Katılım Mobil, Web Sitesi ve İnternet Şube üzerinden kampanyaya katılmanız gerekmektedir.
+- İşlemlerin Bankkart anlaşmalı üye işyerlerinde ve Bankkart POS'undan yapılması gerekmektedir.
+- Aynı gün aynı işyerinden yapılan işlemlerden sadece ilki kampanyaya dahil edilecektir.
+- E-ticaret işlemleri kampanyaya dahil değildir.
+- Kampanya şartlarını yerine getiren müşterilerimizin kartlarına ödül Bankkart Lira tutarı anında yansıtılacaktır.
+- Kampanya müşteri bazındadır ve bir müşteri kampanyadan en fazla 1.500 TL Bankkart Lira kazanabilecektir.
+- Kampanyaya yalnızca Ziraat Katılım Bireysel Bankkart kredi kartı ile yapılacak işlemler dahildir.
+- Kampanyaya ticari ve ücretsiz kartlar dahil değildir.
+- Kazanılan Bankkart Liralar Bankkart anlaşmalı üye iş yerlerinde Bankkart POS’larında kullanılabilir.
+- Kampanyaya katılım yalnızca asıl kart sahibi müşteriler tarafından yapılabilir.
+- Ön provizyon, iade, iptal, karta para yükleme ve Bankkart Lira kullanım işlemleri kampanyaya dahil değildir.
+- Kampanya döneminde yapılan işlemlerin iade/iptal edilmesi durumunda verilen Bankkart Liralar geri alınacaktır. Kredi kartında yeterli Bankkart Lira bulunmaması halinde kredi kartı ekstresine borç olarak yansıtılacaktır.
+- Kampanya başka kampanyalarla birleştirilemez.
+- Bankamız kampanya koşullarının tamamında değişiklik yapma ve kampanyayı durdurma hakkına sahiptir."
+0209-87903d3dc7ad,genisletme,Ziraat Katılım Bankası A.Ş.,https://www.ziraatkatilim.com.tr/bireysel/odemeler/Anlik-Transfer,diger,,,,,,,,"Kolay Adres ve QR Kod ile Anlık Transfer (FAST)
+Anlık Transfer (FAST) ile IBAN numarasına ihtiyaç duymadan Kolay Adrese (Cep Telefonu No, E-posta Adresi, T.C. Kimlik No, Pasaport No, Vergi No) ya da QR Koduna 7/24 para transferi yapabilirsiniz.
+Kolay Adres tanımınızı İnternet Şubesinden, Mobil Şubesinden ya da şubelerimizden IBAN kodunuz ile adresinizi eşleştirerek yapabilirsiniz.
+QR Kod eşleştirmenizi ise Katılım Mobil uygulamamızdan yaparak para gönderimi için kolayca paylaşabilirsiniz.
+Kolay Adres Nedir?
+T.C. Merkez Bankası tarafından geliştirilen Fonların Anlık ve Sürekli Transferi (FAST) sistemi IBAN yerine Cep Telefonu No, E-posta Adresi, T.C. Kimlik No, Pasaport No, Vergi No bilgilerine 7/24 transfer imkânı veren bir hizmettir.
+Fast için QR Kod Nasıl Tanımlanır?
+Katılım Mobil uygulaması, QR İşlemleri menüsü altındaki QR Kodu Oluştur ekranından FAST için QR kodu oluşturabilirsiniz .
+Sıkça Sorulan Sorular
+Bu hizmetten yararlanmak için Kolay Adres olarak adlandırılan bankacılık sistemimizde tanımlı aşağıdaki adreslerinizden en az birini IBAN kodunuz ile eşleştirmeniz gerekir.
+- Cep telefonu,
+- E-posta,
+- TC Kimlik Numarası
+- Yabancı Kimlik Numarası
+- Vergi Numarası
+- Pasaport Numarası
+Katılım Mobil ve İnternet Şubesi; Para Transferleri\Kolay Adreslerim sayfasından ya da şubelerimizden Kolay Adres tanımınızı yapabilirsiniz.
+Her bir adresiniz için bağlı bir tane IBAN olabilir. Adresiniz için en son hangi IBAN'ı eşleştirdiyseniz Kolay Adresiniz olarak o IBAN kabul edilir.
+Farklı Kolay Adreslerinize aynı IBAN'ı tanımlayabilirsiniz.
+Tanımladığınız Kolay Adresleri İnternet Şubesi, Katılım Mobil; Para Transferleri altındaki Kolay Adreslerim ekranından ya da Şubelerimizden görebilir, güncelleyebilir ve silebilirsiniz.
+Anlık Transfer(FAST) ekranlarından para transferlerinizi 7/24 dilediğiniz zaman gerçekleştirebilirsiniz.
+Anlık Transfer (FAST) işlemleri anında karşı bankaya ulaşır.
+Anlık Transfer (FAST) ekranından IBAN koduna ve Kolay Adreslerinize 7/24 transfer yapabilirsiniz.
+Anlık Transfer (FAST) işlemi için herhangi bir masraf alınmamaktadır.
+Anlık Transfer (FAST) işlemlerinde limit Merkez Bankası tarafından belirlenmiş olup işlem başına tüm bankalar için 100.000 TL’ dir.
+Farklı bir bankadan ürettiğiniz QR kodu Katılım Mobil uygulamamız QR İşlemleri menüsü altından okutarak FAST işleminizi kolayca yapabilirsiniz.
+Katılım Mobil uygulaması, QR İşlemleri menüsü altındaki QR Kodu Oluştur ekranından FAST için QR kodu oluşturabilirsiniz ."
