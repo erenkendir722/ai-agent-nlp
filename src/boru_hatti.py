@@ -174,7 +174,7 @@ def _cikar_ve_kaydet(
 
         elestirmen = ElestirmenAjani(etkin=not args.elestirmen_yok)
         llm_cikarici = LLMCikarici(model=args.model, elestirmen=elestirmen)
-        log.info("LLM katmanı: %s", args.model)
+        log.info("LLM katmanı: %s / %s", llm_cikarici.saglayici.ad, llm_cikarici.model)
         if args.elestirmen_yok:
             log.warning(
                 "⚠️  ELEŞTİRMEN AJANI KAPALI — çıkarılan değerler ham metinde "
