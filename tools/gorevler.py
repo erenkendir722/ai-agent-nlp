@@ -32,29 +32,36 @@ PANO = KOK / "GOREVLER.md"
 
 _ASIL_SAHIPLER = {"E": "Eren", "S": "Samet", "G": "Görkem", "ES": "Esra", "H": "Herkes"}
 
-# DEVREDİLEN GÖREVLER
+# DEVREDİLEN GÖREVLER — ön ek bazında
 #
-# 18 Ağustos 2026: Samet çalışamaz durumda; `S-*` görevlerinin tamamı Eren'e
-# devredildi. Görev KODLARI değiştirilmedi — `S-02`, `S-13` gibi kodlar
+# Bu sözlük boş olduğunda her ön ek asıl sahibindedir. Bir ön ek geçici olarak
+# başkasına taşınacaksa buraya bir satır eklenir; taşıma bitince satır silinir.
+# Görev KODLARI hiçbir durumda değiştirilmez — `S-02`, `S-13` gibi kodlar
 # `⛔ Önce bitmeli:` satırlarında, commit mesajlarında ve `docs/` içinde
 # geçiyor; yeniden adlandırmak o referansların hepsini kırardı.
 #
-# Devir geri alınacaksa bu sözlükten ilgili satırı silmek yeterlidir.
-DEVIR = {"S": "Eren"}
+# 26 Ağustos 2026: `S-*` ön eki asıl sahibine döndü, sözlük boşaltıldı.
+DEVIR: dict[str, str] = {}
 
 SAHIPLER = {onek: DEVIR.get(onek, ad) for onek, ad in _ASIL_SAHIPLER.items()}
 
 # TEK GÖREV DEVRİ — ön ek değil, görev bazında.
 #
-# `DEVIR` bütün bir ön eki taşır (`S-*` → Eren). Bazen tek bir görevi taşımak
-# gerekir: 24 Ağustos'ta Esra'nın 15 açık işi ve teslime 3 günü vardı, üstelik
-# ES-17 tek başına üç görevi tıkıyordu. Video ve slayt onda kalmalıydı; ekran
-# gerektirmeyen ES-15 (model çıktı örnekleri — veritabanından üretiliyor)
-# Görkem'e verildi, çünkü 8 açık işle en az yüklü kişi oydu.
+# `DEVIR` bütün bir ön eki taşır. Bazen tek bir görevi taşımak gerekir:
+# 24 Ağustos'ta Esra'nın 15 açık işi ve teslime 3 günü vardı, üstelik ES-17 tek
+# başına üç görevi tıkıyordu. Video ve slayt onda kalmalıydı; ekran gerektirmeyen
+# ES-15 (model çıktı örnekleri — veritabanından üretiliyor) Görkem'e verildi,
+# çünkü 8 açık işle en az yüklü kişi oydu.
 #
-# Kod DEĞİŞTİRİLMEZ: `ES-15` referansları `⛔ Önce bitmeli:` satırlarında ve
-# `docs/` içinde geçiyor. Yalnız sahibi değişir.
-GOREV_DEVRI = {"ES-15": "Görkem"}
+# 26 Ağustos: aynı gerekçe iki görev daha taşıdı. Teslime bir gün kala kritik
+# yolun tamamı Esra'daydı (ES-12 → ES-17 → ES-18 zinciri artı ES-13), Görkem'in
+# ise açık işi kalmamıştı. Esra'da yalnız VİDEO ve SLAYT bırakıldı — onları
+# kimse onun yerine yapamaz; dar ekran kontrolü (ES-11) ve ekran görüntüleri
+# (ES-14) Görkem'e geçti.
+#
+# Kod DEĞİŞTİRİLMEZ: bu kodlar `⛔ Önce bitmeli:` satırlarında ve `docs/`
+# içinde geçiyor. Yalnız sahibi değişir.
+GOREV_DEVRI = {"ES-15": "Görkem", "ES-11": "Görkem", "ES-14": "Görkem"}
 
 
 def sahip_bul(kod: str) -> str:
@@ -261,7 +268,11 @@ def genel_rapor(gorevler: dict[str, Gorev]) -> None:
     print(f"  {'Kişi':<10}{'Açık':>6}{'Hazır':>7}{'Bloke':>7}{'Tikli':>7}   Sıradaki")
     print(f"  {'-' * 72}")
 
-    for ad in ("Eren", "Görkem", "Esra", "Herkes"):
+    # Kişi listesi ELLE YAZILMAZ — `SAHIPLER`den türer. Eskiden burada dört ad
+    # sabit duruyordu ve `S-*` devredilince Samet listeden düşmüştü: kendi
+    # listesi (`make gorev ad=Samet`) 11 açık iş gösterirken özet tabloda satırı
+    # bile yoktu. Devir bir sonraki sefer geri alınınca hata sessizce geri gelir.
+    for ad in dict.fromkeys(list(SAHIPLER.values()) + list(_ASIL_SAHIPLER.values())):
         benim = [g for g in gorevler.values() if g.sahip == ad]
         acik = [g for g in benim if not g.bitti]
         hazir = [g for g in acik if not engelleyenler(g, gorevler)]

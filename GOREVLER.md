@@ -473,8 +473,8 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         Uyum bloğunun dosyaları AYRI kaldı: `uyum_hesapla` onları kişi kişi
         okuyor ve «etiketleme uzlaşmamız %79,2» cümlesi oradan çıkıyor.
         Birleştirmek o ölçümü yok ederdi (bkz. ALTIN_SET_DENETIMI bulgu 1).
-      ↳ ⚠️ **Samet çalışamaz durumda; ona düşen 8 kayıt dağıtılmalı.**
-        Eren ve Görkem 4'er kayıt alsın (Esra video/slaytta).
+      ↳ ⚠️ **Samet'e düşen 8 kayıt Ağustos ortasında dağıtıldı** — Eren ve
+        Görkem 4'er kayıt aldı (Esra video/slayttaydı).
       ↳ Kılavuz aynı: `docs/ETIKETLEME_KILAVUZU.md`. **Sıfır geçerli bir
         değerdir**, boş hücreden farklıdır (bkz. `docs/kararlar/012-*`).
       ↳ Bitince sırayla: `make altin-denetle ad=<adın>` → `make altin-derle`
@@ -804,16 +804,16 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ---
 
-# 🧪 SAMET → EREN — çıkarım motoru, LLM, değerlendirme
+# 🧪 SAMET — çıkarım motoru, LLM, değerlendirme
 
-> 🔄 **18 Ağustos 2026: bu bölümün tamamı Eren'e devredildi.** Samet çalışamaz
-> durumda. `make gorev ad=Eren` bu görevleri de listeler.
+> 🔄 **26 Ağustos 2026: bu bölüm asıl sahibine döndü.** Ağustos ortasında
+> `S-*` görevleri geçici olarak Eren'in listesinde koşuyordu; o düzenleme sona
+> erdi ve `tools/gorevler.py` içindeki `DEVIR` sözlüğü boşaltıldı.
+> `make gorev ad=Samet` bu görevleri yeniden listeler.
 >
-> **Görev kodları `S-*` olarak BIRAKILDI.** `S-02`, `S-13` gibi kodlar
+> **Görev kodları hiç değişmedi.** `S-02`, `S-13` gibi kodlar
 > `⛔ Önce bitmeli:` satırlarında, commit mesajlarında ve `docs/` içinde
-> geçiyor; yeniden adlandırmak o referansların hepsini kırardı. Devir
-> `tools/gorevler.py` içindeki `DEVIR` sözlüğünde tutuluyor — Samet dönerse
-> tek satır silinerek geri alınır.
+> geçiyor; yeniden adlandırmak o referansların hepsini kırardı.
 
 > **Bu bölüm projenin %30'luk kriterinin tamamı.** En yüksek ağırlıklı kalem.
 
@@ -1662,8 +1662,11 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
 
 - [ ] **ES-11** Dar ekran / projeksiyon kontrolü · 📅 22 Ağu
       ⛔ **Önce bitmeli:** ES-01 (Esra) · ES-02 (Esra) · ES-04 (Esra)
+      ↳ 🔄 **26 Ağu: Görkem'e geçti.** Teslime bir gün kala kritik yolun tamamı
+        Esra'daydı, Görkem'in açık işi kalmamıştı. Bu iş ekran gerektiriyor ama
+        **Esra'yı gerektirmiyor** — arayüzü açıp çözünürlük düşürmek yeterli.
       ↳ Bitti sayılır: 1280×720 çözünürlükte tablolar taşmıyor, yazılar okunuyor
-      ↳ Finalde projeksiyona bağlanacaksın; kendi 27" ekranında iyi görünmesi
+      ↳ Finalde projeksiyona bağlanılacak; kendi 27" ekranında iyi görünmesi
         hiçbir şey ifade etmiyor
 
 - [ ] **ES-12** 🔴 Demo senaryosu — yaz, prova et, süre tut · 📅 **22 Ağu**
@@ -1682,7 +1685,9 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
 ### Sprint 4 — teslim (24–26 Ağustos)
 
 - [ ] **ES-14** Ekran görüntüleri — README ve dokümantasyon için · 📅 24 Ağu
-      ⛔ **Önce bitmeli:** ES-11 (Esra)
+      ⛔ **Önce bitmeli:** ES-11 (Görkem)
+      ↳ 🔄 **26 Ağu: Görkem'e geçti** — ES-11'in hemen devamı, aynı oturumda
+        yapılır: ekranı 1280×720'e alıp kontrol ederken görüntüleri de al.
       ↳ Bitti sayılır: `docs/gorseller/` altında 3 ekranın görüntüsü var,
         README'de gömülü
       ↳ Jürinin ilk 30 saniyesi README'de geçiyor; ekran görüntüsü olmayan bir
