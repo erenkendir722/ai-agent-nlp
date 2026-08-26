@@ -22,12 +22,15 @@ from datetime import datetime
 import pytest
 
 from src.comparison.karsilastirma import (
+    VADE_IZGARASI,
     Agirliklar,
     Kriter,
     Senaryo,
     avantaj_skorla,
     sirala,
     toplam_maliyet,
+    vade_duyarliligi,
+    vade_tavsiyesi,
     uyarilar,
 )
 from src.depolama import KampanyaKaydi
@@ -206,3 +209,104 @@ class TestMansetOranTuzagi:
         assert ucuz_gorunen["toplam_geri_odeme"] > gercekten_ucuz["toplam_geri_odeme"]
         fark = ucuz_gorunen["toplam_geri_odeme"] - gercekten_ucuz["toplam_geri_odeme"]
         assert 3_000 < fark < 6_000, f"slayttaki ~4.204 TL farkı değişti: {fark:.0f}"
+
+
+class TestVadeDuyarliligi:
+    """Karar desteği: «aynı kampanyada vadeyi kısaltsam ne kazanırım?»
+
+    Mentör geri bildirimi (26 Ağu): tekil teklif yerine vade/tutar karşılaştırması
+    sunmak jüriye daha çok şey anlatır. Hesap `toplam_maliyet` üstünde koşan bir
+    ızgaradır — yeni matematik yok, dolayısıyla burada sınanan şey aritmetik
+    değil **sözleşme**: neyin döndüğü, neyin elenmediği, neyin iddia edilmediği.
+    """
+
+    def test_kisa_vade_toplamda_her_zaman_daha_ucuz(self) -> None:
+        secenekler = vade_duyarliligi(800_000, 2.05, referans_vade=120)
+        uygunlar = [s for s in secenekler if s.uygun_mu]
+        toplamlar = [s.toplam_geri_odeme for s in uygunlar]
+        assert toplamlar == sorted(toplamlar), "vade uzadıkça toplam maliyet artmalı"
+
+    def test_taksit_vade_uzadikca_duser(self) -> None:
+        secenekler = vade_duyarliligi(800_000, 2.05, referans_vade=120)
+        taksitler = [s.aylik_taksit for s in secenekler if s.uygun_mu]
+        assert taksitler == sorted(taksitler, reverse=True)
+
+    def test_referans_vade_farki_sifir(self) -> None:
+        secenekler = vade_duyarliligi(800_000, 2.05, referans_vade=120)
+        referans = next(s for s in secenekler if s.vade_ay == 120)
+        assert referans.toplam_farki == 0.0
+        assert referans.taksit_farki == 0.0
+        assert referans.referans_mi
+
+    def test_izgarada_olmayan_referans_vade_tabloya_eklenir(self) -> None:
+        """Kullanıcının girdiği vade tabloda görünmezse kıyas dayanaksız kalır."""
+        assert 96 not in VADE_IZGARASI
+        secenekler = vade_duyarliligi(500_000, 1.9, referans_vade=96)
+        assert 96 in [s.vade_ay for s in secenekler]
+
+    def test_azami_vade_asan_adim_ELENMEZ_sebebiyle_doner(self) -> None:
+        """Sessizce elemek «neden 180 ay yok?» sorusunu cevapsız bırakır."""
+        secenekler = vade_duyarliligi(
+            800_000, 2.05, referans_vade=120, vade_ay_max=120
+        )
+        asan = next(s for s in secenekler if s.vade_ay == 180)
+        assert not asan.uygun_mu
+        assert asan.engel is not None and "120" in asan.engel
+        assert asan.toplam_geri_odeme is None, "uygun olmayan vade için sayı üretilmez"
+
+    def test_tahsis_ucreti_toplama_giriyor(self) -> None:
+        ucretsiz = vade_duyarliligi(500_000, 2.0, referans_vade=60)
+        ucretli = vade_duyarliligi(500_000, 2.0, referans_vade=60, tahsis_ucreti=10_000)
+        a = next(s for s in ucretsiz if s.vade_ay == 60).toplam_geri_odeme
+        b = next(s for s in ucretli if s.vade_ay == 60).toplam_geri_odeme
+        assert b == pytest.approx(a + 10_000)
+
+    def test_sifir_kar_payi_patlamaz(self) -> None:
+        """ADR 012 — sıfır kâr payı beyanı geçerli bir değerdir, hata değil."""
+        secenekler = vade_duyarliligi(300_000, 0.0, referans_vade=36)
+        uygunlar = [s for s in secenekler if s.uygun_mu]
+        assert all(s.toplam_kar_payi == pytest.approx(0.0) for s in uygunlar)
+
+    def test_referans_vade_pozitif_olmali(self) -> None:
+        with pytest.raises(ValueError):
+            vade_duyarliligi(100_000, 2.0, referans_vade=0)
+
+
+class TestVadeTavsiyesi:
+    """En kritik dürüstlük kuralı: kapasite bilinmeden «en iyi vade» iddia edilmez."""
+
+    def test_tavansiz_tavsiye_kazanan_secmez(self) -> None:
+        """Tavan yoksa en kısa vade değil, BİR ADIM kısa vade söylenir.
+
+        Toplam maliyet vade kısaldıkça tekdüze azaldığı için «en avantajlı vade»
+        her zaman ızgaranın en kısa adımıdır — 800.000 TL için aylık 75.880 TL
+        taksit demek. Doğru ama tavsiye değil; o yüzden karar tabloya bırakılır.
+        """
+        secenekler = vade_duyarliligi(800_000, 2.05, referans_vade=120, vade_ay_max=120)
+        cumle = vade_tavsiyesi(secenekler, 120)
+        assert cumle is not None
+        assert "84 ay" in cumle
+        assert "12 ay" not in cumle
+
+    def test_taksit_tavani_verilince_en_kisa_uygun_vade_onerilir(self) -> None:
+        """Mentörün örneği: 800 bin TL / 120 ay yerine 60 ay ne kazandırır?"""
+        secenekler = vade_duyarliligi(
+            800_000, 2.05, referans_vade=120, tahsis_ucreti=5_000, vade_ay_max=120
+        )
+        cumle = vade_tavsiyesi(secenekler, 120, azami_taksit=25_000)
+        assert cumle is not None and "60 ay" in cumle
+
+    def test_tavana_hicbir_kisa_vade_sigmazsa_durust_cevap(self) -> None:
+        secenekler = vade_duyarliligi(800_000, 2.05, referans_vade=120, vade_ay_max=120)
+        cumle = vade_tavsiyesi(secenekler, 120, azami_taksit=15_000)
+        assert cumle is not None
+        assert "sığmıyor" in cumle
+
+    def test_en_kisa_vadede_tavsiye_yok(self) -> None:
+        """Referans zaten ızgaranın en kısası ise kıyaslanacak bir şey yoktur."""
+        secenekler = vade_duyarliligi(200_000, 2.0, referans_vade=12)
+        assert vade_tavsiyesi(secenekler, 12) is None
+
+    def test_referans_banka_limitini_asiyorsa_tavsiye_yok(self) -> None:
+        secenekler = vade_duyarliligi(800_000, 2.05, referans_vade=120, vade_ay_max=60)
+        assert vade_tavsiyesi(secenekler, 120) is None

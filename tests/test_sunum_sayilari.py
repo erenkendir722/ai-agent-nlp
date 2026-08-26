@@ -97,3 +97,78 @@ class TestSonucTablosu:
         assert any(abs(v - round(makro, 2)) < 0.005 for v in slayt.values()), "makro-F1 ayrışmış"
         assert any(abs(v - round(sayisal, 2)) < 0.005 for v in slayt.values()), "sayısal doğruluk ayrışmış"
         assert any(abs(v - round(halus, 2)) < 0.005 for v in slayt.values()), "halüsinasyon ayrışmış"
+
+
+@pytest.mark.skipif(not ABLASYON.exists(), reason="ablasyon koşulmamış")
+class TestAnlatiSayilari:
+    """Tablonun ALTINDAKİ düz metin de ölçüme bağlı olmalı.
+
+    26 Ağustos'ta yakalandı: ablasyon tablosunun hücreleri doğruydu (%0,51 ve
+    %0,42) ama hemen altındaki «Okuma:» paragrafı **%0,32'den %0,63'e … yani
+    iki katına** diyordu. İkisi de aynı slaytta, yan yana. Jüri tabloyu değil
+    cümleyi okur.
+
+    Sebebi testin kapsamıydı: `TestAblasyonTablosu` yalnız `<table>` hücrelerini
+    ayrıştırıyor, anlatıya hiç bakmıyordu. Kapsam boşluğu bir sayıyı dört gün
+    bayat tuttu.
+    """
+
+    def test_elestirmen_cumlesi_olcumle_ayni(self) -> None:
+        metin = SUNUM.read_text(encoding="utf-8")
+        olcum = json.loads(ABLASYON.read_text(encoding="utf-8"))
+
+        cumle = re.search(
+            r"halüsinasyon %([\d,]+)'dan %([\d,]+)'e çıkıyor", metin
+        )
+        assert cumle, "slayttaki eleştirmen cümlesi bulunamadı (biçimi mi değişti?)"
+
+        acik, kapali = (_sayi(g) for g in cumle.groups())
+        assert acik == pytest.approx(
+            olcum["hibrit"]["halusinasyon_orani"] * 100, abs=0.01
+        ), "eleştirmen AÇIKKEN ki halüsinasyon oranı ölçümle tutmuyor"
+        assert kapali == pytest.approx(
+            olcum["hibrit_elestirmensiz"]["halusinasyon_orani"] * 100, abs=0.01
+        ), "eleştirmen KAPALIYKEN ki halüsinasyon oranı ölçümle tutmuyor"
+        assert kapali > acik, "eleştirmen kapatılınca halüsinasyon artmalı"
+
+    def test_kat_iddiasi_abartilmamis(self) -> None:
+        """«İki katına» gibi bir çarpan iddiası ölçülen orana uymalı."""
+        metin = SUNUM.read_text(encoding="utf-8")
+        olcum = json.loads(ABLASYON.read_text(encoding="utf-8"))
+        oran = (
+            olcum["hibrit_elestirmensiz"]["halusinasyon_orani"]
+            / olcum["hibrit"]["halusinasyon_orani"]
+        )
+        if "iki katına" in metin:
+            assert oran >= 1.8, (
+                f"slayt «iki katına» diyor ama ölçülen çarpan {oran:.2f}× — "
+                "abartılı iddia, düzelt."
+            )
+
+    def test_yuklem_katkisi_cumlesi_dogru(self) -> None:
+        """«Birlikte 0,79 · yüklem eklenince 0,82» iddiası ölçümle tutmalı.
+
+        Tam eşitlik aranmaz: CLAUDE.md'ye göre EVREN bayt düzeyinde deterministik
+        değil ve makro-F1 **±0,01 gürültü** taşıyor. Slaytta 0,79 mu 0,80 mı
+        yazdığı o bandın içinde kalır; testin işi kesinlik dayatmak değil,
+        slaytın ölçümden **bandın dışına** kaymasını yakalamak.
+        """
+        metin = SUNUM.read_text(encoding="utf-8")
+        olcum = json.loads(ABLASYON.read_text(encoding="utf-8"))
+        GURULTU = 0.011
+
+        birlikte = re.search(r"<b>Birlikte ([\d,]+)\.</b>", metin)
+        assert birlikte, "«Birlikte …» cümlesi bulunamadı"
+        assert abs(_sayi(birlikte.group(1)) - olcum["hibrit"]["makro_f1"]) <= GURULTU
+
+        eklenince = re.search(r"eklenince <b>([\d,]+)</b>", metin)
+        assert eklenince, "«… eklenince …» cümlesi bulunamadı"
+        assert abs(_sayi(eklenince.group(1)) - olcum["tam"]["makro_f1"]) <= GURULTU
+
+    def test_slaytta_bayat_sayi_kalmamis(self) -> None:
+        """Eski koşudan kalan sayı çiftleri slaytta geçmemeli."""
+        metin = SUNUM.read_text(encoding="utf-8")
+        for bayat in ("%0,32", "%0,63"):
+            assert bayat not in metin, (
+                f"{bayat} 26 Ağustos öncesi ablasyon koşusundan kalma bayat sayı"
+            )

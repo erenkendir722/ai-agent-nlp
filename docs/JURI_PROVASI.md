@@ -19,7 +19,7 @@ En pahalı hata, bilmediğimiz bir şeyi biliyormuş gibi cevaplamaktır. Jüri
 kanıt dosyasını açabilir — hepsi depoda. Bilinmiyorsa cevap şudur:
 *«Onu ölçmedik.»*
 
-**Zayıf noktalar 2, 8 ve 3 numaralı sorulardadır.** Üçü de bizim kendi
+**Zayıf noktalar 2, 8, 3 ve 11 numaralı sorulardadır.** Üçü de bizim kendi
 ölçümümüzden çıktı ve saklanmıyor. Jüri bunları zaten bulacak; önce bizim
 söylememiz, savunma değil güven üretir.
 
@@ -168,6 +168,84 @@ hangi sayının hangi kodla üretildiği geriye dönük bulunabiliyor.
 sorunu — kampanya olmayan sayfaları elemek gerekiyor, bu da toplama katmanına
 dokunmak demek. Teslim penceresinde ölçümü dondurmayı tercih ettik; düzeltmeyi
 yarım yapıp sayıları yeniden üretmek, elimizdeki tutarlı ölçüm setini bozardı.
+
+---
+
+---
+
+## 9. «Neden Text-to-SQL / Vanna.ai kullanmadınız? Yapısal veriyi LLM'e sorsanız daha esnek olmaz mıydı?»
+
+> **Bilerek kullanmadık, çünkü sayısal doğrulama kalkanı Text-to-SQL'i
+> denetleyemez.** Bizim iddiamız «model iyi SQL yazıyor» değil, «ekranda görünen
+> her sayının yapısal bir karşılığı var». Kalkan cevaptaki her sayıyı
+> veritabanındaki kayıtla birebir eşliyor; üretilen SQL'in kendisi yanlış tabloyu
+> ya da yanlış satırı seçtiyse dönen sayı **da** yapısaldır ve kalkandan geçer.
+> Yani Text-to-SQL, savunmamızın kör noktasına düşen bir katman olurdu.
+
+**Bizim yaptığımız:** niyet yönlendirmesi deterministik (`niyet_belirle`,
+kelime örüntüsü), sorgu **kod**, cevap şablonu **kod**. LLM'in bu boru hattındaki
+tek işi metinden alan çıkarmaktır — sorgulamak değil.
+
+**Token limiti sorusu buraya bağlanır:** 931 kaydı modele göndermiyoruz, hiç
+göndermedik. Karşılaştırma ve sıralama SQLite + saf Python üzerinde koşuyor;
+bağlam penceresi bu mimaride bir kısıt değil.
+
+**Kaynak:** [`docs/MIMARI.md`](MIMARI.md) §3.5 orkestrasyon şeması ·
+[`kararlar/010-koken-tipli-kalkan.md`](kararlar/010-koken-tipli-kalkan.md)
+
+> **Dürüst sınır:** Text-to-SQL'i ölçmedik, denemedik. «Daha kötü» demiyoruz;
+> «savunma modelimize uymuyor» diyoruz. Sorulursa böyle söylenir.
+
+---
+
+## 10. «Neden bu kadar ajan? Beş ajan bir mimari mi, yoksa isimlendirme mi?»
+
+> **Ölçtük: eleştirmen kapatılınca halüsinasyon %0,39'dan %0,51'e çıkıyor.**
+> Ajan mimarisi bizde iddia değil, ablasyon tablosunda satırı olan bir şey.
+> Beş ajanın her biri **tek bir soruya** bakıyor: kanıt var mı (eleştirmen),
+> sayı doğru alana mı ait (yüklem), kampanya kime açık (uygunluk), bu müşteriye
+> uyuyor mu (muhakeme), bu soru kime gider (orkestratör).
+
+**Hiyerarşi:** kök ajan sorgu zamanında orkestratördür; çıkarım zamanında sürücü
+`boru_hatti.py`'dir ve **o bir ajan değildir** — ajanlar oraya kanca olarak
+takılır. Bu ayrımı yapmak «her şey ajandır» bulanıklığını önlüyor.
+Şema: [`docs/MIMARI.md`](MIMARI.md) §3.5.
+
+**Beşten dördü LLM kullanmaz.** Aritmetiği ve kısıt çözümünü kasten modele
+vermedik. `AjanIzi` her koşuda hangi ajanın LLM kullandığını yazıyor ve arayüzde
+panel olarak açılıyor — jüri iddiayı değil koşum kaydını görür.
+
+**Neden hazır ajan çatısı (LangChain/LangGraph) yok:** ihtiyacımız çağrı grafiği
+değil sözleşmeydi; `temel.py` 30 satır. Dış çatı, şartname 5.10 lisans ve hava
+boşluğu denetiminden geçirilmesi gereken yeni bir bağımlılık yığını getirirdi.
+
+**Kaynak:** [`kararlar/005-ajan-mimarisi.md`](kararlar/005-ajan-mimarisi.md) ·
+[`data/ablasyon.json`](../data/ablasyon.json)
+
+---
+
+## 11. «Banka sitesi yarın değişirse ne olur? Sisteminiz bunu nasıl fark eder?»
+
+> **Bugün fark etmez — toplama elle tetiklenir (`make crawl`), zamanlanmış bir
+> iş yok.** Bunu saklamıyoruz. Sistemin bu sürümünde tazeleme operatörün
+> kararıdır; kurumsal yerleşimde gecelik iş olarak zamanlanması tasarlandı ama
+> **kodlanmadı**.
+
+**Kırılmaya karşı bugün ne var:**
+- Kazıyıcılarda banka başına değişen tek şey URL keşfidir; gezme, robots kapısı
+  ve gövde ayıklama `TemelKaziyici`'de tektir — bir banka bozulduğunda diğer
+  sekizi etkilenmez.
+- Çıkarım sayfa yapısına değil **metne** bakıyor. Sayfa şablonu değişse bile
+  kural + LLM katmanı metinden çalışır; ölçüldü: 318 biçim bozma varyantında
+  **%100** değer korunuyor ([`docs/DAYANIKLILIK.md`](DAYANIKLILIK.md)).
+- Alan silindiğinde sistem **uydurmuyor**: 51 vakada `uydurdu = 0`.
+- `make durum` RAG indeksinin bayat olup olmadığını söyler (korpus izi).
+
+**Ne yok:** `ETag`/`Last-Modified` dinleyicisi, içerik özeti karşılaştırması,
+periyodik tetikleyici. Yol haritasında ve
+[`docs/KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md) §5'te tasarımı yazılı.
+
+**Kaynak:** [`docs/DAYANIKLILIK.md`](DAYANIKLILIK.md) · `src/collector/kaziyicilar/`
 
 ---
 

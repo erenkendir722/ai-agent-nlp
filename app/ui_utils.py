@@ -24,6 +24,8 @@ _SONUC_DOSYASI = Path(__file__).resolve().parents[1] / "docs" / "SONUCLAR.md"
 class EvalOzeti:
     """`docs/SONUCLAR.md` — sunum ve arayüz aynı kaynaktan okur."""
 
+    # Hepsi ORAN (0–1). `eval/calistir.py` da aynı birimi kullanır; markdown
+    # tablosundaki "%0.45" yüzdeye çevrilmiş hâlidir, burada geri oran yapılır.
     halusinasyon_orani: float | None = None
     makro_f1: float | None = None
     makro_f1_ga: tuple[float, float] | None = None
@@ -49,12 +51,22 @@ def sonuclari_oku(yol: Path | None = None) -> EvalOzeti:
             return None
         return float(ham.replace(",", "."))
 
+    def _yuzde(ham: str | None) -> float | None:
+        """Tabloda yüzde yazan alanı ORANA çevirir: "0.45" -> 0.0045.
+
+        Bu bölme olmadan alan, adının söylediği şey (oran) değil yüzde tutar;
+        çizim yerinde ikinci kez 100'le çarpılınca halüsinasyon oranı ekranda
+        %0,45 yerine %45 görünür. 26 Ağustos'ta jüri provasında yakalandı.
+        """
+        deger = _float(ham)
+        return None if deger is None else deger / 100
+
     ga = re.search(
         r"\*\*Makro-F1\*\* \| [0-9.]+ _\(%95 GA: ([0-9.]+)[–-]([0-9.]+)\)_",
         metin,
     )
     return EvalOzeti(
-        halusinasyon_orani=_float(_ara(r"\*\*Halüsinasyon oranı\*\* \| %([0-9.,]+)")),
+        halusinasyon_orani=_yuzde(_ara(r"\*\*Halüsinasyon oranı\*\* \| %([0-9.,]+)")),
         makro_f1=_float(_ara(r"\*\*Makro-F1\*\* \| ([0-9.]+)")),
         makro_f1_ga=(float(ga.group(1)), float(ga.group(2))) if ga else None,
         sayisal_dogruluk=_float(_ara(r"Sayısal alan doğruluğu \| ([0-9.]+|ölçülmedi)")),

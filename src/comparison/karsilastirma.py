@@ -16,6 +16,7 @@ sonuç demektir — bankacılık jürisinin kabul etmeyeceği tek şey budur.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Literal
@@ -376,13 +377,191 @@ def toplam_maliyet(
     }
 
 
+
+
+# ---------------------------------------------------------------------------
+# Vade duyarlılığı — karar desteği
+# ---------------------------------------------------------------------------
+#
+# Tekil teklif göstermek "hangi kampanya?" sorusunu cevaplar; banka çalışanının
+# müşteriye söyleyeceği şey ise çoğu zaman "aynı kampanyada vadeyi kısaltırsan
+# şu kadar az ödersin" cümlesidir. Aşağıdaki işlev o cümlenin sayısını üretir.
+#
+# LLM YOK: girdi de çıktı da sayı, hesap annüite formülü. `toplam_maliyet`
+# üstüne ızgara koşturmaktan başka bir şey yapmaz — yeni matematik eklenmedi.
+
+VADE_IZGARASI: tuple[int, ...] = (12, 24, 36, 48, 60, 84, 120, 180)
+
+
+@dataclass(frozen=True)
+class VadeSecenegi:
+    """Tek bir vade adımının maliyeti ve referans vadeye göre farkı."""
+
+    vade_ay: int
+    uygun_mu: bool
+    aylik_taksit: float | None = None
+    toplam_geri_odeme: float | None = None
+    toplam_kar_payi: float | None = None
+    engel: str | None = None
+    # Referans vadeye göre fark. Negatif = bu vade DAHA UCUZ.
+    toplam_farki: float | None = None
+    taksit_farki: float | None = None
+
+    @property
+    def referans_mi(self) -> bool:
+        return self.toplam_farki == 0.0
+
+
+def vade_duyarliligi(
+    anapara: float,
+    aylik_kar_payi_orani: float,
+    *,
+    referans_vade: int,
+    tahsis_ucreti: float = 0.0,
+    vade_ay_max: float | None = None,
+    izgara: Sequence[int] = VADE_IZGARASI,
+) -> list[VadeSecenegi]:
+    """Vade ızgarası boyunca toplam maliyeti hesaplar, referans vadeye kıyaslar.
+
+    `referans_vade` ızgarada yoksa ızgaraya eklenir — kullanıcının ekranda
+    girdiği vade tabloda mutlaka görünmeli, yoksa kıyas dayanaksız kalır.
+
+    Bankanın `vade_ay_max` sınırını aşan adımlar **atılmaz**, `uygun_mu=False`
+    ile ve sebebiyle döndürülür: sessizce elemek, "neden 180 ay yok?" sorusunu
+    cevapsız bırakır (aynı ilke `MuhakemeAjani` içinde de geçerli).
+
+    `aylik_kar_payi_orani` YÜZDE'dir (2.05 = aylık %2,05), `toplam_maliyet` ile
+    aynı sözleşme.
+    """
+    if referans_vade <= 0:
+        raise ValueError("referans_vade pozitif olmalı")
+
+    vadeler = sorted({int(v) for v in izgara} | {int(referans_vade)})
+
+    referans = None
+    if vade_ay_max is None or referans_vade <= vade_ay_max:
+        referans = toplam_maliyet(
+            anapara, aylik_kar_payi_orani, int(referans_vade), tahsis_ucreti
+        )
+
+    secenekler: list[VadeSecenegi] = []
+    for vade in vadeler:
+        if vade_ay_max is not None and vade > vade_ay_max:
+            secenekler.append(
+                VadeSecenegi(
+                    vade_ay=vade,
+                    uygun_mu=False,
+                    engel=f"bankanın azami vadesi {vade_ay_max:.0f} ay",
+                )
+            )
+            continue
+
+        sonuc = toplam_maliyet(anapara, aylik_kar_payi_orani, vade, tahsis_ucreti)
+        secenekler.append(
+            VadeSecenegi(
+                vade_ay=vade,
+                uygun_mu=True,
+                aylik_taksit=sonuc["aylik_taksit"],
+                toplam_geri_odeme=sonuc["toplam_geri_odeme"],
+                toplam_kar_payi=sonuc["toplam_kar_payi"],
+                toplam_farki=(
+                    None
+                    if referans is None
+                    else round(
+                        sonuc["toplam_geri_odeme"] - referans["toplam_geri_odeme"], 2
+                    )
+                ),
+                taksit_farki=(
+                    None
+                    if referans is None
+                    else round(sonuc["aylik_taksit"] - referans["aylik_taksit"], 2)
+                ),
+            )
+        )
+    return secenekler
+
+
+def vade_tavsiyesi(
+    secenekler: Sequence[VadeSecenegi],
+    referans_vade: int,
+    *,
+    azami_taksit: float | None = None,
+) -> str | None:
+    """Tablodan tek cümlelik karar cümlesi üretir; uydurma yapmaz.
+
+    **Neden "en çok tasarruf ettiren vade" diye bir tavsiye yok:** toplam maliyet
+    vade kısaldıkça tekdüze azalır, yani "en avantajlı vade" her zaman ızgaranın
+    en kısa adımıdır. 800.000 TL / aylık %2,05 için bu, 12 ayda 75.880 TL taksit
+    demek — matematiksel olarak doğru, tavsiye olarak anlamsız. Müşterinin ödeme
+    kapasitesi bilinmeden "en iyi vade" diye bir şey yoktur.
+
+    Bu yüzden iki kip var:
+
+    * `azami_taksit` verilmişse — müşterinin kaldırabileceği taksit tavanı belli
+      demektir; tavanın altındaki **en kısa** vade önerilir. Bu gerçek bir tavsiye.
+    * verilmemişse — kazanan seçilmez, yalnız bir adım kısa vadenin takası
+      söylenir ve karar tabloya bırakılır.
+
+    Kıyaslanacak uygun bir kısa vade yoksa `None` döner.
+    """
+    referans = next(
+        (s for s in secenekler if s.vade_ay == referans_vade and s.uygun_mu), None
+    )
+    if referans is None or referans.toplam_geri_odeme is None:
+        return None
+
+    kisalar = [
+        s
+        for s in secenekler
+        if s.uygun_mu
+        and s.vade_ay < referans_vade
+        and s.toplam_farki is not None
+        and s.taksit_farki is not None
+    ]
+    if not kisalar:
+        return None
+
+    def _tl(deger: float) -> str:
+        return f"{deger:,.0f}".replace(",", ".")
+
+    if azami_taksit is not None:
+        uygunlar = [
+            s for s in kisalar if s.aylik_taksit is not None and s.aylik_taksit <= azami_taksit
+        ]
+        if not uygunlar:
+            return (
+                f"Aylık {_tl(azami_taksit)} TL tavanına {referans_vade} aydan kısa "
+                f"hiçbir vade sığmıyor — bu müşteri için {referans_vade} ay zaten "
+                f"en kısa uygulanabilir vade."
+            )
+        en_kisa = min(uygunlar, key=lambda s: s.vade_ay)
+        return (
+            f"Aylık **{_tl(azami_taksit)} TL** tavanına sığan en kısa vade "
+            f"**{en_kisa.vade_ay} ay**: taksit {_tl(en_kisa.aylik_taksit or 0)} TL, "
+            f"{referans_vade} aya göre toplamda "
+            f"**{_tl(abs(en_kisa.toplam_farki or 0))} TL** daha az ödeme."
+        )
+
+    bir_adim = max(kisalar, key=lambda s: s.vade_ay)
+    return (
+        f"{referans_vade} ay yerine **{bir_adim.vade_ay} ay** seçilirse toplamda "
+        f"**{_tl(abs(bir_adim.toplam_farki or 0))} TL** daha az ödenir; aylık taksit "
+        f"**{_tl(bir_adim.taksit_farki or 0)} TL** artar. Daha kısa vadeler "
+        f"daha çok kazandırır ama taksiti yükseltir — takası aşağıdaki tabloda görün."
+    )
+
+
 __all__ = [
     "KRITER_ETIKETLERI",
+    "VADE_IZGARASI",
     "Agirliklar",
     "Kriter",
     "SkorDetayi",
+    "VadeSecenegi",
     "avantaj_skorla",
     "sirala",
     "toplam_maliyet",
     "uyarilar",
+    "vade_duyarliligi",
+    "vade_tavsiyesi",
 ]

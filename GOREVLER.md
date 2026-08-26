@@ -1414,6 +1414,43 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır: README'deki veri seti ve lisans bağlantıları çalışıyor,
         gizli/özel depo değil
 
+### 🌙 26 Ağustos gecesi — mentör geri bildirimi (Görkem)
+
+> Mentör görüşmesinden çıkan iki iş. Karşılık tablosu:
+> [`docs/MENTOR_GERI_BILDIRIMI.md`](docs/MENTOR_GERI_BILDIRIMI.md)
+
+- [ ] **G-17** 🔴 **Tetikleyici + dinleyici mekanizması** · 📅 **26 Ağu gecesi**
+      ↳ Mentör: *«klasik try-catch ötesinde tetikleyici (trigger) ve dinleyici
+        (listener) mantıkları; kampanya açılış/kapanış saatlerine göre (08:00,
+        17:00, 24:00) periyodik tetikleyici ya da metadata kontrolü»*
+      ↳ **Bugün kodda hiç yok** — toplama yalnız elle tetikleniyor (`make crawl`).
+        Jüri provasında da böyle söylüyoruz: [`docs/JURI_PROVASI.md`](docs/JURI_PROVASI.md) §11
+      ↳ Tasarım dayanağı hazır: [`docs/KURUMSAL_ENTEGRASYON.md`](docs/KURUMSAL_ENTEGRASYON.md)
+        §5 ve §8 zaten «gecelik iş (cron / Airflow / SQL Agent)» diyor
+      ↳ Ucuz ve dürüst yol: `HamKayit` üzerinde **içerik özeti** (sha256) +
+        `ETag`/`Last-Modified` yoklaması → değişmeyen sayfa yeniden çıkarıma girmez
+      ↳ ⚠️ **`data/raw` ve `data/katilim.db` teslim için donmuş durumda.** Yeni
+        mekanizma ayrı dizine yazsın; ölçümlerin üstüne yazılırsa `make eval`
+        sayıları ile `docs/SONUCLAR.md` ayrışır
+      ↳ Bitti sayılır: mekanizma koşuyor, `make test` yeşil, ADR yazıldı
+        (`docs/kararlar/017-*.md`), `docs/JURI_PROVASI.md` §11 «yok» demekten çıktı
+
+- [ ] **G-18** **Canlı Boru Hattı sayfası** · 📅 **26 Ağu gecesi** — *takım isteği*
+      ↳ Planı hazır ve ayrıntılı: [`docs/PLAN_BORU_HATTI_SAYFASI.md`](docs/PLAN_BORU_HATTI_SAYFASI.md)
+      ↳ Mentör listesinden çıkmadı, **bizim kendi isteğimiz** — plan bunu açıkça yazsın
+      ↳ Kapsam: `topla()`'ya `azami_sayfa` + `iptal` · `boru_hatti.py`'de
+        `cikarim_kos()` ayrımı · `app/is_yurutucu.py` · `app/akis.py` ·
+        `app/pages/4_Boru_Hattı.py`
+      ↳ ⚠️ **En riskli parça Sekme 1 (canlı Selenium kazıma)** — demo makinesinde
+        Chrome/chromedriver'a bağlı. Zaman daralırsa **önce Sekme 2 (çıkarım)**
+        bitir: mevcut `data/raw` üzerinde koşar, tarayıcıya hiç dokunmaz
+      ↳ ⚠️ Regresyon kapıları planın «Doğrulama» bölümünde: `test_ablasyon_butunlugu`,
+        `test_determinizm` ve `python -m src.boru_hatti seed --yalniz-kural`
+        (CLI çıktısı değişmemeli)
+      ↳ `app/` Esra'nın alanı — başlamadan haber ver
+      ↳ Bitti sayılır: sayfa açılıyor, `data/demo_raw/` doluyor, `data/raw/`
+        **dokunulmamış**, `make test` + `make lint` yeşil
+
 ### ✅ Görkem — bitenler (Sprint 0)
 
 - [x] `banks.yaml` kayıt defteri — 15 banka, 9 faal *(9 Ağu)*

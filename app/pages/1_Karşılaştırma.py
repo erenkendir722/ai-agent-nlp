@@ -25,16 +25,33 @@ from src.comparison.karsilastirma import ( # noqa: E402
   avantaj_skorla,
   sirala,
   toplam_maliyet,
+  vade_duyarliligi,
+  vade_tavsiyesi,
   uyarilar,
 )
 from src.depolama import tum_kayitlar # noqa: E402
 from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import HedefKitle, Kampanya  # noqa: E402
-from app.ui_utils import format_bank_name, inject_custom_css, format_kategori, ortak_kenar # noqa: E402
+from app.ui_utils import (  # noqa: E402
+  format_bank_name,
+  format_kategori,
+  inject_custom_css,
+  ortak_kenar,
+  sonuclari_oku,
+  tr_sayi,
+)
 
 st.set_page_config(page_title="Karşılaştırma", page_icon="", layout="wide")
 inject_custom_css()
 ortak_kenar()
+
+
+def _halusinasyon_metni() -> str:
+  """Ölçülmüş halüsinasyon oranı — elle yazılmaz, `docs/SONUCLAR.md`'den okunur."""
+  oran = sonuclari_oku().halusinasyon_orani
+  return "ölçülmedi" if oran is None else f"%{tr_sayi(oran * 100, 2)}"
+
+
 st.title("Bankalar Arası Karşılaştırma")
 
 kayitlar = tum_kayitlar()
@@ -412,7 +429,11 @@ else:
     st.markdown(
       "Bu sıralama, bankaların sağladığı spesifik veri alanı üzerinden "
       "saf matematiksel büyüklük/küçüklük kuralı (deterministik karşılaştırma motoru) "
-      "kullanılarak yapılmıştır. Yapay zeka halüsinasyon riski tamamen sıfırlanmıştır.\n\n"
+      "kullanılarak yapılmıştır. **Sıralamanın kendisinde dil modeli çalışmaz**, "
+      "aritmetik koddadır — bu adım tekrarlanabilir ve denetlenebilir. "
+      f"Sıralanan alanların bir kısmı çıkarım katmanından geldiği için sistemin "
+      f"ölçülmüş halüsinasyon oranı sıfır değil, **{_halusinasyon_metni()}**'tir "
+      f"(`docs/SONUCLAR.md`); her satırın kaynak kanıtı aşağıda açılabilir.\n\n"
       "- **Kural 1 (Şeffaflık):** İlgili veriyi eksik ('Belirtilmemiş') sunan bankalar, "
       "karşılaştırılamaz oldukları için doğrudan **en alta** itilir.\n"
       "- **Kural 2 (Denge):** Eşit değerli kampanyalarda Python'un kararlı "
@@ -558,3 +579,136 @@ else:
           with cols[i]:
             st.success("**En Uygun Seçenek**")
             st.caption("Düşük kâr payı illüzyonuna düşmediniz; gizli masraflar dâhil cebinizden çıkacak en düşük tutar.")
+
+    # -----------------------------------------------------------------------
+    # Vade duyarlılığı — karar desteği
+    # -----------------------------------------------------------------------
+    #
+    # Tekil teklif «hangi banka?» sorusunu cevaplar. Banka çalışanının müşteriye
+    # kuracağı cümle ise genelde şudur: «aynı kampanyada vadeyi kısaltırsan şu
+    # kadar az ödersin». Aşağısı o cümlenin sayısını üretir.
+    #
+    # Hesap `src/comparison/karsilastirma.vade_duyarliligi` içinde ve saf koddur —
+    # bu bölümde dil modeli çalışmaz.
+
+    st.divider()
+    st.subheader("Vade Duyarlılığı — kısa vade ne kazandırır?")
+    st.caption(
+      "Seçilen kampanyalar, aynı finansman tutarında farklı vadelerle yeniden "
+      "hesaplanır. Karar toplam maliyet ile aylık taksit arasındaki takastır."
+    )
+
+    v1, v2 = st.columns(2)
+    duyarlilik_kampanyasi = v1.selectbox(
+      "Hangi kampanya için?",
+      options=secilen_adlar,
+      help="Yukarıda seçtiğiniz kampanyalar arasından.",
+    )
+    taksit_tavani_acik = v2.toggle(
+      "Müşterinin aylık ödeme tavanı belli",
+      help=(
+        "Kapalıyken sistem «en iyi vade» iddia etmez: toplam maliyet vade "
+        "kısaldıkça hep azalır, yani kazanan her zaman en kısa vade olurdu. "
+        "Tavan girilirse tavsiye gerçek bir tavsiyeye dönüşür."
+      ),
+    )
+    azami_taksit = None
+    if taksit_tavani_acik:
+      azami_taksit = v2.number_input(
+        "Aylık azami taksit (TL)", min_value=1000.0, value=25_000.0, step=1_000.0
+      )
+
+    d_kayit = kampanya_secenekleri[duyarlilik_kampanyasi]
+    if pd.isna(d_kayit.kar_payi_orani) or d_kayit.kar_payi_orani == "Belirtilmemiş":
+      st.warning(
+        f"**{format_bank_name(d_kayit.banka_adi)}** için kâr payı oranı "
+        "«Belirtilmemiş» — vade tablosu üretilemez. Eksik veriyi varsayımla "
+        "doldurmuyoruz."
+      )
+    else:
+      d_tahsis = (
+        float(d_kayit.tahsis_ucreti)
+        if (d_kayit.tahsis_ucreti and d_kayit.tahsis_ucreti != "Belirtilmemiş")
+        else 0.0
+      )
+      d_vade_max = (
+        float(d_kayit.vade_ay_max)
+        if (d_kayit.vade_ay_max and d_kayit.vade_ay_max != "Belirtilmemiş")
+        else None
+      )
+      secenekler = vade_duyarliligi(
+        ortak_anapara,
+        float(d_kayit.kar_payi_orani),
+        referans_vade=int(ortak_vade),
+        tahsis_ucreti=d_tahsis,
+        vade_ay_max=d_vade_max,
+      )
+
+      cumle = vade_tavsiyesi(secenekler, int(ortak_vade), azami_taksit=azami_taksit)
+      if cumle:
+        st.info(cumle)
+
+      satirlar = []
+      for sec in secenekler:
+        if not sec.uygun_mu:
+          satirlar.append({
+            "Vade (ay)": sec.vade_ay,
+            "Aylık Taksit": None,
+            "Toplam Geri Ödeme": None,
+            f"{int(ortak_vade)} aya göre fark": None,
+            "Durum": f"Uygulanamaz — {sec.engel}",
+          })
+          continue
+        satirlar.append({
+          "Vade (ay)": sec.vade_ay,
+          "Aylık Taksit": sec.aylik_taksit,
+          "Toplam Geri Ödeme": sec.toplam_geri_odeme,
+          f"{int(ortak_vade)} aya göre fark": sec.toplam_farki,
+          "Durum": "Seçili vade" if sec.referans_mi else "",
+        })
+
+      st.dataframe(
+        pd.DataFrame(satirlar),
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+          "Aylık Taksit": st.column_config.NumberColumn(format="%.0f TL"),
+          "Toplam Geri Ödeme": st.column_config.NumberColumn(format="%.0f TL"),
+          f"{int(ortak_vade)} aya göre fark": st.column_config.NumberColumn(
+            format="%.0f TL",
+            help="Negatif = bu vade seçili vadeden daha ucuz.",
+          ),
+        },
+      )
+
+      cizilebilir = [s for s in secenekler if s.uygun_mu]
+      if len(cizilebilir) > 1:
+        cizim = pd.DataFrame({
+          "Vade (ay)": [s.vade_ay for s in cizilebilir],
+          "Toplam Geri Ödeme": [s.toplam_geri_odeme for s in cizilebilir],
+          "Aylık Taksit": [s.aylik_taksit for s in cizilebilir],
+        })
+        g1, g2 = st.columns(2)
+        with g1:
+          fig_toplam = px.line(
+            cizim, x="Vade (ay)", y="Toplam Geri Ödeme", markers=True,
+            color_discrete_sequence=["#00A86B"],
+          )
+          fig_toplam.update_layout(margin=dict(t=30, b=10, l=10, r=10), height=260,
+                                   title="Vade uzadıkça toplam maliyet")
+          st.plotly_chart(fig_toplam, use_container_width=True)
+        with g2:
+          fig_taksit = px.line(
+            cizim, x="Vade (ay)", y="Aylık Taksit", markers=True,
+            color_discrete_sequence=["#ff7f0e"],
+          )
+          fig_taksit.update_layout(margin=dict(t=30, b=10, l=10, r=10), height=260,
+                                   title="Vade uzadıkça aylık taksit")
+          st.plotly_chart(fig_taksit, use_container_width=True)
+
+      st.caption(
+        "Hesap annüite formülüyle, `src/comparison/karsilastirma.py` içinde "
+        "yapılır. Kâr payı oranı ve azami vade kampanya kaydından gelir; "
+        "kaynak kanıtı yukarıdaki kayıt detaylarında açılabilir."
+      )
+

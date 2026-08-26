@@ -11,9 +11,10 @@ yapısının açıklaması"* başlıklarına karşılık gelir.
 ```mermaid
 flowchart TB
     subgraph L0["KATMAN 0 — Toplama"]
-        A1[BDDK Listesi<br/>manuel] --> A2[banks.yaml]
-        A2 --> A3[Jenerik Toplayıcı<br/>httpx + trafilatura]
-        A3 --> A4[(Ham Anlık Görüntü<br/>HTML + URL + tarih)]
+        A1[BDDK Listesi<br/>manuel] --> A2[banks.yaml<br/>kayıt defteri + seed_urls]
+        A2 --> A3[TemelKaziyici<br/>robots kapısı · nezaket ≥2 sn<br/>gezme · gövde ayıklama]
+        A3 --> A3b[9 banka kazıyıcısı<br/>Selenium · yalnız URL keşfi]
+        A3b --> A4[(HamKayit<br/>HTML + URL + tarih)]
     end
 
     subgraph L1["KATMAN 1 — Ön İşleme"]
@@ -233,7 +234,7 @@ ortak sözleşme `src/ajanlar/temel.py` içindeki `AjanIzi` — her koşu ekrand
 |---|---|---|---|
 | **Uygunluk** | `uygunluk.py` | Kampanyanın kime açık olduğunu yapısal alana çevirir: müşteri tipi, tutar/vade sınırı, zorunlu ürün, segment | ✗ |
 | **Eleştirmen** | `elestirmen.py` | Modelin ürettiği her değeri ham metne karşı doğrular; kanıtı olmayanı düşürür | ✗ |
-| **Yüklem** | `yuklem.py` | Sayının hangi alana ait olduğunu cümlenin yüklemine bakarak denetler | ✗ |
+| **Yüklem** | `yuklem.py` | Sayının hangi alana ait olduğunu cümlenin yüklemine bakarak denetler | ✓ |
 | **Muhakeme** | `muhakeme.py` | Müşteri profilini kısıtlara karşı çözer, toplam maliyeti hesaplar, sıralar | ✗ |
 | **Orkestratör** | `orkestrator.py` | Soruyu doğru ajana yönlendirir, izleri toplar, dürüstlük uyarılarını ekler | ✗ |
 
@@ -244,6 +245,71 @@ uzlaştırılmış alanların yeniden yorumlanmasıdır — `max_tutar` ←
 halüsinasyon yüzeyi açardı. Kalan alanlar (`min_tutar`, `min_vade_ay`,
 `zorunlu_urun`) kalıp işidir ve **bağlam denetimiyle** çıkarılır: ürün adı tek
 başına zorunluluk sayılmaz, yanında bir yükümlülük ifadesi aranır.
+
+#### Orkestrasyon şeması — ajanlar nerede, kim kimi çağırıyor
+
+Mimari **hiyerarşiktir ve iki ayrı bağlamda koşar.** Ajanlar tek bir havuzda
+serbest konuşmaz; her birinin çağrıldığı yer ve gerekçesi bellidir.
+
+```mermaid
+flowchart TB
+    subgraph CIKARIM["ÇIKARIM ZAMANI — çevrimdışı · make extract"]
+        direction TB
+        P0[boru_hatti.py<br/>sürücü, ajan değil]
+        AG1["🤖 ELEŞTİRMEN<br/>her değeri ham metne sorar<br/>kanıtsızı düşürür · LLM ✗"]
+        AG2["🤖 YÜKLEM<br/>sayı doğru alana mı ait?<br/>cümlenin yüklemine bakar · LLM ✓"]
+        P0 --> P1[Kural Katmanı<br/>desen + bağlam vetosu]
+        P0 --> P2[LLM Katmanı<br/>Qwen3.5 · şema kısıtlı]
+        P2 -.->|sahibi| AG1
+        P1 --> P3{Uzlaştırıcı}
+        AG1 --> P3
+        P3 -.->|KURAL-TEK değerler| AG2
+        AG2 --> P4[Kampanya]
+        P3 --> P4
+        P4 --> AG3["🤖 UYGUNLUK<br/>kampanya kime açık?<br/>kısıtları yapısal alana çevirir · LLM ✗"]
+        AG3 --> DB[(SQLite)]
+    end
+
+    subgraph SORGU["SORGU ZAMANI — çevrimiçi · arayüz / API"]
+        direction TB
+        Q0["🤖 ORKESTRATÖR<br/>kök ajan · niyet çözer · iz toplar<br/>LLM ✗ — yönlendirme deterministik"]
+        Q0 -->|profil sorgusu| AG4["🤖 MUHAKEME<br/>kısıt çözer, toplam maliyet,<br/>sıralar · LLM ✗"]
+        Q0 -->|tekil / karşılaştırma / koşul| Q2[Chatbot + RAG]
+        Q0 -->|kapsam dışı| Q3[kibar ret]
+        AG4 --> KALKAN
+        Q2 --> KALKAN["SAYISAL DOĞRULAMA KALKANI<br/>her sayının yapısal karşılığı var mı?"]
+        KALKAN --> Q4[Cevap + kaynakça + AjanIzi]
+    end
+
+    DB --> Q0
+
+    style AG1 fill:#e8f5e9,stroke:#00A86B
+    style AG2 fill:#fff4e6,stroke:#e08a00
+    style AG3 fill:#e8f5e9,stroke:#00A86B
+    style AG4 fill:#e8f5e9,stroke:#00A86B
+    style Q0 fill:#f0e8f8,stroke:#7b4fa8
+    style KALKAN fill:#ffe6e6,stroke:#c00
+```
+
+**Şemanın okunuşu — jüri sorarsa üç cümle:**
+
+1. **Fonksiyonel ayrım, moda değil.** Her ajan tek bir soruya bakar:
+   *"bu değerin kanıtı var mı?"* (eleştirmen), *"bu sayı doğru alana mı ait?"*
+   (yüklem), *"bu kampanya kime açık?"* (uygunluk), *"bu müşteriye uyuyor mu?"*
+   (muhakeme), *"bu soru kime gider?"* (orkestratör). Ajanları birleştirmek bu
+   soruları birbirine karıştırırdı; nitekim eleştirmen `llm.py` içine gömülüyken
+   ablasyonda **ölçülemiyordu** ([ADR 005](kararlar/005-ajan-mimarisi.md)).
+2. **Yalnız bir ajan LLM kullanır.** Turuncu olan yüklem ajanı; kalan dördü saf
+   kod. Aritmetik ve kısıt çözümü kasten modele verilmedi — LLM'in bu boru
+   hattındaki tek işi metinden alan çıkarmaktır.
+3. **Kök ajan orkestratördür, ama yalnız sorgu zamanında.** Çıkarım zamanında
+   sürücü `boru_hatti.py`'dir ve o bir ajan değildir; ajanlar oraya *kanca*
+   olarak takılır. Bunu ayırmak, "her şey ajandır" demenin yarattığı bulanıklığı
+   önler.
+
+> Şemadaki `LLM ✓/✗` etiketleri `tests/test_mimari_belgesi.py` ile koda
+> bağlıdır: bir ajanın `llm_kullanir` bayrağı değişirse test kırılır. Belge ile
+> kod sessizce ayrışamaz.
 
 Ajan katkıları ölçülür, iddia edilmez: ablasyon tablosunun son iki satırı
 eleştirmen ve yüklem ajanlarının katkısını gösterir
