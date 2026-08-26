@@ -222,6 +222,33 @@ ortak sözcük taşımaz ama aynı şeyi söyler. Kosinüs benzerliği bunu yaka
 > alıntının ham metnin alt dizesi olması ve içindeki her sayının alıntıda birebir
 > bulunması şarttır (bölüm 6).
 
+### 3.5 Ajan katmanı (`src/ajanlar/`)
+
+Beş ajan var ve **dördü dil modeli kullanmaz.** Ajan burada "her adımı modele
+sormak" değil, *ne yaptığını ve neden yaptığını yazan bir bileşen* demektir;
+ortak sözleşme `src/ajanlar/temel.py` içindeki `AjanIzi` — her koşu ekrandaki
+"Ajan izleri" panelinde görünür ve `llm_kullanildi` alanını taşır.
+
+| Ajan | Dosya | Ne yapar | LLM |
+|---|---|---|---|
+| **Uygunluk** | `uygunluk.py` | Kampanyanın kime açık olduğunu yapısal alana çevirir: müşteri tipi, tutar/vade sınırı, zorunlu ürün, segment | ✗ |
+| **Eleştirmen** | `elestirmen.py` | Modelin ürettiği her değeri ham metne karşı doğrular; kanıtı olmayanı düşürür | ✗ |
+| **Yüklem** | `yuklem.py` | Sayının hangi alana ait olduğunu cümlenin yüklemine bakarak denetler | ✗ |
+| **Muhakeme** | `muhakeme.py` | Müşteri profilini kısıtlara karşı çözer, toplam maliyeti hesaplar, sıralar | ✗ |
+| **Orkestratör** | `orkestrator.py` | Soruyu doğru ajana yönlendirir, izleri toplar, dürüstlük uyarılarını ekler | ✗ |
+
+**Uygunluk ajanı neden LLM'siz** (A-08, 26 Ağustos): alanların çoğu zaten
+uzlaştırılmış alanların yeniden yorumlanmasıdır — `max_tutar` ←
+`finansman_tutari_max`, `max_vade_ay` ← `vade_ay_max`, `musteri_tipi` ←
+`hedef_kitle`. Kanıtlanmış bir değeri ikinci kez modele sormak yeni bir
+halüsinasyon yüzeyi açardı. Kalan alanlar (`min_tutar`, `min_vade_ay`,
+`zorunlu_urun`) kalıp işidir ve **bağlam denetimiyle** çıkarılır: ürün adı tek
+başına zorunluluk sayılmaz, yanında bir yükümlülük ifadesi aranır.
+
+Ajan katkıları ölçülür, iddia edilmez: ablasyon tablosunun son iki satırı
+eleştirmen ve yüklem ajanlarının katkısını gösterir
+([`DEGERLENDIRME_YONTEMI.md`](DEGERLENDIRME_YONTEMI.md) §5).
+
 ---
 
 ## 4. Veri akışı

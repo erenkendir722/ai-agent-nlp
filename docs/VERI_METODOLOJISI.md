@@ -1,7 +1,30 @@
 # Veri Metodolojisi
 
-Şartname madde 6'nın *"Kullanılan veri seti ve açıklaması"* ve *"Veri ön işleme
-adımları"* başlıklarına karşılık gelir.
+Şartname madde 6'nın *"Kullanılan veri seti ve açıklaması"* (başlık 3) ve
+*"Veri ön işleme adımları"* (başlık 4) başlıklarına karşılık gelir.
+
+**Son güncelleme: 26 Ağustos 2026** — sayılar işlenmiş veritabanından alındı.
+
+---
+
+## 0. Veri setinin bugünkü hâli
+
+| | |
+|---|---|
+| Kampanya kaydı | **1.024** |
+| Banka | **9** — BDDK listesindeki **faal** katılım bankalarının tamamı |
+| Şema sürümü | `1.2.0` (16 yapısal alan + uygunluk koşulları) |
+| Dolu hücre | 4.221 / 16.384 (%25,8) |
+| Uygunluk koşulu çıkarılan kayıt | 718 (%70,1) |
+| Son çekim | 24 Ağustos 2026 |
+| Yayınlanan sürüm | [`data/exports/`](../data/exports/) — CSV + JSONL + [veri kartı](../data/exports/DATASET_CARD.md) |
+
+Banka ve tür bazlı dağılım, dengesizliğin etkisiyle birlikte ayrı bir dosyada:
+[`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (`make kapsam` ile yeniden üretilir).
+
+> **Boş hücre her zaman eksik veri değildir.** Kart kampanyasında kâr payı oranı
+> yoktur; kampanya sayfası oranı yazmıyorsa sistem `Belirtilmemiş` der. Doluluk
+> oranını okurken tür karışımına bakın.
 
 ---
 
@@ -11,6 +34,10 @@ adımları"* başlıklarına karşılık gelir.
 
 Veri seti, BDDK'nın resmî listesindeki katılım bankalarının **tümünü** içerir:
 <https://www.bddk.org.tr/Kurulus/Liste/77>
+
+Kayıt defteri 15 kuruluş taşır; bunların **9'u faal**, kalanı faaliyete
+geçmemiş ya da kuruluş aşamasındadır (§1.2). Kampanya verisi faal olan
+dokuzunun **hepsinde** vardır.
 
 **BDDK listesi manuel olarak alınmıştır.** Şartname 5.1 *"manuel veri toplama
 teknikleri"* kullanımına açıkça izin verdiği için liste tarayıcıdan elle
@@ -161,18 +188,44 @@ Yayınlanan veri setinde **tam sayfa metni yer almaz**. Bunun yerine:
 Bu tercih telif riskini sıfırlar ve izlenebilirliği korur: kullanıcı her değerin
 nereden geldiğini görebilir, ama bankanın sayfa içeriği yeniden yayımlanmış olmaz.
 
+**Yayınlanan dosyalar** (`make veri-seti` ile yeniden üretilir):
+
+| Dosya | Kim için | İçerik |
+|---|---|---|
+| [`data/exports/svartal_kampanyalar.csv`](../data/exports/svartal_kampanyalar.csv) | insan | Düz tablo — her alan + yöntemi + güven skoru |
+| [`data/exports/svartal_kampanyalar.jsonl`](../data/exports/svartal_kampanyalar.jsonl) | makine | Kanıt zinciri — değer + birim + ham ifade + kaynak alıntısı + uygunluk koşulları |
+| [`data/exports/DATASET_CARD.md`](../data/exports/DATASET_CARD.md) | ikisi | Veri kartı: kapsam, dağılım, toplama yöntemi, bilinen sınırlar |
+
+Ham anlık görüntülerin üst verisi ayrıca `data/raw/` altında depoda durur; taze
+bir klonda `make extract` ağ olmadan koşabilir.
+
 ---
 
 ## 6. Bilinen sınırlar
 
 Dürüst raporlama, eksiği gizlemekten daha değerlidir:
 
-1. **JavaScript ile render edilen sayfalar toplanamaz.** Statik HTML çekilir;
-   Playwright bilinçli olarak kapsam dışı bırakıldı. Bu sitelerde manuel toplama
-   yedeği kullanılır (şartname 5.1 izin veriyor).
-2. **T.O.M. Katılım'da kampanya sayfası bulunamadı** (9 Ağustos 2026 sondajı).
-   Manuel inceleme bekliyor.
+1. **JavaScript ile render edilen sayfalar tam toplanamaz.** Statik HTML
+   çekilir; Playwright bilinçli olarak kapsam dışı bırakıldı (yeni bağımlılık +
+   tarayıcı ikilisi, on-prem kurulumu ağırlaştırır). "Daha fazla göster"
+   düğmesiyle parça parça yüklenen sitelerde ilk grup otomatik alınır, kalanı
+   manuel toplanır — şartname 5.1 buna açıkça izin veriyor. Banka bazlı notlar
+   `data/banks.yaml` içindedir.
+2. **Kapsam bankalar arasında dengesiz.** En geniş kapsamlı bankada, en dar
+   kapsamlının 13,6 katı kayıt var. Bu bir yanlılık kaynağıdır ve ölçülüp
+   yazılmıştır: [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (şartname 15.1).
+   *Not: 9 Ağustos'ta "T.O.M. Katılım'da kampanya sayfası bulunamadı" yazıyordu;
+   toplayıcı yeniden koşulduğunda o bankadan 103 kayıt geldi. Madde düzeltildi.*
 3. **Kâr payı oranları çoğu kampanya sayfasında yazmaz;** başvuru ekranında
    veya hesaplama aracında bulunur. Bu, veri setinin gerçek bir özelliğidir ve
-   `Belirtilmemiş` olarak raporlanır — uydurulmaz.
-4. **Bazı EFT kodları doğrulanmamıştır** (§1.3).
+   `Belirtilmemiş` olarak raporlanır — uydurulmaz. Ölçülen doluluk: %16.
+4. **Veri bir anlık görüntüdür.** Kampanyalar sürelidir; her kayıt kendi
+   `cekim_tarihi`'ni taşır. Süresi geçmiş kayıtlar `make suresi-gecenleri-ele`
+   ile ayıklanabilir.
+5. **Yabancı para cinsinden tutarlar TL sayılabiliyor.** Şema
+   `finansman_tutari_max` alanını TL olarak tanımlar; "600 Milyon Euro"
+   gibi bir ifade sayı olarak çıkarılır ama birimi TL varsayılır. 1.024
+   kayıtta bir örneği var ve `make veri-kalitesi` raporunda «> 10.000.000 TL»
+   satırında görünür — gizlenmiyor, ama düzeltilmesi şema değişikliği
+   gerektirir (yeni bir para birimi boyutu).
+6. **Bazı EFT kodları doğrulanmamıştır** (§1.3).

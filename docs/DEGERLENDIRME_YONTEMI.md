@@ -139,10 +139,28 @@ Bayt düzeyinde tekrarlanabilirlik gereken durumda yerel yol kullanılır
 
 ## 5. Ablasyon — hangi katman ne kadar katkı veriyor
 
-`make ablasyon` üç yapılandırmayı koşar (yalnız kural / yalnız LLM / hibrit) ve
-katkıları tablolar.
+`make ablasyon` **beş** yapılandırmayı koşar ve katkıları tablolar. Tablo iki ayrı
+soruyu birden cevaplar:
 
-Kritik kısıt: **üç satır da aynı kod sürümüyle, tek komutta üretilir.** Bu
+| Soru | Satırlar |
+|---|---|
+| Hangi **çıkarım katmanı** ne katıyor? | `kural` · `llm` · `hibrit` |
+| Hangi **ajan** ne katıyor? | `hibrit_elestirmensiz` · `tam` |
+
+`hibrit` → `hibrit_elestirmensiz` farkı **eleştirmen ajanının**, `hibrit` → `tam`
+farkı **yüklem ajanının** katkısıdır. `tam`, üretimde koşan yapılandırmadır
+(`make extract`), yani tablodaki son satır sistemin kendisidir.
+
+26 Ağustos ölçümünde eleştirmen ajanının katkısı **makro-F1'de görünmedi ama
+halüsinasyonda görüldü** (%0,35 ↔ %0,49). Bu beklenen davranıştır: eleştirmenin
+işi skor yükseltmek değil, kanıtı olmayan değeri düşürmektir. Bir bileşenin
+katkısını yanlış metrikte aramak, "işe yaramıyor" sonucunu verirdi.
+
+Zaman: 5 yapılandırma × 1024 kayıt, 16 işçiyle ~25 dakika. Daha hızlısı gerekirse
+`make ablasyon altin=1` yalnız altın sette etiketli kayıtları koşar — o zaman
+doluluk sütunu tüm korpusun değil, **altın set korpusunun** doluluğudur.
+
+Kritik kısıt: **beş satır da aynı kod sürümüyle, tek komutta üretilir.** Bu
 kural ölçülmüş bir hatadan doğdu — ablasyon tablosunun satırları bir dönem
 farklı kod sürümleriyle doldurulmuştu ve karşılaştırma anlamsızdı. Her koşu
 kendi veritabanına yazar; üretim verisine dokunmaz.

@@ -190,9 +190,16 @@ git clone https://github.com/erenkendir722/ai-agent-nlp.git
 
 | Yol | İçerik | Kayıt |
 |---|---|---|
-| [`data/raw/<banka_kodu>/*.json`](data/raw/) | Toplanan sayfaların ham anlık görüntüsü: URL, çekim tarihi, HTTP durumu, başlık ve **çıkarılmış gövde metni** | 96 |
-| [`data/banks.yaml`](data/banks.yaml) | BDDK kayıt defteri — faal + kuruluş aşamasındaki tüm katılım bankaları | 16 |
-| [`data/gold/`](data/gold/) | Altın set etiketleme dosyaları ve etiketlenen metinler | — |
+| [`data/exports/svartal_kampanyalar.csv`](data/exports/svartal_kampanyalar.csv) | **Yayın sürümü** — düz tablo: her alan + yöntemi + güven skoru (Excel'de açılır) | 1.024 |
+| [`data/exports/svartal_kampanyalar.jsonl`](data/exports/svartal_kampanyalar.jsonl) | **Yayın sürümü** — kanıt zinciriyle: değer + birim + ham ifade + kaynak alıntısı + uygunluk koşulları | 1.024 |
+| [`data/exports/DATASET_CARD.md`](data/exports/DATASET_CARD.md) | **Veri kartı** — kapsam, dağılım, toplama yöntemi, bilinen sınırlar | — |
+| [`data/raw/<banka_kodu>/*.json`](data/raw/) | Toplanan sayfaların ham anlık görüntüsü: URL, çekim tarihi, HTTP durumu, başlık ve **çıkarılmış gövde metni** | 1.024 |
+| [`data/banks.yaml`](data/banks.yaml) | BDDK kayıt defteri — faal + kuruluş aşamasındaki tüm katılım bankaları | 15 |
+| [`data/gold/`](data/gold/) | Altın set etiketleme dosyaları (98 örnek, insan etiketli) | 98 |
+
+Yayın sürümünde **tam sayfa metni yoktur**: yapısal alanlar, kaynak adresi ve
+değerin dayandığı kısa alıntı vardır. Bu tercih telif riskini sıfırlar,
+doğrulanabilirliği korur. Yeniden üretmek için `make veri-seti`.
 
 **Ham HTML depoda tutulmaz** (`.gitignore`): depoyu şişirir ve bankaların sayfa
 telifini yeniden yayımlamak olurdu. Çıkarım zaten `govde_metin` alanından
@@ -215,17 +222,19 @@ URL'den deterministik üretildiği için aynı sayfa aynı kaydın üstüne yaza
 
 ```
 ├── src/
-│   ├── schema.py              ← ŞEMA SÖZLEŞMESİ (donmuş, v1.1.0)
+│   ├── schema.py              ← ŞEMA SÖZLEŞMESİ (donmuş, v1.2.0)
 │   ├── boru_hatti.py          ← CLI giriş noktası
 │   ├── depolama.py            ← SQLite + SQLAlchemy
 │   ├── collector/             ← jenerik toplayıcı (banka başına özel kod YOK)
 │   ├── preprocessing/         ← Türkçe normalizasyon
 │   ├── extraction/            ← kural + LLM + uzlaştırıcı
 │   ├── comparison/            ← karşılaştırma motoru + toplam maliyet
-│   ├── rag/                   ← chatbot + sayısal doğrulama kalkanı
+│   ├── ajanlar/               ← uygunluk · eleştirmen · yüklem · muhakeme · orkestratör
+│   ├── rag/                   ← chatbot + sayısal doğrulama kalkanı + yerel vektör arama
 │   └── api/                   ← FastAPI, 3 uç nokta
-├── app/                       ← Streamlit, 3 ekran
+├── app/                       ← Streamlit, 5 ekran
 ├── data/banks.yaml            ← banka kayıt defteri
+├── data/exports/              ← yayınlanan veri seti + veri kartı
 ├── docs/kararlar/             ← ADR'ler
 └── tests/  eval/
 ```
@@ -244,6 +253,52 @@ URL'den deterministik üretildiği için aynı sayfa aynı kaydın üstüne yaza
 > 📋 **Görevini öğrenmek için → [`GOREVLER.md`](GOREVLER.md)**
 > Herkesin görevi kendi bölümünde, tikli listede. Bitirince `[ ]` → `[x]` yap
 > ve sıradakine geç; kimseye sormana gerek yok.
+
+## Teslimat kontrol listesi
+
+Şartname madde 6, 9 ve 10'un istediği her teslimat kalemi. Teslimden önce
+baştan sona taranır (görev E-17).
+
+### Kod ve depo
+
+- [x] Çalışan proje kodu, tüm kaynak kodlar depoda
+- [x] Depo **herkese açık** ve Apache 2.0 lisanslı
+- [x] `BilisimVadisi2026` ve `turkiye-acik-kaynak-platformu` etiketleri
+- [x] Kurulum adımları net: [`docs/KURULUM.md`](docs/KURULUM.md)
+- [x] Bağımlılıkların eksiksiz listesi: `requirements.txt` + [`docs/LISANSLAR.md`](docs/LISANSLAR.md)
+- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/)
+- [ ] `v1.0` sürüm etiketi atıldı
+
+### Dokümantasyon — madde 6'nın 10 başlığı
+
+- [x] 1. Sistem mimarisi ve veri akışı → [`docs/MIMARI.md`](docs/MIMARI.md)
+- [x] 2. Kullanılan NLP yaklaşımı → [`docs/MIMARI.md`](docs/MIMARI.md) §3
+- [x] 3. Kullanılan veri seti ve açıklaması → [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md)
+- [x] 4. Veri ön işleme adımları → [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md) §3
+- [x] 5. Model veya kural yapısının açıklaması → [`docs/MODEL_VE_KURAL_YAPISI.md`](docs/MODEL_VE_KURAL_YAPISI.md)
+- [x] 6. Benzer ürünler nasıl karşılaştırılıyor → [`docs/KARSILASTIRMA_YONTEMI.md`](docs/KARSILASTIRMA_YONTEMI.md)
+- [x] 7. Adım adım çalıştırma talimatları → [`docs/KURULUM.md`](docs/KURULUM.md)
+- [x] 8. Karşılaşılan problemler ve çözümler → [`docs/PROBLEMLER_VE_COZUMLER.md`](docs/PROBLEMLER_VE_COZUMLER.md)
+- [x] 9. Model çıktılarının örnekleri → [`docs/CIKTI_ORNEKLERI.md`](docs/CIKTI_ORNEKLERI.md)
+- [x] 10. Performans değerlendirme yöntemleri → [`docs/DEGERLENDIRME_YONTEMI.md`](docs/DEGERLENDIRME_YONTEMI.md)
+
+### Sunum ve video
+
+- [x] Sunum materyali PDF → [`docs/sunum/Svartal_Sunum.pdf`](docs/sunum/Svartal_Sunum.pdf)
+- [ ] Sunum materyali PPTX
+- [ ] Demo videosu — maks. 5 dakika (madde 6)
+- [ ] Sunum videosu — 1 dakika (madde 10)
+- [x] Sunumda tüm üyelerin görev tanımları
+
+### Ölçüm ve uyum kanıtları
+
+- [x] Ölçüm sonuçları: [`docs/SONUCLAR.md`](docs/SONUCLAR.md) · ablasyon tablosu dahil
+- [x] Şartname madde madde uyum takibi: [`docs/SARTNAME_UYUM.md`](docs/SARTNAME_UYUM.md)
+- [x] Veri toplama etiği kanıtları: [`docs/kanit/`](docs/kanit/) (`make kanit`)
+- [x] Model ve paket lisansları teyitli: [`docs/LISANSLAR.md`](docs/LISANSLAR.md) (`make lisanslar-teyit`)
+- [x] Testler yeşil (`make test`) ve kod denetimi temiz (`make lint`)
+
+---
 
 ## Lisans
 

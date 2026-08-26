@@ -76,6 +76,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Türkçe normalizasyon | `src/preprocessing/normalizasyon.py` |
 | Jenerik toplayıcı | `src/collector/toplayici.py` |
 | Hibrit çıkarım | `src/extraction/{kural,llm,uzlastirici}.py` |
+| Ajanlar (5, dördü LLM'siz) | `src/ajanlar/{uygunluk,elestirmen,yuklem,muhakeme,orkestrator}.py` |
 | LLM sağlayıcı (EVREN / Ollama) | `src/extraction/saglayici.py` |
 | Depolama | `src/depolama.py` |
 | Karşılaştırma | `src/comparison/karsilastirma.py` |
@@ -83,7 +84,8 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
 
-Ayrıntı: [`docs/MIMARI.md`](docs/MIMARI.md) · Durum: [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
+Ayrıntı: [`docs/MIMARI.md`](docs/MIMARI.md) · Güncel ölçüm: [`docs/SONUCLAR.md`](docs/SONUCLAR.md) ·
+Sprint 0 raporu (tarihsel): [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
 
 ---
 
@@ -197,6 +199,12 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make run          # Streamlit arayüzü
 make test         # testler (706 test)
 make eval         # metrikler -> docs/SONUCLAR.md
+make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
+make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)
+make kapsam       # banka bazlı kapsam raporu -> docs/KAPSAM_RAPORU.md
+make cikti-ornekleri    # model çıktı örnekleri -> docs/CIKTI_ORNEKLERI.md
+make veri-seti    # yayınlanabilir veri seti + veri kartı -> data/exports/
+make sunum        # docs/sunum/sunum.html -> Svartal_Sunum.pdf (10 sayfa)
 make lisanslar    # bağımlılık + model lisans raporu
 make lisanslar-teyit    # aynı rapor + model lisanslarını HF'ten teyit et (ağ)
 make kanit        # veri toplama etiği kanıtları (robots günlüğü + KVKK taraması)
