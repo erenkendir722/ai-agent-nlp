@@ -16,6 +16,7 @@ Gömme modeli EVREN `bge-m3-embed` (= `BAAI/bge-m3`, MIT — ADR 013).
 
 from __future__ import annotations
 
+import hashlib
 import logging
 import os
 import re
@@ -129,6 +130,36 @@ def paragraflara_ayir(kayit: KampanyaKaydi) -> list[str]:
     return [p.strip() for p in re.split(r"\n+", ham) if len(p.strip()) >= ASGARI_PARAGRAF]
 
 
+def korpus_izi(kayitlar: list[KampanyaKaydi]) -> str:
+    """İndeksin ÜRETİLDİĞİ korpusun içerik özeti (kısa sha256).
+
+    NEDEN VAR — 26 Ağustos'ta ölçülen boşluk:
+        `src/depolama.kod_parmak_izi` çıkarım kodunun bayatlığını yakalıyor,
+        ama RAG indeksinin bayatlığını hiçbir şey yakalamıyordu. `make durum`
+        yalnız «kurulu mu» diyordu, «güncel mi» demiyordu.
+
+        Somut zarar: 93 süresi geçmiş kampanya silindikten sonra indeks
+        yeniden kurulmazsa chatbot SİLİNMİŞ kampanyaları kaynak gösterir —
+        üstelik kaynak alıntısıyla, yani güvenilir görünerek. Aynı şey
+        `make extract` sonrası da olur: metin değişir, indeks eski metni
+        aramaya devam eder.
+
+    NE KAPSAR:
+        İndekse fiilen giren şey: kampanya kimliği + o kaydın paragrafları.
+        `paragraflara_ayir` neyi üretiyorsa iz onu özetler — böylece
+        indekslenmeyen bir alanın değişmesi boşuna «bayat» demez.
+
+    Kayıtlar kimliğe göre SIRALANIR: veritabanı sırası değişse de iz değişmez.
+    """
+    ozet = hashlib.sha256()
+    for kayit in sorted(kayitlar, key=lambda k: k.kampanya_id):
+        ozet.update(kayit.kampanya_id.encode("utf-8"))
+        for paragraf in paragraflara_ayir(kayit):
+            ozet.update(b"\x00")  # sınır: bitişik paragraflar karışmasın
+            ozet.update(paragraf.encode("utf-8"))
+    return ozet.hexdigest()[:16]
+
+
 def indeks_kur(kayitlar: list[KampanyaKaydi], ilerleme: bool | None = None) -> int:
     """Kayıtları paragraflara ayırıp gömer ve indeksi diske yazar.
 
@@ -173,6 +204,7 @@ def indeks_kur(kayitlar: list[KampanyaKaydi], ilerleme: bool | None = None) -> i
         banka_adi=np.asarray(banka_adlari, dtype=object),
         metin=np.asarray(paragraflar, dtype=object),
         model=np.asarray([GOMME_MODELI], dtype=object),
+        korpus_izi=np.asarray([korpus_izi(kayitlar)], dtype=object),
     )
     global _indeks
     _indeks = None  # bellekteki eski indeksi düşür
@@ -194,12 +226,17 @@ def indeks_yukle() -> dict[str, np.ndarray]:
     return _indeks
 
 
-def indeks_durumu() -> dict[str, object]:
-    """İndeksin var olup olmadığını ve boyutunu bildirir (`make durum` için)."""
+def indeks_durumu(kayitlar: list[KampanyaKaydi] | None = None) -> dict[str, object]:
+    """İndeksin varlığını, boyutunu ve BAYATLIĞINI bildirir (`make durum` için).
+
+    `kayitlar` verilirse indeksin üretildiği korpus izi bugünküyle
+    karşılaştırılır. Verilmezse bayatlık DENETLENMEZ ve bu açıkça bildirilir —
+    «denetlemedik» ile «temiz» aynı şey değildir.
+    """
     if not INDEKS_DOSYASI.exists():
         return {"var": False, "yol": str(INDEKS_DOSYASI)}
     veri = indeks_yukle()
-    return {
+    durum: dict[str, object] = {
         "var": True,
         "yol": str(INDEKS_DOSYASI),
         "paragraf": int(veri["vektorler"].shape[0]),
@@ -207,6 +244,39 @@ def indeks_durumu() -> dict[str, object]:
         "kampanya": len(set(veri["kampanya_id"].tolist())),
         "model": str(veri["model"][0]),
     }
+
+    kayitli = str(veri["korpus_izi"][0]) if "korpus_izi" in veri else None
+    durum["korpus_izi"] = kayitli
+
+    if kayitlar is None:
+        durum["bayat"] = None
+        durum["sebep"] = "korpus verilmedi — bayatlık denetlenmedi"
+        return durum
+
+    if kayitli is None:
+        # `depolama.cikarim_durumu` ile aynı duruş: bilmemek, güncel varsaymak
+        # için gerekçe değildir.
+        durum["bayat"] = True
+        durum["sebep"] = (
+            "İndekste korpus izi yok — bu denetim eklenmeden önce kurulmuş. "
+            "`make vektor` ile yeniden kurun."
+        )
+        return durum
+
+    simdiki = korpus_izi(kayitlar)
+    if simdiki != kayitli:
+        durum["bayat"] = True
+        durum["sebep"] = (
+            f"İndeks {durum['kampanya']} kampanyadan kuruldu; veritabanındaki "
+            f"korpus o tarihten sonra değişti ({kayitli} → {simdiki}). "
+            "Chatbot silinmiş ya da eski metni kaynak gösterebilir — "
+            "`make vektor` ile yeniden kurun."
+        )
+        return durum
+
+    durum["bayat"] = False
+    durum["sebep"] = ""
+    return durum
 
 
 # ---------------------------------------------------------------------------
@@ -284,6 +354,7 @@ __all__ = [
     "gom",
     "gom_toplu",
     "indeks_durumu",
+    "korpus_izi",
     "indeks_kur",
     "vektor_ara",
 ]

@@ -19,7 +19,9 @@ paketler/
 data/embeddings.npy
 # RAG vektör indeksi — 36 MB, türetilmiş. `make vektor` 70 sn'de yeniden kurar.
 # ⚠️ Hava boşluğu demosunda (E-14) çevrimdışı pakete ELLE konmalı.
-data/vektor_indeksi.npz
+# NOT: data/vektor_indeksi.npz ARTIK TAKİPLİ (26 Ağu).
+# Ağsız kurulabilmesi için depoda durması gerekiyor — gerekçe
+# .gitattributes'ta ve docs/KURULUM.md «Hava boşluğu» bölümünde.
 
 # Araç çıktıları
 .pytest_cache/

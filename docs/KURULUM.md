@@ -243,18 +243,24 @@ istenebilir. **Etkinlik Wi-Fi'ıyla `pip install` yapmayı planlamayın.**
 make paket        # bağımlılıkları paketler/ altına indirir
 ```
 
-USB'ye **dört şey** kopyalanır:
+USB'ye **iki şey** kopyalanır:
 
 | # | Ne | Neden |
 |---|---|---|
 | 1 | `paketler/` | Bağımlılıklar (~140 MB) |
-| 2 | `data/katilim.db` | İşlenmiş kampanya verisi |
-| 3 | `data/vektor_indeksi.npz` | **RAG indeksi — ağsız KURULAMAZ** |
-| 4 | Deponun kendisi | Kod |
+| 2 | Deponun kendisi | Kod **+ `data/katilim.db` + `data/vektor_indeksi.npz`** |
 
-> ⚠️ **3. maddeyi atlamayın.** İndeks 36 MB, depoda durmuyor ve `make vektor`
-> onu EVREN'den kurar — yani ağ ister. USB'de yoksa fiziki finalde koşul
-> soruları cevapsız kalır; sayısal sorular çalışmaya devam eder.
+> ℹ️ **26 Ağustos'ta değişti: RAG indeksi artık depoda.** Önceden `.gitignore`
+> içindeydi ve USB'ye elle kopyalanması gerekiyordu. Adım atlanabilir bir
+> adımdı ve atlandığında hata vermiyordu — chatbot açılıyor, sayısal sorulara
+> cevap veriyor, yalnız koşul sorularında sessizce kaynaksız kalıyordu.
+>
+> İndeksi ağsız yeniden kurmak MÜMKÜN DEĞİL: `make vektor` gömmeleri EVREN'den
+> alır, yani ağ ve API anahtarı ister. Yerel gömme yedeği yok. Türetilebilir
+> olmayan bir dosyayı türetilmiş sayıp depo dışında tutmak yanlıştı.
+>
+> Bedeli: depoda 32 MB'lık binary. `.gitattributes` onu satır sonu
+> dönüşümünden muaf tutar (`*.npz binary`).
 
 ### Hedef makinede kurulum (ağ YOKKEN)
 

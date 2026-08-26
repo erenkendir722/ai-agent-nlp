@@ -719,11 +719,14 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         **macOS değilse bu paket ÇALIŞMAZ.** Çözüm: paketi final
         laptopunun kendisinde üret (`make paket`), ya da
         `--platform win_amd64 --only-binary=:all:` ile indir.
-      ↳ 📦 **USB'ye DÖRT şey kopyalanacak** — üçüncüsü kolay atlanır:
-        1. `paketler/` · 2. `data/katilim.db` ·
-        3. **`data/vektor_indeksi.npz`** (36 MB, depoda yok, `make vektor`
-           ağ ister — USB'de yoksa fiziki finalde koşul soruları ölür) ·
-        4. deponun kendisi
+      ↳ 📦 **USB'ye İKİ şey kopyalanacak** (26 Ağu'da dörtten ikiye indi):
+        1. `paketler/` · 2. deponun kendisi
+        ↳ `data/katilim.db` ve `data/vektor_indeksi.npz` artık depoda
+          ([ADR 015](docs/kararlar/015-rag-indeksi-depoda.md)). İndeks
+          «türetilmiş» sayılıp `.gitignore`'daydı, ama ağsız kurulamıyor —
+          gömmeler EVREN'den geliyor. Elle kopyalama adımı atlanınca hata
+          vermiyordu: chatbot açılıyor, sayısal sorulara cevap veriyor, yalnız
+          koşul soruları sessizce kaynaksız kalıyordu (ölçüldü: 0,742/0,692).
       ↳ `paketler/` `.gitignore`'da — 140 MB depoya girmez, `make paket` üretir.
 
 ### Sprint 4 — teslim (24–26 Ağustos)

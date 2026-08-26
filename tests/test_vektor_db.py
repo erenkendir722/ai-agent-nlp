@@ -189,3 +189,68 @@ def test_birimlestirme_norm_bire_getirir():
 def test_sifir_vektor_bolme_hatasi_vermez():
     dizey = vektor_db._birimlestir(np.zeros((1, 4), dtype=np.float32))
     assert not np.isnan(dizey).any()
+
+
+# ---------------------------------------------------------------------------
+# Korpus izi — indeks bayatlığı (26 Ağustos)
+# ---------------------------------------------------------------------------
+
+
+def test_korpus_izi_ayni_korpusta_ayni():
+    kayitlar = [_kayit("a-1", "Konut finansmani kampanyasi cok avantajli kosullarla sunulur.")]
+    assert vektor_db.korpus_izi(kayitlar) == vektor_db.korpus_izi(kayitlar)
+
+
+def test_korpus_izi_kayit_sirasindan_etkilenmez():
+    """Veritabanı sırası değişince iz değişmemeli — yoksa her koşu bayat der."""
+    a = _kayit("a-1", "Konut finansmani kampanyasi avantajli kosullarla sunulmaktadir.")
+    b = _kayit("b-2", "Tasit finansmani kampanyasi uzun vade secenekleriyle sunulur.")
+    assert vektor_db.korpus_izi([a, b]) == vektor_db.korpus_izi([b, a])
+
+
+def test_korpus_izi_kayit_silinince_degisir():
+    """Silinen kampanya izi değiştirmeli — bu denetimin varlık sebebi.
+
+    93 süresi geçmiş kampanya silindikten sonra indeks yeniden kurulmazsa
+    chatbot SİLİNMİŞ kampanyaları kaynak gösterir; üstelik alıntısıyla,
+    yani güvenilir görünerek.
+    """
+    a = _kayit("a-1", "Konut finansmani kampanyasi avantajli kosullarla sunulmaktadir.")
+    b = _kayit("b-2", "Tasit finansmani kampanyasi uzun vade secenekleriyle sunulur.")
+    assert vektor_db.korpus_izi([a, b]) != vektor_db.korpus_izi([a])
+
+
+def test_korpus_izi_metin_degisince_degisir():
+    """`make extract` metni değiştirirse indeks eski metni aramaya devam eder."""
+    onceki = vektor_db.korpus_izi([_kayit("a-1", "Konut finansmani kampanyasi sunulmaktadir.")])
+    sonraki = vektor_db.korpus_izi([_kayit("a-1", "Tasit finansmani kampanyasi sunulmaktadir.")])
+    assert onceki != sonraki
+
+
+def test_indeks_durumu_ayni_korpusta_guncel(sahte_evren):
+    kayitlar = [_kayit("a-1", "Konut finansmani kampanyasi avantajli kosullarla sunulur.")]
+    vektor_db.indeks_kur(kayitlar, ilerleme=False)
+
+    durum = vektor_db.indeks_durumu(kayitlar)
+    assert durum["bayat"] is False, durum["sebep"]
+    assert durum["korpus_izi"] == vektor_db.korpus_izi(kayitlar)
+
+
+def test_indeks_durumu_korpus_degisince_bayat(sahte_evren):
+    kayitlar = [_kayit("a-1", "Konut finansmani kampanyasi avantajli kosullarla sunulur.")]
+    vektor_db.indeks_kur(kayitlar, ilerleme=False)
+
+    kayitlar.append(_kayit("b-2", "Tasit finansmani kampanyasi uzun vadeyle sunulmaktadir."))
+    durum = vektor_db.indeks_durumu(kayitlar)
+    assert durum["bayat"] is True
+    assert "yeniden kurun" in durum["sebep"]
+
+
+def test_indeks_durumu_korpus_verilmezse_denetlemedigini_soyler(sahte_evren):
+    """«Denetlemedik» ile «temiz» aynı şey değildir — sessizce güncel demesin."""
+    kayitlar = [_kayit("a-1", "Konut finansmani kampanyasi avantajli kosullarla sunulur.")]
+    vektor_db.indeks_kur(kayitlar, ilerleme=False)
+
+    durum = vektor_db.indeks_durumu()
+    assert durum["bayat"] is None
+    assert "denetlenmedi" in durum["sebep"]

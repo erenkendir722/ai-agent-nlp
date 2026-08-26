@@ -69,10 +69,14 @@ aykırı olması tutarsızlık olurdu.
 - `make vektor` eklendi; `make durum` indeks durumunu da basıyor
 - `tests/test_vektor_db.py` — 14 test, **ağ istemiyor** (gömme sahteleniyor)
 - `data/vektor_indeksi.npz` `.gitignore`'a girdi (36 MB, türetilmiş)
+  — **26 Ağu'da geri alındı:** türetilmiş değilmiş, ağsız kurulamıyor ([ADR 015](015-rag-indeksi-depoda.md))
 - Chatbot indeks yokluğunu bağlantı hatasından **ayrı** karşılıyor: «`make
   vektor` ile kurulur» diyor, çökmüyor
 
 ### Açık kalan
+
+> ✅ **Bu madde [ADR 015](015-rag-indeksi-depoda.md) ile kapandı (26 Ağu):**
+> indeks depoya alındı. Aşağıdaki uyarı kaydın bütünlüğü için duruyor.
 
 ⚠️ **Çevrimdışı paket (E-14) indeks dosyasını elle içermeli.** İndeks depoda
 durmuyor ve kurulması EVREN'e bağlı; hava boşluğu demosunda ağ olmayacağı için

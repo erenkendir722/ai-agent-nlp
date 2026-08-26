@@ -311,9 +311,15 @@ def komut_durum(_: argparse.Namespace) -> int:
         else:
             print(f"  {anahtar:22}: {deger}")
 
+    from src.depolama import tum_kayitlar
     from src.vektor_db import indeks_durumu
 
-    durum = indeks_durumu()
+
+    # Kayıtlar BİLEREK geçiliyor: `indeks_durumu` korpus verilmezse
+    # bayatlığı denetlemez ve «denetlenmedi» der. `make durum`un tek işi
+    # durumu söylemek olduğuna göre, denetlenmemiş bir cevap burada
+    # işe yaramaz.
+    durum = indeks_durumu(tum_kayitlar())
     print("\n=== RAG VEKTÖR İNDEKSİ ===")
     if not durum["var"]:
         print(f"  ⚠️  kurulmamış — `make vektor` ile kurulur ({durum['yol']})")
@@ -322,6 +328,11 @@ def komut_durum(_: argparse.Namespace) -> int:
         print(f"  {'kampanya':22}: {durum['kampanya']}")
         print(f"  {'boyut':22}: {durum['boyut']}")
         print(f"  {'model':22}: {durum['model']}")
+        print(f"  {'korpus izi':22}: {durum['korpus_izi']}")
+        if durum["bayat"]:
+            print(f"  🔴 BAYAT — {durum['sebep']}")
+        elif durum["bayat"] is False:
+            print("  ✅ güncel — indeks veritabanındaki korpusla aynı")
     return 0
 
 

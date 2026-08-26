@@ -10,3 +10,18 @@
 # Ölçülen durum (24 Ağu 2026): 9 arşiv dosyasının 5'i CRLF, 4'ü LF ile geldi —
 # yani sorun kuramsal değil, bu dosyaların çoğunu etkiliyor.
 docs/kanit/robots/*.txt -text
+
+# Binary veri dosyaları — satır sonu dönüşümünden MUAF.
+#
+# NEDEN AÇIKÇA YAZILIYOR: git binary'yi sezgisel tanır (NUL baytı arar) ve
+# genelde doğru bilir — ama `core.autocrlf=true` olan makinelerde yanlış
+# bilirse dosyayı SESSİZCE bozar. Bu iki dosya o riski almaya değmeyecek
+# kadar pahalı: `.npz` 32 MB'lık RAG indeksi (yeniden kurmak EVREN anahtarı
+# + ağ ister), `.db` 931 kampanyalık işlenmiş veri.
+#
+# Bu depoda satır sonu dönüşümü iki kez ölçülmüş zarar verdi:
+#   24 Ağu — robots kanıtlarının sha256 özetleri bozuldu (yukarıdaki kural)
+#   26 Ağu — `kod_parmak_izi` Windows'ta ve macOS'ta farklı çıktı; veritabanı
+#            güncelken `make eval` jüriye giden rapora «BAYAT» yazdı
+*.npz binary
+*.db binary
