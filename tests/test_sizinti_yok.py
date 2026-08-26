@@ -215,3 +215,48 @@ def test_kodda_sabit_kodlanmis_dis_api_ucu_yok() -> None:
                 ihlaller.append(f"{yol.relative_to(kok)}: {uc}")
 
     assert not ihlaller, f"Kodda dış servis adresi bulundu: {ihlaller}"
+
+
+def test_api_docs_sayfasi_disariya_cikmaz() -> None:
+    """`/docs` hiçbir dış adrese gitmemeli — 26 Ağustos'ta ölçülen çelişki.
+
+    FastAPI'nin hazır Swagger sayfası varlıkları CDN'den çeker:
+
+        cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js
+        cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css
+        fastapi.tiangolo.com/img/favicon.png
+
+    API'nin KENDİ açıklaması «dış servis çağrısı yoktur» diyor ve şartname 5.9
+    on-prem çalışmayı şart koşuyor. Kapalı ağda sayfa bomboş açılıyordu —
+    jürinin ilk tıklayacağı ekranlardan biri. Varlıklar `src/api/statik/`
+    altına vendorlandı; bu test geri dönüşü engeller.
+    """
+    import re
+
+    from fastapi.testclient import TestClient
+
+    from src.api.sunucu import uygulama
+
+    with TestClient(uygulama) as istemci:
+        cevap = istemci.get("/docs")
+        assert cevap.status_code == 200
+
+    adresler = re.findall(r"https?://[^\"'\s<>]+", cevap.text)
+    disaridakiler = [
+        u for u in adresler
+        if not u.startswith("http://www.w3.org")  # SVG ad alanı, ağ çağrısı değil
+    ]
+    assert not disaridakiler, (
+        f"/docs disariya cikiyor: {disaridakiler}"
+    )
+
+
+def test_swagger_varliklari_depoda_duruyor() -> None:
+    """Vendorlanan varlıklar silinirse `/docs` sessizce bozulur — sözleşme testi."""
+    from pathlib import Path
+
+    statik = Path(__file__).resolve().parents[1] / "src" / "api" / "statik"
+    for ad in ("swagger-ui-bundle.js", "swagger-ui.css"):
+        dosya = statik / ad
+        assert dosya.exists(), f"eksik vendorlanan varlik: {ad}"
+        assert dosya.stat().st_size > 10_000, f"{ad} bos ya da bozuk"

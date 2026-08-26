@@ -106,6 +106,33 @@ EVREN_UCLARI = [
     ("`vlm`", "kimlik doğrulanmadı", "🟡 kullanılmıyor — görsel girdi yok"),
 ]
 
+# DEPOYA ELLE KONMUŞ ÜÇÜNCÜ TARAF VARLIKLAR — pip taraması bunları GÖRMEZ.
+#
+# 26 Ağustos'ta ihtiyaç doğdu: FastAPI'nin `/docs` sayfası Swagger UI'yi
+# jsDelivr CDN'inden çekiyordu, yani API "dış servis çağrısı yoktur" derken
+# üç dış adrese gidiyordu (şartname 5.9). Varlıklar `src/api/statik/` altına
+# vendorlandı. Vendorlanan her dosya bir lisans taşır ve `pip-licenses` onu
+# göremez — bu liste olmasa rapor sessizce eksik kalırdı.
+VENDORLANAN_VARLIKLAR = [
+    {
+        "dosya": "src/api/statik/swagger-ui-bundle.js",
+        "proje": "swagger-ui-dist",
+        "surum": "5.17.14",
+        "lisans": "Apache-2.0",
+        "kaynak": "https://github.com/swagger-api/swagger-ui",
+        "not": "`/docs` arayüzü. Sürüm PİNLİ: CDN'in `@5` etiketi zamanla kayar.",
+    },
+    {
+        "dosya": "src/api/statik/swagger-ui.css",
+        "proje": "swagger-ui-dist",
+        "surum": "5.17.14",
+        "lisans": "Apache-2.0",
+        "kaynak": "https://github.com/swagger-api/swagger-ui",
+        "not": "Aynı paketin stil dosyası.",
+    },
+]
+
+
 # Elle incelenmesi gereken lisanslar (kullanıyoruz ama gerekçesini yazıyoruz).
 DIKKAT = {
     "python-dateutil": (
@@ -427,9 +454,26 @@ def rapor_uret(model_kaniti: dict | None = None) -> tuple[str, list[str]]:
         f"- Taranan paket: **{len(paketler)}** "
         f"(bunun **{len(proje_paketleri)}** tanesi `requirements.txt` kapanışında)",
         f"- Taranan model: **{len(MODELLER)}**",
+        f"- Vendorlanan varlık: **{len(VENDORLANAN_VARLIKLAR)}** (pip taramasının dışında)",
         f"- Kısıtlı/şüpheli lisans: **{len(sorunlar)}**",
         "",
     ]
+
+    satirlar += [
+        "## Depoya elle konmuş üçüncü taraf varlıklar",
+        "",
+        "`pip-licenses` yalnız kurulu Python paketlerini görür. Depoya elle konan "
+        "JS/CSS dosyaları taramanın dışında kalır; bu tablo o boşluğu kapatır.",
+        "",
+        "| Dosya | Proje | Sürüm | Lisans | Not |",
+        "|---|---|---|---|---|",
+    ]
+    satirlar += [
+        f"| `{v['dosya']}` | [{v['proje']}]({v['kaynak']}) | {v['surum']} "
+        f"| {v['lisans']} | {v['not']} |"
+        for v in VENDORLANAN_VARLIKLAR
+    ]
+    satirlar.append("")
 
     if sorunlar:
         satirlar += ["### ⚠️ İncelenmesi gerekenler", ""]
