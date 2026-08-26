@@ -59,7 +59,7 @@ def test_parmak_izi_ilgisiz_dosyadan_etkilenmez(tmp_path):
     (tmp_path / "app").mkdir()
 
     onceki = kod_parmak_izi(tmp_path)
-    (tmp_path / "app" / "Genel_Bakis.py").write_text("import streamlit", encoding="utf-8")
+    (tmp_path / "app" / "Genel_Bakış.py").write_text("import streamlit", encoding="utf-8")
 
     assert kod_parmak_izi(tmp_path) == onceki
 

@@ -81,7 +81,7 @@ def main() -> int:
 
     durum = cikarim_durumu(args.url)
     if durum.get("kosu") is None:
-        print("❌ Veritabanında çıkarım koşusu kaydı yok. Önce `make extract`.")
+        print(" Veritabanında çıkarım koşusu kaydı yok. Önce `make extract`.")
         return 1
 
     kosu = durum["kosu"]
@@ -96,18 +96,18 @@ def main() -> int:
     print(f"  dar küme         : {len(CIKARIM_KAYNAKLARI)} girdi")
 
     if eski_iz == yeni_iz:
-        print("\n✅ Damga zaten güncel — yapılacak bir şey yok.")
+        print("\n Damga zaten güncel — yapılacak bir şey yok.")
         return 0
 
     degisenler = _degisen_dosyalar(referans)
     if degisenler:
-        print("\n❌ GÖÇ REDDEDİLDİ — çıkarım kaynakları o koşudan beri değişmiş:")
+        print("\n GÖÇ REDDEDİLDİ — çıkarım kaynakları o koşudan beri değişmiş:")
         for dosya in degisenler:
             print(f"     {dosya}")
         print("\n   Bu gerçek bir bayatlıktır. Çözüm: `make extract`.")
         return 1
 
-    print("\n✅ İSPAT: dar kümedeki hiçbir dosya referans commit'ten beri değişmemiş.")
+    print("\n İSPAT: dar kümedeki hiçbir dosya referans commit'ten beri değişmemiş.")
     print("   Yeni tanımın o koşudaki değeri = bugün hesaplanan değer.")
 
     if not args.uygula:
@@ -122,7 +122,7 @@ def main() -> int:
         oturum_.commit()
 
     sonra = cikarim_durumu(args.url)
-    print(f"\n✅ Damga taşındı: {eski_iz} → {yeni_iz}")
+    print(f"\n Damga taşındı: {eski_iz} → {yeni_iz}")
     print(f"   bayat: {sonra['bayat']}")
     return 0
 

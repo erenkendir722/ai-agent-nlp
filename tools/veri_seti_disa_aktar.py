@@ -165,7 +165,7 @@ TEKNOFEST 2026 Yapay Zekâ Dil Ajanları Yarışması 2. Senaryo için üretildi
 def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
     kampanyalar = list(kampanyalari_oku(url))
     if not kampanyalar:
-        print("❌ Veritabanı boş. Önce `make extract` çalıştırın.")
+        print(" Veritabanı boş. Önce `make extract` çalıştırın.")
         return 1
 
     bankalar: Counter[str] = Counter(k.banka_adi for k in kampanyalar)
@@ -196,7 +196,7 @@ def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
     KART_YOL.write_text(_veri_karti(kampanyalar, bankalar, turler, dolu, toplam), encoding="utf-8")
 
     for yol in (CSV_YOL, JSONL_YOL, KART_YOL):
-        print(f"✅ {yol.relative_to(KOK)} ({yol.stat().st_size / 1024:.0f} KB)")
+        print(f" {yol.relative_to(KOK)} ({yol.stat().st_size / 1024:.0f} KB)")
     return 0
 
 

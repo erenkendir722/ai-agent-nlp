@@ -9,7 +9,7 @@ banka çalışanının gerçek sorusunu cevaplıyor:
 Bu bir arama değil **kısıt çözme** problemidir: koşullar birbiriyle kesişir
 (müşteri tipi VE tutar aralığı VE vade sınırı VE zorunlu ürün).
 
-⚠️ BU AJAN LLM KULLANMAZ — bilinçli bir karar:
+BU AJAN LLM KULLANMAZ — bilinçli bir karar:
     Kısıt kontrolü ve aritmetik saf koddur. `1.87 < 1.89` karşılaştırmasını,
     taksit hesabını veya sıralamayı LLM'e yaptırmak, halüsinasyon savunmasıyla
     kazanılan güveni tek hamlede kaybettirir. LLM'in bu boru hattındaki tek
@@ -82,7 +82,7 @@ class Gerekce:
     """
 
     def __str__(self) -> str:
-        return ("✅ " if self.gecti_mi else "❌ ") + self.aciklama
+        return ("Uygun — " if self.gecti_mi else "Uygun değil — ") + self.aciklama
 
 
 @dataclass

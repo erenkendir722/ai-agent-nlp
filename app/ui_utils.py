@@ -16,6 +16,7 @@ from pathlib import Path
 import streamlit as st
 
 from src.collector.toplayici import bankalari_yukle
+from src.schema import alan_etiketi, tur_etiketi
 
 _SONUC_DOSYASI = Path(__file__).resolve().parents[1] / "docs" / "SONUCLAR.md"
 
@@ -120,39 +121,79 @@ def format_bank_name(bank_name: str | None) -> str:
     return kisaltilmis
 
 
-_KATEGORI_ISIMLERI = {
-    "konut": "Konut Finansmanı",
-    "konut_finansmani": "Konut Finansmanı",
-    "konut finansmani": "Konut Finansmanı",
-    "konut finansmanı": "Konut Finansmanı",
-    "ihtiyac": "İhtiyaç Finansmanı",
-    "ihtiyac_finansmani": "İhtiyaç Finansmanı",
-    "ihtiyac finansmani": "İhtiyaç Finansmanı",
-    "ihtiyaç finansmanı": "İhtiyaç Finansmanı",
-    "tasit": "Taşıt Finansmanı",
-    "tasit_finansmani": "Taşıt Finansmanı",
-    "tasit finansmani": "Taşıt Finansmanı",
-    "taşıt finansmanı": "Taşıt Finansmanı",
-    "kredi_karti": "Kredi Kartı",
-    "kredi karti": "Kredi Kartı",
-    "kredi kartı": "Kredi Kartı",
-    "yatirim_urunu": "Yatırım Ürünü",
-    "yatirim urunu": "Yatırım Ürünü",
-    "yatırım ürünü": "Yatırım Ürünü",
-    "altin": "Altın",
-    "diger": "Diğer",
-    "diğer": "Diğer"
-}
+_KAMPANYASI_EKI = " Kampanyası"
+
 
 def format_kategori(kategori_adi: str | None) -> str:
-    """Kampanya türü için merkezi normalizasyon sağlar.
-    Farklı yazımları ('Konut Finansmani', 'konut_finansmani') tek tipleştirir.
+    """Kampanya türünün tablo/etiket gösterimi — kaynağı ŞEMA.
+
+    İKİNCİ SÖZLÜK TUTULMAZ (bu dosyanın başındaki kuralın aynısı). Burada
+    elle yazılmış bir `_KATEGORI_ISIMLERI` sözlüğü vardı ve dört türü
+    (`alisveris_puani`, `yeni_musteri`, `kart`, `finansman`) hiç içermiyordu.
+    Eksik türler `.title()` yedeğine düşüyor, Türkçe harfleri kaybediyordu:
+
+        alisveris_puani  ->  "Alisveris Puani"   (ş ve ı yok)
+        yeni_musteri     ->  "Yeni Musteri"      (ü yok)
+
+    Bu yazımlar karşılaştırma tablosunda ve süzgeç açılırında görünüyordu.
+    `schema.KAMPANYA_TURU_ETIKETLERI` doğru yazımları zaten tutuyor ve
+    `.title()`'ın Türkçe'yi bozduğu o dosyada da yazılı.
+
+    Şema uzun etiket verir («Konut Finansmanı Kampanyası»); tablo sütununda
+    ve açılır listede tür adı yeter, «Kampanyası» eki her satırda tekrar
+    ederdi. Ek yalnız GÖSTERİMDEN düşürülür, sözlükten değil.
     """
     if not kategori_adi:
         return "Belirtilmemiş"
-    
-    temiz = str(kategori_adi).lower().strip()
-    return _KATEGORI_ISIMLERI.get(temiz, temiz.replace('_', ' ').title())
+
+    ham = str(kategori_adi).strip()
+    etiket = tur_etiketi(ham)
+    if not etiket:
+        # Şemada olmayan serbest metin (`urun_turu`) olduğu gibi gösterilir:
+        # `.title()` uygulamak «Alisveris» türü bozulmalara geri dönüş olurdu.
+        return ham
+
+    if etiket.endswith(_KAMPANYASI_EKI):
+        return etiket[: -len(_KAMPANYASI_EKI)]
+    return etiket
+
+
+_HEDEF_KITLE_ETIKETLERI = {
+    "yeni_musteri": "Yeni müşteri",
+    "mevcut_musteri": "Mevcut müşteri",
+    "maas_musterisi": "Maaş müşterisi",
+    "segment": "Segment (emekli / öğrenci / KOBİ)",
+    "tum_musteriler": "Tüm müşteriler",
+}
+"""Hedef kitle enum değeri → ekranda yazılan etiket.
+
+Şemaya DEĞİL buraya konuyor. `src/schema.py` hem donmuş hem de
+`CIKARIM_KAYNAKLARI` içinde: oraya eklenen her satır çıkarım parmak izini
+değiştirir ve veritabanını «bayat» ilan eder. Salt gösterim için ölçümü
+bayatlatmak orantısız olurdu; etiketin veriyle bir ilgisi yok.
+"""
+
+
+def format_hedef_kitle(deger) -> str:
+    """`yeni_musteri` → «Yeni müşteri»."""
+    if deger is None:
+        return "Belirtilmemiş"
+    ham = getattr(deger, "value", deger)
+    return _HEDEF_KITLE_ETIKETLERI.get(str(ham).strip().lower(), str(ham))
+
+
+def format_alan_adi(alan_adi: str) -> str:
+    """Alan adının ekranda yazılan hâli — kaynağı ŞEMA.
+
+    `.replace("_", " ").title()` KULLANILMAZ. `schema.ALAN_ETIKETLERI`'nin
+    kendi notunda yazdığı gibi `.title()` Türkçe'yi sessizce bozar:
+
+        kar_payi_orani  ->  "Kar Payi Orani"   (â ve ı kayıp)
+        alisveris_puani ->  "Alisveris Puani"  (ş ve ı kayıp)
+
+    Bu yazımlar karşılaştırma ekranındaki kampanya kartlarında görünüyordu.
+    """
+    return alan_etiketi(alan_adi) or alan_adi.replace("_", " ")
 
 
 def uyarilari_goster(
@@ -183,14 +224,14 @@ def uyarilari_goster(
     notlar = [u for u in uyari_listesi if not getattr(u, "engelleyici", False)]
 
     for uyari in engelleyiciler:
-        st.warning(_uyari_metni(uyari), icon="⛔")
+        st.warning(_uyari_metni(uyari))
 
     if not notlar:
         return
 
     # Tek not için panel açıp kapamak gereksiz tıklama; doğrudan gösterilir.
     if len(notlar) == 1:
-        st.info(_uyari_metni(notlar[0]), icon="ℹ️")
+        st.info(_uyari_metni(notlar[0]))
         return
 
     with st.expander(f"{baslik} ({len(notlar)})", expanded=False):

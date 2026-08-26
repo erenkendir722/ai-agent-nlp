@@ -627,8 +627,8 @@ with sekme_cikarim:
       st.markdown("**Son işlenen kayıtlar**")
       st.markdown(kayit_seridi(durum.kayitlar), unsafe_allow_html=True)
       st.caption(
-        "🟩 **doluluk** — şemadaki alanların yüzde kaçı dolduruldu · "
-        "🟦 **güven** — çıkarılan alanların ortalama güven skoru"
+        "Yeşil çubuk **doluluk** — şemadaki alanların yüzde kaçı dolduruldu · "
+        "Mavi çubuk **güven** — çıkarılan alanların ortalama güven skoru"
       )
     _gunluk_ciz(durum.olaylar, anahtar="bh_c_gunluk")
 

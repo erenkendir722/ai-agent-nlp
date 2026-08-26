@@ -40,7 +40,7 @@ NEDEN AYRI BİR KATMAN:
      Ölçüm: şemaya modelin asla kendiliğinden seçmeyeceği bir enum
      (`ZZZ_YESIL`) konup istendi —
          guided_json                 -> düz metin döndü, şema uygulanmadı
-         response_format.json_schema -> {"kampanya_turu": "ZZZ_YESIL"} ✅
+          response_format.json_schema -> {"kampanya_turu": "ZZZ_YESIL"} calisti
      `guided_json` ile geçilseydi "şema geçerliliği 1,00" iddiası sessizce
      çökerdi: çıktı geçerli JSON olurdu ama ŞEMANIN JSON'ı olmazdı.
 
@@ -96,7 +96,7 @@ SABIT_TOHUM = 20260820
 Yerelde (llama.cpp) determinizmi sağlayan asıl ayar sıcaklıktır; tohum eşit
 olasılıklı iki token'da bağın nasıl çözüldüğünü sabitler.
 
-⚠️  EVREN'DE DETERMİNİZM GARANTİ DEĞİLDİR — ÖLÇÜLDÜ.
+EVREN'DE DETERMİNİZM GARANTİ DEĞİLDİR — ÖLÇÜLDÜ.
     `temperature=0` ve bu tohumla, aynı girdi 5 kez gönderildiğinde
     **5 kayıttan 3'ü** bayt düzeyinde farklı çıktı verdi. Sebep örnekleme
     değil: ortak vLLM sunucusunda sürekli yığınlama (continuous batching)
@@ -108,7 +108,7 @@ olasılıklı iki token'da bağın nasıl çözüldüğünü sabitler.
     metindi (`kampanya_kosullari` 4 kez, `kampanya_avantaji` 1 kez).
     Sayısal veya enum alanlarda **sıfır** sapma görüldü. Yani:
 
-        bayt düzeyinde tekrarlanabilirlik : ✗ kayboldu
+        bayt düzeyinde tekrarlanabilirlik : kayboldu
         ölçülen metriklerde tekrarlanabilirlik : ✓ korunuyor (bu örneklemde)
 
     `docs/SONUCLAR.md` sayıları yine de yeniden üretilebilir kalır, çünkü
@@ -267,7 +267,7 @@ def _dogrula() -> int:
     yetmez: modele, metinde KARŞILIĞI OLMAYAN bir enum değerini üretmesi
     dayatılır. Şema gerçekten uygulanıyorsa model başka bir şey YAZAMAZ.
     """
-    # Windows konsolu cp1254; aşağıdaki ✅/❌ işaretleri orada
+    # Windows konsolu cp1254; aşağıdaki Türkçe karakterler orada
     # UnicodeEncodeError fırlatıyordu — sınama GEÇTİĞİ hâlde son satırda
     # yığın izi basıyordu. Yalnız bu CLI yolunda yapılır: modül içe
     # aktarıldığında (16 işçili çıkarım, Streamlit) stdout'a dokunulmaz.
@@ -282,7 +282,7 @@ def _dogrula() -> int:
     try:
         s = saglayici_kur()
     except Exception as hata:
-        print(f"❌ Sağlayıcı kurulamadı: {hata}")
+        print(f"HATA: Sağlayıcı kurulamadı: {hata}")
         return 1
 
     print(f"sağlayıcı : {s.ad}\nmodel     : {s.model}")
@@ -293,20 +293,20 @@ def _dogrula() -> int:
             tuzak,
         )
     except Exception as hata:
-        print(f"❌ Çağrı başarısız: {hata}")
+        print(f"HATA: Çağrı başarısız: {hata}")
         return 1
 
     try:
         secim = json.loads(cikti).get("kampanya_turu")
     except json.JSONDecodeError:
-        print(f"❌ Geçersiz JSON döndü: {cikti[:200]!r}")
+        print(f"HATA: Geçersiz JSON döndü: {cikti[:200]!r}")
         return 1
 
     if secim in ("ZZZ_MOR", "ZZZ_YESIL"):
-        print(f"✅ Şema kısıtı uygulanıyor (model {secim!r} üretmek zorunda kaldı).")
+        print(f"Şema kısıtı uygulanıyor (model {secim!r} üretmek zorunda kaldı).")
         return 0
     print(
-        f"❌ ŞEMA KISITI UYGULANMIYOR — model {secim!r} döndürdü.\n"
+        f"HATA: ŞEMA KISITI UYGULANMIYOR — model {secim!r} döndürdü.\n"
         "   Çıktı geçerli JSON olsa bile ŞEMANIN JSON'ı değil; "
         "'şema geçerliliği 1,00' iddiası bu hâlde geçersizdir."
     )

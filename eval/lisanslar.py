@@ -40,7 +40,7 @@ CIKTI = KOK / "docs" / "LISANSLAR.md"
 MODEL_KANITI = KOK / "docs" / "kanit" / "model-lisanslari.json"
 HF_API = "https://huggingface.co/api/models/{depo}"
 
-# Windows konsolu cp1254; rapordaki ✅ işaretleri orada UnicodeEncodeError
+# Windows konsolu cp1254; rapordaki işaretleri orada UnicodeEncodeError
 # fırlatır. Takımın yarısı Windows'ta çalışıyor.
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -95,15 +95,15 @@ MODELLER = [
 # lisans açısından uygun sayılır — ama kullandığımız her modelin lisansı ayrıca
 # teyitli. Bu tablo "bakmadık" ile "baktık, gerek yok" farkını yazıya döker.
 EVREN_UCLARI = [
-    ("`llm-large`", "Qwen3.5-122B-A10B — Apache-2.0", "✅ kullanılıyor"),
-    ("`llm-fast`", "Qwen3.6-35B-A3B — Apache-2.0", "🟡 `--model llm-fast` ile seçilebilir; varsayılan değil, ölçüm koşuları `llm-large` ile yapıldı"),
-    ("`bge-m3-embed`", "BGE-M3 — MIT; 1024 boyut ölçüldü (kimlik teyidi)", "✅ kullanılıyor — RAG gömme"),
-    ("`bge-m3-sparse` · `bge-m3-colbert`", "adı BGE-M3'ü işaret ediyor — MIT", "🟡 kullanılmıyor — ihtiyaç yok"),
-    ("`embed`", "kimlik doğrulanmadı — 2560 boyut", "🟡 kullanılmıyor — lisanstan bağımsız olarak da uymuyor: 2560 boyut veriyor, `VECTOR_SIZE` 1024"),
-    ("`rerank`", "kimlik doğrulanmadı", "🟡 kullanılmıyor — bu senaryoda ihtiyaç yok"),
-    ("`router`", "kimlik doğrulanmadı", "🟡 kullanılmıyor"),
-    ("`guard`", "kimlik doğrulanmadı", "🟡 kullanılmıyor"),
-    ("`vlm`", "kimlik doğrulanmadı", "🟡 kullanılmıyor — görsel girdi yok"),
+    ("`llm-large`", "Qwen3.5-122B-A10B — Apache-2.0", " kullanılıyor"),
+    ("`llm-fast`", "Qwen3.6-35B-A3B — Apache-2.0", " `--model llm-fast` ile seçilebilir; varsayılan değil, ölçüm koşuları `llm-large` ile yapıldı"),
+    ("`bge-m3-embed`", "BGE-M3 — MIT; 1024 boyut ölçüldü (kimlik teyidi)", " kullanılıyor — RAG gömme"),
+    ("`bge-m3-sparse` · `bge-m3-colbert`", "adı BGE-M3'ü işaret ediyor — MIT", " kullanılmıyor — ihtiyaç yok"),
+    ("`embed`", "kimlik doğrulanmadı — 2560 boyut", " kullanılmıyor — lisanstan bağımsız olarak da uymuyor: 2560 boyut veriyor, `VECTOR_SIZE` 1024"),
+    ("`rerank`", "kimlik doğrulanmadı", " kullanılmıyor — bu senaryoda ihtiyaç yok"),
+    ("`router`", "kimlik doğrulanmadı", " kullanılmıyor"),
+    ("`guard`", "kimlik doğrulanmadı", " kullanılmıyor"),
+    ("`vlm`", "kimlik doğrulanmadı", " kullanılmıyor — görsel girdi yok"),
 ]
 
 # DEPOYA ELLE KONMUŞ ÜÇÜNCÜ TARAF VARLIKLAR — pip taraması bunları GÖRMEZ.
@@ -319,7 +319,7 @@ def _model_bolumu(kanit: dict | None) -> list[str]:
         )
     else:
         teyit_notu = (
-            "⚠️ Model lisansları bu koşuda teyit edilmedi "
+            " Model lisansları bu koşuda teyit edilmedi "
             "(`python -m eval.lisanslar --model-teyit` ile teyit edilir)."
         )
 
@@ -338,10 +338,10 @@ def _model_bolumu(kanit: dict | None) -> list[str]:
         teyit = teyitler.get(model["depo"])
         if teyit and teyit["durum"] == 200 and teyit["bulunan"]:
             lisans = f"**{teyit['bulunan']}**"
-            isaret = f"✅ HF API · {(kanit or {}).get('teyit_tarihi', '')[:10]}"
+            isaret = f" HF API · {(kanit or {}).get('teyit_tarihi', '')[:10]}"
         else:
             lisans = f"{model['beklenen']} (beklenen)"
-            isaret = "⚠️ teyit edilmedi"
+            isaret = " teyit edilmedi"
         satirlar.append(
             f"| {model['kullanim']} | {model['nerede']} | `{model['depo']}` | {lisans} | {isaret} |"
         )
@@ -363,7 +363,7 @@ def _model_bolumu(kanit: dict | None) -> list[str]:
         "",
         "**Duruş (ADR 013):** EVREN yarışmayı düzenleyen kurumun yarışmacılara",
         "tahsis ettiği servistir; sunduğu modeller lisans açısından uygun sayılır.",
-        "Buna yaslanmak zorunda değiliz — aşağıda ✅ işaretli, yani **fiilen",
+        "Buna yaslanmak zorunda değiliz — aşağıda işaretli, yani **fiilen",
         "kullandığımız** uçların hepsinin lisansı bağımsız olarak teyitlidir.",
         "Kalanlar lisans yüzünden değil, **bu senaryoda ihtiyaç olmadığı için**",
         "kullanılmıyor.",
@@ -476,12 +476,12 @@ def rapor_uret(model_kaniti: dict | None = None) -> tuple[str, list[str]]:
     satirlar.append("")
 
     if sorunlar:
-        satirlar += ["### ⚠️ İncelenmesi gerekenler", ""]
+        satirlar += ["### İncelenmesi gerekenler", ""]
         satirlar += [f"- {s}" for s in sorunlar]
         satirlar.append("")
     else:
         satirlar += [
-            "✅ **Tüm bağımlılıklar ve modeller izin verici (permissive) lisanslıdır.** "
+            " **Tüm bağımlılıklar ve modeller izin verici (permissive) lisanslıdır.** "
             "Kısıtlı kullanım şartı olan hiçbir bileşen yoktur.",
             "",
         ]
@@ -507,7 +507,7 @@ def rapor_uret(model_kaniti: dict | None = None) -> tuple[str, list[str]]:
     ]
     if ortam_paketleri:
         satirlar += [
-            "> ⚠️ Ortam kapsamlı paketler: "
+            "> Ortam kapsamlı paketler: "
             + ", ".join(f"`{ad}`" for ad in ortam_paketleri)
             + ". Ortamda durmaları onları bağımlılık yapmaz. `qdrant-client` "
             "**artık kullanılmıyor** — harici vektör veritabanı yolu bırakıldı "
@@ -561,11 +561,11 @@ def main(argv: list[str] | None = None) -> int:
     CIKTI.parent.mkdir(parents=True, exist_ok=True)
     CIKTI.write_text(icerik, encoding="utf-8")
 
-    print(f"✅ {CIKTI.relative_to(KOK)} yazıldı")
+    print(f" {CIKTI.relative_to(KOK)} yazıldı")
     if model_kaniti is None:
-        print("   ⚠️  Model lisansları teyit edilmemiş: `python -m eval.lisanslar --model-teyit`")
+        print(" Model lisansları teyit edilmemiş: `python -m eval.lisanslar --model-teyit`")
     if sorunlar:
-        print(f"⚠️  {len(sorunlar)} bileşen incelenmeli:")
+        print(f" {len(sorunlar)} bileşen incelenmeli:")
         for sorun in sorunlar:
             print(f"     - {sorun}")
         return 1

@@ -53,5 +53,5 @@ EXPOSE 8501 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD python -c "import httpx;httpx.get('http://127.0.0.1:8501/_stcore/health',timeout=4).raise_for_status()"
 
-CMD ["streamlit", "run", "app/Genel_Bakis.py", \
+CMD ["streamlit", "run", "app/Genel_Bakış.py", \
      "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true"]

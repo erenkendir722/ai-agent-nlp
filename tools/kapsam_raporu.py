@@ -33,7 +33,7 @@ RAPOR = KOK / "docs" / "KAPSAM_RAPORU.md"
 def calistir(url: str = VERITABANI_URL) -> int:
     kampanyalar = list(kampanyalari_oku(url))
     if not kampanyalar:
-        print("❌ Veritabanı boş.")
+        print(" Veritabanı boş.")
         return 1
 
     banka_sayisi: Counter[str] = Counter()
@@ -156,7 +156,7 @@ def calistir(url: str = VERITABANI_URL) -> int:
     ]
 
     RAPOR.write_text("\n".join(satirlar) + "\n", encoding="utf-8")
-    print(f"✅ {RAPOR.relative_to(KOK)} yazıldı ({len(banka_sayisi)} banka, {toplam} kayıt)")
+    print(f" {RAPOR.relative_to(KOK)} yazıldı ({len(banka_sayisi)} banka, {toplam} kayıt)")
     print(f"   Dengesizlik oranı: {en_cok / en_az:.1f}×")
     return 0
 

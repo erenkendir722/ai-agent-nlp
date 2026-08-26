@@ -36,7 +36,7 @@ class TestCakismaSemantigi:
     """Ham çakışma bir TEŞHİS, çözülmemiş çakışma bir İHLAL.
 
     İkisini tek sayaçta toplamak teşhisi ihlal gibi gösterirdi — ilk sürümde
-    tam olarak bu oldu ve rapor 124 çakışmayı ❌ ile basıyordu.
+    tam olarak bu oldu ve rapor 124 çakışmayı «ihlal» diye basıyordu.
     """
 
     JURI_METNI = (
@@ -73,17 +73,17 @@ class TestRapor:
 
     def test_temiz_kosu_hepsi_yesil(self) -> None:
         metin = gm.rapor_yaz(self._olcum())
-        assert "❌" not in metin
+        assert "| ihlal |" not in metin
 
     def test_ham_cakisma_ihlal_olarak_gosterilmez(self) -> None:
-        """REGRESYON — 124 çözülen çakışma ❌ ile basılıyordu."""
+        """REGRESYON — 124 çözülen çakışma «ihlal» diye basılıyordu."""
         metin = gm.rapor_yaz(self._olcum())
         assert "124" in metin
         assert "Teşhis (ihlal değil)" in metin
 
     def test_gercek_ihlal_isaretlenir(self) -> None:
         metin = gm.rapor_yaz(self._olcum(cakisma_cozulmemis=3, coken=2))
-        assert "❌" in metin
+        assert "| ihlal |" in metin
 
     def test_dogruluk_olcmedigi_yazili(self) -> None:
         """Dürüst sınır raporun içinde durmalı; okuyan yanlış çıkarım yapmasın."""

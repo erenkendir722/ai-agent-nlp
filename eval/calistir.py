@@ -245,7 +245,7 @@ def altin_set_metrikleri(
 
         Altın set yalnız sekiz çekirdek alanı taşıyor (bkz. ADR 008), yani
         `METINSEL_ALANLAR` için hiç hücre yok. Sıfır döndürmek raporda
-        «0,000 ❌» yazdırırdı: sistem o alanlarda başarısız oldu demek olur,
+        «0,000 » yazdırırdı: sistem o alanlarda başarısız oldu demek olur,
         oysa gerçek şu ki o alanlar hiç ölçülmedi. Ölçülmemişi başarısız
         göstermek, ölçmemekten daha kötüdür.
         """
@@ -361,8 +361,8 @@ def _durum(ad: str, deger: float | None) -> str:
     if hedef is None:
         return "—"
     if ad in DUSUK_IYI:
-        return "✅" if deger <= hedef else "❌"
-    return "✅" if deger >= hedef else "❌"
+        return "hedefte" if deger <= hedef else "hedef altı"
+    return "hedefte" if deger >= hedef else "hedef altı"
 
 
 def _kokenlik_notu(durum: dict[str, Any]) -> list[str]:
@@ -375,13 +375,13 @@ def _kokenlik_notu(durum: dict[str, Any]) -> list[str]:
     kosu = durum.get("kosu")
     if not durum.get("bayat"):
         return [
-            f"> ✅ **Güncel.** Çıkarım {kosu['zaman']:%d.%m.%Y %H:%M}'de "
+            f"> **Güncel.** Çıkarım {kosu['zaman']:%d.%m.%Y %H:%M}'de "
             f"`{kosu['yapilandirma']}` yapılandırmasıyla koştu "
             f"({kosu['kayit_sayisi']} kayıt) ve o tarihten beri çıkarım kodu değişmedi.",
             "",
         ]
     satirlar = [
-        "> 🔴 **BAYAT — bu sayıları sunuma kopyalamayın.**",
+        "> **BAYAT — bu sayıları sunuma kopyalamayın.**",
         f"> {durum.get('sebep', '')}",
     ]
     if kosu:
@@ -481,7 +481,7 @@ def rapor_yaz(
             s.append("")
         else:
             s += [
-                "> ✅ **Meşru soruların hiçbiri engellenmedi.** 18 Ağustos ölçümünde "
+                "> **Meşru soruların hiçbiri engellenmedi.** 18 Ağustos ölçümünde "
                 "bu oran %14,3'tü (35 meşru sorunun 5'i): bankanın kendi metnindeki "
                 "sayılar — bir vaka **6698 sayılı KVKK kanun numarası** — yapısal "
                 "alanda karşılığı olmadığı için «uydurma» sayılıyordu. Kalkan "
@@ -509,7 +509,7 @@ def rapor_yaz(
     s += ["## Altın set metrikleri", ""]
     if altin is None:
         s += [
-            "> ⏳ **Beklemede.** `data/gold/altin_set.jsonl` henüz yok.",
+            "> **Beklemede.** `data/gold/altin_set.jsonl` henüz yok.",
             "> Altın set olmadan alan bazlı doğruluk, F1 ve makro-F1 hesaplanamaz.",
             "> Bunlar şartnamenin %30'luk «Model Başarısı» kriterinin temelidir.",
             "> **Son tarih: 16 Ağustos 2026.**",
@@ -536,7 +536,7 @@ def rapor_yaz(
         ]
         if aralik is not None:
             s += [
-                f"> 📏 **Güven aralığı {altin['altin_set_boyutu']} örnek üzerinden "
+                f"> **Güven aralığı {altin['altin_set_boyutu']} örnek üzerinden "
                 "önyükleme (bootstrap) ile hesaplandı** — kayıtlar yerine konarak "
                 "400 kez yeniden örneklendi. Aralık genişse sebebi modelin "
                 "kararsızlığı değil, altın setin küçüklüğüdür. **Sunumda makro-F1 "
@@ -571,12 +571,12 @@ def rapor_yaz(
             n_altin = sayim["dp"] + sayim["yn"]
             # Tabanın altına düşen alan, aşırı çıkarım yapıyor demektir.
             isaret = (
-                " ⚠️"
+                " (dikkat)"
                 if deger is not None and taban is not None and deger < taban
                 else ""
             )
             # N ≤ 7 olan satır tek başına alıntılanacak kadar sağlam değil.
-            n_isaret = " 🔸" if 0 < n_altin <= 7 else ""
+            n_isaret = " (küçük örneklem)" if 0 < n_altin <= 7 else ""
             s.append(
                 f"| `{ad}` | {n_altin}{n_isaret} "
                 f"| {'—' if deger is None else f'{deger:.3f}'}{isaret} "
@@ -587,7 +587,7 @@ def rapor_yaz(
             )
         s.append("")
         s += [
-            "> ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem "
+            "> = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem "
             "boş olması gereken hücrelere değer yazıyor (yanlış pozitif); "
             "önce kesinliği düzeltmek gerekir.",
             "",
@@ -603,7 +603,7 @@ def rapor_yaz(
 def calistir(ablasyon: bool = False) -> int:
     kampanyalar = list(kampanyalari_oku())
     if not kampanyalar:
-        print("❌ Veritabanı boş. Önce `make crawl && make extract` çalıştırın.")
+        print(" Veritabanı boş. Önce `make crawl && make extract` çalıştırın.")
         return 1
 
     temel = temel_metrikler(kampanyalar)
@@ -621,9 +621,9 @@ def calistir(ablasyon: bool = False) -> int:
     SONUC_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
     SONUC_DOSYASI.write_text(icerik, encoding="utf-8")
 
-    print(f"✅ {SONUC_DOSYASI.relative_to(KOK)} yazıldı")
+    print(f" {SONUC_DOSYASI.relative_to(KOK)} yazıldı")
     if kokenlik["bayat"]:
-        print(f"   🔴 BAYAT — {kokenlik['sebep']}")
+        print(f" BAYAT — {kokenlik['sebep']}")
         print("      Sunuma sayı kopyalamadan önce: make extract && make eval")
     print(f"   Kampanya: {temel['kampanya_sayisi']} · Banka: {temel['banka_sayisi']}")
     print(f"   Halüsinasyon oranı: %{temel['halusinasyon_orani'] * 100:.2f} (hedef ≤ %3)")
@@ -636,7 +636,7 @@ def calistir(ablasyon: bool = False) -> int:
             f"denetimsiz parça: {kalkan['denetimsiz_parca']}"
         )
     if altin is None:
-        print("   ⏳ Altın set yok — doğruluk metrikleri beklemede (son tarih 16 Ağustos)")
+        print(" Altın set yok — doğruluk metrikleri beklemede (son tarih 16 Ağustos)")
     else:
         print(
             f"   Sayısal doğruluk: {_oran(altin['sayisal_dogruluk'])} (hedef ≥ 0,90) · "
@@ -652,7 +652,7 @@ def calistir(ablasyon: bool = False) -> int:
             and deger < altin["hep_bos_tabani"][ad]
         ]
         if zayif:
-            print(f"   ⚠️  «Hep boş» tabanının altındaki alanlar: {', '.join(zayif)}")
+            print(f" «Hep boş» tabanının altındaki alanlar: {', '.join(zayif)}")
     return 0
 
 
@@ -704,7 +704,7 @@ def _ablasyon_notu() -> str:
     eksik = [etiket for anahtar, etiket in ABLASYON_SIRASI if anahtar not in kayitlar]
     if eksik:
         s += [
-            f"> ⏳ Henüz koşulmayan yapılandırma: {', '.join(eksik)}.",
+            f"> Henüz koşulmayan yapılandırma: {', '.join(eksik)}.",
             "> Yukarıdaki üç komut sırayla koşulunca tablo kendiliğinden dolar.",
             "",
         ]
@@ -712,14 +712,14 @@ def _ablasyon_notu() -> str:
         izler = {k["kod_parmak_izi"] for k in kayitlar.values() if k.get("kod_parmak_izi")}
         if len(izler) > 1:
             s += [
-                "> 🔴 **Satırlar KARŞILAŞTIRILAMAZ** — farklı kod sürümleriyle koşulmuşlar "
+                "> **Satırlar KARŞILAŞTIRILAMAZ** — farklı kod sürümleriyle koşulmuşlar "
                 f"({', '.join(sorted(izler))}). Üçünü de aynı kodla yeniden koşun.",
                 "",
             ]
         sayilar = {k["kampanya_sayisi"] for k in kayitlar.values()}
         if len(sayilar) > 1:
             s += [
-                "> 🔴 **Satırlar KARŞILAŞTIRILAMAZ** — farklı korpus büyüklükleri "
+                "> **Satırlar KARŞILAŞTIRILAMAZ** — farklı korpus büyüklükleri "
                 f"({', '.join(str(x) for x in sorted(sayilar))} kampanya).",
                 "",
             ]
@@ -728,7 +728,7 @@ def _ablasyon_notu() -> str:
 
 
 def main() -> int:
-    # Windows konsolu cp1254; son satırdaki ✅ orada UnicodeEncodeError
+    # Windows konsolu cp1254; son satırdaki orada UnicodeEncodeError
     # fırlatıyordu. `make eval` SONUCLAR.md'yi YAZDIKTAN sonra çöküyor, yani
     # kabuğa hata dönüyor ve metrikler tazelenmemiş sanılıyor. Aynı düzeltme
     # `tools/gorevler.py` ve `tools/altin_set.py` içinde de var.

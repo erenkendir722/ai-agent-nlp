@@ -77,7 +77,7 @@ def test_halusinasyon_orani_oran_birimindedir(tmp_path):
 def test_ekranda_gorunen_sayi_sonuclar_dosyasiyla_ayni(tmp_path, yuzde):
     """Çift çevrimi yakalayan asıl kapı: ekrandaki dize = dosyadaki dize.
 
-    Genel_Bakis.py halüsinasyon oranını `tr_sayi(oran * 100, 2)` ile çiziyor.
+    Genel_Bakış.py halüsinasyon oranını `tr_sayi(oran * 100, 2)` ile çiziyor.
     Bölme geri alınırsa bu eşitlik bozulur ve test kırmızıya döner.
     """
     ozet = sonuclari_oku(_sahte_sonuclar(tmp_path, yuzde))

@@ -84,13 +84,13 @@ def _cikis_var_mi(servis: str) -> tuple[bool, list[str]]:
     for ad, ip, port in HEDEFLER:
         acik = _tcp_denemesi(servis, ip, port)
         cikabiliyor |= acik
-        satirlar.append(f"{'⚠️  ULASILDI' if acik else '✅ engellendi'}  {ad} ({ip}:{port})")
+        satirlar.append(f"{' ULASILDI' if acik else ' engellendi'} {ad} ({ip}:{port})")
 
     for alan in ALAN_ADLARI:
         _, cikti = _kabuk(servis, f'getent hosts {alan} >/dev/null 2>&1 && echo ACIK || echo KAPALI')
         acik = cikti.strip().endswith("ACIK")
         cikabiliyor |= acik
-        satirlar.append(f"{'⚠️  COZULDU ' if acik else '✅ engellendi'}  DNS {alan}")
+        satirlar.append(f"{' COZULDU ' if acik else ' engellendi'} DNS {alan}")
 
     return cikabiliyor, satirlar
 
@@ -114,7 +114,7 @@ def main() -> int:
 
     aglar = _aglar()
     if not aglar:
-        print("❌ Konteyner bulunamadı. Önce: docker compose up -d")
+        print(" Konteyner bulunamadı. Önce: docker compose up -d")
         return 1
 
     print("Ağ yerleşimi:")
@@ -134,7 +134,7 @@ def main() -> int:
     for servis in ["ollama", "uygulama", "api"]:
         saglam, not_ = _prob_saglam_mi(servis)
         if not saglam:
-            print(f"  [{servis}] ❌ ÖLÇÜM GEÇERSİZ — {not_}")
+            print(f" [{servis}] ÖLÇÜM GEÇERSİZ — {not_}")
             print("      Bu servisin sonuçlarına GÜVENMEYİN.\n")
             kusur += 1
             continue
@@ -143,11 +143,11 @@ def main() -> int:
         beklenen_kapali = servis in KAPALI_OLMALI
 
         if beklenen_kapali:
-            baslik = "✅ İZOLE" if not cikabiliyor else "❌ SIZINTI"
+            baslik = " İZOLE" if not cikabiliyor else " SIZINTI"
             if cikabiliyor:
                 kusur += 1
         else:
-            baslik = "ℹ️  çıkış var (bilinen sınır)" if cikabiliyor else "✅ İZOLE"
+            baslik = "ℹ çıkış var (bilinen sınır)" if cikabiliyor else " İZOLE"
 
         print(f"  [{servis}] {baslik}   ({not_})")
         for satir in satirlar:
@@ -156,10 +156,10 @@ def main() -> int:
 
     print("-" * 62)
     if kusur:
-        print(f"❌ {kusur} serviste beklenmeyen çıkış var — `internal: true` bozulmuş.")
+        print(f" {kusur} serviste beklenmeyen çıkış var — `internal: true` bozulmuş.")
         return 1
 
-    print("✅ Model sunucusunun (ollama) internete rotası YOK.")
+    print(" Model sunucusunun (ollama) internete rotası YOK.")
     print()
     print("   Sınır — sunumda böyle söyleyin:")
     print("   «Model sunucusunun internete rotası altyapı düzeyinde kapalı.")

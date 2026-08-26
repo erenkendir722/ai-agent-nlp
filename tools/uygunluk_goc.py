@@ -54,7 +54,7 @@ def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
     ajan = UygunlukAjani()
     kampanyalar = list(kampanyalari_oku(url))
     if not kampanyalar:
-        print("❌ Veritabanı boş. Önce `make extract` çalıştırın.")
+        print(" Veritabanı boş. Önce `make extract` çalıştırın.")
         return 1
 
     sayac: Counter[str] = Counter()
@@ -93,7 +93,7 @@ def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
         return 0
 
     kaydet(kampanyalar, url)
-    print(f"\n✅ {toplam} kayıt güncellendi — `uygunluk` yazıldı.")
+    print(f"\n {toplam} kayıt güncellendi — `uygunluk` yazıldı.")
     return 0
 
 

@@ -4,7 +4,7 @@ Sistemin halüsinasyon savunması budur ve **LLM kullanmaz**. Model bir sayı
 uydurursa o sayı sisteme giremez, çünkü ham metinde karşılığı yoktur. Kontrol
 istem mühendisliği değil, koddur: modelin iyi niyetine güvenmez.
 
-    Çıkarım ajanı  --"%1,89"-->  Eleştirmen  --metinde ara-->  ✅ kabul / ❌ ret
+    Çıkarım ajanı  --"%1,89"-->  Eleştirmen  --metinde ara-->  kabul / ret
 
 NEDEN AYRI MODÜL (önceden `extraction/llm.py` içindeydi):
 

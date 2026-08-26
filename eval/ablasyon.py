@@ -16,7 +16,7 @@ NEDEN VAR — ölçülmüş hata (18 Ağustos):
     güçlü grafiği, ölçtüğü şeyi ölçmüyordu.
 
     Eksik olan TESPİT değildi — `eval.calistir._ablasyon_notu` bu durumu zaten
-    yakalıyor ve «🔴 Satırlar KARŞILAŞTIRILAMAZ» basıyordu. Eksik olan KOŞUMDU:
+    yakalıyor ve « Satırlar KARŞILAŞTIRILAMAZ» basıyordu. Eksik olan KOŞUMDU:
     üç yapılandırma üç ayrı elle komutla, farklı zamanlarda çalıştırılıyordu.
     İnsan hatasını uyarıyla değil, YAPIYLA engellemek gerekir.
 
@@ -218,13 +218,13 @@ def _altin_korpusa_indir(ham: list[HamKayit]) -> list[HamKayit]:
 def calistir(yalniz_kural: bool = False, altin_korpus: bool = False) -> int:
     ham = list(ham_kayitlari_oku())
     if not ham:
-        print("❌ Ham kayıt yok. Önce `make crawl` çalıştırın.")
+        print(" Ham kayıt yok. Önce `make crawl` çalıştırın.")
         return 1
 
     if altin_korpus:
         ham = _altin_korpusa_indir(ham)
         if not ham:
-            print("❌ Altın sette eşleşen ham kayıt yok.")
+            print(" Altın sette eşleşen ham kayıt yok.")
             return 1
 
     izi = kod_parmak_izi()
@@ -258,7 +258,7 @@ def calistir(yalniz_kural: bool = False, altin_korpus: bool = False) -> int:
     dusen = {ad: len(kol) - len(ortak) for ad, kol in kollar.items()}
     if any(dusen.values()):
         print(
-            f"\n⚠️  Ortak korpus: {len(ortak)} kayıt "
+            f"\n Ortak korpus: {len(ortak)} kayıt "
             f"(kol başına düşen: {', '.join(f'{a}={n}' for a, n in dusen.items() if n)})"
         )
 
@@ -289,7 +289,7 @@ def calistir(yalniz_kural: bool = False, altin_korpus: bool = False) -> int:
     izler = {s["kod_parmak_izi"] for s in sonuclar.values()}
     boyutlar = {s["kampanya_sayisi"] for s in sonuclar.values()}
     if len(izler) > 1 or len(boyutlar) > 1:
-        print(f"🔴 Satırlar karşılaştırılamaz (iz={izler}, boyut={boyutlar}). Yazılmadı.")
+        print(f" Satırlar karşılaştırılamaz (iz={izler}, boyut={boyutlar}). Yazılmadı.")
         return 1
 
     # EKSİK KOŞU YAZMAZ. `--yalniz-kural` bir duman testidir; sonucu yazmak
@@ -298,13 +298,13 @@ def calistir(yalniz_kural: bool = False, altin_korpus: bool = False) -> int:
     if len(sonuclar) < len(YAPILANDIRMALAR):
         eksik = [ad for ad, _ in YAPILANDIRMALAR if ad not in sonuclar]
         print(
-            f"\n⏭️  Duman testi — tablo YAZILMADI (eksik: {', '.join(eksik)}). "
+            f"\n Duman testi — tablo YAZILMADI (eksik: {', '.join(eksik)}). "
             "Eksik koşu yazmak, önlemeye çalıştığımız yarım tablonun kendisidir."
         )
         return 0
 
     _atomik_yaz(sonuclar)
-    print(f"\n✅ {ABLASYON_DOSYASI.relative_to(KOK)} yazıldı ({len(sonuclar)} satır, tek kod izi).")
+    print(f"\n {ABLASYON_DOSYASI.relative_to(KOK)} yazıldı ({len(sonuclar)} satır, tek kod izi).")
     print("   Tabloyu üretmek için: make eval-ablation")
     return 0
 

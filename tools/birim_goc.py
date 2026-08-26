@@ -84,7 +84,7 @@ def birim_ekle(ham: dict) -> tuple[dict, list[str]]:
 def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
     hamlar = ham_kayitlari_oku(url)
     if not hamlar:
-        print("❌ Veritabanı boş.")
+        print(" Veritabanı boş.")
         return 1
 
     kampanyalar: list[Kampanya] = []
@@ -109,7 +109,7 @@ def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
         print(f"   {ad:24} {n}")
 
     if cozulemeyen:
-        print(f"\n🔴 Boyutu çözülemeyen {len(cozulemeyen)} kayıt:")
+        print(f"\n Boyutu çözülemeyen {len(cozulemeyen)} kayıt:")
         for c in cozulemeyen[:10]:
             print(f"   {c}")
         print("   Bu kayıtlar YAZILMAZ — birimsiz sayı taşınamaz.")
@@ -122,7 +122,7 @@ def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
     Temel.metadata.drop_all(motor, tables=[Temel.metadata.tables["kampanyalar"]])
     Temel.metadata.create_all(motor)
     kaydet(kampanyalar, url)
-    print(f"\n✅ {len(kampanyalar)} kayıt yeni şemayla yazıldı (v1.2.0).")
+    print(f"\n {len(kampanyalar)} kayıt yeni şemayla yazıldı (v1.2.0).")
     return 0 if not cozulemeyen else 1
 
 

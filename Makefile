@@ -89,7 +89,7 @@ kur-cevrimdisi:  ## ağsız kurulum — paketler/ klasöründen (E-14)
 	@echo "✅ Ağsız kurulum tamam. Sınama: make test"
 
 run:  ## Streamlit arayüzünü başlat
-	$(ARROW_HAVUZ) $(STREAMLIT) run app/Genel_Bakis.py
+	$(ARROW_HAVUZ) $(STREAMLIT) run app/Genel_Bakış.py
 
 api:  ## REST API'yi başlat (3 uç nokta)
 	$(PYTHON) -m uvicorn src.api.sunucu:uygulama --host 0.0.0.0 --port 8000

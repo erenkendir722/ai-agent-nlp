@@ -231,7 +231,7 @@ Uçtan uca (arayüz):
 
 ```powershell
 $env:ARROW_DEFAULT_MEMORY_POOL="system"
-.venv\Scripts\streamlit run app/Genel_Bakis.py
+.venv\Scripts\streamlit run app/Genel_Bakış.py
 ```
 
 1. **Boru Hattı** sayfası → Demo kipi → tek banka seç → Toplamayı Başlat.

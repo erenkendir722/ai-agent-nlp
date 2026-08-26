@@ -131,7 +131,7 @@ def cevap_renderla(cevap, gecen_sure=None):
     for kaynak in cevap.kaynaklar:
       with st.container(border=True):
         st.markdown(f"**{kaynak.banka_adi}**")
-        st.markdown(f"[🔗 Kaynağa Git]({kaynak.url})")
+        st.markdown(f"[Kaynağa git]({kaynak.url})")
         st.caption(f"Çekim tarihi: {kaynak.cekim_tarihi}")
         if kaynak.alinti:
           st.markdown(f"> {kaynak.alinti}")
@@ -184,7 +184,7 @@ if soru:
     # AJAN İZLERİ — `ajanlar/temel.py`: "jüri ajan mimarisinin varlığını bizim
     # sözümüze değil, ekrandaki koşum kaydına bakarak görür". Panel 26 Ağustos'a
     # kadar hiç çizilmiyordu, çünkü izleri üreten orkestratör çağrılmıyordu.
-    with st.expander(f"🔍 Ajan izleri — {iz_defteri.ozet()}", expanded=False):
+    with st.expander(f"Ajan izleri — {iz_defteri.ozet()}", expanded=False):
       st.caption(
         "Her satır bir ajan koşusu. **motor** sütunu kritik: karşılaştırma, "
         "kısıt çözme ve sayısal kalkan deterministik KODDUR — aritmetiği "
@@ -210,7 +210,7 @@ if soru:
         hide_index=True,
       )
       if iz_defteri.llm_cagrisi_sayisi() == 0:
-        st.success("Bu cevapta hiçbir ajan dil modeli çağırmadı.", icon="✅")
+        st.success("Bu cevapta hiçbir ajan dil modeli çağırmadı.")
 
     # Geliştirici Modu (API)
     if st.session_state.get("dev_mode", False):

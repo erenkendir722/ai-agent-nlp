@@ -6,12 +6,12 @@
     python tools/gorevler.py --dogrula      # panoyu denetle (bozuk bağımlılık, döngü)
 
 NEDEN GEREKLİ:
-    `GOREVLER.md` insan için yazıldı ve bağımlılıklar `⛔ Önce bitmeli:` satırıyla
+    `GOREVLER.md` insan için yazıldı ve bağımlılıklar ` Önce bitmeli:` satırıyla
     belirtiliyor. Ama 74 görevlik bir listede "benim sıradaki işim hangisi ve
     başlayabilir miyim?" sorusunu gözle cevaplamak zor. Bu araç grafiği çözer:
 
-      - ✅ ŞU AN BAŞLAYABİLİRSİN  → tüm ön koşulları bitmiş, açık görevler
-      - ⛔ ŞU AN YAPAMAZSIN       → hangi görev, kimde, neden bekliyor
+      - ŞU AN BAŞLAYABİLİRSİN → tüm ön koşulları bitmiş, açık görevler
+      - ŞU AN YAPAMAZSIN → hangi görev, kimde, neden bekliyor
 
     Böylece kimse boşta beklemiyor: bir iş bloke ise, aynı kişinin bloke olmayan
     bir sonraki işine geçiyor. Düşük kapasitede bloke olmak en pahalı şeydir.
@@ -37,7 +37,7 @@ _ASIL_SAHIPLER = {"E": "Eren", "S": "Samet", "G": "Görkem", "ES": "Esra", "H": 
 # Bu sözlük boş olduğunda her ön ek asıl sahibindedir. Bir ön ek geçici olarak
 # başkasına taşınacaksa buraya bir satır eklenir; taşıma bitince satır silinir.
 # Görev KODLARI hiçbir durumda değiştirilmez — `S-02`, `S-13` gibi kodlar
-# `⛔ Önce bitmeli:` satırlarında, commit mesajlarında ve `docs/` içinde
+# ` Önce bitmeli:` satırlarında, commit mesajlarında ve `docs/` içinde
 # geçiyor; yeniden adlandırmak o referansların hepsini kırardı.
 #
 # 26 Ağustos 2026: `S-*` ön eki asıl sahibine döndü, sözlük boşaltıldı.
@@ -59,7 +59,7 @@ SAHIPLER = {onek: DEVIR.get(onek, ad) for onek, ad in _ASIL_SAHIPLER.items()}
 # kimse onun yerine yapamaz; dar ekran kontrolü (ES-11) ve ekran görüntüleri
 # (ES-14) Görkem'e geçti.
 #
-# Kod DEĞİŞTİRİLMEZ: bu kodlar `⛔ Önce bitmeli:` satırlarında ve `docs/`
+# Kod DEĞİŞTİRİLMEZ: bu kodlar ` Önce bitmeli:` satırlarında ve `docs/`
 # içinde geçiyor. Yalnız sahibi değişir.
 GOREV_DEVRI = {"ES-15": "Görkem", "ES-11": "Görkem", "ES-14": "Görkem"}
 
@@ -73,9 +73,9 @@ def sahip_bul(kod: str) -> str:
 # Büyük `[X]` de kabul edilir: 16 Ağustos'ta elle atılan üç `[X]` üç görevi
 # panodan tamamen düşürdü ve onlara bağlı beş görev "tanımsız referans" verdi.
 _GOREV = re.compile(r"^- \[([ xX])\] \*\*((?:ES|E|S|G|H)-\d{2})\*\*\s*(.*)$")
-_ONCE = re.compile(r"^\s+⛔ \*\*Önce bitmeli:\*\*\s*(.+)$")
+_ONCE = re.compile(r"^\s+ \*\*Önce bitmeli:\*\*\s*(.+)$")
 _KOD = re.compile(r"(ES|E|S|G|H)-\d{2}")
-_TARIH = re.compile(r"📅\s*\*{0,2}([^·*\n]+?)\*{0,2}\s*$")
+_TARIH = re.compile(r"\s*\*{0,2}([^·*\n]+?)\*{0,2}\s*$")
 
 
 @dataclass
@@ -105,7 +105,7 @@ def panoyu_oku(yol: Path = PANO) -> dict[str, Gorev]:
 
         if (m := _GOREV.match(satir)) is not None:
             durum, kod, kalan = m.groups()
-            temiz = re.sub(r"[*`🔴]", "", kalan).strip()
+            temiz = re.sub(r"[*`]", "", kalan).strip()
             baslik = temiz.split("·")[0].strip()
             tarih_m = _TARIH.search(kalan)
             son = Gorev(
@@ -211,8 +211,8 @@ def dogrula(gorevler: dict[str, Gorev]) -> list[str]:
 
 
 def _satir(gorev: Gorev, ek: str = "") -> str:
-    isaret = "🔴" if gorev.kritik else "  "
-    tarih = f"📅 {gorev.son_tarih}" if gorev.son_tarih else ""
+    isaret = "!" if gorev.kritik else " "
+    tarih = f" {gorev.son_tarih}" if gorev.son_tarih else ""
     return f"  {isaret} {gorev.kod:<6} {gorev.baslik[:52]:<52} {tarih}{ek}"
 
 
@@ -240,13 +240,13 @@ def kisi_raporu(ad: str, gorevler: dict[str, Gorev]) -> None:
     print(f"{'=' * 78}")
 
     if hazir:
-        print(f"\n✅ ŞU AN BAŞLAYABİLİRSİN ({len(hazir)})")
+        print(f"\n ŞU AN BAŞLAYABİLİRSİN ({len(hazir)})")
         print(f"   Sıradaki işin: **{hazir[0].kod}**\n")
         for g in hazir:
             print(_satir(g))
 
     if bloke:
-        print(f"\n⛔ ŞU AN YAPAMAZSIN ({len(bloke)}) — önce başkasının işi bitmeli\n")
+        print(f"\n ŞU AN YAPAMAZSIN ({len(bloke)}) — önce başkasının işi bitmeli\n")
         for g in bloke:
             engeller = engelleyenler(g, gorevler)
             print(_satir(g))
@@ -254,11 +254,11 @@ def kisi_raporu(ad: str, gorevler: dict[str, Gorev]) -> None:
                 print(f"        └─ bekliyor: {e.kod} ({e.sahip}) — {e.baslik[:44]}")
 
     if not acik:
-        print("\n🎉 Bütün görevlerin bitmiş.")
+        print("\n Bütün görevlerin bitmiş.")
 
     kritik_acik = [g for g in hazir if g.kritik]
     if kritik_acik:
-        print(f"\n🔴 Kritik ve şu an yapılabilir: {', '.join(g.kod for g in kritik_acik)}")
+        print(f"\n Kritik ve şu an yapılabilir: {', '.join(g.kod for g in kritik_acik)}")
 
 
 def genel_rapor(gorevler: dict[str, Gorev]) -> None:
@@ -282,14 +282,14 @@ def genel_rapor(gorevler: dict[str, Gorev]) -> None:
         print(f"  {ad:<10}{len(acik):>6}{len(hazir):>7}{len(bloke):>7}{len(bitmis):>7}   {sirada}")
 
     print("\n  (Sprint 0'da biten kodsuz işler bu sayıma girmez — panonun")
-    print("   «✅ bitenler» bölümlerinde duruyorlar.)")
+    print(" « bitenler» bölümlerinde duruyorlar.)")
 
     # En çok işi tıkayan görevler — bunlar öncelik sırasının gerçek tepesi
     darbogazlar = sorted(
         ((len(bekleyenler(k, g_)), k) for k, g_ in [(k, gorevler) for k in gorevler]),
         reverse=True,
     )[:5]
-    print("\n  🚧 EN ÇOK İŞİ TIKAYAN GÖREVLER")
+    print("\n EN ÇOK İŞİ TIKAYAN GÖREVLER")
     for sayi, kod in darbogazlar:
         if sayi == 0 or gorevler[kod].bitti:
             continue
@@ -301,7 +301,7 @@ def genel_rapor(gorevler: dict[str, Gorev]) -> None:
 
 
 def main(argv: list[str]) -> int:
-    # Windows konsolu cp1254; panodaki ✅/⛔ işaretleri orada UnicodeEncodeError
+    # Windows konsolu cp1254; panodaki / işaretleri orada UnicodeEncodeError
     # fırlatıyordu — `make gorev-dogrula` doğrulamayı bitirip son satırda
     # çöküyordu. Yalnız CLI yolunda; testler modülü içe aktarırken dokunulmaz.
     if hasattr(sys.stdout, "reconfigure"):
@@ -316,15 +316,15 @@ def main(argv: list[str]) -> int:
 
     if "--dogrula" in argv:
         if sorunlar:
-            print("❌ Panoda sorun var:")
+            print(" Panoda sorun var:")
             for s in sorunlar:
                 print(f"   - {s}")
             return 1
-        print(f"✅ Pano tutarlı — {len(gorevler)} görev, bağımlılıklar geçerli, döngü yok")
+        print(f" Pano tutarlı — {len(gorevler)} görev, bağımlılıklar geçerli, döngü yok")
         return 0
 
     if sorunlar:
-        print("\n⚠️  PANO UYARILARI")
+        print("\n PANO UYARILARI")
         for s in sorunlar:
             print(f"   - {s}")
 

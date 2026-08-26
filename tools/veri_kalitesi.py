@@ -76,8 +76,8 @@ class Bulgu:
     @property
     def isaret(self) -> str:
         if self.seviye == "bilgi":
-            return "ℹ️"
-        return "🔴" if self.asildi else "✅"
+            return "bilgi"
+        return "aşıldı" if self.asildi else "tamam"
 
 
 def _tr_sayi(deger: float) -> str:
@@ -291,13 +291,13 @@ def _kokenlik_notu(durum: dict) -> list[str]:
     kosu = durum.get("kosu")
     if not durum.get("bayat"):
         return [
-            f"> ✅ **Güncel.** Çıkarım {kosu['zaman']:%d.%m.%Y %H:%M}'de "
+            f"> **Güncel.** Çıkarım {kosu['zaman']:%d.%m.%Y %H:%M}'de "
             f"`{kosu['yapilandirma']}` yapılandırmasıyla koştu "
             f"({kosu['kayit_sayisi']} kayıt) ve o tarihten beri çıkarım kodu değişmedi.",
             "",
         ]
     return [
-        "> 🔴 **BAYAT — bu rapor eski bir çıkarımı anlatıyor.**",
+        "> **BAYAT — bu rapor eski bir çıkarımı anlatıyor.**",
         f"> {durum.get('sebep', '')}",
         "> Düzeltmek için: `make extract && make veri-kalitesi`.",
         "",
@@ -386,7 +386,7 @@ def main(argv: list[str]) -> int:
 
     kayitlar = tum_kayitlar()
     if not kayitlar:
-        print("❌ Veritabanı boş. Önce `make crawl && make extract` çalıştırın.")
+        print(" Veritabanı boş. Önce `make crawl && make extract` çalıştırın.")
         return 1
 
     durum = cikarim_durumu()
@@ -398,9 +398,9 @@ def main(argv: list[str]) -> int:
     print(f"Rapor yazıldı: {RAPOR_YOLU.relative_to(KOK)}")
     print(f"  {len(kayitlar)} kampanya · {len(asilan)} kontrol eşiği aştı")
     for b in asilan:
-        print(f"  🔴 {b.ad}: {b.sayi} (eşik {b.esik})")
+        print(f" {b.ad}: {b.sayi} (eşik {b.esik})")
     if durum.get("bayat"):
-        print(f"  🔴 BAYAT — {durum.get('sebep')}")
+        print(f" BAYAT — {durum.get('sebep')}")
     return 1 if (args.kati and asilan) else 0
 
 

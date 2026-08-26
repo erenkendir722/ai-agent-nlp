@@ -94,7 +94,7 @@ SORGU zamanında, kullanıcı soru sorduğunda koşarlar. Çağrı yerleri:
 
 Sonuç ölçüldü: chatbot cevap biçiminde yapılan bir düzeltme parmak izini
 kaydırdı ve `cikarim_durumu()` "BAYAT" dedi. Veritabanı güncelken `make eval`,
-jüriye giden `docs/SONUCLAR.md`'nin başına "🔴 BAYAT — bu sayıları sunuma
+jüriye giden `docs/SONUCLAR.md`'nin başına "BAYAT — bu sayıları sunuma
 kopyalamayın" yazacaktı. Uyarı yanlıştı; çıkarılan tek bir değer bile
 değişmemişti.
 
@@ -309,7 +309,7 @@ def kod_parmak_izi(kok: Path = KOK) -> str:
 
         Sonuç: kod hiç değişmemişken `cikarim_durumu()` «BAYAT» diyordu ve
         `make eval`, jüriye giden `docs/SONUCLAR.md`'nin en başına
-        «🔴 BAYAT — bu sayıları sunuma kopyalamayın» uyarısını yazıyordu.
+        «BAYAT — bu sayıları sunuma kopyalamayın» uyarısını yazıyordu.
         Uyarı yanlıştı; veritabanı günceldi. Ekip macOS ve Windows karışık
         çalıştığı için hata her pull'da yeniden ortaya çıkıyordu.
 

@@ -237,19 +237,19 @@ def rapor_yaz(olcum: dict[str, Any]) -> str:
     ]
 
     def satir(ad: str, deger: int, hedef: int = 0) -> str:
-        return f"| {ad} | {deger} | {hedef} | {'✅' if deger <= hedef else '❌'} |"
+        return f"| {ad} | {deger} | {hedef} | {'tamam' if deger <= hedef else 'ihlal'} |"
 
     s.append(satir("Çöken kayıt", olcum["coken"]))
     s.append(
         f"| **Kanıt ihlali** (halüsinasyon) | {olcum['kanit_ihlali']} "
         f"(%{olcum['kanit_ihlali_orani'] * 100:.2f}) | 0 | "
-        f"{'✅' if olcum['kanit_ihlali'] == 0 else '❌'} |"
+        f"{'tamam' if olcum['kanit_ihlali'] == 0 else 'ihlal'} |"
     )
     s.append(satir("Boyut ihlali (birimsiz değer)", olcum["boyut_ihlali"]))
     s.append(satir("Çözülmemiş span çakışması", olcum["cakisma_cozulmemis"]))
     s.append("")
     s += [
-        f"> 🔎 **Teşhis (ihlal değil):** aynı sayıya iki kuralın talip olduğu "
+        f"> **Teşhis (ihlal değil):** aynı sayıya iki kuralın talip olduğu "
         f"**{olcum['cakisma_ham']}** durum saptandı ve `_tek_atama` hepsini "
         "çözdü. Bu sayının sıfır olması BEKLENMEZ — iki kuralın aynı sayıya "
         "talip olması doğaldır. Anlamı şu: tek atama düzeltmesi görülmemiş "
@@ -286,12 +286,12 @@ def rapor_yaz(olcum: dict[str, Any]) -> str:
 def calistir(llm_kullan: bool = False, azami: int | None = None) -> int:
     olcum = olc(llm_kullan, azami)
     if not olcum["sayfa"]:
-        print("❌ Görülmemiş sayfa yok (data/raw altında JSON'suz HTML bulunamadı).")
+        print(" Görülmemiş sayfa yok (data/raw altında JSON'suz HTML bulunamadı).")
         return 1
 
     RAPOR_DOSYASI.parent.mkdir(parents=True, exist_ok=True)
     RAPOR_DOSYASI.write_text(rapor_yaz(olcum), encoding="utf-8")
-    print(f"✅ {RAPOR_DOSYASI.relative_to(KOK)} yazıldı")
+    print(f" {RAPOR_DOSYASI.relative_to(KOK)} yazıldı")
     print(f"   Görülmemiş sayfa: {olcum['sayfa']} · işlenen: {olcum['islenen']}")
     print(f"   Çöken: {olcum['coken']} · kanıt ihlali: {olcum['kanit_ihlali']}")
     print(

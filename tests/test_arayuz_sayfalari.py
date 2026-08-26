@@ -33,7 +33,7 @@ import pytest
 
 KOK = Path(__file__).resolve().parents[1]
 SAYFALAR = [
-    KOK / "app" / "Genel_Bakis.py",
+    KOK / "app" / "Genel_Bakış.py",
     KOK / "app" / "pages" / "0_Müşteri_Profili.py",
     KOK / "app" / "pages" / "1_Karşılaştırma.py",
     KOK / "app" / "pages" / "2_Chatbot.py",

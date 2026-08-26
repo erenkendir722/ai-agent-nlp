@@ -153,7 +153,7 @@ class TestRapor:
     def test_bayat_veritabani_uyari_basar(self) -> None:
         durum = {"bayat": True, "sebep": "kod değişti", "kosu": None}
         metin = rapor_yaz([SahteKayit()], durum)
-        assert "🔴 **BAYAT" in metin
+        assert "**BAYAT" in metin
         assert "make extract && make veri-kalitesi" in metin
 
     def test_guncel_veritabani_bayat_demez(self) -> None:
@@ -168,7 +168,7 @@ class TestRapor:
         }
         metin = rapor_yaz([SahteKayit()], durum)
         assert "BAYAT" not in metin
-        assert "✅ **Güncel.**" in metin
+        assert "**Güncel.**" in metin
 
     def test_banka_kapsami_dengesizligi_raporlar(self) -> None:
         kayitlar = [SahteKayit(banka_kodu="0203") for _ in range(10)]

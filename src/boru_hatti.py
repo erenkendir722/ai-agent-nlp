@@ -312,7 +312,7 @@ def cikarim_kos(
         log.info("LLM katmanı: %s / %s", llm_cikarici.saglayici.ad, llm_cikarici.model)
         if ayarlar.elestirmen_yok:
             log.warning(
-                "⚠️  ELEŞTİRMEN AJANI KAPALI — çıkarılan değerler ham metinde "
+                "DİKKAT: ELEŞTİRMEN AJANI KAPALI — çıkarılan değerler ham metinde "
                 "doğrulanmayacak. Bu yalnız ablasyon ölçümü içindir; üretim "
                 "koşusu değildir."
             )
@@ -556,11 +556,11 @@ def _cikar_ve_kaydet(
 
     if ozet.kanit_denetimi_hatasi:
         print(
-            f"  ⚠️  Kanıt denetimi: {ozet.kanit_denetimi_hatasi} alan "
+            f"  DİKKAT  Kanıt denetimi: {ozet.kanit_denetimi_hatasi} alan "
             "ham metinde doğrulanamadı"
         )
     else:
-        print("  ✅ Kanıt denetimi: tüm değerler ham metinde doğrulandı")
+        print("  Kanıt denetimi: tüm değerler ham metinde doğrulandı")
     return 0
 
 def komut_extract(args: argparse.Namespace) -> int:
@@ -595,7 +595,7 @@ def komut_durum(_: argparse.Namespace) -> int:
     durum = indeks_durumu(tum_kayitlar())
     print("\n=== RAG VEKTÖR İNDEKSİ ===")
     if not durum["var"]:
-        print(f"  ⚠️  kurulmamış — `make vektor` ile kurulur ({durum['yol']})")
+        print(f"  kurulmamış — `make vektor` ile kurulur ({durum['yol']})")
     else:
         print(f"  {'paragraf':22}: {durum['paragraf']}")
         print(f"  {'kampanya':22}: {durum['kampanya']}")
@@ -603,9 +603,9 @@ def komut_durum(_: argparse.Namespace) -> int:
         print(f"  {'model':22}: {durum['model']}")
         print(f"  {'korpus izi':22}: {durum['korpus_izi']}")
         if durum["bayat"]:
-            print(f"  🔴 BAYAT — {durum['sebep']}")
+            print(f"  BAYAT — {durum['sebep']}")
         elif durum["bayat"] is False:
-            print("  ✅ güncel — indeks veritabanındaki korpusla aynı")
+            print("  güncel — indeks veritabanındaki korpusla aynı")
     return 0
 
 
@@ -627,7 +627,7 @@ def komut_vektor(_: argparse.Namespace) -> int:
         f"{len(kayitlar)} kayıt, gömme: {GOMME_SAGLAYICI} / {aktif_gomme_modeli()}"
     )
     adet = indeks_kur(kayitlar)
-    print(f"✅ {adet} paragraf indekslendi → {INDEKS_DOSYASI}")
+    print(f"{adet} paragraf indekslendi → {INDEKS_DOSYASI}")
     return 0
 
 

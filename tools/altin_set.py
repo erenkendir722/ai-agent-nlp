@@ -98,7 +98,7 @@ UYUM_ONEK = "etiketleme_uyum_"
 EK_ONEK = "etiketleme_ek_"
 """Genişletme turunun çalışma sayfaları — ilk turdan AYRI dosyalar.
 
-📁 26 AĞUSTOS: 24 Ağustos turunun KİŞİSEL payları taban dosyaya birleştirildi
+ 26 AĞUSTOS: 24 Ağustos turunun KİŞİSEL payları taban dosyaya birleştirildi
 (`etiketleme_<ad>.csv`, `tur` kolonu turu ayırıyor) ve `etiketleme_ek_<ad>.csv`
 dosyaları silindi. Birleştirme ölçüye dokunmadı — `altin_set.jsonl` bayt
 düzeyinde aynı kaldı, makro-F1 0,828 ve uyum %79,2 değişmedi. Ön ek burada
@@ -851,7 +851,7 @@ def denetle(kayitlar: list[dict[str, Any]], kampanyalar: list[Kampanya]) -> list
         oran = kayit.get("kar_payi_orani")
         # SIFIR GEÇERLİDİR — "vade farksız" kampanyada kâr payı gerçekten
         # sıfırdır, bilinmiyor değil. `dosya_denetle` bunu zaten kabul ediyordu;
-        # burası `0 < oran` diyordu ve etiketleyen `make altin-denetle`den ✅
+        # burası `0 < oran` diyordu ve etiketleyen `make altin-denetle`den
         # alıp `make altin-derle`de hata yiyordu.
         if isinstance(oran, int | float) and not 0 <= oran < AYLIK_KAR_PAYI_UST_SINIRI:
             hatalar.append(f"{kimlik}: kar_payi_orani %{oran} — aylık oran için şüpheli")
@@ -951,7 +951,7 @@ def kapsam_raporu(kayitlar: list[dict[str, Any]], kampanyalar: list[Kampanya]) -
 def _kampanyalari_al() -> list[Kampanya]:
     kampanyalar = list(kampanyalari_oku())
     if not kampanyalar:
-        print("❌ Veritabanı boş. Önce `make crawl && make extract` çalıştırın.")
+        print(" Veritabanı boş. Önce `make crawl && make extract` çalıştırın.")
         raise SystemExit(1)
     return kampanyalar
 
@@ -981,7 +981,7 @@ def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
 
     altin = altin_seti_yukle()
     if not altin:
-        print("❌ Altın set bulunamadı. Önce `make altin-ornekle` + `make altin-derle`.")
+        print(" Altın set bulunamadı. Önce `make altin-ornekle` + `make altin-derle`.")
         return 1
 
     mevcut = alan_doluluk_raporu(altin)
@@ -994,14 +994,14 @@ def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
         print(f"{alan:24}{mevcut.get(alan, 0):9}{gerekli.get(alan, 0):9}")
 
     if not any(gerekli.values()):
-        print("\n✅ Tüm alanlar hedefte. Genişletmeye gerek yok.")
+        print("\n Tüm alanlar hedefte. Genişletmeye gerek yok.")
         return 0
 
     etiketli = {r.get("kampanya_id") for r in altin}
     havuz = [k for k in _kampanyalari_al() if k.kampanya_id not in etiketli]
     secilen = hedefli_ornekle(havuz, gerekli)
 
-    print(f"\n✅ {len(secilen)} EK kayıt seçildi (etiketsiz havuz: {len(havuz)})\n")
+    print(f"\n {len(secilen)} EK kayıt seçildi (etiketsiz havuz: {len(havuz)})\n")
 
     # Seçim sonrası hangi alanlar hâlâ açık? Korpus sınırı burada görünür.
     desenler = {a: re.compile(d, re.I) for a, d in ZAYIF_ALAN_ISARETLERI.items()}
@@ -1012,7 +1012,7 @@ def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
             continue
         kapanan = sum(1 for k in secilen if desenler[alan].search(k.ham_metin or ""))
         varilan = mevcut.get(alan, 0) + kapanan
-        durum = "✅" if varilan >= hedef_n else "🔴 KORPUS YETMİYOR"
+        durum = "tamam" if varilan >= hedef_n else "KORPUS YETMİYOR"
         print(f"{alan:24}{hedef_n:9}{varilan:13}{durum:>10}")
 
     banka = Counter(k.banka_adi[:20] for k in secilen)
@@ -1043,7 +1043,7 @@ def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
             (GOLD / f"{EK_ONEK}uyum_{kisi.lower()}.csv", uyum),
         ):
             if yol.exists() and _etiketli_mi(yol):
-                print(f"🛡️  {yol.name} etiket içeriyor — DOKUNULMADI")
+                print(f" {yol.name} etiket içeriyor — DOKUNULMADI")
                 continue
             _csv_yaz(yol, kume)
             yazilan.append(f"{yol.name} ({len(kume)} satır)")
@@ -1067,15 +1067,15 @@ def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
             havuz=len(havuz),
         )
 
-    print("\n✅ Genişletme çalışma sayfaları yazıldı:")
+    print("\n Genişletme çalışma sayfaları yazıldı:")
     for satir in yazilan:
         print(f"     data/gold/{satir}")
     print(f"     {_kisa_yol(ORNEK_KAYDI)} (turun tohumu, dağılımı, ataması)")
     print(
-        f"\n  1️⃣  UYUM BLOĞU — ilk {len(uyum)} kayıt, herkes etiketler"
-        f"\n  2️⃣  KİŞİSEL PAY — kişi başı ~{len(kisisel) // max(1, len(KISILER))} kayıt"
+        f"\n 1⃣ UYUM BLOĞU — ilk {len(uyum)} kayıt, herkes etiketler"
+        f"\n 2⃣ KİŞİSEL PAY — kişi başı ~{len(kisisel) // max(1, len(KISILER))} kayıt"
         "\n\n  Bitince:  make altin-denetle ad=<adın>  →  make altin-derle  →  make eval"
-        "\n\n  ⚠️  İlk turun dosyaları (etiketleme_<ad>.csv) DEĞİŞMEDİ."
+        "\n\n İlk turun dosyaları (etiketleme_<ad>.csv) DEĞİŞMEDİ."
         " `derle` ikisini birden okur."
     )
     return 0
@@ -1084,11 +1084,11 @@ def komut_genislet(hedef_n: int = 20, uygula: bool = False) -> int:
 def komut_ornekle(adet: int, zorla: bool = False) -> int:
     kampanyalar = _kampanyalari_al()
     if adet > len(kampanyalar):
-        print(f"⚠️  Sadece {len(kampanyalar)} kampanya var, örneklem buna düşürüldü.")
+        print(f" Sadece {len(kampanyalar)} kampanya var, örneklem buna düşürüldü.")
         adet = len(kampanyalar)
 
     if zorla and (dolu := doldurulmus_sayfalar()):
-        print("⚠️  --zorla verildi, aşağıdaki etiketler SİLİNİYOR:")
+        print(" --zorla verildi, aşağıdaki etiketler SİLİNİYOR:")
         for satir in dolu:
             print(f"     {satir}")
 
@@ -1097,16 +1097,16 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
     okuma_kagitlari_yaz(KISILER)
 
     if korunan:
-        print("🛡️  Etiket içerdiği için KORUNAN sayfalar (yeniden yazılmadı):")
+        print(" Etiket içerdiği için KORUNAN sayfalar (yeniden yazılmadı):")
         for ad in korunan:
             print(f"     {ad}")
         print()
 
-    print(f"✅ {len(secilen)} örnek seçildi (tohum {TOHUM}, katmanlı)\n")
-    print(f"  1️⃣  UYUM BLOĞU — {len(uyum_blogu)} örnek, DÖRDÜ DE etiketler (H-02)")
+    print(f" {len(secilen)} örnek seçildi (tohum {TOHUM}, katmanlı)\n")
+    print(f" 1⃣ UYUM BLOĞU — {len(uyum_blogu)} örnek, DÖRDÜ DE etiketler (H-02)")
     for kisi in KISILER:
         print(f"       data/gold/etiketleme_uyum_{kisi.lower()}.csv")
-    print("\n  2️⃣  KİŞİSEL PAY — tek etiketleyici (H-01)")
+    print("\n 2⃣ KİŞİSEL PAY — tek etiketleyici (H-01)")
     for kisi, sayi in sayilar.items():
         print(f"       data/gold/etiketleme_{kisi.lower()}.csv → {kisi}: {sayi} örnek")
 
@@ -1118,7 +1118,7 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
     print("\n   Tür dağılımı:")
     for tur, sayi in Counter(_tur(k) for k in secilen).most_common():
         print(f"     {tur}: {sayi}")
-    print("\n📖 Etiketlemeden önce docs/ETIKETLEME_KILAVUZU.md okunmalı (tek sayfa).")
+    print("\n Etiketlemeden önce docs/ETIKETLEME_KILAVUZU.md okunmalı (tek sayfa).")
     print("   Sıra: uyum bloğu → `make altin-uyum` → tartış → kişisel pay")
     return 0
 
@@ -1131,19 +1131,19 @@ def komut_uyum() -> int:
         etiketleyen = sonuc.get("etiketleyenler") or []
         bekleyen = sonuc.get("bekleyenler") or []
         if not sonuc["kisi_sayisi"]:
-            print("❌ Uyum dosyası bulunamadı. Önce `make altin-ornekle` çalıştırın.")
+            print(" Uyum dosyası bulunamadı. Önce `make altin-ornekle` çalıştırın.")
         elif not etiketleyen:
-            print("❌ Uyum dosyalarının hiçbiri doldurulmamış.")
+            print(" Uyum dosyalarının hiçbiri doldurulmamış.")
             print("   Dosyalar: data/gold/etiketleme_uyum_<ad>.csv")
         else:
-            print(f"⏳ Uyum oranı için en az iki kişi gerekiyor — şu an {len(etiketleyen)} kişi.")
-            print(f"   ✅ Bitirenler : {', '.join(etiketleyen)}")
-            print(f"   ⌛ Bekleyenler: {', '.join(bekleyen)}")
+            print(f" Uyum oranı için en az iki kişi gerekiyor — şu an {len(etiketleyen)} kişi.")
+            print(f" Bitirenler : {', '.join(etiketleyen)}")
+            print(f" Bekleyenler: {', '.join(bekleyen)}")
         return 1
 
     kopya = kopya_suphesi(KISILER, onek)
     if kopya:
-        print("\n🚨 KOPYA ŞÜPHESİ — uyum oranı bu haliyle GEÇERSİZ\n")
+        print("\n KOPYA ŞÜPHESİ — uyum oranı bu haliyle GEÇERSİZ\n")
         for satir in kopya:
             print(f"   {satir}")
         print(
@@ -1156,7 +1156,7 @@ def komut_uyum() -> int:
     oran = sonuc["uyum"]
     print(f"\n  Etiketleyici sayısı: {sonuc['kisi_sayisi']} · Örnek: {sonuc['ornek_sayisi']}")
     print(f"  Karşılaştırılan alan çifti: {sonuc['karsilastirilan']} (dolu)")
-    print(f"\n  📊 UYUM ORANI: %{oran * 100:.1f}   (hedef ≥ %85)")
+    print(f"\n UYUM ORANI: %{oran * 100:.1f} (hedef ≥ %85)")
     print(f"     ham oran (boş alanlar dahil): %{sonuc['ham_uyum'] * 100:.1f}")
     print("     Sunumda DOLU alan oranı söylenir — ham oran, ortak 'burada bir")
     print("     şey yok' mutabakatıyla şiştiği için tek başına bilgi vermez.\n")
@@ -1172,15 +1172,15 @@ def komut_uyum() -> int:
             print(f"    {satir}")
 
     if kopya:
-        print("\n❌ Bu oran SUNUMDA KULLANILAMAZ — yukarıdaki kopya şüphesi giderilmeden")
+        print("\n Bu oran SUNUMDA KULLANILAMAZ — yukarıdaki kopya şüphesi giderilmeden")
         print("   «etiketleme uzlaşmamız %X» cümlesi kurulmamalı.")
         return 1
 
     if oran >= 0.85:
-        print("\n✅ Uyum yeterli. Kişisel paylara dağılabilirsiniz.")
+        print("\n Uyum yeterli. Kişisel paylara dağılabilirsiniz.")
         print(f"   Sunum cümlesi: «etiketleme uzlaşmamız %{oran * 100:.0f}»")
         return 0
-    print("\n⚠️  Uyum %85'in altında. Dağılmadan önce ayrışan alanları konuşun ve")
+    print("\n Uyum %85'in altında. Dağılmadan önce ayrışan alanları konuşun ve")
     print("   kararı docs/ETIKETLEME_KILAVUZU.md «Kararlar defteri» tablosuna yazın.")
     return 0
 
@@ -1190,27 +1190,27 @@ def komut_derle() -> int:
     kayitlar, uyarilar = derle()
 
     for uyari in uyarilar:
-        print(f"⚠️  {uyari}")
+        print(f" {uyari}")
 
     if not kayitlar:
-        print("\n❌ Hiç etiket bulunamadı. CSV'ler boş — önce etiketleyin.")
+        print("\n Hiç etiket bulunamadı. CSV'ler boş — önce etiketleyin.")
         return 1
 
     hatalar = denetle(kayitlar, kampanyalar)
     kanit = kanit_uyarilari(kayitlar, kampanyalar)
     jsonl_yaz(kayitlar)
 
-    print(f"\n✅ {_kisa_yol(ALTIN_SET)} yazıldı — {len(kayitlar)} örnek\n")
+    print(f"\n {_kisa_yol(ALTIN_SET)} yazıldı — {len(kayitlar)} örnek\n")
     print(kapsam_raporu(kayitlar, kampanyalar))
 
     if kanit:
-        print(f"\n🔎 {len(kanit)} değer ham metinde bulunamadı — gözden geçirin:")
+        print(f"\n {len(kanit)} değer ham metinde bulunamadı — gözden geçirin:")
         for satir in kanit[:15]:
             print(f"   {satir}")
         print("   (Uyarıdır, hata değil: 'yarım milyon TL' gibi yazımlar meşrudur.)")
 
     if hatalar:
-        print(f"\n❌ {len(hatalar)} denetim hatası:")
+        print(f"\n {len(hatalar)} denetim hatası:")
         for hata in hatalar[:20]:
             print(f"   {hata}")
         print("\n   Düzeltip tekrar `make altin-derle` çalıştırın.")
@@ -1557,7 +1557,7 @@ def komut_denetle(ad: str | None) -> int:
     """HER TURUN dosyası denetlenir — `derle` neyi okuyorsa `denetle` de onu açar.
 
     25 Ağustos'ta ölçüldü: bu demet yalnız ilk turun iki ön ekini taşıyordu ve
-    genişletme turunun sekiz dosyası hiç AÇILMADAN «✅ Pushlayabilirsin»
+    genişletme turunun sekiz dosyası hiç AÇILMADAN « Pushlayabilirsin»
     basılıyordu. Sözleşme ihlali denetlenmeyen dosyada kalırsa kapı işe
     yaramaz — `EK_UYUM_ONEK` docstring'indeki `derle` açığının aynısı."""
 
@@ -1580,7 +1580,7 @@ def komut_denetle(ad: str | None) -> int:
             dolu, gereken = _cekirdek_ilerleme(yol)
 
             yuzde = f" (%{dolu / gereken * 100:.0f})" if gereken else ""
-            print(f"\n📄 {_kisa_yol(yol)}")
+            print(f"\n {_kisa_yol(yol)}")
             print(
                 f"   Etiketlenen satır: {etiketlenen}/{toplam}   ·   "
                 f"Çekirdek 8 alan: {dolu}/{gereken} hücre{yuzde}"
@@ -1588,36 +1588,36 @@ def komut_denetle(ad: str | None) -> int:
             if hatalar:
                 toplam_hata += len(hatalar)
                 for hata in hatalar[:25]:
-                    print(f"   ❌ {hata}")
+                    print(f" {hata}")
                 if len(hatalar) > 25:
                     print(f"   … {len(hatalar) - 25} hata daha")
             else:
-                print("   ✅ Sözleşme ihlali yok")
+                print(" Sözleşme ihlali yok")
 
             if kampanyalar:
                 atlananlar = atlanma_uyarilari(yol, kampanyalar)
                 for uyari in atlananlar[:10]:
-                    print(f"   ⚠  {uyari}")
+                    print(f" {uyari}")
                 if len(atlananlar) > 10:
                     print(f"   … {len(atlananlar) - 10} satır daha")
                 if atlananlar:
                     print(
-                        "   ⚠  Boş hücre 'metinde YOK' demektir ve cevap anahtarına "
+                        " Boş hücre 'metinde YOK' demektir ve cevap anahtarına "
                         "öyle girer.\n      Bakmadan bıraktıysan '?' yaz — o hücre "
                         "metrik dışı kalır."
                     )
 
     if not bulunan:
         hedef = ad or "hiç kimse"
-        print(f"❌ {hedef} için etiketleme dosyası bulunamadı. Önce `make altin-ornekle`.")
+        print(f" {hedef} için etiketleme dosyası bulunamadı. Önce `make altin-ornekle`.")
         return 1
 
     if toplam_hata:
-        print(f"\n❌ Toplam {toplam_hata} ihlal — DÜZELTMEDEN PUSHLAMA.")
+        print(f"\n Toplam {toplam_hata} ihlal — DÜZELTMEDEN PUSHLAMA.")
         print("   Kılavuz: docs/ETIKETLEME_KILAVUZU.md")
         return 1
 
-    print("\n✅ Dosyalar sözleşmeye uygun. Pushlayabilirsin.")
+    print("\n Dosyalar sözleşmeye uygun. Pushlayabilirsin.")
     return 0
 
 
@@ -1725,10 +1725,10 @@ def komut_tur2(kisi: str, zorla: bool = False) -> int:
     try:
         yol, adet = tur2_sayfasi_yaz(kisi, zorla)
     except (FileExistsError, ValueError) as hata:
-        print(f"❌ {hata}")
+        print(f" {hata}")
         return 1
 
-    print(f"✅ {_kisa_yol(yol)} yazıldı — {adet} kayıt, etiket hücreleri BOŞ\n")
+    print(f" {_kisa_yol(yol)} yazıldı — {adet} kayıt, etiket hücreleri BOŞ\n")
     print("   Üç kural, üçü de bu turun değerini korur:")
     print("     1. Eski etiketlere BAKMA (altin_set.jsonl, etiketleme_*.csv)")
     print("     2. Sistem çıktısına BAKMA (data/katilim.db, arayüz)")
@@ -1742,7 +1742,7 @@ def komut_tur2_fark(kisi: str) -> int:
     try:
         farklar, sayac = tur2_farklari(kisi)
     except FileNotFoundError as hata:
-        print(f"❌ {hata}")
+        print(f" {hata}")
         return 1
 
     karsilastirilan = sum(v for a, v in sayac.items() if a != "atlandi")
@@ -1756,10 +1756,10 @@ def komut_tur2_fark(kisi: str) -> int:
 
     if karsilastirilan:
         oran = sayac["ayni"] / karsilastirilan
-        print(f"\n  📊 TURLAR ARASI UYUM: %{oran * 100:.1f}   ({sayac['ayni']}/{karsilastirilan})")
+        print(f"\n TURLAR ARASI UYUM: %{oran * 100:.1f} ({sayac['ayni']}/{karsilastirilan})")
 
     if not farklar:
-        print("\n✅ Ayrışma yok.")
+        print("\n Ayrışma yok.")
         return 0
 
     print(f"\n{'kayıt':22}{'alan':22}{'tur-1':>14}{'tur-2':>14}  ne oldu")
@@ -1770,7 +1770,7 @@ def komut_tur2_fark(kisi: str) -> int:
         )
 
     print(
-        "\n⚠️  Bu liste OTOMATİK UYGULANMAZ. Her satır ham metne bakılarak"
+        "\n Bu liste OTOMATİK UYGULANMAZ. Her satır ham metne bakılarak"
         "\n    karara bağlanır; karar kararlar defterine yazılır. Sonra"
         "\n    ilgili hücre tur-1 CSV'sinde düzeltilir ve `make altin-derle`."
     )
@@ -1778,7 +1778,7 @@ def komut_tur2_fark(kisi: str) -> int:
 
 
 def main() -> int:
-    # Windows konsolu cp1254; çıktıdaki 📊/✅/🛡️ işaretleri orada
+    # Windows konsolu cp1254; çıktıdaki // işaretleri orada
     # UnicodeEncodeError fırlatıyordu — `altin-uyum` uyum oranını hesaplayıp
     # tam da onu basacağı satırda çöküyordu (25 Ağustos). Aynı düzeltme
     # `tools/gorevler.py:main` içinde de var. Yalnız CLI yolunda; testler

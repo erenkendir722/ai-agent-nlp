@@ -140,7 +140,7 @@ def _yazdir(olcum: dict[str, Any], ayrintili: bool) -> None:
     def durum(deger: float | None, hedef: float) -> str:
         if deger is None:
             return "—"
-        return "✅" if deger >= hedef else "❌"
+        return "hedefte" if deger >= hedef else "hedef altı"
 
     print(f"  Soru sayısı           : {olcum['soru_sayisi']}")
     print(f"  Geçen                 : {olcum['gecen']}")
@@ -156,10 +156,10 @@ def _yazdir(olcum: dict[str, Any], ayrintili: bool) -> None:
 
     print("\n  Şartname senaryoları:")
     for no, gecti in sorted(olcum["sartname_senaryolari"].items()):
-        print(f"    Senaryo {no}: {'✅ geçti' if gecti else '❌ KALDI'}")
+        print(f"    Senaryo {no}: {'geçti' if gecti else 'KALDI'}")
 
     if olcum["basarisizlar"]:
-        print(f"\n  ❌ Başarısız {len(olcum['basarisizlar'])} soru:\n")
+        print(f"\n Başarısız {len(olcum['basarisizlar'])} soru:\n")
         for s in olcum["basarisizlar"]:
             print(f"    • {s['soru']}")
             for h in s["hatalar"]:

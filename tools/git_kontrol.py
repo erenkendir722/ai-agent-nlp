@@ -97,7 +97,7 @@ def baslangic() -> int:
     kod, _ = _git("fetch", "--quiet", "origin", zaman_asimi=ZAMAN_ASIMI)
     if kod != 0:
         _cikti(
-            "📡 GitHub'a ulaşılamadı — uzak depo durumu bilinmiyor. "
+            " GitHub'a ulaşılamadı — uzak depo durumu bilinmiyor. "
             "Bağlantın varsa `git pull` yapmayı unutma.",
             "Uzak depo kontrol edilemedi (ağ yok veya kimlik doğrulama gerekli). "
             "Kullanıcıya çalışmaya başlamadan önce `git pull` yapmasını hatırlat.",
@@ -115,18 +115,18 @@ def baslangic() -> int:
 
     if geride == 0 and ileride == 0 and degisiklik == 0:
         _cikti(
-            f"✅ Depo güncel ({dal}) — çalışmaya başlayabilirsin.",
+            f" Depo güncel ({dal}) — çalışmaya başlayabilirsin.",
             f"Git durumu temiz ve origin/{dal} ile eşit. Pull gerekmiyor.",
             "SessionStart",
         )
         return 0
 
-    satirlar = ["⚠️  ÇALIŞMAYA BAŞLAMADAN ÖNCE"]
+    satirlar = [" ÇALIŞMAYA BAŞLAMADAN ÖNCE"]
     baglam = ["ÇALIŞMA BAŞLANGICI GIT DURUMU:"]
 
     if geride:
         satirlar.append(
-            f"   📥 GitHub'da {geride} yeni commit var — **PULL ETMEDEN BAŞLAMA**"
+            f" GitHub'da {geride} yeni commit var — **PULL ETMEDEN BAŞLAMA**"
         )
         satirlar.append("      git pull --rebase origin " + dal)
         baglam.append(
@@ -137,14 +137,14 @@ def baslangic() -> int:
         )
 
     if degisiklik:
-        satirlar.append(f"   📝 {degisiklik} dosyada kaydedilmemiş değişiklik var")
+        satirlar.append(f" {degisiklik} dosyada kaydedilmemiş değişiklik var")
         baglam.append(
             f"- Çalışma ağacında {degisiklik} kaydedilmemiş değişiklik var. "
             "Pull öncesi bunları commit'lemek veya stash'lemek gerekebilir."
         )
 
     if ileride:
-        satirlar.append(f"   📤 {ileride} commit pushlanmamış — sonunda pushla")
+        satirlar.append(f" {ileride} commit pushlanmamış — sonunda pushla")
         baglam.append(f"- {ileride} yerel commit henüz pushlanmamış.")
 
     _cikti("\n".join(satirlar), "\n".join(baglam), "SessionStart")
@@ -174,11 +174,11 @@ def bitis() -> int:
         _cikti(None, None, "Stop")
         return 0
 
-    satirlar = ["📤 İŞİNİ BIRAKMADAN ÖNCE"]
+    satirlar = [" İŞİNİ BIRAKMADAN ÖNCE"]
     baglam = ["ÇALIŞMA SONU GIT DURUMU — kullanıcıya hatırlat:"]
 
     if degisiklik:
-        satirlar.append(f"   📝 {degisiklik} dosya kaydedilmemiş — commit'le:")
+        satirlar.append(f" {degisiklik} dosya kaydedilmemiş — commit'le:")
         satirlar.append('      git add -A && git commit -m "..."')
         baglam.append(
             f"- {degisiklik} dosyada kaydedilmemiş değişiklik var. "
@@ -186,7 +186,7 @@ def bitis() -> int:
         )
 
     if ileride:
-        satirlar.append(f"   ⬆️  {ileride} commit pushlanmamış — **PUSHLA**:")
+        satirlar.append(f" {ileride} commit pushlanmamış — **PUSHLA**:")
         satirlar.append(f"      git push origin {dal}")
         baglam.append(
             f"- {ileride} commit pushlanmamış. KULLANICIYA `git push origin {dal}` "

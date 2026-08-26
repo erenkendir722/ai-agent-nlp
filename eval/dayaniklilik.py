@@ -289,7 +289,7 @@ def rapor_yaz(sonuclar: list[Sonuc]) -> str:
             f"| `kaydi` | {dagilim['kaydi']} | Sayfadaki BAŞKA bir sayıya kaydı — **kanıtı var**, seçim hatası |",
             f"| `uydurdu` | {dagilim['uydurdu']} | Kanıtsız değer — gerçek halüsinasyon |",
             "",
-            f"> 🔑 **`uydurdu` = {dagilim['uydurdu']}.** Kanıt zinciri tutuyor: kural katmanı,",
+            f"> **`uydurdu` = {dagilim['uydurdu']}.** Kanıt zinciri tutuyor: kural katmanı,",
             "> doğru cümle silindiğinde bile ham metinde karşılığı olmayan bir değer",
             "> ÜRETMİYOR. Kalan kusur uydurma değil, **seçim** kusuru — sayfadaki",
             "> yanlış sayıya kayıyor. Bu ayrım S-14'ün çalışma alanını belirler:",
@@ -321,18 +321,18 @@ def rapor_yaz(sonuclar: list[Sonuc]) -> str:
 
 def calistir() -> int:
     if not ALTIN_SET.exists():
-        print("❌ Altın set yok — `make altin-derle` çalıştırın.")
+        print(" Altın set yok — `make altin-derle` çalıştırın.")
         return 1
 
     altin = [json.loads(s) for s in ALTIN_SET.read_text(encoding="utf-8").splitlines() if s.strip()]
     kampanyalar = {k.kampanya_id: k for k in kampanyalari_oku()}
     if not kampanyalar:
-        print("❌ Veritabanı boş. Önce `make extract` çalıştırın.")
+        print(" Veritabanı boş. Önce `make extract` çalıştırın.")
         return 1
 
     sonuclar = olc(altin, kampanyalar)
     if not sonuclar:
-        print("❌ Ölçülebilir varyant üretilemedi.")
+        print(" Ölçülebilir varyant üretilemedi.")
         return 1
 
     RAPOR.parent.mkdir(parents=True, exist_ok=True)
@@ -340,7 +340,7 @@ def calistir() -> int:
 
     bicim = [s for s in sonuclar if s.bozma != "alan_sil"]
     silme = [s for s in sonuclar if s.bozma == "alan_sil"]
-    print(f"✅ {RAPOR.relative_to(KOK)} yazıldı")
+    print(f" {RAPOR.relative_to(KOK)} yazıldı")
     print(f"   Varyant: {len(sonuclar)}")
     if bicim:
         print(

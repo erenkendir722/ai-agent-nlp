@@ -136,7 +136,7 @@ def rapor_uret(veri: dict) -> str:
 
     if veri["supheliler"]:
         satirlar += [
-            f"🚨 **{len(veri['supheliler'])} şüpheli bulgu var — gerçek kişiye ait olabilir.**",
+            f" **{len(veri['supheliler'])} şüpheli bulgu var — gerçek kişiye ait olabilir.**",
             "",
             "| Tür | Banka | Kayıt | Maskeli değer |",
             "|---|---|---|---|",
@@ -153,7 +153,7 @@ def rapor_uret(veri: dict) -> str:
         ]
     else:
         satirlar += [
-            "✅ **Kimliği belirli gerçek kişiye ait veri bulunmadı.**",
+            " **Kimliği belirli gerçek kişiye ait veri bulunmadı.**",
             "",
             "Sağlama toplamı tutan tek bir T.C. kimlik numarası yok. Bulunan 11 haneli",
             "sayılar örnek form değerleridir (aşağıda) — sağlama toplamını geçemezler.",
@@ -221,9 +221,9 @@ def main(argv: list[str] | None = None) -> int:
     RAPOR_YOLU.parent.mkdir(parents=True, exist_ok=True)
     RAPOR_YOLU.write_text(rapor_uret(veri), encoding="utf-8")
 
-    print(f"✅ {RAPOR_YOLU.relative_to(KOK)} yazıldı ({veri['kayit_sayisi']} kayıt tarandı)")
+    print(f" {RAPOR_YOLU.relative_to(KOK)} yazıldı ({veri['kayit_sayisi']} kayıt tarandı)")
     if veri["supheliler"]:
-        print(f"🚨 {len(veri['supheliler'])} şüpheli bulgu — rapora bakın.")
+        print(f" {len(veri['supheliler'])} şüpheli bulgu — rapora bakın.")
         return 1 if secenekler.kati else 0
     print("   Kimliği belirli gerçek kişiye ait veri bulunmadı.")
     return 0

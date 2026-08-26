@@ -34,6 +34,8 @@ from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import HedefKitle, Kampanya  # noqa: E402
 from app.ui_utils import (  # noqa: E402
   format_bank_name,
+  format_alan_adi,
+  format_hedef_kitle,
   format_kategori,
   inject_custom_css,
   ortak_kenar,
@@ -205,13 +207,36 @@ def _alan_yazi(kayit, alan_adi: str) -> str:
   return str(deger)
 
 
+def _enum_yazi(alan) -> str:
+  """Alan değerinin ekran yazısı: enum ise ETİKETİ, değilse olduğu gibi.
+
+  Eskiden `alan.goster().replace("_", " ").title()` yazılıyordu. `.title()`
+  Türkçe'yi sessizce bozuyor — `schema.ALAN_ETIKETLERI`'nin kendi notunda da
+  yazılı olan tuzak:
+
+      yeni_musteri     ->  "Yeni Musteri"      (ü kayıp)
+      alisveris_puani  ->  "Alisveris Puani"   (ş ve ı kayıp)
+
+  Enum değerlerinin etiket sözlüğü zaten var; serbest metne dokunulmaz.
+  """
+  deger = getattr(alan, "deger", None)
+  if isinstance(deger, str):
+    etiket = format_kategori(deger)
+    if etiket != deger:
+      return etiket
+    hedef = format_hedef_kitle(deger)
+    if hedef != deger:
+      return hedef
+  return alan.goster()
+
+
 def _csv_olustur(kayitlar):
   satirlar = []
   for k in kayitlar:
     satirlar.append({
       "Banka": format_bank_name(k.banka_adi),
-      "Kampanya/Ürün": (k.urun_turu or k.kampanya_turu or "—").replace("_", " ").title(),
-      "Hedef Kitle": k.hedef_kitle or "—",
+      "Kampanya/Ürün": format_kategori(k.urun_turu or k.kampanya_turu) if (k.urun_turu or k.kampanya_turu) else "—",
+      "Hedef Kitle": format_hedef_kitle(k.hedef_kitle) if k.hedef_kitle else "—",
       "Kâr Payı": _alan_yazi(k, "kar_payi_orani"),
       "Azami Vade": _alan_yazi(k, "vade_ay_max"),
       "Azami Tutar": _alan_yazi(k, "finansman_tutari_max"),
@@ -451,7 +476,7 @@ st.subheader("Kayıt detayları ve kaynak kanıtı")
 for kayit in sirali[:20]:
   baslik = (
     f"{format_bank_name(kayit.banka_adi)} — "
-    f"{str(kayit.urun_turu or kayit.kampanya_turu or 'kampanya').replace('_', ' ').title()} "
+    f"{format_kategori(kayit.urun_turu or kayit.kampanya_turu) if (kayit.urun_turu or kayit.kampanya_turu) else 'Kampanya'} "
     f"(doluluk %{kayit.doluluk_orani * 100:.0f})"
   )
   with st.expander(baslik):
@@ -464,13 +489,13 @@ for kayit in sirali[:20]:
       if not alan.var_mi:
         continue
       c1, c2, c3 = st.columns([2, 2, 1])
-      c1.markdown(f"**{alan_adi.replace('_', ' ').title()}**")
-      c2.markdown(f"{alan.goster().replace('_', ' ').title() if hasattr(alan, 'deger') and isinstance(alan.deger, str) else alan.goster()}")
+      c1.markdown(f"**{format_alan_adi(alan_adi)}**")
+      c2.markdown(_enum_yazi(alan))
       c3.markdown(f"`{alan.yontem}` · {alan.guven:.2f}")
       if alan.kaynak and alan.kaynak.alinti:
         st.caption(f" Kaynak alıntısı: _{alan.kaynak.alinti[:280]}_")
 
-    bos = [ad.replace('_', ' ').title() for ad, a in kampanya.cikarilan_alanlar().items() if not a.var_mi]
+    bos = [format_alan_adi(ad) for ad, a in kampanya.cikarilan_alanlar().items() if not a.var_mi]
     if bos:
       st.caption(f"**Belirtilmemiş alanlar:** {', '.join(bos)}")
     

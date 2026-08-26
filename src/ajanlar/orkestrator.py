@@ -179,7 +179,7 @@ def _profil_cevabi(
         for sira, sonuc in enumerate(elenenler[:5], 1):
             for no, gerekce in enumerate(sonuc.engelleyenler()):
                 satirlar.append(f"- **{sonuc.banka_adi}**: {gerekce.aciklama}")
-                # ⚠️ `hesap.update(gerekce.sayilar)` DEĞİL — anahtarlar bankadan
+                # DİKKAT: `hesap.update(gerekce.sayilar)` DEĞİL — anahtarlar bankadan
                 # bağımsız sabit adlar (`max_tutar`, `max_vade_ay`, ...). Beş banka
                 # listelenince sonuncusu öncekileri EZİYORDU; ezilen sayı izin
                 # listesinden düşünce kalkan, sistemin kendi beyan ettiği değeri
@@ -219,12 +219,12 @@ def _profil_cevabi(
     ]
     if dogrulanmamis == len(uygunlar):
         baslik_satirlari.append(
-            "\n> ⚠️ **Bu kampanyaların hiçbirinde uygunluk koşulu çıkarılamadı.**\n"
+            "\n> **Bu kampanyaların hiçbirinde uygunluk koşulu çıkarılamadı.**\n"
             "> Liste profile göre SÜZÜLMEMİŞTİR; yalnız maliyete göre sıralanmıştır.\n"
         )
     elif dogrulanmamis:
         baslik_satirlari.append(
-            f"\n> ⚠️ {dogrulanmamis} kampanyanın uygunluk koşulu çıkarılamadı; "
+            f"\n> {dogrulanmamis} kampanyanın uygunluk koşulu çıkarılamadı; "
             "onlar için kısıtlar doğrulanmadı.\n"
         )
 
@@ -266,7 +266,7 @@ def _profil_cevabi(
             )
         if sonuc.veri_eksik:
             maliyet_satirlari.append(
-                "   - ⚠️ Uygunluk koşulları metinden çıkarılamadı; kısıtlar doğrulanmadı."
+                "   - Uygunluk koşulları metinden çıkarılamadı; kısıtlar doğrulanmadı."
             )
 
     parcalar.append(

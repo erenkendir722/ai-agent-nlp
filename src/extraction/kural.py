@@ -594,7 +594,7 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             # (F1 0,571) ama o, 2.000'i bulamadığı yerde 10.000 ÜRETİYOR —
             # sessiz kalmayı yanlış sayıyla takas ediyor. Bu depoda yanlış
             # değer, eksik değerden pahalıdır; o yüzden daraltma seçildi.
-            # ⚠️ N=3: bu alanın F1'i üç hücreye dayanıyor, tek başına
+            # DİKKAT: N=3 — bu alanın F1'i üç hücreye dayanıyor, tek başına
             # alıntılanmamalı (bkz. docs/HATA_ANALIZI.md).
             "kisi icin",
             # "ÖRNEĞİN 1.000 TL banka kartı harcamanızda 10 TL nakit ödül" —

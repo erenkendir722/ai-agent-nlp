@@ -10,7 +10,7 @@ NEDEN VAR — tam ölçüm bu iş için kullanılamaz:
     Bu araçta LLM yok, ağ yok, rastgelelik yok: aynı girdi her zaman aynı
     sayıyı verir. İki ölçüm arasındaki fark GERÇEK bir farktır.
 
-⚠️ BURADAKİ MAKRO-F1 HİBRİT SKORLA KARŞILAŞTIRILAMAZ.
+ BURADAKİ MAKRO-F1 HİBRİT SKORLA KARŞILAŞTIRILAMAZ.
     `kampanya_turu`nun kural katmanında karşılığı yok, hep 0 çıkar; başka
     alanlar da LLM'siz doğal olarak zayıftır. Anlamlı olan tek şey AYNI
     ARAÇLA alınmış iki ölçümün farkıdır. Sunuma giren sayı `make eval`den
@@ -152,7 +152,7 @@ def rapor(sonuc: dict[str, object]) -> str:
         "",
         f"{'MAKRO-F1 (kural katmanı)':24}{'':>15}{makro:>9.4f}",
         "",
-        "⚠️  Bu sayı `make eval`in hibrit makro-F1'iyle KARŞILAŞTIRILAMAZ.",
+        " Bu sayı `make eval`in hibrit makro-F1'iyle KARŞILAŞTIRILAMAZ.",
         "    Anlamlı olan: aynı araçla alınmış iki ölçümün FARKI.",
     ]
     return "\n".join(satirlar)
@@ -162,7 +162,7 @@ def main() -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     if not ALTIN_SET.exists():
-        print("❌ data/gold/altin_set.jsonl yok — önce `make altin-derle`")
+        print(" data/gold/altin_set.jsonl yok — önce `make altin-derle`")
         return 1
     print(rapor(olc()))
     return 0

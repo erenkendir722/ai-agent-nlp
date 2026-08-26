@@ -5,7 +5,7 @@ banka çalışanı rakip analizini hızlı yapmak, veri kalitesini görmek ve he
 sayının nereden geldiğini denetlemek ister. Bu yüzden her ekranda güven skoru
 ve kaynak alıntısı erişilebilir durumda.
 
-Çalıştırma: streamlit run app/Genel_Bakis.py
+Çalıştırma: streamlit run app/Genel_Bakış.py
 """
 
 from __future__ import annotations

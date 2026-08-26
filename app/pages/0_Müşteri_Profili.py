@@ -141,11 +141,10 @@ if toplam_uygun > 0 and dogrulanmamis > 0:
     st.warning(
         f"**{kapsam}**  \n"
         "Sebep kaynak veride eksik alan; kalkan arızası değil. "
-        "Bu kampanyalar listede kalır, yalnız kısıt kontrolü yapılamamıştır.",
-        icon="⚠️",
+        "Bu kampanyalar listede kalır, yalnız kısıt kontrolü yapılamamıştır."
     )
 elif uygunlar:
-    st.toast("Kısıt Çıkarımı Başarılı. Sistem koşulları başarıyla çözümledi.", icon="✔️")
+    st.toast("Kısıt çözümü tamam — tüm koşullar değerlendirildi.")
 
 ust1, ust2, ust3 = st.columns(3)
 ust1.metric("Uygun kampanya", len(uygunlar), help="Seçilen müşteri profili (vade, tutar, segment) kısıtlarına uyan toplam kampanya sayısı.")
@@ -172,7 +171,7 @@ for sira, sonuc in enumerate(uygunlar[:15], 1):
         baslik, deger = st.columns([3, 2])
         baslik.markdown(f"**{sira}. {sonuc.banka_adi}**")
         if kampanya is not None:
-            baslik.markdown(f"[🔗 Kaynağa Git]({kampanya.kaynak_url})")
+            baslik.markdown(f"[Kaynağa git]({kampanya.kaynak_url})")
 
         if sonuc.maliyet:
             deger.metric(
@@ -243,7 +242,7 @@ if uygunlar:
       rapor_metni += f"{i}. {s.banka_adi} - Toplam Geri Ödeme: {maliyet_str}\n"
   
   st.download_button(
-      label="📄 Teklif Raporunu İndir (TXT)",
+      label="Teklif raporunu indir (TXT)",
       data=rapor_metni,
       file_name="musteri_teklif_formu.txt",
       mime="text/plain",

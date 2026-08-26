@@ -196,7 +196,7 @@ def _robots_ozeti(robots: dict | None) -> str:
     if robots is None:
         return "—"
     if robots["hata"]:
-        return f"⚠️ çekilemedi ({robots['hata'].split(':')[0]})"
+        return f" çekilemedi ({robots['hata'].split(':')[0]})"
     if robots["dosya"]:
         return f"HTTP {robots['durum']} · {robots['uzunluk']} bayt"
     return f"HTTP {robots['durum']} · robots.txt yok"
@@ -214,10 +214,10 @@ def _karar_metni(robots: dict, karar: dict) -> str:
     bize yasak koyduğu izlenimi verir — jüriye yanlış bilgi olur.
     """
     if karar["izinli"]:
-        return "✅ izinli"
+        return " izinli"
     if robots["hata"]:
-        return "⛔ çekilmez — robots.txt okunamadı (temkinli davranış)"
-    return "⛔ çekilmez — robots.txt `Disallow` ile reddetti"
+        return " çekilmez — robots.txt okunamadı (temkinli davranış)"
+    return " çekilmez — robots.txt `Disallow` ile reddetti"
 
 
 def gunluk_uret(veri: dict) -> str:
@@ -367,7 +367,7 @@ def gunluk_uret(veri: dict) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    # Windows konsolu cp1254 ile açılır; aşağıdaki ✅/⛔ işaretleri orada
+    # Windows konsolu cp1254 ile açılır; aşağıdaki / işaretleri orada
     # UnicodeEncodeError fırlatır ve kanıt üreten araç son satırda çöker.
     # Yalnız CLI yolunda yapılır — modül içe aktarıldığında (testler) stdout'a
     # dokunulmaz.
@@ -384,7 +384,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if secenekler.cevrimdisi:
         if not GUNLUK_JSON.exists():
-            print(f"❌ {GUNLUK_JSON.relative_to(KOK)} yok — önce ağ varken bir kez koşun.")
+            print(f" {GUNLUK_JSON.relative_to(KOK)} yok — önce ağ varken bir kez koşun.")
             return 1
         veri = json.loads(GUNLUK_JSON.read_text(encoding="utf-8"))
     else:
@@ -400,11 +400,11 @@ def main(argv: list[str] | None = None) -> int:
     red = sum(1 for alan in denetlenen for karar in alan["kararlar"] if not karar["izinli"])
     okunamayan = [alan["ad"] for alan in denetlenen if alan["robots"] and alan["robots"]["hata"]]
 
-    print(f"✅ {GUNLUK_MD.relative_to(KOK)} yazıldı ({len(denetlenen)} alan adı denetlendi)")
+    print(f" {GUNLUK_MD.relative_to(KOK)} yazıldı ({len(denetlenen)} alan adı denetlendi)")
     if red:
-        print(f"   ⛔ {red} URL çekilmiyor (Disallow ya da robots.txt okunamadı).")
+        print(f" {red} URL çekilmiyor (Disallow ya da robots.txt okunamadı).")
     for ad in okunamayan:
-        print(f"   ⚠️  robots.txt okunamadı: {ad} — bu alan adı otomatik taranmaz.")
+        print(f" robots.txt okunamadı: {ad} — bu alan adı otomatik taranmaz.")
     return 0
 
 

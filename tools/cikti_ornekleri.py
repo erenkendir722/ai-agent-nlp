@@ -200,7 +200,7 @@ def _madde_11() -> list[str]:
 def calistir(url: str = VERITABANI_URL) -> int:
     kampanyalar = list(kampanyalari_oku(url))
     if not kampanyalar:
-        print("❌ Veritabanı boş. Önce `make extract` çalıştırın.")
+        print(" Veritabanı boş. Önce `make extract` çalıştırın.")
         return 1
 
     sirali = sorted(kampanyalar, key=lambda k: (-_dolu_sayisi(k), k.kampanya_id))
@@ -291,7 +291,7 @@ def calistir(url: str = VERITABANI_URL) -> int:
     ]
 
     CIKTI.write_text("\n".join(parcalar), encoding="utf-8")
-    print(f"✅ {CIKTI.relative_to(KOK)} yazıldı ({len(secilen) + 1} örnek)")
+    print(f" {CIKTI.relative_to(KOK)} yazıldı ({len(secilen) + 1} örnek)")
     for anahtar, kampanya in secilen.items():
         print(f"   {anahtar:9} {kampanya.kampanya_id}  ({_dolu_sayisi(kampanya)} dolu alan)")
     return 0
