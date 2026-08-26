@@ -54,11 +54,18 @@ class AlbarakaKaziyici(TemelKaziyici):
             except WebDriverException as hata:
                 log.debug("çerez ögesine tıklanamadı: %s", hata)
 
-    def kampanya_urlleri(self) -> list[str]:
+    def _listeyi_ac(self) -> None:
+        """Liste sayfasını açıp çerez katmanını kapatır — her denemede baştan."""
         self.sayfayi_ac(self.liste_urlleri[0])
         time.sleep(5)
         self.acilir_pencereleri_kapat()
         time.sleep(1)
 
-        self.hepsini_yukle(KART_BAGLANTISI, DAHA_FAZLA, bekleme_saniye=2.0)
+    def kampanya_urlleri(self) -> list[str]:
+        # `hepsini_yukle` DOĞRUDAN çağrılmıyor: bu sitede tıklamanın yutulduğu
+        # ölçüldü (26 Ağustos). Tıklama sayfa sayacını ilerletiyor ama kartlar
+        # hiç gelmiyor; 48 kampanyalık liste sessizce 39'da bitiyordu. Bekleme
+        # süresini uzatmak yetmedi — 10 saniye beklendiğinde de gelmedi. Bu
+        # yüzden kayıp saptanınca liste BAŞTAN yükleniyor.
+        self.listeyi_tamamla(self._listeyi_ac, KART_BAGLANTISI, DAHA_FAZLA)
         return self.baglantilari_topla(TOPLA_JS)

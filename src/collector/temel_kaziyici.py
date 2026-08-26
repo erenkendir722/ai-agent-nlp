@@ -56,6 +56,24 @@ en kalabalık liste 217 kayıt; 100 tıklama fazlasıyla yeter, sonsuz döngüde
 ise ucuz kurtarır.
 """
 
+AZAMI_ARTIS_BEKLEMESI = 10.0
+"""Tıklamanın kartları getirmesi için beklenecek AZAMİ süre (sn).
+
+Azami, sabit değil: artış gelir gelmez beklenmeden devam edilir. Yalnız
+liste gerçekten bittiğinde bu sürenin tamamı harcanır.
+"""
+
+ARTIS_YOKLAMA_ARALIGI = 0.5
+"""Kart sayısı iki yoklama arasında bu kadar beklenir (sn)."""
+
+ARTIS_SONRASI_DINLENME = 1.5
+"""Parti indikten sonra bir sonraki tıklamaya kadar beklenen süre (sn).
+
+Artışı yoklayarak beklemek döngüyü hızlandırdı; art arda çok hızlı tıklamak
+sitenin isteklerinden birini düşürmesine zemin hazırlıyor. Hem nezaket hem
+kayıp oranı için tempo kasten yavaşlatılır.
+"""
+
 Asama = Literal["url_kesfi", "sayfa", "atlandi", "hata", "bitti"]
 
 
@@ -211,24 +229,69 @@ class TemelKaziyici:
             log.debug("düğmeye tıklanamadı: %s", hata)
             return False
 
+    def _artisi_bekle(
+        self, oge_xpath: str, onceki: int, azami_saniye: float
+    ) -> int | None:
+        """Tıklamadan sonra kart sayısı ARTANA DEK bekler; artınca hemen döner.
+
+        Dönen değer yeni kart sayısıdır; sayım yapılamazsa `None`.
+
+        SABİT SÜRE BEKLEMEK YETMİYOR — ölçüldü (Albaraka, 26 Ağustos). Eski kod
+        tıkladıktan sonra 2 saniye bekleyip kartları BİR KEZ sayıyordu. Parti o
+        pencerede gelmezse tur «artış olmadı» sayılıyor, döngü bir sonraki tura
+        geçip YENİDEN tıklıyordu. Sitenin iç sayfa sayacı ilerlediği için
+        atlanan partinin dokuz kartı bir daha hiç gelmiyordu:
+
+            tur 1: 9 -> 9      ← tıklama gitti, kartlar 2 sn'de yetişmedi
+            tur 2: 9 -> 18
+            ...
+            tur 5: 36 -> 39    ← son parti 9 yerine 3
+            düğme kayboldu     → 48 yerine 39 kampanya, HATA VERMEDEN
+
+        Altı koşumda ikisi eksik döndü (39 ve 27). Bu yüzden ölçüt SÜRE değil
+        ARTIŞ: bir sonraki tıklama, öncekinin kartları gelmeden yapılmaz.
+        """
+        biti = time.monotonic() + azami_saniye
+        while True:
+            try:
+                sayi = len(self.surucu.find_elements(By.XPATH, oge_xpath))
+            except WebDriverException as hata:
+                log.debug("liste sayılamadı: %s", hata)
+                return None
+            if sayi > onceki or time.monotonic() >= biti:
+                return sayi
+            time.sleep(ARTIS_YOKLAMA_ARALIGI)
+
     def hepsini_yukle(
         self,
         oge_xpath: str,
         dugme_xpath: str,
         *,
-        bekleme_saniye: float = 3.0,
+        bekleme_saniye: float = AZAMI_ARTIS_BEKLEMESI,
         azami_bos_tur: int = 3,
-    ) -> None:
+    ) -> bool:
         """«Daha fazla yükle» düğmesine kart sayısı artmayı bırakana dek basar.
 
         Düğmenin kaybolmasını beklemek yetmiyor: bazı sitelerde düğme son
         sayfadan sonra da görünür kalıyor. Bu yüzden asıl ölçüt KART SAYISI —
         art arda `azami_bos_tur` turda artmıyorsa liste bitmiştir.
+
+        `bekleme_saniye` bir tıklamanın kartlarının beklenebileceği AZAMİ
+        süredir, sabit gecikme değil: artış gelir gelmez devam edilir
+        (`_artisi_bekle`, orada neden böyle olduğu yazılı).
+
+        DÖNEN DEĞER liste temiz yüklendiğinde `True`'dur. Bir tıklama yutulup
+        o partinin kartları hiç gelmediyse `False` döner — bkz.
+        `listeyi_tamamla`. Kayıp şöyle ayırt edilir: SONU boş turlarla biten
+        liste normaldir (site tükendi), ama ARASINDA boş tur olup sonra
+        yeniden artan liste bir parti kaybetmiştir.
         """
         bos_tur = 0
+        kayip_aday = False
+        parti_kaybedildi = False
         for _ in range(AZAMI_YUKLE_TIKLAMASI):
             if bos_tur >= azami_bos_tur:
-                return
+                return not parti_kaybedildi
             self._kaydir_sona()
             time.sleep(2)
 
@@ -241,26 +304,94 @@ class TemelKaziyici:
                 ]
             except WebDriverException as hata:
                 log.debug("liste/düğme sayılamadı: %s", hata)
-                return
+                return not parti_kaybedildi
 
             if not dugmeler:
-                return
+                return not parti_kaybedildi
             if not self._tikla(dugmeler[0]):
-                return
+                return not parti_kaybedildi
 
-            time.sleep(bekleme_saniye)
-            try:
-                sonraki = len(self.surucu.find_elements(By.XPATH, oge_xpath))
-            except WebDriverException as hata:
-                log.debug("liste sayılamadı: %s", hata)
-                return
-            bos_tur = bos_tur + 1 if sonraki <= onceki else 0
+            sonraki = self._artisi_bekle(oge_xpath, onceki, bekleme_saniye)
+            if sonraki is None:
+                return not parti_kaybedildi
+
+            if sonraki > onceki:
+                time.sleep(ARTIS_SONRASI_DINLENME)
+                if kayip_aday:
+                    # Boş turdan SONRA yeniden arttı: o tıklama yutulmuş, ama
+                    # sitenin sayfa sayacı ilerlemiş. Bir parti eksik kalacak.
+                    parti_kaybedildi = True
+                    kayip_aday = False
+                bos_tur = 0
+            else:
+                kayip_aday = True
+                bos_tur += 1
         else:
             log.warning(
                 "%s: «daha fazla yükle» %d tıklamada bitmedi, kesiliyor",
                 self.banka.kisa_ad,
                 AZAMI_YUKLE_TIKLAMASI,
             )
+        return not parti_kaybedildi
+
+    def _oturumu_tazele(self) -> None:
+        """Yeniden denemeden önce tarayıcı oturumunu temizler.
+
+        Kayıp aynı oturumda üst üste tekrarlanabiliyor: ölçümde bir koşumun üç
+        denemesi de 39'da bitti. Çerez ve önbellek denemeler arasında taşındığı
+        için sayfa aynı duruma düşüyor olabilir; bu yüzden oturum sıfırlanır.
+        Temizlik başarısız olursa deneme yine de yapılır — bu iyileştirmedir,
+        veri üretiminin koşulu değildir.
+        """
+        try:
+            self.surucu.delete_all_cookies()
+        except WebDriverException as hata:
+            log.debug("çerezler silinemedi: %s", hata)
+        try:
+            self.surucu.execute_cdp_cmd("Network.clearBrowserCache", {})  # type: ignore[attr-defined]
+        except Exception as hata:  # noqa: BLE001 - CDP yalnız Chrome'da var
+            log.debug("önbellek temizlenemedi: %s", hata)
+        try:
+            self.surucu.get("about:blank")
+        except WebDriverException as hata:
+            log.debug("boş sayfaya gidilemedi: %s", hata)
+
+    def listeyi_tamamla(
+        self,
+        hazirla: Callable[[], None],
+        oge_xpath: str,
+        dugme_xpath: str,
+        *,
+        azami_deneme: int = 3,
+        **yukleme: Any,
+    ) -> None:
+        """Listeyi eksiksiz yükler; parti kaybı olursa baştan dener.
+
+        Kaybı yerinde ONARMAK mümkün değil: yutulan tıklama sitenin iç sayfa
+        sayacını ilerletiyor, o partinin kartları aynı oturumda bir daha
+        gelmiyor (ölçüldü — Albaraka, 26 Ağustos; 48 kampanyalık liste 39'da
+        bitiyordu). Tek çare listeyi baştan yüklemek, o yüzden `hazirla`
+        sayfayı yeniden açan çağrılabilir olmalı.
+
+        Denemeler tükenirse SESSİZ KALINMAZ: uyarı basılır ve ilerleme akışına
+        düşer. Eksik liste, hiçbir şey söylemediği için «o bankada az kampanya
+        var» gibi görünür — bu projenin en pahalı bulduğu hata biçimi.
+        """
+        for deneme in range(1, azami_deneme + 1):
+            if deneme > 1:
+                self._oturumu_tazele()
+            hazirla()
+            if self.hepsini_yukle(oge_xpath, dugme_xpath, **yukleme):
+                return
+            log.warning(
+                "%s: liste yüklenirken bir parti kayboldu (deneme %d/%d), baştan alınıyor",
+                self.banka.kisa_ad,
+                deneme,
+                azami_deneme,
+            )
+        mesaj = f"{azami_deneme} denemede de eksik yüklendi — liste eksik olabilir"
+        log.warning("%s: %s", self.banka.kisa_ad, mesaj)
+        self._bildir("hata", mesaj=mesaj)
 
     def baglantilari_topla(self, js: str) -> list[str]:
         """Sayfadaki GÖRÜNÜR bağlantıları JS ile toplar.

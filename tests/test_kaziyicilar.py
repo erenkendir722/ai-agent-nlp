@@ -370,3 +370,256 @@ class TestTomSuresiGecenSuzgeci:
     def test_gecerli_kampanya_elenmez(self) -> None:
         baslik = "AKARYAKIT KAMPANYASI"
         assert not any(kalip in baslik.upper() for kalip in SURESI_GECTI_KALIPLARI)
+
+
+# ---------------------------------------------------------------------------
+# «Daha fazla yükle» — geç gelen kartlar
+# ---------------------------------------------------------------------------
+
+
+class SahteDugme:
+    """Tıklanabilir «daha fazla yükle» düğmesi."""
+
+    def __init__(self, liste: SahteListeSurucu) -> None:
+        self._liste = liste
+
+    def is_displayed(self) -> bool:
+        return True
+
+    def click(self) -> None:
+        self._liste.tikla()
+
+
+class SahteListeSurucu:
+    """Sayfalanan liste: her tıklama bir parti ekler, kartlar GEÇ gelir.
+
+    Gerçek Albaraka davranışı: tıklama sitenin iç sayfa sayacını hemen
+    ilerletir ama kartlar DOM'a birkaç yoklama sonra girer. Kartların
+    gelmesini beklemeden ikinci kez tıklanırsa o parti kaybolur — burada
+    `kayip_parti` ile sayılır.
+    """
+
+    def __init__(
+        self,
+        *,
+        kart_xpath: str,
+        dugme_xpath: str,
+        ilk: int = 9,
+        parti: int = 9,
+        toplam_parti: int = 5,
+        gecikme_yoklama: int = 4,
+        dugme_sonda_kalir: bool = False,
+        yutulan_tiklama: int | None = None,
+    ) -> None:
+        self.kart_xpath = kart_xpath
+        self.dugme_xpath = dugme_xpath
+        self.parti = parti
+        self.kalan_parti = toplam_parti
+        self.gecikme_yoklama = gecikme_yoklama
+        self.dugme_sonda_kalir = dugme_sonda_kalir
+        self.yutulan_tiklama = yutulan_tiklama
+
+        self.gorunen = ilk
+        self.tiklama = 0
+        self.kayip_parti = 0
+        self.temizleme = 0
+        self.gidilen: list[str] = []
+        self._bekleyen: int | None = None  # kaç yoklama sonra inecek
+
+    # -- site davranışı ---------------------------------------------------
+
+    def tikla(self) -> None:
+        self.tiklama += 1
+        if self._bekleyen is not None:
+            # önceki parti daha inmeden tekrar tıklandı: sayfa sayacı ilerledi,
+            # o parti bir daha GELMEZ. Eski kodun kaybettiği kartlar bunlar.
+            self.kayip_parti += 1
+            self._bekleyen = None
+            return
+        if self.kalan_parti <= 0:
+            return
+        self.kalan_parti -= 1
+        if self.tiklama == self.yutulan_tiklama:
+            # Tıklama yutuldu: sayfa sayacı ilerledi ama kartlar HİÇ gelmeyecek.
+            # Albaraka'da ölçülen davranış bu (26 Ağustos).
+            self.kayip_parti += 1
+            return
+        self._bekleyen = self.gecikme_yoklama
+
+    def _yokla(self) -> None:
+        if self._bekleyen is None:
+            return
+        if self._bekleyen <= 0:
+            self.gorunen += self.parti
+            self._bekleyen = None
+        else:
+            self._bekleyen -= 1
+
+    # -- WebDriver yüzeyi -------------------------------------------------
+
+    def find_elements(self, _by: Any, xpath: str) -> list[Any]:
+        if xpath == self.kart_xpath:
+            self._yokla()
+            return [object()] * self.gorunen
+        if xpath == self.dugme_xpath:
+            if self.kalan_parti > 0 or self.dugme_sonda_kalir:
+                return [SahteDugme(self)]
+            return []
+        return []
+
+    def execute_script(self, *_: Any) -> Any:
+        return None
+
+    def delete_all_cookies(self) -> None:
+        self.temizleme += 1
+
+    def get(self, url: str) -> None:
+        self.gidilen.append(url)
+
+    def quit(self) -> None:
+        pass
+
+
+KART_X = "//div[@class='kart']//a"
+DUGME_X = "//a[@class='daha-fazla']"
+
+
+def yukleyici_kur(**ayar: Any) -> tuple[DenemeKaziyici, SahteListeSurucu]:
+    surucu = SahteListeSurucu(kart_xpath=KART_X, dugme_xpath=DUGME_X, **ayar)
+    kaziyici = DenemeKaziyici(
+        deneme_bankasi(),
+        surucu,  # type: ignore[arg-type]
+        sahte_bekleme(),
+        bekci=MagicMock(),
+        sira=MagicMock(),
+        urller=[],
+    )
+    return kaziyici, surucu
+
+
+@patch("src.collector.temel_kaziyici.time.sleep", MagicMock())
+class TestHepsiniYukle:
+    """Sabit bekleme yerine ARTIŞ beklendiğinin sınaması."""
+
+    def test_gec_gelen_kartlar_kaybolmaz(self) -> None:
+        kaziyici, surucu = yukleyici_kur(gecikme_yoklama=6)
+        kaziyici.hepsini_yukle(KART_X, DUGME_X)
+        assert surucu.gorunen == 9 + 9 * 5
+        assert surucu.kayip_parti == 0
+
+    def test_parti_inmeden_yeniden_tiklanmaz(self) -> None:
+        """Asıl kusur buydu: parti inmeden ikinci tıklama sayfayı atlatıyordu."""
+        kaziyici, surucu = yukleyici_kur(gecikme_yoklama=8)
+        kaziyici.hepsini_yukle(KART_X, DUGME_X)
+        assert surucu.tiklama == 5
+
+    def test_kartlar_hemen_gelse_de_hepsi_toplanir(self) -> None:
+        kaziyici, surucu = yukleyici_kur(gecikme_yoklama=0)
+        kaziyici.hepsini_yukle(KART_X, DUGME_X)
+        assert surucu.gorunen == 9 + 9 * 5
+
+    def test_dugme_yoksa_hic_tiklanmaz(self) -> None:
+        kaziyici, surucu = yukleyici_kur(toplam_parti=0)
+        kaziyici.hepsini_yukle(KART_X, DUGME_X)
+        assert surucu.tiklama == 0
+        assert surucu.gorunen == 9
+
+    def test_dugme_sonda_kalirsa_bos_turlarla_biter(self) -> None:
+        """Düğme kaybolmayan sitelerde durduran şey kart sayısının artmaması."""
+        kaziyici, surucu = yukleyici_kur(
+            toplam_parti=2, dugme_sonda_kalir=True, gecikme_yoklama=0
+        )
+        kaziyici.hepsini_yukle(KART_X, DUGME_X, bekleme_saniye=0.01, azami_bos_tur=3)
+        assert surucu.gorunen == 9 + 9 * 2
+        assert surucu.tiklama == 5  # 2 verimli + 3 boş tur
+
+    def test_artis_gelmezse_azami_surede_vazgecilir(self) -> None:
+        kaziyici, surucu = yukleyici_kur(toplam_parti=1, gecikme_yoklama=10**6)
+        kaziyici.hepsini_yukle(KART_X, DUGME_X, bekleme_saniye=0.01)
+        assert surucu.gorunen == 9
+
+
+@patch("src.collector.temel_kaziyici.time.sleep", MagicMock())
+class TestPartiKaybiSaptamasi:
+    """Yutulan tıklama saptanıyor mu — eksik liste sessizce kabul edilmemeli."""
+
+    def test_temiz_yukleme_true_doner(self) -> None:
+        kaziyici, _ = yukleyici_kur(gecikme_yoklama=2)
+        assert kaziyici.hepsini_yukle(KART_X, DUGME_X, bekleme_saniye=0.05) is True
+
+    def test_yutulan_tiklama_false_doner(self) -> None:
+        kaziyici, surucu = yukleyici_kur(gecikme_yoklama=0, yutulan_tiklama=1)
+        temiz = kaziyici.hepsini_yukle(KART_X, DUGME_X, bekleme_saniye=0.05)
+        assert temiz is False
+        assert surucu.gorunen == 9 + 9 * 4  # bir parti eksik
+
+    def test_sondaki_bos_turlar_kayip_sayilmaz(self) -> None:
+        """Site tükendiğinde son turlar boş geçer; bu kayıp DEĞİLDİR."""
+        kaziyici, _ = yukleyici_kur(
+            toplam_parti=2, dugme_sonda_kalir=True, gecikme_yoklama=0
+        )
+        assert (
+            kaziyici.hepsini_yukle(KART_X, DUGME_X, bekleme_saniye=0.05, azami_bos_tur=3)
+            is True
+        )
+
+
+@patch("src.collector.temel_kaziyici.time.sleep", MagicMock())
+class TestListeyiTamamla:
+    """Parti kaybında liste baştan yükleniyor mu, tükenince susuluyor mu?"""
+
+    def test_kayipta_bastan_denenir(self) -> None:
+        durum: dict[str, Any] = {}
+
+        def hazirla() -> None:
+            # ilk denemede tıklama yutulur, ikincisinde temiz
+            sayi = durum.get("sayi", 0) + 1
+            durum["sayi"] = sayi
+            durum.setdefault("ilk", None)
+            durum["surucu"] = SahteListeSurucu(
+                kart_xpath=KART_X,
+                dugme_xpath=DUGME_X,
+                gecikme_yoklama=0,
+                yutulan_tiklama=1 if sayi == 1 else None,
+            )
+            if durum["ilk"] is None:
+                durum["ilk"] = durum["surucu"]
+            kaziyici.surucu = durum["surucu"]
+
+        kaziyici, _ = yukleyici_kur()
+        kaziyici.listeyi_tamamla(hazirla, KART_X, DUGME_X, bekleme_saniye=0.05)
+        ilk_surucu = durum["ilk"]
+
+        assert durum["sayi"] == 2, "kayıptan sonra liste baştan alınmalı"
+        assert durum["surucu"].gorunen == 9 + 9 * 5
+        assert ilk_surucu.temizleme == 1, "yeniden denemeden önce oturum tazelenmeli"
+
+    def test_temizse_tek_denemede_biter(self) -> None:
+        cagri = {"sayi": 0}
+
+        def hazirla() -> None:
+            cagri["sayi"] += 1
+
+        kaziyici, _ = yukleyici_kur(gecikme_yoklama=0)
+        kaziyici.listeyi_tamamla(hazirla, KART_X, DUGME_X, bekleme_saniye=0.05)
+        assert cagri["sayi"] == 1
+
+    def test_denemeler_tukenince_sessiz_kalinmaz(self) -> None:
+        olaylar: list[Ilerleme] = []
+
+        def hazirla() -> None:
+            kaziyici.surucu = SahteListeSurucu(  # type: ignore[assignment]
+                kart_xpath=KART_X,
+                dugme_xpath=DUGME_X,
+                gecikme_yoklama=0,
+                yutulan_tiklama=1,
+            )
+
+        kaziyici, _ = yukleyici_kur()
+        kaziyici._ilerleme = olaylar.append
+        kaziyici.listeyi_tamamla(
+            hazirla, KART_X, DUGME_X, azami_deneme=2, bekleme_saniye=0.05
+        )
+
+        assert [o.asama for o in olaylar] == ["hata"]
+        assert "eksik" in olaylar[0].mesaj
