@@ -1,5 +1,11 @@
 # Sprint 0 Raporu — 9 Ağustos 2026
 
+> 🗄️ **TARİHSEL BELGE — 9 Ağustos'un durumunu dondurur, güncel sistemi anlatmaz.**
+> O gün çıkarım yerel Ollama'da koşuyordu ve okul 3090'ı bir seçenek sanılıyordu;
+> ikisi de geçerli değil. Çıkarım **EVREN**'de koşar
+> ([ADR 013](kararlar/013-evren-model-lisans-durusu.md)), 3090 yolu hiç kurulmadı.
+> Güncel ölçüm: [`SONUCLAR.md`](SONUCLAR.md) · güncel mimari: [`MIMARI.md`](MIMARI.md).
+
 Sıfırdan başlayıp uçtan uca çalışan bir sistem kuruldu. Bu doküman, ne
 yapıldığını, yol boyunca nelerin bozuk çıktığını ve neyin hâlâ eksik olduğunu
 kayıt altına alır. 24 Ağustos'ta dokümantasyon maddesi 8 (*"Karşılaşılan
@@ -182,7 +188,9 @@ düşüyor:
 Ölçüm sırasında 1,19 milyon pageout, boş bellek %15. Sebep model değil, bellek
 çakışması.
 
-**Kural: toplu çıkarım sırasında arayüzü kapatın, ya da 3090'da koşturun.**
+**Kural: toplu çıkarım sırasında arayüzü kapatın.** *(9 Ağu'da bu cümlenin
+devamı «ya da 3090'da koşturun» idi — o yol hiç kurulmadı. Bugünkü karşılığı:
+toplu çıkarım EVREN'de koşar, `make extract`.)*
 
 ---
 

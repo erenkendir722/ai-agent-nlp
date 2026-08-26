@@ -156,7 +156,8 @@ halüsinasyonda görüldü** (%0,35 ↔ %0,49). Bu beklenen davranıştır: ele�
 işi skor yükseltmek değil, kanıtı olmayan değeri düşürmektir. Bir bileşenin
 katkısını yanlış metrikte aramak, "işe yaramıyor" sonucunu verirdi.
 
-Zaman: 5 yapılandırma × 1024 kayıt, 16 işçiyle ~25 dakika. Daha hızlısı gerekirse
+Zaman: 5 yapılandırma × 1024 kayıt, 16 işçiyle ~25 dakika. **Bu ablasyon 26 Ağustos'taki
+korpus ayıklamasından ÖNCE koşuldu; bugünkü korpus 931 kayıttır** (`docs/SONUCLAR.md`). Daha hızlısı gerekirse
 `make ablasyon altin=1` yalnız altın sette etiketli kayıtları koşar — o zaman
 doluluk sütunu tüm korpusun değil, **altın set korpusunun** doluluğudur.
 
@@ -207,6 +208,7 @@ fark edilir, bayat olan doğru görünür.
 |---|---|
 | [`docs/SONUCLAR.md`](SONUCLAR.md) | Güncel sayılar — `make eval` üretir |
 | [`docs/HATA_ANALIZI.md`](HATA_ANALIZI.md) | Hata örnekleri ve sınıflandırma |
+| [`docs/JURI_PROVASI.md`](JURI_PROVASI.md) | Jüri sorularına 30 saniyelik cevaplar ve kanıt dosyaları (E-19) |
 | [`docs/ALTIN_SET_DENETIMI.md`](ALTIN_SET_DENETIMI.md) | Altın setin kendi denetimi |
 | [`docs/DAYANIKLILIK.md`](DAYANIKLILIK.md) | Bozuk/eksik girdiye karşı davranış |
 | [`docs/GORULMEMIS_METIN.md`](GORULMEMIS_METIN.md) | Eğitimde görülmemiş metin sınaması |

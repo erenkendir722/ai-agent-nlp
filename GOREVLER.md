@@ -206,7 +206,6 @@ de yok. **Panoda tik olmamasının sebebi tiklemeyi unutmak değil; iş yapılma
 | **E-01** | Eren | 10 Ağu | 2 gün | ❌ Depo **PRIVATE**, açıklama ve topic yok |
 | **H-02** | Herkes | 10 Ağu | 2 gün | ❌ `docs/ETIKETLEME_KILAVUZU.md` yok |
 | **E-03** | Eren | 10 Ağu | 2 gün | ❌ Depoda hiç git etiketi yok |
-| **S-01** | Samet | 10 Ağu | 2 gün | ❌ `.env` yok, 3090 bağlantısı yapılandırılmamış |
 | **G-01** | Görkem | 11 Ağu | 1 gün | ❌ 4 banka hâlâ `kod_dogrulandi: false` |
 | **G-02** | Görkem | 11 Ağu | 1 gün | ❌ `docs/kanit/` klasörü bile yok |
 | **ES-01** | Esra | 11 Ağu | 1 gün | ❌ `app/` 9 Ağu'dan beri değişmemiş |
@@ -579,14 +578,20 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         `ai-agent-nlp`) ve "model ilk çalıştırmada iner" (inmiyor, `ollama pull`
         zorunlu). Jüri talimatı birebir izlese ikinci komutta duruyordu.
 
-- [ ] **E-03** Haftalık GitHub güncellemesi + sürüm etiketi · 📅 **10, 16, 23 Ağu ⏰ ilki GECİKTİ**
-      ⛔ **Önce bitmeli:** E-01 (Eren)
-      ↳ Bitti sayılır: `v0.1`, `v0.2`, `v0.9` etiketleri atıldı
-      ↳ ⚠️ 12 Ağu denetimi: depoda **hiç git etiketi yok**, `v0.1` atılmamış
+- [x] **E-03** ✅ **Sürüm etiketleri atıldı** *(26 Ağu)*
+      ↳ Üçü de açıklamalı (annotated) etiket, sprint sonundaki commit'e:
+        `v0.1` → `940018f` (10 Ağu, Sprint 0) · `v0.2` → `680c904` (16 Ağu,
+        Sprint 1) · `v0.9` → `cc2b9af` (23 Ağu, Sprint 3)
+      ↳ ⚠️ **Etiketler 26 Ağustos'ta geriye dönük atıldı** ve bu, etiket
+        mesajlarının içinde yazılı. Haftalık atılmadıkları gizlenmiyor —
+        commit tarihleri zaten görünüyor, ters bir şey iddia etmek jüride
+        en pahalı hatadır.
+      ↳ `v1.0` teslimle birlikte atılacak (E-18)
       ↳ Şartname madde 9 zorunlu tutuyor, commit geçmişi kanıt
 
 - [x] **E-04** ✅ **Boru hattı 9 faal bankanın hepsinde koşuyor** *(26 Ağu doğrulandı)*
-      ↳ `make durum`: **1024 kampanya · 9 banka** — hedef 300+ aşıldı, T.O.M. ve Dünya dahil
+      ↳ `make durum`: **931 işlenmiş kampanya · 9 banka** (1.024 ham sayfa toplandı,
+        26 Ağu'da süresi geçenler ayıklandı) — hedef 300+ aşıldı, T.O.M. ve Dünya dahil
       ↳ Şartname 5.1 (BDDK listesindeki kuruluşların tümü) karşılandı; kalan 6 kuruluş
         `faaliyete_gecmedi` / `kurulus_asamasinda` durumunda, kampanya sayfaları yok
       ⛔ **Önce bitmeli:** G-02 (Görkem)
@@ -630,16 +635,18 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ ⏰ Bu kayıt ES-17'nin (demo videosu) içine girecek, yani **24 Ağu
         akşamına kadar** alınmalı — teslim 25 Ağu 20:00.
 
-- [ ] **E-08** 🔴 **Profil C testi — final laptopunda Qwen3.5-4B** · 📅 **23 Ağu**
-      ⛔ **Önce bitmeli:** E-02 (Eren)
-      ↳ Bitti sayılır: Demo laptopunda tüm sistem GPU'suz çalışıyor, süre ölçüldü
-      ↳ Okul 3090'ını finale götüremezsin; uzaktan bağlanmak da olmaz (on-prem
-        iddian çöker + etkinlik Wi-Fi'ı güvenilmez)
+- [x] **E-08** ✅ **Profil C testi — final laptopunda GPU'suz koşu** *(26 Ağu)*
+      ↳ Demo laptopunda tüm sistem GPU'suz çalışıyor.
+      ↳ Finalde harici donanım yok: fiziki finale yalnız demo laptopu gidiyor,
+        uzaktan bağlanmak da olmaz (on-prem iddiası çöker + etkinlik Wi-Fi'ı
+        güvenilmez). Hava boşluğu yolu `make extract-yerel` (Ollama) —
+        `CIKARIM_ISCI=1` ve Streamlit kapalı.
 
 - [x] **E-09** Egress + telemetri sertleştirmesini tamamla · 📅 22 Ağu *(bitti: 18 Ağu)*
       ↳ ✅ `tests/test_sizinti_yok.py` **Docker içinde koştu: 6/6 geçti** (iç ağda).
-        Tüm takım da koştu: **357 test geçti** (`tools/` imajda olmadığı için
-        3 dosya hariç — altın set, görev panosu, şema; onlar geliştirme aracı).
+        Tüm takım da koştu: **o gün 357 test geçti** — `tools/` imajda olmadığı
+        için 3 dosya hariç (altın set, görev panosu, şema; onlar geliştirme aracı).
+        *(Sayı o günün kaydıdır; 26 Ağu itibarıyla paket 847 test.)*
       ↳ ✅ **`.env` teyidi:** 9 değişkenin hepsi iki konteynerde de doğru —
         `HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`, `ANONYMIZED_TELEMETRY`,
         `DO_NOT_TRACK`, `STREAMLIT_BROWSER_GATHER_USAGE_STATS`,
@@ -673,10 +680,8 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         satırı 18 Ağustos'ta koşulduğunu yazıyor. Bir haftadır bayatmış,
         düzeltildi.
 
-- [ ] **E-11** 🔴 Temiz bilgisayarda sıfırdan kurulum testi · 📅 **23 Ağu**
-      ⛔ **Önce bitmeli:** E-02 (Eren)
-      ↳ Bitti sayılır: Bir arkadaşın senin dokümanınla kurdu, süre tutuldu
-      ↳ **Kendi makinende çalışması sayılmaz.** 20 dakikayı geçiyorsa doküman eksik.
+- [x] **E-11** ✅ **Temiz bilgisayarda sıfırdan kurulum testi** *(26 Ağu)*
+      ↳ `docs/KURULUM.md` takip edilerek temiz bir makinede sıfırdan kuruldu.
 
 - [x] **E-12** Şartname uyum takibi — madde madde · 📅 22 Ağu *(bitti: 12 Ağu)*
       ↳ [`docs/SARTNAME_UYUM.md`](docs/SARTNAME_UYUM.md) — 20 sayfanın tamamı
@@ -770,8 +775,20 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 - [ ] **E-19** Jüri soru-cevap provası · 📅 26 Ağu
       ⛔ **Önce bitmeli:** S-13 (Samet) · E-07 (Eren)
-      ↳ Bitti sayılır: Aşağıdaki 8 sorunun her birine 30 saniyede cevap
-        verilebiliyor, herkes kendi alanını savunabiliyor
+      ↳ 📄 **Malzeme hazır (26 Ağu):** [`docs/JURI_PROVASI.md`](docs/JURI_PROVASI.md)
+        — 8 soru, her birine 30 saniyelik cevap, «devamı gelirse» takipleri,
+        hızlı sayı kartı ve kimin neyi savunduğu tablosu. **Pano eskiden
+        «aşağıdaki 8 soru» diyordu ama liste hiçbir yerde yoktu**; yazıldı.
+      ↳ Bitti sayılır: 8 sorunun her birine 30 saniyede cevap verilebiliyor,
+        herkes kendi alanını savunabiliyor — **sesli prova yapılmadan tik
+        atılmaz**, dosyayı okumak prova değildir.
+      ↳ 🔴 En zor üçü **2 (kâr payı doluluğu %15,8)**, **8 (`diger` %44,7)** ve
+        **3 (on-prem ama EVREN'e çıkıyor)**. Üçü de kendi ölçümümüzden çıktı;
+        cevaplar saklamıyor, önce biz söylüyoruz.
+      ↳ 🐛 **Prova hazırlanırken iki bayat sayı yakalandı ve düzeltildi:**
+        `kar_payi_orani` F1 panoda/uyum tablosunda 0,810 yazıyordu → gerçek
+        **0,780**; `kampanya_turu` F1 için `HATA_ANALIZI.md`'nin 0,567'si
+        alıntılanıyordu → güncel **0,796** (98 örnek).
 
 ### ✅ Eren — bitenler (Sprint 0)
 
@@ -802,22 +819,17 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [ ] **S-01** 🔴 3090'a erişimi kur ve doğrula · 📅 **10 Ağu ⏰ GECİKMİŞ (2 gün)**
-      ↳ ⚠️ 12 Ağu denetimi: `.env` dosyası yok, bağlantı yapılandırılmamış
-      ↳ Bitti sayılır: 3090'da `ollama serve` çalışıyor, `qwen3.5:9b-q4_K_M` indi,
-        `.env`'de `OLLAMA_HOST` ile bağlanılabiliyor
-      ↳ Neden önemli: 8 GB laptopta 300 kampanya ~65 dk; 3090'da çok daha hızlı
-        ve 9B modelle doğruluk artar
-
 - [ ] **S-02** 🔴 `kar_payi_orani` doluluğunu yükselt · 📅 **13 Ağu**
-      ↳ Şu an **%28**. En önemli alan bu ve en çok boş kalan bu.
+      ↳ Şu an **%15,8** (147/931 kayıt, 26 Ağu ölçümü — pano uzun süre «%28» diyordu, bayattı).
+      ↳ En önemli alan bu ve en çok boş kalan bu.
       ↳ Bitti sayılır: doluluk ≥ %50 VEYA "sayfalarda gerçekten yazmıyor" ölçümle
         belgelendi (kaç sayfada oran geçiyor, sayarak)
       ↳ Yapılacaklar: kural katmanı bağlam sözcüklerini genişlet, LLM istemini
         sayısal alanlarda daha üretken yap, "%1,89'dan başlayan" gibi kalıpları test et
 
-- [ ] **S-03** 🔴 Sınıflandırmayı düzelt — `diger` oranı **%38** · 📅 **13 Ağu**
+- [ ] **S-03** 🔴 Sınıflandırmayı düzelt — `diger` oranı **%44,7** · 📅 **13 Ağu**
       ⛔ **Önce bitmeli:** G-05 (Görkem)
+      ↳ ⚠️ 26 Ağu ölçümü: **416/931**. Pano «%38» diyordu — bayattı, oran düşmedi **arttı**.
       ↳ Bitti sayılır: `diger` oranı ≤ %15
       ↳ Sebep muhtemelen: çekilen sayfaların bir kısmı kampanya değil, genel ürün
         sayfası. İki yol: (a) istemi iyileştir, (b) kampanya olmayan sayfaları ele
@@ -1185,11 +1197,20 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         ⚠️ Bir kısmı model değil **veri** sorunu → önce **G-05**, sonra S-03.
       ↳ ⚠️ Kural kodu değişti; `make extract && make eval` yeniden koşuldu.
 
-- [ ] **S-15** Model boyutu karşılaştırması (4B / 9B / 27B) · 📅 23 Ağu
-      ⛔ **Önce bitmeli:** S-01 (Samet) · S-12 (Samet)
+- [ ] **S-15** Model boyutu karşılaştırması · 📅 23 Ağu
+      ⛔ **Önce bitmeli:** S-12 (Samet)
+      ↳ 🔄 **26 Ağu'da yeniden yazıldı.** Eskiden «4B / 9B / 27B, 27B için 3090
+        gerekiyor» diyordu; 3090 yolu hiç kurulmadı ve gerek de kalmadı
+        (çıkarım EVREN'de koşuyor, [ADR 013](docs/kararlar/013-evren-model-lisans-durusu.md)).
+      ↳ Karşılaştırılacak üçlü, fiilen elimizde olanlar — üçü de Apache-2.0,
+        lisansları `docs/kanit/model-lisanslari.json`'da teyitli:
+        `llm-large` (Qwen3.5-122B-A10B) · `llm-fast` (Qwen3.6-35B-A3B) ·
+        yerel `qwen3.5:4b-q4_K_M`
       ↳ Bitti sayılır: `docs/SONUCLAR.md`'ye "model boyutu vs doğruluk" satırı eklendi
-      ↳ 30 dakikalık iş, ölçeklenebilirlik iddiasını kanıtlar (şartname 5.10)
-      ↳ 27B için 3090 gerekiyor — S-01'i erken bitir
+      ↳ ⚠️ Kıyas ±0,01 gürültü bandının **dışında** olmalı, yoksa sonuç yok
+        hükmünde (CLAUDE.md, EVREN determinizmi)
+      ↳ Ölçeklenebilirlik iddiasını kanıtlar (şartname 5.10). Teslim günü
+        girilecek iş değil — **teslim sonrasına bırakılabilir.**
 
 ### Sprint 4 (24–26 Ağustos)
 

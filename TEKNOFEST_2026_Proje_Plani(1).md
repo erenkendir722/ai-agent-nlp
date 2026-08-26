@@ -1,4 +1,18 @@
 # TEKNOFEST 2026 — Yapay Zekâ Dil Ajanları Yarışması
+
+> 🗄️ **TARİHSEL BELGE — 9 Ağustos'ta yazılan plan. Sistemin bugünkü hâlini
+> anlatmaz; bir kısmı uygulanmadan değişti.** Özellikle:
+> **(1)** Çıkarım okul 3090'ında değil, **EVREN**'de koşuyor
+> ([ADR 013](docs/kararlar/013-evren-model-lisans-durusu.md)) — 3090 yolu hiç
+> kurulmadı, plandaki 3090/27B satırları geçersizdir.
+> **(2)** Toplama «tek jenerik toplayıcı» ile değil, banka başına **Selenium
+> kazıyıcılarıyla** yapılıyor (`src/collector/kaziyicilar/`).
+> **(3)** Model üçlüsü fiilen: `llm-large` (Qwen3.5-122B-A10B) · `llm-fast`
+> (Qwen3.6-35B-A3B) · yerel yedek `qwen3.5:4b-q4_K_M`.
+>
+> **Güncel doğruluk kaynakları:** görevler → [`GOREVLER.md`](GOREVLER.md) ·
+> mimari → [`docs/MIMARI.md`](docs/MIMARI.md) · ölçüm →
+> [`docs/SONUCLAR.md`](docs/SONUCLAR.md) · kararlar → [`docs/kararlar/`](docs/kararlar/).
 ## Katılım Bankacılığı Finansal Metin Madenciliği Kategorisi (2. Senaryo)
 ### Proje Planı v2 — Kapasiteye Göre Yeniden Boyutlandırılmış
 
@@ -159,8 +173,8 @@ flowchart TB
 
 | Bileşen | Seçim | Lisans | Not |
 |---|---|---|---|
-| LLM (geliştirme + üretim) | **Qwen3.5-9B-Instruct** Q4_K_M | Apache 2.0 | ~6 GB, 3090'da çok rahat, hızlı iterasyon |
-| LLM (final sonuç tablosu) | Qwen3.6-27B Q4_K_M | Apache 2.0 | ~17 GB, 3090'a sığar. Tek ölçüm koşusu için |
+| ❌ *(uygulanmadı)* LLM (geliştirme + üretim) | **Qwen3.5-9B-Instruct** Q4_K_M | Apache 2.0 | ~6 GB, 3090'da çok rahat, hızlı iterasyon |
+| ❌ *(uygulanmadı)* LLM (final sonuç tablosu) | Qwen3.6-27B Q4_K_M | Apache 2.0 | ~17 GB, 3090'a sığar. Tek ölçüm koşusu için |
 | LLM (final sunum laptopu) | Qwen3.5-4B Q4 | Apache 2.0 | ~2,5 GB, CPU'da çalışır — **fiziki final için kritik** |
 | ❌ **Kaçının** | Llama 3.x/4, Turkish-Llama vb. | Llama Community License | "Açık gibi görünen ama kısıtlı"nın tanımı |
 | ❌ **Kaçının** | Gemma, Türkçe-Gemma, EmbeddingGemma | Gemma Terms of Use | Aynı gerekçe |
@@ -401,7 +415,7 @@ Bunu bulup kapatmak ve dokümantasyonda "şu paketlerin telemetrisini kapattık"
 
 | Profil | Donanım | Model | Not |
 |---|---|---|---|
-| A — Kurumsal | 24 GB+ VRAM | Qwen3.6-27B Q4 (~17 GB) | Okul 3090'ı; final ölçüm koşusu |
+| ❌ *(uygulanmadı)* A — Kurumsal | 24 GB+ VRAM | Qwen3.6-27B Q4 (~17 GB) | Okul 3090'ı; final ölçüm koşusu |
 | B — Geliştirme | 24 GB VRAM | **Qwen3.5-9B Q4 (~6 GB)** | Bizim ana geliştirme modeli |
 | C — Laptop / Final | 8 GB RAM, GPU yok | Qwen3.5-4B Q4 (~2,5 GB) | **Fiziki final demosu — mutlaka test edin** |
 | D — Toplu işlem | Çok çekirdek CPU | Qwen3.5-2B Q4 | Gece koşan çıkarım |
@@ -485,7 +499,7 @@ Banka çalışanı için, tüketici için değil. Bu ayrımı sunumda vurgulayı
 | Eren | Repo aç: Apache 2.0 LICENSE, README iskeleti, topic `BilisimVadisi2026`, "Türkiye Açık Kaynak Platformu" etiketi, takım adı | 45 dk |
 | Eren | Yarışma mail grubuna kayıt + finalin kesin tarih/yerini sor | 15 dk |
 | Görkem | BDDK listesini manuel çıkar → `banks.yaml` taslağı | 1 sa |
-| Samet | Okul 3090'ına erişimi test et (SSH? fiziksel? saat kısıtı var mı?) | 1 sa |
+| ❌ *(uygulanmadı)* Samet | Okul 3090'ına erişimi test et (SSH? fiziksel? saat kısıtı var mı?) | 1 sa |
 | Esra | Streamlit kurulumu, "hello world" sayfası | 45 dk |
 | **Hepsi** | **Tohum veri: herkes 10 kampanya metni kopyalar → `seed.jsonl`** | 30 dk |
 
@@ -692,7 +706,7 @@ Final fiziki ve son 24 saat orada geçecek. Bu, uzaktan çalışmaktan farklı r
 
 ### Kritik teknik kısıt
 
-**Okul 3090'ını yanınızda götüremezsiniz. Uzaktan bağlanmak da olmaz — çünkü on-prem iddianız çöker ve etkinlik Wi-Fi'ı zaten güvenilmez.**
+**Okul 3090'ını yanınızda götüremezsiniz. Uzaktan bağlanmak da olmaz — çünkü on-prem iddianız çöker ve etkinlik Wi-Fi'ı zaten güvenilmez.** *(Bu uyarı konusuzlaştı: 3090 yolu hiç kurulmadı, finale yalnız demo laptopu gidiyor — E-08.)*
 
 Dolayısıyla: **demo laptopunuz tüm sistemi yerel olarak çalıştırabilmeli.** Bu, Profil C demektir — Qwen3.5-4B Q4 (~2,5 GB), gerekirse Qwen3.5-2B. **23 Ağustos'ta mutlaka test edin.** Cevap kalitesi 9B'ye göre düşecektir; bunu telafi etmek için:
 - Chatbot cevaplarını kısa tutun (`max_tokens` düşük)
@@ -816,7 +830,7 @@ Madde No · Gereklilik · Sorumlu · Durum · Kanıt Linki
 
 1. **Eren:** Repo aç (Apache 2.0, `BilisimVadisi2026` topic, Türkiye Açık Kaynak Platformu etiketi, takım adı) — 45 dk
 2. **Eren:** Yarışma mail grubuna kaydol, finalin kesin tarih/yerini sor — 15 dk
-3. **Samet:** Okul 3090'ına erişimi netleştir (bu, 1 numaralı risk) — 1 sa
+3. ❌ *(uygulanmadı)* **Samet:** Okul 3090'ına erişimi netleştir (bu, 1 numaralı risk) — 1 sa
 4. **Görkem:** BDDK listesini manuel çıkar, `banks.yaml` taslağı — 1 sa
 5. **Esra:** Streamlit kur, hello world — 45 dk
 6. **Hepsi:** 10'ar kampanya metni kopyala → `seed.jsonl` — 30 dk

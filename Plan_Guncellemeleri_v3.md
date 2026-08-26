@@ -1,7 +1,13 @@
 # Plan Güncellemeleri — v2 → v3
+
+> 🗄️ **TARİHSEL BELGE — 14 Ağustos'ta yazıldı, sistemin bugünkü hâlini anlatmaz.**
+> Buradaki 3090 / 27B model satırları geçersizdir: çıkarım **EVREN**'de koşuyor
+> ([ADR 013](docs/kararlar/013-evren-model-lisans-durusu.md)), 3090 yolu hiç kurulmadı.
+> Güncel durum → [`GOREVLER.md`](GOREVLER.md) · [`docs/MIMARI.md`](docs/MIMARI.md) ·
+> [`docs/SONUCLAR.md`](docs/SONUCLAR.md).
 ## Mentör Geri Bildirimi Sonrası Değişiklikler
 
-**Bu dosya sadece DEĞİŞENLERİ içerir.** Ana plandaki (`TEKNOFEST_2026_Proje_Plani.md`) diğer her şey — takvim, kapasite matematiği, GitHub kontrol listesi, risk kaydı, fiziki final hazırlığı, sunum yapısı — aynen geçerli.
+**Bu dosya sadece DEĞİŞENLERİ içerir.** Ana plandaki ([`TEKNOFEST_2026_Proje_Plani(1).md`](TEKNOFEST_2026_Proje_Plani%281%29.md)) diğer her şey — takvim, kapasite matematiği, GitHub kontrol listesi, risk kaydı, fiziki final hazırlığı, sunum yapısı — aynen geçerli.
 
 ---
 
@@ -41,8 +47,8 @@ Mentörün önerisi ama **Qwen 3.7 Max kapalı ağırlıklı.** Sadece DashScope
 
 | Nerede | Model | Boyut | Lisans |
 |---|---|---|---|
-| 3090 — toplu çıkarım | **Qwen3.6-27B** (dense) Q4_K_M | ~16,8 GB | Apache 2.0 |
-| 3090 — geliştirme | Qwen3.6-35B-A3B (MoE) | 35B toplam / 3B aktif | Apache 2.0 |
+| ❌ *(uygulanmadı)* 3090 — toplu çıkarım | **Qwen3.6-27B** (dense) Q4_K_M | ~16,8 GB | Apache 2.0 |
+| ❌ *(uygulanmadı)* 3090 — geliştirme | Qwen3.6-35B-A3B (MoE) | 35B toplam / 3B aktif | Apache 2.0 |
 | **Final laptopu** | Qwen3.6-35B-A3B (MoE) veya küçük dense | 3B aktif → düşük donanımda hızlı | Apache 2.0 |
 
 ### "27B'yi 8 GB'a sığdırma" — mekanizma MoE

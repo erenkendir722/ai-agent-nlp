@@ -394,6 +394,8 @@ Sebep model değil, **bellek çakışması**: 8 GB RAM'de 3,4 GB'lık model +
 Streamlit + pandas/pyarrow aynı anda durunca sistem takasa (swap) düşüyor
 (ölçüm sırasında 1,19 milyon pageout, boş bellek %15).
 
-Sprint 1'de 300+ kampanya işlenecek: temiz koşuda ~65 dakika, çakışmalı koşuda
-~12 saat. Bu fark planı doğrudan etkiler. Toplu çıkarımı arayüz kapalıyken
-veya 3090 üzerinde koşturun.
+Bu fark planı doğrudan etkiler. **Toplu çıkarımı arayüz kapalıyken koşturun.**
+Yukarıdaki sayılar yerel Ollama yolunundur (`make extract-yerel`); orada
+`CIKARIM_ISCI=1` zorunludur. Varsayılan yol EVREN'dir (`make extract`) —
+iş bizim makinemizde koşmadığı için bu kısıtların ikisi de geçerli değil:
+ölçülen 0,43 sn/kayıt (16 işçi).

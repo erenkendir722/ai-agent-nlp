@@ -26,7 +26,7 @@ tutar; unutulan bir gereklilik yüzünden puan kaybetmenin panzehiri budur.
 
 | Eski uyarı | Ölçülen gerçek |
 |---|---|
-| ~~10 faal bankanın 2'sinde veri yok~~ | **9 faal bankanın 9'unda da kampanya var** (1024 kayıt; `make durum`). Madde 5.1 karşılandı |
+| ~~10 faal bankanın 2'sinde veri yok~~ | **9 faal bankanın 9'unda da kampanya var** (931 işlenmiş kampanya; `make durum`). Madde 5.1 karşılandı |
 | ~~Docker hiç çalıştırılmadı~~ | 18 Ağu'da koşuldu; 3 konteyner sağlıklı, hava boşluğu ölçüldü |
 | ~~Teslim tarihi belirsiz~~ | Fiziki final **27 Ağustos**, madde 3'teki takvim bağlayıcı (E-20) |
 | ~~Terim sözlüğü yok~~ | [`docs/TERIM_SOZLUGU.md`](TERIM_SOZLUGU.md) — 60+ terim ve **istem bloğu oradan besleniyor** (G-10) |
@@ -89,14 +89,14 @@ planlanmalı.
 
 | Madde | Gereklilik | Durum | Kanıt / not | Kim |
 |---|---|---|---|---|
-| 5.1 | Veri BDDK listesindeki katılım bankalarının **tümünü** içermeli | ✅ | **26 Ağu ölçümü:** `data/banks.yaml` 15 kuruluş taşıyor, **9'u faal** ve dokuzunda da kampanya var (1024 kayıt). Adil ve İktisat Katılım `faaliyete_gecmedi` — kampanya sayfaları yok, kayıt defterinde işaretli duruyorlar. Banka bazlı dağılım ve dengesizlik: [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) | Görkem |
+| 5.1 | Veri BDDK listesindeki katılım bankalarının **tümünü** içermeli | ✅ | **26 Ağu ölçümü:** `data/banks.yaml` 15 kuruluş taşıyor, **9'u faal** ve dokuzunda da kampanya var (931 işlenmiş kampanya; 1.024 ham sayfadan süresi geçenler ayıklandı). Adil ve İktisat Katılım `faaliyete_gecmedi` — kampanya sayfaları yok, kayıt defterinde işaretli duruyorlar. Banka bazlı dağılım ve dengesizlik: [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) | Görkem |
 | 5.1 | Python tabanlı toplama / web scraping / **manuel** toplama serbest | ✅ | `src/collector/toplayici.py` · manuel yedek şartnameye uygun. **24 Ağu (G-14): toplama etiğinin kanıtı yazıldı** — `docs/kanit/VERI_TOPLAMA_ETIGI.md`: robots.txt kontrol günlüğü (12 alan adı, 2'si çekilmiyor), ağa gerçekten gönderilen User-Agent başlığı, BDDK ekran görüntüsü, KVKK taraması. Yenile: `make kanit` | Görkem |
 | 5.2 | *"%2,05 kâr payı oranı"* yorumlanmalı | ✅ | `src/extraction/kural.py` · `tests/test_normalizasyon.py` · `tests/test_kural.py` | Samet |
 | **11** | **Şartnamenin kendi örnek tablosu (madde 11, A/B/C Bankası)** | ✅ | `tests/test_kural.py::TestSartnameMadde11` — 15 Ağu: 12 iddiadan 4'ü başarısızdı, düzeltildi, hibrit hat **11/11** | Eren |
 | 5.2 | *"avantajlı kâr payı fırsatı"* yorumlanmalı | 🟠 | Sayı uydurmama davranışı test edilecek | Samet (S-08) |
 | 5.2 | *"özel oranlı finansman"* yorumlanmalı | 🟠 | S-08 | Samet |
 | 5.2 | *"düşük maliyetli finansman"* yorumlanmalı | 🟠 | S-08 | Samet |
-| 5.3 | Kâr payı oranı çıkarımı | 🟡 | Doluluk **%16** (1024 kayıt), altın sette **F1 0,810**. Düşük doluluk kaynaktan geliyor: bankaların çoğu oranı kampanya sayfasında değil başvuru ekranında veriyor; kart/puan kampanyalarında oran zaten yok. Uydurmak yerine `Belirtilmemiş` deniyor | Samet (S-02) |
+| 5.3 | Kâr payı oranı çıkarımı | 🟡 | Doluluk **%15,8** (147/931 kayıt), altın sette **F1 0,780** (N=21). Düşük doluluk kaynaktan geliyor: bankaların çoğu oranı kampanya sayfasında değil başvuru ekranında veriyor; kart/puan kampanyalarında oran zaten yok. Uydurmak yerine `Belirtilmemiş` deniyor | Samet (S-02) |
 | 5.3 | Finansman tutarı · vade · taksit sayısı · tahsis ücreti · masraf bilgisi | ✅ | `src/schema.py` alanları mevcut, doluluk `docs/SONUCLAR.md`'de | Samet |
 | 5.3 | Kampanya türü · ödül miktarı · indirim oranı · alışveriş puanı · kampanya süresi · koşulları | ✅ | Şemada tam karşılığı var | Samet |
 | 5.3 | Hedef kitle bilgileri (yeni/mevcut/maaş/segment) | ✅ | `HedefKitle` enum'u dördünü de kapsıyor | Samet |
@@ -138,7 +138,7 @@ planlanmalı.
 |---|---|---|---|---|
 | 1 | Sistem mimarisi ve veri akışı | ✅ | `docs/MIMARI.md` | Eren (E-15) |
 | 2 | Kullanılan NLP yaklaşımı | ✅ | [`docs/MIMARI.md`](MIMARI.md) bölüm 3 — beş katman (normalizasyon · kural · LLM · uzlaştırma · RAG) | Eren (S-16) |
-| 3 | Kullanılan veri seti ve açıklaması | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §0 — 1024 kayıt, 9 banka, dağılım ve sınırlar; yayın sürümü `data/exports/` + veri kartı | Görkem (G-15) |
+| 3 | Kullanılan veri seti ve açıklaması | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §0 — 931 işlenmiş kampanya (1.024 ham sayfa), 9 banka, dağılım ve sınırlar; yayın sürümü `data/exports/` + veri kartı | Görkem (G-15) |
 | 4 | Veri ön işleme adımları | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §3–4 — gövde ayıklama, Türkçe küçültme tuzağı, sayı/tarih normalizasyonu | Görkem (G-15) |
 | 5 | Model veya kural yapısının açıklaması | ✅ | [`docs/MODEL_VE_KURAL_YAPISI.md`](MODEL_VE_KURAL_YAPISI.md) | Eren (S-16) |
 | 6 | Benzer ürünler nasıl karşılaştırılıyor | ✅ | [`docs/KARSILASTIRMA_YONTEMI.md`](KARSILASTIRMA_YONTEMI.md) | Eren (E-15) |
@@ -154,7 +154,7 @@ planlanmalı.
 | Ağırlık | Kriter | Bizdeki dayanak | Risk |
 |---|---|---|---|
 | **%30** | Model Başarısı ve Anlamlandırma | Altın set + `make eval` + ablasyon | 🔴 Altın set 16 Ağu'da bitmezse ölçüm yok |
-| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 5 ekran, API | ✅ **1024 kampanya / 9 faal banka** — 26 Ağu ölçümü. «96/300» hedefi 15 Ağu'dan kalma bayat satırdı |
+| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 5 ekran, API | ✅ **931 kampanya / 9 faal banka** — 26 Ağu ölçümü (1.024 ham sayfa toplandı, süresi geçenler ayıklandı). «96/300» hedefi 15 Ağu'dan kalma bayat satırdı |
 | **%20** | Teknik İmplementasyon ve Mimari | Donmuş şema, hibrit çıkarım, modüler yapı | ✅ |
 | **%20** | On-Prem Uygulanabilirlik | Docker (**18 Ağu'da koşuldu**), yerel LLM yolu, hava boşluğu ölçümü, sızıntı testleri, **[`KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md)** (LDAP/AD · vekil · ambar besleme · denetim izi) | ✅ Bu satır 18 Ağu'dan beri bayattı — Docker koşulmuştu, tabloya yansımamıştı |
 | **%10** | Yenilikçilik ve Yaratıcılık | Kanıt zinciri, sayısal doğrulama kalkanı, hava boşluğu | 🟠 Dokümantasyon netliği de bu kalemde |
@@ -229,7 +229,7 @@ planlanmalı.
 
 | Tarih | Denetleyen | Bulgu |
 |---|---|---|
-| 26 Ağu (2. tur) | Eren | **Teslim öncesi ikinci tarama — şartname baştan sona yeniden okundu.** Yeni bulgular: (1) `.venv` bayattı, `selenium` kurulu değildi ve `tests/test_kaziyicilar.py` toplama hatası tüm paketi durduruyordu — bağımlılık `requirements.txt`'te zaten vardı, kurulunca **814 test yeşil**, `ruff` temiz; (2) README üç yerde veriyi üreten yolu yanlış gösteriyordu (mermaid'de «Jenerik Toplayıcı httpx+trafilatura», lisans tablosunda `selenium` yok, klon komutunda yanlış depo adı `katilim-lens`) — üçü de düzeltildi; (3) bu panoda «96 ham kayıt» ve «96/300 kampanya» satırları bayattı, gerçek **1024**; (4) veri setinin GitHub'da eksiksiz olduğu **banka banka API ile sayılarak** teyit edildi (9/9 dizin, 1024 dosya, yerelle birebir). Açık kalan üç kalem değişmedi: PPTX, iki video, `v1.0` etiketi. |
+| 26 Ağu (2. tur) | Eren | **Teslim öncesi ikinci tarama — şartname baştan sona yeniden okundu.** Yeni bulgular: (1) `.venv` bayattı, `selenium` kurulu değildi ve `tests/test_kaziyicilar.py` toplama hatası tüm paketi durduruyordu — bağımlılık `requirements.txt`'te zaten vardı, kurulunca **o gün 814 test yeşil**, `ruff` temiz (26 Ağu akşamı 847); (2) README üç yerde veriyi üreten yolu yanlış gösteriyordu (mermaid'de «Jenerik Toplayıcı httpx+trafilatura», lisans tablosunda `selenium` yok, klon komutunda yanlış depo adı `katilim-lens`) — üçü de düzeltildi; (3) bu panoda «96 ham kayıt» ve «96/300 kampanya» satırları bayattı, gerçek **1.024 ham sayfa** (aynı gün akşamı süresi geçenler ayıklandı → **931 işlenmiş kampanya**); (4) veri setinin GitHub'da eksiksiz olduğu **banka banka API ile sayılarak** teyit edildi (9/9 dizin, 1024 dosya, yerelle birebir). Açık kalan üç kalem değişmedi: PPTX, iki video, `v1.0` etiketi. |
 | 26 Ağu | Eren | **Teslim öncesi tam tarama.** Kapanan maddeler: 5.1 (9/9 faal bankada veri), 5.5 + G-10 (terim sözlüğü isteme bağlandı), 15.1 (kapsam raporu), dokümantasyon başlıkları 3-4-8-9, depo açıklaması. Yeni ölçümler: uygunluk çıkarımı %70,1 (A-08), beş kollu ablasyon (A-09). Açık kalan: PPTX, iki video, `v1.0` etiketi. |
 | 12 Ağu | Eren | İlk tam tarama. Depo private, 2 etiket eksik, veri seti bağlantısı yok, 2 bankada veri yok, madde 9'da tarih çelişkisi bulundu. |
 | 15 Ağu | Eren | **Panonun kendisi bayattı:** depo public'e alınmış, iki etiket de eklenmiş, veri seti (96 ham kayıt) zaten depodaydı — pano üçüne de ❌ diyordu. Düzeltildi. |

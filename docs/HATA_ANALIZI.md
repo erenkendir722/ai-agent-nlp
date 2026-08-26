@@ -2,6 +2,14 @@
 
 _17 Ağustos 2026 · altın set: 60 örnek · ölçüm: `make eval` + `make eval-robust`_
 
+> ⚠️ **SAYILARI BAYAT, MODLARI GEÇERLİ (26 Ağu notu).** Bu analiz **60 örneklik**
+> altın sete ve 17 Ağustos'taki koda dayanıyor. Altın set o zamandan beri **98
+> örneğe** çıktı, kural kodu değişti ve korpus ayıklandı. Somut fark:
+> `kampanya_turu` burada **F1 0,567 · 26/60 yanlış** yazıyor, güncel ölçümde
+> **0,796** (98 örnek, 78/20/20). **Buradan sayı alıntılamayın** — güncel sayı
+> [`SONUCLAR.md`](SONUCLAR.md)'dedir. Hatanın *kökleri* ve *modları* hâlâ
+> geçerli; belgenin değeri orada.
+
 Bu belge "neyi bilmiyoruz"u yazar. Üç en hatalı alan, hatanın **kökü** ve
 alınan aksiyon. Dokümantasyon başlığı 8'in malzemesi.
 

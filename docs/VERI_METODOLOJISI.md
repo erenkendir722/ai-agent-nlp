@@ -11,16 +11,25 @@
 
 | | |
 |---|---|
-| Kampanya kaydı | **1.024** |
+| Ham kayıt (`data/raw`) | **1.024** — toplanan sayfa anlık görüntüsü |
+| İşlenen kampanya (veritabanı) | **931** — süresi geçmiş kampanyalar ayıklandıktan sonra |
 | Banka | **9** — BDDK listesindeki **faal** katılım bankalarının tamamı |
 | Şema sürümü | `1.2.0` (16 yapısal alan + uygunluk koşulları) |
-| Dolu hücre | 4.221 / 16.384 (%25,8) |
-| Uygunluk koşulu çıkarılan kayıt | 718 (%70,1) |
+| Dolu hücre | 3.752 / 14.896 (%25,2) |
+| Uygunluk koşulu çıkarılan kayıt | 814 (%87,4) |
 | Son çekim | 24 Ağustos 2026 |
 | Yayınlanan sürüm | [`data/exports/`](../data/exports/) — CSV + JSONL + [veri kartı](../data/exports/DATASET_CARD.md) |
 
 Banka ve tür bazlı dağılım, dengesizliğin etkisiyle birlikte ayrı bir dosyada:
 [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (`make kapsam` ile yeniden üretilir).
+
+> ⚠️ **İki sayı iki farklı şeydir, karıştırılmamalı.** **1.024** toplanan ham
+> sayfadır (`data/raw/**/*.json`, KVKK taraması da bu küme üzerinde koştu);
+> **931** ise ölçümlerin üzerinde koştuğu işlenmiş kampanyadır — 26 Ağustos'ta
+> süresi geçmiş kampanyalar korpustan ayıklandı. Doğruluk/doluluk/kapsam
+> sayıları hep **931**'e aittir. Tek istisna
+> [`data/ablasyon.json`](../data/ablasyon.json): ayıklamadan önce, 1.024 kayıt
+> üzerinde koşuldu ve yeniden koşulmadı — sunumda o tablo bu etiketle sunulur.
 
 > **Boş hücre her zaman eksik veri değildir.** Kart kampanyasında kâr payı oranı
 > yoktur; kampanya sayfası oranı yazmıyorsa sistem `Belirtilmemiş` der. Doluluk
