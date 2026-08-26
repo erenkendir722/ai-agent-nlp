@@ -29,8 +29,8 @@ kur:  ## sanal ortam + bağımlılıklar
 	@echo "   EVREN ile koşmak için: .env içine EVREN_API_ANAHTARI yazın."
 	@echo "   Yerel yedek için:      ollama pull qwen3.5:4b-q4_K_M"
 
-crawl:  ## banka sitelerinden kampanya topla
-	$(PYTHON) -m src.boru_hatti crawl
+crawl:  ## banka sitelerinden kampanya topla (Chrome gerekir; gorunmez=1 ile headless)
+	$(PYTHON) -m src.boru_hatti crawl $(if $(gorunmez),--gorunmez) $(if $(banka),--banka $(banka))
 
 extract:  ## ham kayıtlardan çıkarım yap (kural + LLM hibrit) — EVREN
 	$(PYTHON) -m src.boru_hatti extract

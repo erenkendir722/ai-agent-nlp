@@ -296,9 +296,9 @@ def gunluk_uret(veri: dict) -> str:
     satirlar += [
         "",
         f"**Toplam:** {toplam_izinli} URL izinli, {toplam_red} URL çekilmiyor.",
-        "Çekilmeyen URL toplayıcıya hiç gitmez — kapı `Toplayici._getir` içindedir",
-        "ve isteğe çıkmadan önce sorulur. İki farklı sebep aynı sonucu verir:",
-        "robots.txt `Disallow` ile reddetmiştir, ya da robots.txt okunamamıştır",
+        "Çekilmeyen URL kazıyıcıya hiç gitmez — kapı `TemelKaziyici._sayfayi_cek`",
+        "içindedir ve tarayıcı adrese gitmeden önce sorulur. İki farklı sebep aynı",
+        "sonucu verir: robots.txt `Disallow` ile reddetmiştir, ya da okunamamıştır",
         "(o zaman `izinli_mi` `False` döner — temkinli taraf).",
         "",
         "Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:",

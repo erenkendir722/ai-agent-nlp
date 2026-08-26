@@ -225,7 +225,7 @@ URL'den deterministik üretildiği için aynı sayfa aynı kaydın üstüne yaza
 │   ├── schema.py              ← ŞEMA SÖZLEŞMESİ (donmuş, v1.2.0)
 │   ├── boru_hatti.py          ← CLI giriş noktası
 │   ├── depolama.py            ← SQLite + SQLAlchemy
-│   ├── collector/             ← jenerik toplayıcı (banka başına özel kod YOK)
+│   ├── collector/             ← kayıt defteri + nezaket + 9 banka kazıyıcısı
 │   ├── preprocessing/         ← Türkçe normalizasyon
 │   ├── extraction/            ← kural + LLM + uzlaştırıcı
 │   ├── comparison/            ← karşılaştırma motoru + toplam maliyet

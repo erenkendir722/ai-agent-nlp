@@ -74,7 +74,8 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 |---|---|
 | Şema sözleşmesi (**DONMUŞ**) | `src/schema.py` |
 | Türkçe normalizasyon | `src/preprocessing/normalizasyon.py` |
-| Jenerik toplayıcı | `src/collector/toplayici.py` |
+| Toplama altyapısı (kayıt defteri · robots · nezaket) | `src/collector/toplayici.py` |
+| Banka kazıyıcıları (Selenium, 9 banka) | `src/collector/kaziyicilar/` |
 | Hibrit çıkarım | `src/extraction/{kural,llm,uzlastirici}.py` |
 | Ajanlar (5, dördü LLM'siz) | `src/ajanlar/{uygunluk,elestirmen,yuklem,muhakeme,orkestrator}.py` |
 | LLM sağlayıcı (EVREN / Ollama) | `src/extraction/saglayici.py` |
@@ -101,6 +102,19 @@ kez, ikisi de usulünce: v1.0.0 → v1.1.0 ([ADR 006](docs/kararlar/006-sema-v1-
 uygunluk koşulları) → v1.2.0 ([ADR 009](docs/kararlar/009-boyutlu-nicelik.md),
 `Alan.birim`). İkisi de eklemeli; kayıtlar kendi `sema_surumu`'nu taşıdığı için
 eski veri geçerli kalır.
+
+**Toplama Selenium ile yapılır, banka başına kazıyıcı vardır (26 Ağu).**
+Burada eskiden *«tek jenerik toplayıcı, banka başına özel kod YOK»* yazıyordu.
+Doğru değildi: kampanya listeleri JS ile render edilip «daha fazla yükle»
+butonuyla sayfalandığı için httpx yolu kartların çoğunu göremiyordu ve
+`data/raw`'daki 1.024 kaydı fiilen **Selenium kazıyıcıları** üretti. Kod artık
+veriyi üreten yolu gösteriyor: `src/collector/kaziyicilar/` altında dokuz sınıf.
+
+Banka başına değişen tek şey **URL keşfidir** (`kampanya_urlleri()`). Gezme,
+robots kapısı, nezaket, gövde ayıklama ve `HamKayit` üretimi `TemelKaziyici`'de
+tektir — dokuz yerde tekrarlanmaz. Başlangıç adresleri kazıyıcıda değil
+`data/banks.yaml` · `seed_urls` içindedir; `tools/robots_kanit.py` robots
+kanıtını o listeden üretiyor, ikiye ayrılırsa kanıt yanlış adresleri denetler.
 
 **Kanıtsız değer üretilemez.** Her `Alan` kaynağını, güvenini ve hangi katmandan
 geldiğini taşır. `Alan(deger=2.05, yontem="belirtilmemis")` `ValueError` fırlatır.
@@ -190,14 +204,14 @@ Bayt düzeyinde tekrarlanabilirlik şartsa: `LLM_SAGLAYICI=ollama`.
 
 ```bash
 make kur          # kurulum
-make crawl        # kampanya topla
+make crawl        # kampanya topla  [Chrome gerekir; gorunmez=1 headless, banka=0212 tek banka]
 make extract      # çıkarım (kural + LLM) -> SQLite  [EVREN]
 make extract-yerel      # aynı çıkarım, yerel Ollama ile (yedek / hava boşluğu)
 make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka, RAG indeksi kurulu mu
 make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make run          # Streamlit arayüzü
-make test         # testler (706 test)
+make test         # testler (769 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)

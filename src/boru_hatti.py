@@ -78,6 +78,19 @@ def _gunlugu_kur(ayrintili: bool = False) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _crawl_ilerlemesi(olay: object) -> None:
+    """Toplama olaylarını terminale tek satır hâlinde basar.
+
+    Toplama dakikalarca sürüyor; ilerleme görünmezse koşan mı takılan mı
+    belli olmuyor. Aynı geri çağrı arayüzde aşama göstergesini besleyecek.
+    """
+    asama = getattr(olay, "asama", "")
+    if asama == "sayfa":
+        log.info("  %s %d/%d %s", olay.banka_adi, olay.sira, olay.toplam, olay.url)  # type: ignore[attr-defined]
+    elif asama in {"atlandi", "hata"}:
+        log.info("  %s ATLANDI (%s) %s", olay.banka_adi, olay.mesaj, olay.url)  # type: ignore[attr-defined]
+
+
 def komut_crawl(args: argparse.Namespace) -> int:
     bankalar = bankalari_yukle()
     if args.banka:
@@ -85,7 +98,7 @@ def komut_crawl(args: argparse.Namespace) -> int:
         if not bankalar:
             log.error("Eşleşen banka yok: %s", args.banka)
             return 1
-    topla(bankalar, derinlik=args.derinlik, banka_basi_azami_sayfa=args.azami)
+    topla(bankalar, gorunmez=args.gorunmez or None, ilerleme=_crawl_ilerlemesi)
     return 0
 
 
@@ -344,8 +357,11 @@ def ayristirici_kur() -> argparse.ArgumentParser:
 
     p_crawl = altlar.add_parser("crawl", help="banka sitelerinden kampanya topla")
     p_crawl.add_argument("--banka", nargs="*", default=[], help="yalnız bu banka kodları")
-    p_crawl.add_argument("--derinlik", type=int, default=2)
-    p_crawl.add_argument("--azami", type=int, default=60, help="banka başına azami sayfa")
+    p_crawl.add_argument(
+        "--gorunmez",
+        action="store_true",
+        help="tarayıcıyı görünmez (headless) koştur — sunucuda/CI'da gerekir",
+    )
     p_crawl.set_defaults(islev=komut_crawl)
 
     for ad, islev, yardim in (

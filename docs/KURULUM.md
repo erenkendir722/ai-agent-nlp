@@ -14,6 +14,13 @@
 - Docker Engine 24+ ve Docker Compose v2
 - ~10 GB boş disk (model dahil)
 
+> **`crawl` konteynerde koşmaz (26 Ağu 2026).** Toplama Selenium'a taşındı ve
+> `python:3.12-slim` imajında Chrome yok. İmaja Chrome koymak, bankacılık
+> ortamına giden imajın boyutunu ve saldırı yüzeyini ciddi biçimde büyütür;
+> bilinçli olarak koyulmadı. Konteyner **toplanmış** `data/raw`'ı işler
+> (`extract`, `seed`, `durum`, arayüz). Yeniden toplamak gerekiyorsa yerel
+> kurulumda `make crawl` koşulur, `data/raw` bağlı hacme kopyalanır.
+
 ### Adımlar
 
 ```bash
@@ -39,7 +46,7 @@ Sonra boru hattı:
 
 ```bash
 docker compose exec uygulama python -m src.boru_hatti durum     # veritabanı özeti
-docker compose exec uygulama python -m src.boru_hatti crawl     # ağ gerekir
+# crawl KONTEYNERDE YOK — Chrome gerektiriyor, bkz. yukarıdaki uyarı
 docker compose exec uygulama python -m src.boru_hatti seed      # ağ GEREKMEZ
 docker compose exec uygulama python -m src.boru_hatti extract
 ```
@@ -68,7 +75,7 @@ konteyner belleği, aarch64):
 | Konteynerler arası ağ | ✅ `uygulama` → `http://ollama:11434` |
 | Konteynerde LLM çıkarımı | ✅ 19,1 sn (soğuk başlangıç, CPU) · `qwen3.5:4b-q4_K_M` |
 | `exec … boru_hatti durum` | ✅ 96 kampanya, 8 banka |
-| `exec … boru_hatti crawl` | ✅ ham kayıtları yeniden çekti (bağlı hacme yazıyor) |
+| `exec … boru_hatti crawl` | ✅ 18 Ağu'da (httpx toplayıcısıyla) çalışıyordu. **26 Ağu'dan beri geçersiz:** toplama Selenium'a taşındı, imajda Chrome yok |
 | `exec … boru_hatti seed` | ✅ **1 dk 36 sn** · hibrit çıkarım: kuraldan 10 alan, LLM'den 6 alan, 0 çelişki · «✅ Kanıt denetimi: tüm değerler ham metinde doğrulandı» |
 | Eleştirmen ajanı (konteynerde) | ✅ devreye girdi: `masrafsiz_mi reddedildi: kararı destekleyen cümle yok` |
 
@@ -176,6 +183,7 @@ docker compose exec ollama sh -c 'timeout 4 sh -c "echo > /dev/tcp/8.8.8.8/53"' 
 | Bileşen | Sürüm | Not |
 |---|---|---|
 | Python | **3.11+** | 3.10 altı çalışmaz (birleşim tipi sözdizimi) |
+| Google Chrome | güncel | **yalnız `make crawl` için.** Kampanya listeleri JS ile render ediliyor; toplama Selenium ile yapılıyor. Chrome yoksa `crawl` dışındaki her şey çalışır |
 | Ollama | 0.6+ | <https://ollama.com/download> |
 | Disk | ~5 GB | model + veri |
 | RAM | 8 GB | 4B model için yeterli |
@@ -195,7 +203,10 @@ ollama pull qwen3.5:4b-q4_K_M
 # 4) Ortam yapılandırması
 cp .env.example .env
 
-# 5) Veri topla (~5 dk, nezaket gecikmesi nedeniyle)
+# 5) Veri topla (Chrome açılır; nezaket gecikmesi nedeniyle uzun sürer)
+#    Tarayıcı penceresi istemiyorsanız:
+#        .venv/bin/python -m src.boru_hatti crawl --gorunmez
+#    Tek banka denemek için:  ... crawl --banka 0212
 make crawl
 
 # 6) Çıkarım yap
@@ -358,6 +369,8 @@ dışarıya çıkışı **altyapı düzeyinde** engellenir.
 | Bellek yetersiz / çok yavaş | Model donanıma büyük | `.env`'de `qwen3.5:2b-q4_K_M` |
 | Çıkarım aşırı yavaş (dakikalarca/kayıt) | **Aynı anda Streamlit açık** | Aşağıya bakın |
 | Toplayıcı 0 sayfa döndürüyor | Seed URL değişmiş | `data/banks.yaml` içindeki `seed_urls` güncelleyin |
+| `WebDriverException` / `chromedriver` hatası | Chrome kurulu değil ya da sürücü indirilemedi | Chrome'u kurun; ağ kısıtlıysa `webdriver-manager` yerine Selenium Manager devreye girer, ikisi de erişemiyorsa toplama yapılamaz |
+| Bir bankadan hiç kayıt gelmiyor, diğerleri geliyor | O bankanın sitesi yapı değiştirmiş — CSS seçicisi tutmuyor | `src/collector/kaziyicilar/<banka>.py` içindeki seçiciyi güncelleyin; `crawl --banka <kod>` ile tek başına deneyin |
 | `robots.txt reddetti` günlüğü | Site otomatik erişimi kapatmış | Beklenen davranış; manuel toplama kullanın |
 
 ### 8 GB makinede çıkarım hızı — ölçülmüş uyarı

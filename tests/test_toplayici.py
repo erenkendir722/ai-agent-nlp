@@ -1,3 +1,11 @@
+"""Toplama altyapısı testleri — kayıt defteri, robots kapısı, disk biçimi.
+
+Kazıyıcıların kendisi `tests/test_kaziyicilar.py` içinde sınanır. Buradaki
+testler tarayıcı gerektirmez: `bankalari_yukle` ve `kaydi_yaz` gibi
+yardımcıları arayüz ve değerlendirme kodu da çağırıyor.
+"""
+
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -6,14 +14,14 @@ import pytest
 
 from src.collector.toplayici import (
     ISTEK_ARASI_SANIYE,
+    NezaketSirasi,
     RobotsBekcisi,
-    Toplayici,
     bankalari_yukle,
     faal_bankalar,
     ham_kayitlari_oku,
     kaydi_yaz,
 )
-from src.schema import Banka, HamKayit
+from src.schema import HamKayit
 
 # -- Fake Data --
 
@@ -68,7 +76,7 @@ class TestRobotsBekcisi:
     ) -> None:
         mock_get.return_value = MagicMock(status_code=200, text="User-agent: *\\nAllow: /")
         mock_can_fetch.return_value = True
-        
+
         bekci = RobotsBekcisi("TestBot")
         assert bekci.izinli_mi("https://example.com/kampanya") is True
 
@@ -88,94 +96,90 @@ class TestRobotsBekcisi:
 
     @patch("urllib.robotparser.RobotFileParser.crawl_delay")
     @patch("httpx.Client.get")
-    def test_crawl_delay_alt_sinir_uygulanir(self, mock_get: MagicMock, mock_delay: MagicMock) -> None:
+    def test_crawl_delay_alt_sinir_uygulanir(
+        self, mock_get: MagicMock, mock_delay: MagicMock
+    ) -> None:
         mock_get.return_value = MagicMock(status_code=200, text="")
         mock_delay.return_value = 0.5  # Çok düşük
         bekci = RobotsBekcisi("TestBot")
         assert bekci.bekleme_suresi("https://example.com/") == ISTEK_ARASI_SANIYE
 
 
-class TestToplayici:
-    @pytest.fixture
-    def test_banka(self) -> Banka:
-        return Banka(
-            kod="0203",
-            ad="Test",
-            kisa_ad="Test",
-            site="https://test.com",
-            durum="faal",
-            kod_dogrulandi=True,
-            seed_urls=["https://test.com/kampanyalar"],
-            url_desenleri=["/kampanya"],
-            robots_kontrol=False,
-        )
+class TestNezaketSirasi:
+    """Alan adı başına tek sıra — `docs/kanit/VERI_TOPLAMA_ETIGI.md` beyanı."""
 
-    @patch("src.collector.toplayici.RobotsBekcisi.izinli_mi", return_value=True)
-    @patch("src.collector.toplayici.RobotsBekcisi.bekleme_suresi", return_value=0.0)
-    @patch("time.sleep")
-    @patch("httpx.Client.get")
-    def test_banka_tara_seed_url_den_kayit_uretir(
-        self, mock_get: MagicMock, mock_sleep: MagicMock, mock_bekleme: MagicMock, mock_izin: MagicMock, test_banka: Banka
-    ) -> None:
-        html = f"<html><head><title>Test Kampanya</title></head><body><p>{'Uzun bir kampanya metni denemesi. ' * 50}</p></body></html>"
-        mock_get.return_value = MagicMock(status_code=200, text=html, headers={"content-type": "text/html"})
-        
-        with Toplayici() as t:
-            kayitlar = list(t.banka_tara(test_banka))
-            
-        assert len(kayitlar) == 1
-        assert kayitlar[0].baslik == "Test Kampanya"
-        assert "Uzun bir kampanya metni" in kayitlar[0].govde_metin
+    def test_ayni_alana_ard_arda_istekte_beklenir(self) -> None:
+        bekci = MagicMock(spec=RobotsBekcisi)
+        bekci.bekleme_suresi.return_value = 2.0
+        sira = NezaketSirasi(bekci)
 
-    @patch("httpx.Client.get")
-    def test_kisa_govde_eleniyor(self, mock_get: MagicMock, test_banka: Banka) -> None:
-        html = "<html><body><p>kısa metin</p></body></html>"
-        mock_get.return_value = MagicMock(status_code=200, text=html, headers={"content-type": "text/html"})
-        with Toplayici() as t:
-            kayitlar = list(t.banka_tara(test_banka))
-        assert len(kayitlar) == 0
+        with patch("time.sleep") as uyu:
+            sira.bekle("https://a.com/1")
+            sira.bekle("https://a.com/2")
 
-    @patch("httpx.Client.get")
-    def test_url_deseni_filtresi_calisiyor(self, mock_get: MagicMock, test_banka: Banka) -> None:
-        html = f"<html><body><p>{'Uzun bir kampanya metni denemesi. ' * 50}</p><a href='/kampanya/1'>K1</a><a href='/diger/2'>D2</a></body></html>"
-        # 1 seed, 2 alt sayfa = 3 istek simülasyonu
-        mock_get.return_value = MagicMock(status_code=200, text=html, headers={"content-type": "text/html"})
-        test_banka.robots_kontrol = False
-        
-        with Toplayici(derinlik=1) as t:
-            # wait bypass
-            t._nezaketle_bekle = lambda x: None  # type: ignore
-            kayitlar = list(t.banka_tara(test_banka))
-            
-        urls = [k.url for k in kayitlar]
-        assert "https://test.com/kampanyalar" in urls
-        assert "https://test.com/kampanya/1" in urls
-        assert "https://test.com/diger/2" not in urls
+        assert uyu.call_count == 1
+        assert uyu.call_args[0][0] == pytest.approx(2.0, abs=0.1)
+
+    def test_farkli_alanlar_birbirini_bekletmez(self) -> None:
+        bekci = MagicMock(spec=RobotsBekcisi)
+        bekci.bekleme_suresi.return_value = 2.0
+        sira = NezaketSirasi(bekci)
+
+        with patch("time.sleep") as uyu:
+            sira.bekle("https://a.com/1")
+            sira.bekle("https://b.com/1")
+
+        assert uyu.call_count == 0
+
+    def test_bekleme_suresi_robotstan_gelir(self) -> None:
+        """Süre uydurulmuyor: robots.txt ne diyorsa o (alt sınırla birlikte)."""
+        bekci = MagicMock(spec=RobotsBekcisi)
+        bekci.bekleme_suresi.return_value = 7.0
+        sira = NezaketSirasi(bekci)
+
+        with patch("time.sleep") as uyu:
+            sira.bekle("https://a.com/1")
+            sira.bekle("https://a.com/2")
+
+        assert uyu.call_args[0][0] == pytest.approx(7.0, abs=0.1)
 
 
 class TestKayitYazOku:
-    def test_kaydi_yaz_json_ve_html_olusturur(self, tmp_path: Path) -> None:
-        from datetime import datetime
-        k = HamKayit(
-            banka_kodu="0203", banka_adi="Test", url="https://test.com",
-            cekim_tarihi=datetime.now(), http_durum=200, baslik="Test", 
-            ham_html="<html></html>", govde_metin="test"
+    def _kayit(self) -> HamKayit:
+        return HamKayit(
+            banka_kodu="0203",
+            banka_adi="Test",
+            url="https://test.com",
+            cekim_tarihi=datetime.now(),
+            http_durum=200,
+            baslik="Test",
+            ham_html="<html></html>",
+            govde_metin="test",
         )
-        yol = kaydi_yaz(k, dizin=tmp_path)
+
+    def test_kaydi_yaz_json_ve_html_olusturur(self, tmp_path: Path) -> None:
+        yol = kaydi_yaz(self._kayit(), dizin=tmp_path)
         assert yol.exists()
         assert yol.suffix == ".json"
         assert yol.with_suffix(".html").exists()
 
+    def test_ham_html_json_icinde_tekrarlanmaz(self, tmp_path: Path) -> None:
+        """HTML ayrı dosyada: JSON'u şişirirse `data/raw` okunamaz hâle gelir."""
+        yol = kaydi_yaz(self._kayit(), dizin=tmp_path)
+        assert "ham_html" not in yol.read_text(encoding="utf-8")
+
     def test_ham_kayitlari_oku_geri_yukler(self, tmp_path: Path) -> None:
-        from datetime import datetime
-        k = HamKayit(
-            banka_kodu="0203", banka_adi="Test", url="https://test.com",
-            cekim_tarihi=datetime.now(), http_durum=200, baslik="Test", 
-            ham_html="<html></html>", govde_metin="test"
-        )
-        kaydi_yaz(k, dizin=tmp_path)
-        
+        kaydi_yaz(self._kayit(), dizin=tmp_path)
+
         kayitlar = list(ham_kayitlari_oku(dizin=tmp_path))
         assert len(kayitlar) == 1
         assert kayitlar[0].banka_kodu == "0203"
         assert kayitlar[0].ham_html == "<html></html>"
+
+
+def test_kaldirilan_jenerik_toplayici_anlatan_hata_verir() -> None:
+    """Eski `Toplayici` içe aktarması sessiz `AttributeError` ile bitmesin."""
+    import src.collector.toplayici as modul
+
+    with pytest.raises(AttributeError, match="kaldırıldı"):
+        _ = modul.Toplayici

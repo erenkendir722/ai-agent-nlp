@@ -84,9 +84,19 @@ için BDDK/TBB kaynağından teyit edilecektir.
 
 ## 2. Toplama disiplini
 
-Tek bir jenerik toplayıcı kullanılır — **banka başına özel kod yoktur**.
-Farklılıklar `data/banks.yaml` içindeki yapılandırmayla ifade edilir; yeni bir
-banka eklemek 8 satır YAML demektir.
+Toplama **Selenium** ile yapılır ve banka başına bir kazıyıcı vardır
+(`src/collector/kaziyicilar/`). Bunun sebebi tercih değil ölçüm: katılım
+bankalarının kampanya listeleri JavaScript ile render ediliyor ve «daha fazla
+yükle» butonuyla sayfalanıyor; ham HTML'i indirip ayrıştıran bir toplayıcı
+kartların çoğunu hiç görmüyor.
+
+Banka başına değişen tek şey **URL keşfidir** — yani kampanya bağlantılarının
+o sitede nasıl bulunduğu (`kampanya_urlleri()`). Sayfaların gezilmesi, robots
+kapısı, hız sınırı, gövde ayıklama, eleme ve kayıt üretimi ortak taban sınıfta
+(`TemelKaziyici`) **tektir**; dokuz kazıyıcıda dokuz kez yazılmaz.
+
+Yeni banka eklemek: `data/banks.yaml`'a bir kayıt (kod, ad, site, `seed_urls`)
+ve bir kazıyıcı sınıfı — pratikte tek bir CSS seçicisi ya da XPath.
 
 ### 2.1 Uygulanan ilkeler
 
@@ -98,7 +108,7 @@ banka eklemek 8 satır YAML demektir.
 | Kimlik beyanı | `User-Agent: TEKNOFEST-2026-SVARTAL-Bot (+iletişim)` |
 | Erişim kapsamı | Yalnız **kamuya açık** sayfalar; giriş gerektiren alan yok |
 | Kişisel veri | **Toplanmaz** (KVKK) |
-| Derinlik | Seed URL'den en fazla 2 seviye |
+| Kapsam | Yalnız `seed_urls`'ten keşfedilen kampanya sayfaları; site geneli taranmaz |
 
 `robots.txt` okunamadığında sayfa **çekilmez** — temkinli taraf seçilir.
 
@@ -109,10 +119,19 @@ başlığı ve korpusun KVKK taraması orada, yeniden üretilebilir hâlde durur
 
 ### 2.2 URL keşfi
 
-1. `sitemap.xml` varsa oradan aday URL'ler alınır
-2. Yoksa seed URL'lerden bağlantı takibi yapılır
-3. Adaylar `url_desenleri` ile süzülür (`/kampanya`, `/finansman`, …)
-4. Yalnız aynı alan adı içindeki bağlantılar takip edilir
+1. Kampanya liste sayfası açılır (`data/banks.yaml` · `seed_urls`)
+2. Varsa «daha fazla yükle» düğmesine **kart sayısı artmayı bırakana dek** basılır
+   — düğmenin kaybolmasını beklemek yetmiyor, bazı sitelerde son sayfadan sonra
+   da görünür kalıyor
+3. Varsa sekmeler (bireysel / kurumsal) sırayla açılır
+4. Yalnız **görünür** kart bağlantıları alınır: kapalı sekmenin kartları DOM'da
+   durur ama o listeye ait değildir (`offsetParent` denetimi)
+5. Yinelenenler sıra bozulmadan atılır; her URL bir kez çekilir
+
+Tek istisna **Türkiye Finans**: kampanya listesi gezilebilir bir yapıda
+olmadığı için URL'ler `seed_urls` içinde elle tutulur (şartname 5.1 manuel
+toplamaya izin veriyor). Bedeli açıktır: yeni kampanya çıkarsa listeye elle
+eklenmelidir, otomatik keşif yoktur.
 
 ### 2.3 Saklanan veri
 
@@ -133,11 +152,11 @@ riski doğar. Üst veri JSON'ları izlenebilirlik kanıtı olarak kalır.
 
 | Adım | Ne yapar | Nerede |
 |---|---|---|
-| Gövde ayıklama | Menü, altbilgi, reklamı atıp asıl metni bırakır (`trafilatura`) | `collector/toplayici.py` |
+| Gövde ayıklama | Menü, altbilgi, reklamı atıp asıl metni bırakır (`trafilatura`) | `collector/temel_kaziyici.py` |
 | Boşluk düzeltme | Görünmez karakterler, çoklu boşluk, NFC normalizasyonu | `preprocessing/normalizasyon.py` |
 | Türkçe küçültme | `İ/I/ı/i` doğru eşlemesi | `tr_kucult()` |
 | Arama anahtarı | Şapkalı harf, kesme işareti, aksan sadeleştirme | `arama_anahtari()` |
-| Kısa sayfa eleme | 200 karakterden kısa gövdeler kampanya sayfası sayılmaz | `toplayici.py` |
+| Kısa sayfa eleme | 200 karakterden kısa gövdeler kampanya sayfası sayılmaz | `EN_AZ_GOVDE_UZUNLUGU` |
 
 ### 3.1 Türkçe'ye özgü tuzaklar ve çözümleri
 

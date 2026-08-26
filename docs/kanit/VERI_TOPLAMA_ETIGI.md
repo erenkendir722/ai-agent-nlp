@@ -17,8 +17,10 @@ Beyan tek başına kanıt değildir: aşağıdaki tabloların hepsi yeniden üre
 | [`robots-kontrol-gunlugu.json`](robots-kontrol-gunlugu.json) | Aynı günlüğün makine okunur hâli (HTTP durumu, sha256) | `make kanit-robots` |
 | [`robots/`](robots/) | Çekilen robots.txt dosyalarının bayt kopyaları | `make kanit-robots` |
 | [`KVKK_TARAMASI.md`](KVKK_TARAMASI.md) | Toplanan metinde kişisel veri taraması (1024 kayıt) | `make kanit-kvkk` |
-| `src/collector/toplayici.py` | Nezaket kurallarının **uygulandığı** kod — beyan değil, davranış | — |
-| `tests/test_toplayici.py` | robots kapısının testleri | `make test` |
+| `src/collector/toplayici.py` | Nezaket kurallarının **uygulandığı** kod (`RobotsBekcisi`, `NezaketSirasi`) — beyan değil, davranış | — |
+| `src/collector/temel_kaziyici.py` | Kapının **çağrıldığı** yer: her kampanya sayfası çekilmeden önce | — |
+| `tests/test_toplayici.py` | robots kapısının ve nezaket sırasının testleri | `make test` |
+| `tests/test_kaziyicilar.py` | Kazıyıcının reddedilen URL'i gerçekten çekmediğinin testi | `make test` |
 
 Günlükler **tarihlidir**. Banka siteleri robots.txt dosyalarını değiştirir; bayat
 bir günlük yanlış bilgi verir. Teslim öncesi son kez koşulur.
@@ -43,9 +45,17 @@ ne zaman alındığı belli.
 
 ## 2. robots.txt — kontrol edildi, uyuldu
 
-Toplayıcı her alan adı için robots.txt'i ayrıştırır ve **her istekten önce**
-izin sorar (`Toplayici._getir` → `RobotsBekcisi.izinli_mi`). robots.txt
-okunamazsa sayfa **çekilmez** — temkinli taraf seçilir.
+Kazıyıcı her alan adı için robots.txt'i ayrıştırır ve **her istekten önce**
+izin sorar (`TemelKaziyici._sayfayi_cek` → `RobotsBekcisi.izinli_mi`).
+robots.txt okunamazsa sayfa **çekilmez** — temkinli taraf seçilir. Kapı
+tarayıcı adrese gitmeden önce sorulur: reddedilen URL'e `driver.get()` hiç
+çağrılmaz (`tests/test_kaziyicilar.py::test_robots_reddettigi_url_hic_cekilmez`).
+
+> **26 Ağu 2026 — aşağıdaki koşu YENİLENMELİ.** Toplama Selenium kazıyıcılarına
+> taşınırken denetlenen URL kümesi değişti: Türkiye Finans 1 yerine 14 adresle,
+> TOM Katılım gerçek kampanya alan adıyla (`tombankhadi.com`), Vakıf Katılım
+> 3 yerine 2 adresle listede. Aşağıdaki sayılar 24 Ağustos koşusuna aittir ve
+> yeni kümeyi kapsamaz. Teslimden önce `make kanit-robots` koşulmalı.
 
 24 Ağustos 2026 koşusunun sonucu ([tam günlük](ROBOTS_KONTROL_GUNLUGU.md)):
 
@@ -96,11 +106,11 @@ uymanın anlamını da ortadan kaldırırdı.
 | İlke | Değer | Kod |
 |---|---|---|
 | İstekler arası asgari bekleme | 2 saniye | `ISTEK_ARASI_SANIYE` |
-| Eşzamanlı istek | **yok** — alan adı başına tek sıra | `Toplayici._nezaketle_bekle` |
+| Eşzamanlı istek | **yok** — alan adı başına tek sıra | `NezaketSirasi.bekle` |
 | `Crawl-delay` | robots.txt değeri ile 2 saniyenin **büyüğü** | `RobotsBekcisi.bekleme_suresi` |
-| Tarama derinliği | seed URL'den en fazla 2 seviye | `Toplayici.derinlik` |
-| Banka başına azami sayfa | 60 | `banka_basi_azami_sayfa` |
-| Zaman aşımı | 20 sn | `ZAMAN_ASIMI` |
+| Tarama kapsamı | yalnız `seed_urls`'ten keşfedilen kampanya sayfaları; site geneli taranmaz | `TemelKaziyici.kampanya_urlleri` |
+| Sayfa zaman aşımı | 180 sn | `tarayici.SAYFA_ZAMAN_ASIMI` |
+| robots.txt zaman aşımı | 10 sn | `ROBOTS_ZAMAN_ASIMI` |
 
 İki haftaya yayılmış 1024 sayfa, saniyede birden az istek demektir. Hiçbir
 bankanın sunucusuna ölçülebilir yük binmedi.

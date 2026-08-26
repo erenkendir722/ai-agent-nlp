@@ -1,11 +1,25 @@
-"""Jenerik kampanya toplayıcı (Katman 0).
+"""Toplama katmanının çekirdeği (Katman 0) — kayıt defteri, nezaket, diske yazma.
 
-Banka başına ÖZEL KOD YOKTUR. Tüm bankalar tek kod yolundan geçer; farklılıklar
-`data/banks.yaml` içindeki yapılandırmayla ifade edilir. Yeni banka eklemek
-8 satır YAML demektir — jürinin "bankalar sitelerini değiştirirse?" sorusunun
-cevabı budur.
+Bu dosya kampanya sayfalarını KENDİ ÇEKMEZ. Çekme işi banka başına yazılmış
+Selenium kazıyıcılarındadır (`src/collector/kaziyicilar/`); burada onların
+ortak altyapısı durur:
 
-Toplama disiplini (docs/VERI_METODOLOJISI.md ile aynı, jüri okuyacak):
+    bankalari_yukle / faal_bankalar   ← data/banks.yaml kayıt defteri
+    RobotsBekcisi                     ← robots.txt kapısı + crawl-delay
+    NezaketSirasi                     ← alan adı başına tek sıra, hız sınırı
+    kaydi_yaz / ham_kayitlari_oku     ← data/raw disk biçimi
+    topla                             ← `make crawl` giriş noktası
+
+TARİHÇE — neden banka başına kod var (26 Ağu 2026):
+    v0'da tek jenerik httpx toplayıcı vardı: sitemap + seed URL'den 2 seviye
+    derinlik. Katılım bankalarının kampanya listeleri JavaScript ile render
+    edilip «daha fazla yükle» butonuyla sayfalandığı için o yol kartların
+    çoğunu hiç göremiyordu. `data/raw` altındaki kayıtları fiilen üreten şey
+    Selenium kazıyıcılarıydı; kod ise hâlâ jenerik toplayıcıyı gösteriyordu.
+    Jüriye anlatılan mimari ile veriyi üreten mimari ayrı olduğu için jenerik
+    yol kaldırıldı, kazıyıcılar depoya alındı. Ayrıntı: docs/VERI_METODOLOJISI.md
+
+Toplama disiplini (docs/kanit/VERI_TOPLAMA_ETIGI.md ile aynı, jüri okuyacak):
   - robots.txt kontrolü zorunlu, crawl-delay uygulanır
   - İstek arası en az 2 saniye, eşzamanlı istek yok
   - Tanımlı User-Agent, iletişim adresiyle
@@ -20,16 +34,17 @@ import logging
 import time
 import urllib.robotparser
 from collections.abc import Iterator
-from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin, urlparse
 
 import httpx
-import trafilatura
 import yaml
-from selectolax.parser import HTMLParser
 
 from src.schema import Banka, HamKayit
+
+if TYPE_CHECKING:  # yalnız tip denetimi için — selenium'u içeri çekmez
+    from src.collector.temel_kaziyici import IlerlemeGeriCagrisi
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +54,7 @@ HAM_DIZIN = KOK / "data" / "raw"
 
 KULLANICI_AJANI = "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
 ISTEK_ARASI_SANIYE = 2.0
-ZAMAN_ASIMI = 20.0
+ROBOTS_ZAMAN_ASIMI = 10.0  # robots.txt çekimi; sayfa zaman aşımı tarayici.py'de
 EN_AZ_GOVDE_UZUNLUGU = 200  # bundan kısa metinler kampanya sayfası değildir
 
 
@@ -80,7 +95,7 @@ class RobotsBekcisi:
         rp = urllib.robotparser.RobotFileParser()
         rp.set_url(urljoin(alan, "/robots.txt"))
         try:
-            with httpx.Client(timeout=10.0, follow_redirects=True) as istemci:
+            with httpx.Client(timeout=ROBOTS_ZAMAN_ASIMI, follow_redirects=True) as istemci:
                 yanit = istemci.get(
                     urljoin(alan, "/robots.txt"),
                     headers={"User-Agent": self.kullanici_ajani},
@@ -115,157 +130,25 @@ class RobotsBekcisi:
         return max(float(gecikme or 0.0), ISTEK_ARASI_SANIYE)
 
 
-# ---------------------------------------------------------------------------
-# Toplayıcı
-# ---------------------------------------------------------------------------
+class NezaketSirasi:
+    """Alan adı başına tek sıra: iki istek arasına asgari süreyi koyar.
 
+    Eşzamanlı istek YOKTUR — sıra tek iş parçacığında ilerler. `docs/kanit/
+    VERI_TOPLAMA_ETIGI.md` bunu «alan adı başına tek sıra» diye beyan eder;
+    beyanı uygulayan kod burasıdır.
+    """
 
-class Toplayici:
-    """Tek kod yolu, tüm bankalar."""
-
-    def __init__(
-        self,
-        *,
-        derinlik: int = 2,
-        banka_basi_azami_sayfa: int = 60,
-        kullanici_ajani: str = KULLANICI_AJANI,
-    ) -> None:
-        self.derinlik = derinlik
-        self.banka_basi_azami_sayfa = banka_basi_azami_sayfa
-        self.bekci = RobotsBekcisi(kullanici_ajani)
-        self.istemci = httpx.Client(
-            timeout=ZAMAN_ASIMI,
-            follow_redirects=True,
-            headers={
-                "User-Agent": kullanici_ajani,
-                "Accept-Language": "tr-TR,tr;q=0.9",
-            },
-        )
+    def __init__(self, bekci: RobotsBekcisi | None = None) -> None:
+        self.bekci = bekci or RobotsBekcisi()
         self._son_istek: dict[str, float] = {}
 
-    def __enter__(self) -> Toplayici:
-        return self
-
-    def __exit__(self, *_: object) -> None:
-        self.istemci.close()
-
-    # -- Alt seviye ------------------------------------------------------
-
-    def _nezaketle_bekle(self, url: str) -> None:
+    def bekle(self, url: str) -> None:
         alan = urlparse(url).netloc
         gecikme = self.bekci.bekleme_suresi(url)
         gecen = time.monotonic() - self._son_istek.get(alan, 0.0)
         if gecen < gecikme:
             time.sleep(gecikme - gecen)
         self._son_istek[alan] = time.monotonic()
-
-    def _getir(self, url: str, banka: Banka) -> httpx.Response | None:
-        if banka.robots_kontrol and not self.bekci.izinli_mi(url):
-            log.info("robots.txt reddetti, atlanıyor: %s", url)
-            return None
-        self._nezaketle_bekle(url)
-        try:
-            yanit = self.istemci.get(url)
-        except httpx.HTTPError as hata:
-            log.warning("İstek başarısız %s: %s", url, hata)
-            return None
-        if yanit.status_code != 200:
-            log.info("HTTP %s: %s", yanit.status_code, url)
-            return None
-        if "text/html" not in yanit.headers.get("content-type", ""):
-            return None
-        return yanit
-
-    # -- URL keşfi -------------------------------------------------------
-
-    def _sitemap_urlleri(self, banka: Banka) -> list[str]:
-        """sitemap.xml varsa oradan URL topla — en temiz keşif yolu."""
-        if not banka.site:
-            return []
-        yanit = self._getir(urljoin(banka.site, "/sitemap.xml"), banka)
-        if yanit is None:
-            return []
-        # Basit çıkarım: iç içe sitemap indekslerini takip etmiyoruz (v0 kapsamı)
-        return [
-            parca.split("</loc>")[0].strip()
-            for parca in yanit.text.split("<loc>")[1:]
-        ]
-
-    def _sayfadaki_baglantilar(self, html: str, temel_url: str) -> list[str]:
-        agac = HTMLParser(html)
-        baglantilar = []
-        for dugum in agac.css("a[href]"):
-            href = (dugum.attributes.get("href") or "").strip()
-            if not href or href.startswith(("#", "mailto:", "tel:", "javascript:")):
-                continue
-            baglantilar.append(urljoin(temel_url, href).split("#")[0])
-        return baglantilar
-
-    def _desene_uyuyor_mu(self, url: str, banka: Banka) -> bool:
-        if not banka.url_desenleri:
-            return True
-        return any(desen in url.lower() for desen in banka.url_desenleri)
-
-    def _ayni_site_mi(self, url: str, banka: Banka) -> bool:
-        return urlparse(url).netloc.endswith(urlparse(banka.site).netloc.removeprefix("www."))
-
-    # -- Ana akış --------------------------------------------------------
-
-    def banka_tara(self, banka: Banka) -> Iterator[HamKayit]:
-        """Bir bankanın kampanya sayfalarını gezip ham kayıt üretir."""
-        if not banka.kampanya_beklenir_mi:
-            log.info("%s faaliyette değil, atlanıyor (durum=%s)", banka.kisa_ad, banka.durum)
-            return
-
-        gorulen: set[str] = set()
-        sira: list[tuple[str, int]] = [(u, 0) for u in banka.seed_urls]
-        sira += [
-            (u, 1)
-            for u in self._sitemap_urlleri(banka)
-            if self._desene_uyuyor_mu(u, banka)
-        ][: self.banka_basi_azami_sayfa]
-
-        cikan = 0
-        while sira and cikan < self.banka_basi_azami_sayfa:
-            url, seviye = sira.pop(0)
-            if url in gorulen or seviye > self.derinlik:
-                continue
-            gorulen.add(url)
-
-            yanit = self._getir(url, banka)
-            if yanit is None:
-                continue
-
-            govde = trafilatura.extract(
-                yanit.text,
-                include_comments=False,
-                include_tables=True,
-                favor_recall=True,
-            ) or ""
-
-            if len(govde) >= EN_AZ_GOVDE_UZUNLUGU and self._desene_uyuyor_mu(url, banka):
-                cikan += 1
-                yield HamKayit(
-                    banka_kodu=banka.kod,
-                    banka_adi=banka.ad,
-                    url=url,
-                    cekim_tarihi=datetime.now(),
-                    http_durum=yanit.status_code,
-                    baslik=self._baslik(yanit.text),
-                    ham_html=yanit.text,
-                    govde_metin=govde,
-                )
-
-            if seviye < self.derinlik:
-                for bag in self._sayfadaki_baglantilar(yanit.text, url):
-                    if bag not in gorulen and self._ayni_site_mi(bag, banka):
-                        if self._desene_uyuyor_mu(bag, banka):
-                            sira.append((bag, seviye + 1))
-
-    @staticmethod
-    def _baslik(html: str) -> str | None:
-        dugum = HTMLParser(html).css_first("title")
-        return dugum.text(strip=True) if dugum else None
 
 
 # ---------------------------------------------------------------------------
@@ -296,21 +179,86 @@ def ham_kayitlari_oku(dizin: Path = HAM_DIZIN) -> Iterator[HamKayit]:
         yield HamKayit.model_validate(veri)
 
 
-def topla(bankalar: list[Banka] | None = None, **secenekler: object) -> int:
-    """`make crawl` giriş noktası. Toplanan sayfa sayısını döner."""
+# ---------------------------------------------------------------------------
+# Toplama akışı
+# ---------------------------------------------------------------------------
+
+
+def topla(
+    bankalar: list[Banka] | None = None,
+    *,
+    gorunmez: bool | None = None,
+    ilerleme: IlerlemeGeriCagrisi | None = None,
+    dizin: Path = HAM_DIZIN,
+) -> int:
+    """`make crawl` giriş noktası. Diske yazılan sayfa sayısını döner.
+
+    Tek tarayıcı oturumu tüm bankalar için kullanılır: her banka için ayrı
+    Chrome açmak makinede ~4 sn/banka bedel ve gereksiz bellek demek.
+
+    `ilerleme` verilirse toplama olayları oraya akar (arayüzün aşama
+    göstergesi bunun üzerine kurulacak). Verilmezse yalnız günlüğe yazılır.
+
+    selenium yalnız BURADA içeri alınır: `bankalari_yukle` gibi hafif
+    yardımcıları çağıran arayüz ve testler tarayıcı bağımlılığı olmadan
+    çalışabilsin diye.
+    """
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+
+    from src.collector.kaziyicilar import kaziyici_sinifi
+    from src.collector.tarayici import surucu_olustur
+
     hedefler = faal_bankalar(bankalar)
+    if not hedefler:
+        log.warning("Kampanya beklenen banka yok — toplama yapılmadı.")
+        return 0
+
+    bekci = RobotsBekcisi()
+    sira = NezaketSirasi(bekci)
     toplam = 0
-    with Toplayici(**secenekler) as toplayici:  # type: ignore[arg-type]
+
+    log.info("Tarayıcı başlatılıyor...")
+    surucu, bekleme = surucu_olustur(gorunmez=gorunmez)
+    try:
         for banka in hedefler:
+            sinif = kaziyici_sinifi(banka.kod)
+            if sinif is None:
+                log.warning(
+                    "%-22s kazıyıcısı yok (kod %s) — atlanıyor", banka.kisa_ad, banka.kod
+                )
+                continue
+
+            kaziyici = sinif(
+                banka, surucu, bekleme, bekci=bekci, sira=sira, ilerleme=ilerleme
+            )
             sayac = 0
-            for kayit in toplayici.banka_tara(banka):
-                kaydi_yaz(kayit)
+            for kayit in kaziyici.tara():
+                kaydi_yaz(kayit, dizin)
                 sayac += 1
             log.info("%-22s %3d sayfa", banka.kisa_ad, sayac)
             toplam += sayac
+    finally:
+        log.info("Tarayıcı kapatılıyor...")
+        surucu.quit()
+
     log.info("TOPLAM: %d sayfa, %d banka", toplam, len(hedefler))
     return toplam
+
+
+def __getattr__(ad: str) -> Any:
+    """Kaldırılan jenerik toplayıcıyı sessizce `None` yapmamak için.
+
+    `Toplayici` sınıfı 26 Ağu 2026'da kaldırıldı. Eski bir içe aktarma
+    kalırsa `AttributeError` yerine ne olduğunu anlatan bir hata verilsin.
+    """
+    if ad == "Toplayici":
+        raise AttributeError(
+            "Jenerik httpx toplayıcısı (`Toplayici`) kaldırıldı — kampanya "
+            "sayfaları JS ile render edildiği için kartların çoğunu göremiyordu. "
+            "Yerine banka başına Selenium kazıyıcıları geçti: "
+            "`src.collector.kaziyicilar`. Toplama için `topla()` kullanın."
+        )
+    raise AttributeError(f"module {__name__!r} has no attribute {ad!r}")
 
 
 if __name__ == "__main__":

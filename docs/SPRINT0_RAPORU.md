@@ -60,7 +60,7 @@ Kalite: 100 test geçiyor, `ruff` temiz, 72 bağımlılığın tamamı izin veri
 |---|---|---|
 | Sözleşme | `src/schema.py` | Donmuş veri şeması (v1.0.0), kanıt zinciri gömülü |
 | Ön işleme | `src/preprocessing/normalizasyon.py` | Türkçe normalizasyon |
-| Toplama | `src/collector/toplayici.py` | Tek jenerik toplayıcı, robots.txt uyumlu |
+| Toplama | `src/collector/toplayici.py` | Tek jenerik toplayıcı, robots.txt uyumlu _(26 Ağu'da Selenium kazıyıcılarıyla değiştirildi — bkz. §8 notu)_ |
 | Çıkarım | `src/extraction/{kural,llm,uzlastirici}.py` | Hibrit çıkarım |
 | Depolama | `src/depolama.py` | SQLite + SQLAlchemy |
 | Karşılaştırma | `src/comparison/karsilastirma.py` | Deterministik, 5 kriter |
@@ -222,6 +222,17 @@ Bunlar eksik değil, **kapsam kararıdır**. Dokümantasyonda savunulacak.
 | Banka başına özel scraper | Jenerik toplayıcı + YAML | Yeni banka = 8 satır YAML |
 | Playwright / JS render | Statik HTML + manuel yedek | Şartname manuel toplamaya izin veriyor |
 | Ayrı mikroservis mimarisi | Python paketi + ince API | Entegre edilebilirlik kanıtı yeterli |
+
+> **26 Ağustos 2026 — bu tablonun iki satırı geri alındı.** «Banka başına özel
+> scraper» ve «JS render» kalemleri kapsam dışı bırakılmıştı; ölçüm bu kararı
+> bozdu. Katılım bankalarının kampanya listeleri JavaScript ile render edilip
+> «daha fazla yükle» butonuyla sayfalanıyor, yani statik HTML yolu kartların
+> çoğunu hiç görmüyor. `data/raw` altındaki 1.024 kaydı fiilen üreten şey
+> Selenium kazıyıcılarıydı; kod ise hâlâ jenerik toplayıcıyı gösteriyordu.
+> Kod veriyi üreten yola taşındı: `src/collector/kaziyicilar/`, dokuz sınıf.
+> Banka başına değişen tek şey URL keşfi; gezme, robots kapısı, nezaket ve
+> gövde ayıklama hâlâ ortak taban sınıfta tek. Ayrıntı:
+> [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §2.
 
 ---
 

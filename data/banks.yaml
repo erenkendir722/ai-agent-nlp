@@ -18,6 +18,18 @@
 # `kod_dogrulandi: false` olan satırlar Görkem tarafından BDDK/TBB kaynağından
 # teyit edilmeli. Kod yalnız kimlik üretiminde kullanılır; yanlış olması
 # çıkarımı bozmaz ama yayınlanan veri setinde hata olur.
+#
+# `seed_urls` = KAZIMANIN BAŞLADIĞI ADRESLER (26 Ağu 2026'dan beri).
+#   Kazıyıcılar (`src/collector/kaziyicilar/`) başlangıç adreslerini buradan
+#   okur; ayrıca `tools/robots_kanit.py` robots.txt kanıtını yine bu liste
+#   üzerinden üretir. Yani burası fiilen çekilen adresleri göstermezse
+#   şartname 5.1 kanıtı yanlış adresleri denetlemiş olur. Bir bankanın adresi
+#   değişirse düzeltme Python dosyasına değil BURAYA yazılır.
+#   Sınama: `tests/test_kaziyicilar.py`
+#
+# `url_desenleri` ARTIK KULLANILMIYOR. Kaldırılan jenerik httpx toplayıcısının
+#   URL süzgeciydi; kazıyıcılar kampanya bağlantılarını CSS seçicisiyle
+#   buluyor. Alan `src/schema.py` donmuş olduğu için silinmedi (ADR gerekir).
 
 - kod: "0203"
   ad: "Albaraka Türk Katılım Bankası A.Ş."
@@ -25,7 +37,7 @@
   site: "https://www.albaraka.com.tr"
   durum: "faal"
   kod_dogrulandi: true
-  not: "JS lazy load — 'daha fazla kampanya göster' butonu. Scraper ilk grubu alır, geri kalan MANUEL."
+  not: "JS lazy load. Kazıyıcı «daha fazla kampanya» butonuna kart sayısı artmayı bırakana dek basar."
   seed_urls:
     - "https://www.albaraka.com.tr/tr/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/urun"]
@@ -37,7 +49,7 @@
   site: "https://www.kuveytturk.com.tr"
   durum: "faal"
   kod_dogrulandi: true
-  not: "JS lazy load — 'daha fazla yükle' butonu. İlk grup alınır, geri kalan MANUEL."
+  not: "JS lazy load. Kazıyıcı «daha fazla yükle» butonuna liste bitene dek basar."
   seed_urls:
     - "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin"
     - "https://www.kuveytturk.com.tr/kampanyalar/isim-icin"
@@ -50,8 +62,27 @@
   site: "https://www.turkiyefinans.com.tr"
   durum: "faal"
   kod_dogrulandi: true
+  not: >-
+    TEK İSTİSNA: buradaki adresler LİSTE değil DETAY sayfalarıdır. Kampanya
+    listesi SharePoint .aspx altında ve kart bağlantıları gezilebilir bir
+    listede durmuyor; bu yüzden URL'ler elle tutulur (şartname 5.1 manuel
+    toplamaya izin veriyor). Yeni kampanya çıkarsa BU LİSTEYE eklenmeli —
+    otomatik keşif yok, eksik kalırsa sistem uyarmaz.
   seed_urls:
-    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/banka-calisanlarina-ozel-ihtiyac-finansmani.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/mastercard-business-kart-firsat.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/tuzel-onbarding-avantaj-paketi.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yakininizi-davet-edin.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ihtiyac-finansmani-kampanyasi.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/fatura-2300tl-bonus.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/turkiye-finans-avantajlariyla-mobilden-tanis.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/masrafsiz-bankacilik.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/emeklilere-nakit-promosyon.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/bes-ile-yarininiza-deger-katin.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/gunluk-hesap-vade-kampanyasi.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/katilim-hesabi-kampanyasi.aspx"
+    - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yeni-yatirim-hesabiniza-sifir-komisyon.aspx"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/bireysel"]
   robots_kontrol: true
 
@@ -72,10 +103,13 @@
   site: "https://www.vakifkatilim.com.tr"
   durum: "faal"
   kod_dogrulandi: true
+  not: >-
+    Sayfalama URL parametresiyle değil «daha fazla yükle» butonuyla ilerliyor;
+    kart kapsayıcısı her turda yeniden çizildiği için kazıyıcı bağlantıları
+    sonda değil HER TURDA topluyor. Eski ?page=2/3 adresleri kaldırıldı.
   seed_urls:
-    - "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar"
-    - "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=2&kendimIcin=false&isimIcin=false"
-    - "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=3&kendimIcin=false&isimIcin=false"
+    - "https://vakifkatilim.com.tr/tr/kendim-icin/kampanyalar"
+    - "https://vakifkatilim.com.tr/tr/isim-icin/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
   robots_kontrol: true
 
@@ -111,12 +145,13 @@
   durum: "faal"
   kod_dogrulandi: true
   not: >-
-    9 Ağustos 2026 sondajında ana sayfada kampanya bağlantısı bulunamadı;
-    site büyük ölçüde JS ile render ediliyor olabilir. GÖRKEM: kampanya
-    sayfasını elle bul, buraya yaz. Bulunamazsa manuel toplama yedeği
-    kullanılacak (şartname izin veriyor).
-  seed_urls: 
-    - https://tombank.com.tr/kampanyalar.html
+    Kampanyalar KURUMSAL SİTEDE DEĞİL: `tombankhadi.com` altındaki «hadi
+    kazan» bölümünde. 9 Ağustos sondajında `tombank.com.tr/kampanyalar.html`
+    boş dönüyordu, sebebi buymuş. robots.txt kontrolü alan adını URL'den
+    türettiği için gerçek adrese sorulur. Süresi geçmiş kampanyalar başlıktan
+    elenir (sitede yazım tutarsız, varyantlar kazıyıcıda listeli).
+  seed_urls:
+    - "https://tombankhadi.com/hadi-kazan/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kart"]
   robots_kontrol: true
 
@@ -126,7 +161,7 @@
   site: "https://dunyakatilim.com.tr"
   durum: "faal"
   kod_dogrulandi: true
-  not: "JS tab (kendim/işim) + 'daha fazla' butonu. URL değişmiyor, MANUEL toplama gerekli."
+  not: "JS sekmesi (bireysel/kurumsal) + «daha fazla» butonu. URL değişmediği için kazıyıcı sekmeleri sırayla tıklar."
   seed_urls:
     - "https://dunyakatilim.com.tr/kampanyalar"
   url_desenleri: ["/kampanya", "/finansman", "/kart"]

@@ -4,9 +4,11 @@ pyyaml==6.0.2
 python-dotenv==1.0.1
 
 # --- Toplama (Katman 0) ---
-httpx==0.27.2
-trafilatura==1.12.2
-selectolax==0.3.27
+httpx==0.27.2          # robots.txt kapisi
+trafilatura==1.12.2    # govde ayiklama
+selectolax==0.3.27     # HTML ayristirma (cikarim katmani)
+selenium==4.27.1       # kampanya listeleri JS ile render ediliyor
+webdriver-manager==4.0.2   # chromedriver indirimi; yoksa Selenium Manager devreye girer
 
 # --- Depolama (Katman 3) ---
 SQLAlchemy==2.0.36

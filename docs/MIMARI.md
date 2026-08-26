@@ -255,9 +255,9 @@ eleştirmen ve yüklem ajanlarının katkısını gösterir
 
 ```
 banks.yaml
-   │  bankalari_yukle()
+   │  bankalari_yukle()  +  seed_urls
    ▼
-Toplayıcı ──► HamKayit ──► data/raw/{kod}/{id}.{json,html}
+Kazıyıcı (Selenium) ──► HamKayit ──► data/raw/{kod}/{id}.{json,html}
    │                            │
    │                            │ ham_kayitlari_oku()
    │                            ▼
@@ -384,7 +384,7 @@ konduğunda *"doğrudan karşılaştırılamaz"* uyarısı çıkar.
 |---|---|---|
 | `schema.py` | Veri sözleşmesi | — (hiçbir şeye bağlı değil) |
 | `preprocessing/` | Türkçe normalizasyon | — (saf fonksiyonlar) |
-| `collector/` | Toplama | `schema` |
+| `collector/` | Toplama (kayıt defteri + robots + 9 kazıyıcı) | `schema` |
 | `extraction/` | Çıkarım | `schema`, `preprocessing` |
 | `depolama.py` | Kalıcılık | `schema` |
 | `comparison/` | Karşılaştırma | `depolama` |

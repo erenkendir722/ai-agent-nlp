@@ -27,11 +27,18 @@ COPY data/banks.yaml ./data/banks.yaml
 COPY docs/TERIM_SOZLUGU.md ./docs/TERIM_SOZLUGU.md
 COPY eval/ ./eval/
 
+# TOPLAMA (`crawl`) BU İMAJDA YOK — 26 Ağu 2026.
+# Kampanya listeleri JS ile render edildiği için toplama Selenium'a taşındı;
+# `python:3.12-slim` içinde Chrome yok. Chrome eklemek imajı birkaç yüz MB
+# büyütür ve bankacılık ortamına giden imajın saldırı yüzeyini genişletir —
+# bilinçli olarak eklenmedi. İmaj TOPLANMIŞ veriyi işler: `extract`, `seed`,
+# `durum` ve arayüz. Yeniden toplama yerel kurulumda yapılır.
+#
 # Makefile BİLEREK kopyalanmıyor: `python:3.12-slim` içinde `make` ikilisi yok
 # ve Makefile'ın varsayılanı `.venv/bin/python` — imajda sanal ortam da yok.
 # Kopyalamak, çalışmayan bir arayüzü varmış gibi göstermek olurdu. Konteyner
 # içinde boru hattı doğrudan çağrılır (bkz. docs/KURULUM.md):
-#     docker compose exec uygulama python -m src.boru_hatti crawl
+#     docker compose exec uygulama python -m src.boru_hatti extract
 # Bankacılık ortamına giden imajda `make` kurup paket sayısını artırmaktansa
 # tek bir çağrı biçimi belgelemek tercih edildi.
 
