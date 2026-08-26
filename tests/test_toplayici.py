@@ -20,7 +20,9 @@ from src.collector.toplayici import (
     faal_bankalar,
     ham_kayitlari_oku,
     kaydi_yaz,
+    topla,
 )
+from src.schema import Banka
 from src.schema import HamKayit
 
 # -- Fake Data --
@@ -183,3 +185,145 @@ def test_kaldirilan_jenerik_toplayici_anlatan_hata_verir() -> None:
 
     with pytest.raises(AttributeError, match="kaldırıldı"):
         _ = modul.Toplayici
+
+
+# ---------------------------------------------------------------------------
+# topla() — demo tavanı ve işbirlikçi iptal
+# ---------------------------------------------------------------------------
+
+
+class TestToplaFrenleri:
+    """`azami_sayfa` ve `iptal` — arayüzdeki «Canlı Boru Hattı» sayfasının freni.
+
+    Gerçek tarayıcı AÇILMAZ: `surucu_olustur` ve `kaziyici_sinifi` yamanır.
+    Sınanan şey kazıyıcı değil `topla`'nın döngü sözleşmesidir — tavana varınca
+    kesiyor mu, iptal edilince duruyor mu, üreteci kapatıyor mu.
+    """
+
+    SAYFA_ADEDI = 8
+
+    def _banka(self) -> Banka:
+        return Banka(
+            kod="0203",
+            ad="Deneme Katılım Bankası A.Ş.",
+            kisa_ad="Deneme",
+            site="https://deneme.com.tr",
+            durum="faal",
+            kod_dogrulandi=True,
+            seed_urls=["https://deneme.com.tr/kampanyalar"],
+            url_desenleri=["/kampanya"],
+            robots_kontrol=True,
+        )
+
+    def _kaziyici_sinifi(self, kayit_defteri: dict):
+        """Sabit sayıda kayıt üreten, kapanışını kaydeden sahte kazıyıcı."""
+        adet = self.SAYFA_ADEDI
+
+        class SahteKaziyici:
+            def __init__(self, banka, surucu, bekleme, **_: object) -> None:
+                self.banka = banka
+                kayit_defteri["ornek"] = self
+
+            def tara(self):
+                try:
+                    for sira in range(adet):
+                        kayit_defteri["uretilen"] = kayit_defteri.get("uretilen", 0) + 1
+                        yield HamKayit(
+                            banka_kodu=self.banka.kod,
+                            banka_adi=self.banka.ad,
+                            url=f"https://deneme.com.tr/kampanya/{sira}",
+                            cekim_tarihi=datetime.now(),
+                            http_durum=200,
+                            baslik=f"Kampanya {sira}",
+                            ham_html="<html></html>",
+                            govde_metin="kampanya metni",
+                        )
+                finally:
+                    kayit_defteri["kapandi"] = True
+
+        return SahteKaziyici
+
+    def _kos(self, tmp_path: Path, **kwargs):
+        """Sahte tarayıcı + sahte kazıyıcı ile `topla` koşar."""
+        kayit_defteri: dict = {}
+        with (
+            patch(
+                "src.collector.tarayici.surucu_olustur",
+                return_value=(MagicMock(), MagicMock()),
+            ),
+            patch(
+                "src.collector.kaziyicilar.kaziyici_sinifi",
+                return_value=self._kaziyici_sinifi(kayit_defteri),
+            ),
+        ):
+            toplam = topla([self._banka()], dizin=tmp_path, **kwargs)
+        return toplam, kayit_defteri
+
+    # -- Varsayılan davranış korunuyor mu ---------------------------------
+
+    def test_kwargsiz_kod_yolu_degismez(self, tmp_path: Path) -> None:
+        """İki kwarg da `None` iken `make crawl` bugünküyle birebir aynı koşar."""
+        toplam, defter = self._kos(tmp_path)
+        assert toplam == self.SAYFA_ADEDI
+        assert len(list(tmp_path.rglob("*.json"))) == self.SAYFA_ADEDI
+        assert defter["uretilen"] == self.SAYFA_ADEDI
+
+    # -- azami_sayfa -------------------------------------------------------
+
+    def test_azami_sayfa_banka_basina_tavan_uygular(self, tmp_path: Path) -> None:
+        toplam, _ = self._kos(tmp_path, azami_sayfa=3)
+        assert toplam == 3
+        assert len(list(tmp_path.rglob("*.json"))) == 3
+
+    def test_tavan_asilinca_uretec_kapatilir(self, tmp_path: Path) -> None:
+        """Yarım kalan üreteç çöp toplayıcıya bırakılmaz — kazıyıcı hemen kapanır."""
+        _, defter = self._kos(tmp_path, azami_sayfa=2)
+        assert defter["kapandi"] is True
+
+    def test_tavan_uretimden_fazlaysa_hepsi_alinir(self, tmp_path: Path) -> None:
+        toplam, _ = self._kos(tmp_path, azami_sayfa=99)
+        assert toplam == self.SAYFA_ADEDI
+
+    def test_tavan_uretimi_gereksiz_yere_surdurmez(self, tmp_path: Path) -> None:
+        """Tavan dolunca üreteç bir sayfa daha çekmemeli — nezaket bedeli boşa gitmesin."""
+        _, defter = self._kos(tmp_path, azami_sayfa=3)
+        assert defter["uretilen"] == 3
+
+    # -- iptal -------------------------------------------------------------
+
+    def test_bastan_iptal_kaziyiciya_hic_girmez(self, tmp_path: Path) -> None:
+        toplam, defter = self._kos(tmp_path, iptal=lambda: True)
+        assert toplam == 0
+        assert "ornek" not in defter  # kazıyıcı hiç kurulmadı
+
+    def test_iptal_dongusu_keser(self, tmp_path: Path) -> None:
+        """İptal 2. sayfadan sonra kalkar; 3. sayfa çekilmez."""
+        sayac = {"n": 0}
+
+        def _iptal() -> bool:
+            sayac["n"] += 1
+            return sayac["n"] > 2  # banka öncesi 1 yoklama + 2 sayfa
+
+        toplam, defter = self._kos(tmp_path, iptal=_iptal)
+        assert toplam == 2
+        assert defter["kapandi"] is True
+
+    def test_iptal_surucuyu_temiz_kapatir(self, tmp_path: Path) -> None:
+        """Yarıda kesilen Chrome süreci makinede asılı kalmamalı."""
+        surucu = MagicMock()
+        with (
+            patch(
+                "src.collector.tarayici.surucu_olustur",
+                return_value=(surucu, MagicMock()),
+            ),
+            patch(
+                "src.collector.kaziyicilar.kaziyici_sinifi",
+                return_value=self._kaziyici_sinifi({}),
+            ),
+        ):
+            topla([self._banka()], dizin=tmp_path, iptal=lambda: True)
+        surucu.quit.assert_called_once()
+
+    def test_iptal_ve_tavan_birlikte_calisir(self, tmp_path: Path) -> None:
+        toplam, _ = self._kos(tmp_path, azami_sayfa=5, iptal=lambda: False)
+        assert toplam == 5

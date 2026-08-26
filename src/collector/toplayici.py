@@ -33,7 +33,7 @@ import json
 import logging
 import time
 import urllib.robotparser
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin, urlparse
@@ -51,6 +51,13 @@ log = logging.getLogger(__name__)
 KOK = Path(__file__).resolve().parents[2]
 BANKS_YAML = KOK / "data" / "banks.yaml"
 HAM_DIZIN = KOK / "data" / "raw"
+DEMO_HAM_DIZIN = KOK / "data" / "demo_raw"
+"""Arayüzdeki «Canlı Boru Hattı» sayfasının yazdığı alan.
+
+Üretim verisinden AYRI tutuluyor: demo koşusu banka başına birkaç sayfa
+çeker ve o kırpılmış çıktı `data/raw`'un üstüne yazarsa, ambar sessizce
+eksik hâle gelir. Türetilmiş ve atılabilir — `.gitignore`'da.
+"""
 
 KULLANICI_AJANI = "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)"
 ISTEK_ARASI_SANIYE = 2.0
@@ -190,6 +197,8 @@ def topla(
     gorunmez: bool | None = None,
     ilerleme: IlerlemeGeriCagrisi | None = None,
     dizin: Path = HAM_DIZIN,
+    azami_sayfa: int | None = None,
+    iptal: Callable[[], bool] | None = None,
 ) -> int:
     """`make crawl` giriş noktası. Diske yazılan sayfa sayısını döner.
 
@@ -198,6 +207,21 @@ def topla(
 
     `ilerleme` verilirse toplama olayları oraya akar (arayüzün aşama
     göstergesi bunun üzerine kurulacak). Verilmezse yalnız günlüğe yazılır.
+
+    `azami_sayfa` BANKA BAŞINA yazılan sayfa tavanıdır — arayüzdeki demo
+    kipinin tek fren mekanizması. NEZAKETİ DEĞİL ADEDİ kısar: istek arası
+    süre ve robots kapısı demo kipinde de aynen işler (`NezaketSirasi`).
+    Tavan yalnız çekilen sayfa sayısını sınırlar, URL keşfini değil —
+    liste yine tam yüklenir, çünkü `tara()` üreteci sayfa sayısını ancak
+    listeyi gördükten sonra bilir.
+
+    `iptal` her banka öncesinde ve her sayfadan sonra yoklanır. `True`
+    dönerse döngüden ÇIKILIR; iş parçacığı öldürülmez, `finally` sürücüyü
+    her hâlükârda kapatır. Yarıda kesilen bir Chrome süreci makinede asılı
+    kalırdı — işbirlikçi durdurmanın sebebi bu.
+
+    İkisi de `None` iken kod yolu bugünküyle birebir aynıdır; `make crawl`
+    bu eklemelerden etkilenmez.
 
     selenium yalnız BURADA içeri alınır: `bankalari_yukle` gibi hafif
     yardımcıları çağıran arayüz ve testler tarayıcı bağımlılığı olmadan
@@ -217,10 +241,17 @@ def topla(
     sira = NezaketSirasi(bekci)
     toplam = 0
 
+    def _iptal_edildi() -> bool:
+        return iptal is not None and iptal()
+
     log.info("Tarayıcı başlatılıyor...")
     surucu, bekleme = surucu_olustur(gorunmez=gorunmez)
     try:
         for banka in hedefler:
+            if _iptal_edildi():
+                log.info("Toplama iptal edildi — kalan bankalara girilmiyor.")
+                break
+
             sinif = kaziyici_sinifi(banka.kod)
             if sinif is None:
                 log.warning(
@@ -232,9 +263,25 @@ def topla(
                 banka, surucu, bekleme, bekci=bekci, sira=sira, ilerleme=ilerleme
             )
             sayac = 0
-            for kayit in kaziyici.tara():
-                kaydi_yaz(kayit, dizin)
-                sayac += 1
+            # Üreteç ELDE tutuluyor: tavana varıp `break` ettiğimizde
+            # `close()` çağrılabilsin diye. Çöp toplayıcıya bırakılırsa
+            # kazıyıcı yarım kalmış hâlde belirsiz bir zamanda kapanır.
+            uretec = kaziyici.tara()
+            try:
+                for kayit in uretec:
+                    kaydi_yaz(kayit, dizin)
+                    sayac += 1
+                    if azami_sayfa is not None and sayac >= azami_sayfa:
+                        log.info(
+                            "%-22s sayfa tavanı (%d) doldu — bu banka kesiliyor",
+                            banka.kisa_ad, azami_sayfa,
+                        )
+                        break
+                    if _iptal_edildi():
+                        log.info("%-22s iptal edildi", banka.kisa_ad)
+                        break
+            finally:
+                uretec.close()
             log.info("%-22s %3d sayfa", banka.kisa_ad, sayac)
             toplam += sayac
     finally:

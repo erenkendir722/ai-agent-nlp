@@ -9,6 +9,10 @@ __pycache__/
 data/katilim.db
 # Ablasyon koşularının kendi veritabanları — türetilmiş, `make ablasyon` üretir
 data/ablasyon/
+# Arayüzdeki «Canlı Boru Hattı» sayfasının yazdığı demo alanı — türetilmiş,
+# atılabilir. Üretim verisinden ayrı tutulur ki demo koşusu ambarı kırpmasın.
+data/demo_raw/
+data/demo/
 # Ham anlık görüntülerin META VERİSİ repoda kalır (izlenebilirlik kanıtı),
 # ham HTML dosyaları kalmaz (depo şişer + telif riski).
 data/raw/**/*.html

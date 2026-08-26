@@ -84,6 +84,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Chatbot + kalkan | `src/rag/chatbot.py` |
 | RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
+| Canlı boru hattı sayfası | `app/pages/4_Boru_Hattı.py` · `app/akis.py` · `app/boru_durumu.py` · `app/is_yurutucu.py` |
 
 Ayrıntı: [`docs/MIMARI.md`](docs/MIMARI.md) · Güncel ölçüm: [`docs/SONUCLAR.md`](docs/SONUCLAR.md) ·
 Sprint 0 raporu (tarihsel): [`docs/SPRINT0_RAPORU.md`](docs/SPRINT0_RAPORU.md)
@@ -160,6 +161,23 @@ döndürdüğü için RAG dört gün hiç çalışmadan çalışıyor göründü
 uydurma bir değerdir — `Alan(deger=..., yontem="belirtilmemis")` neden
 patlıyorsa o da patlamalı.
 
+**Arayüzden koşan boru hattı DEMO ALANINA yazar (26 Ağu).** «Canlı Boru Hattı»
+sayfası (`app/pages/4_Boru_Hattı.py`) gerçek kazıyıcıyı ve gerçek çıkarım hattını
+sürer, ama hedefi `data/demo_raw/` + `data/demo/demo.db`'dir. Üretim verisine
+ancak sekmedeki **kapalı gelen** onay kutusu işaretlenirse dokunulur. Demo kipi
+sayfa SAYISINI kısar (`topla(azami_sayfa=...)`), temposunu değil — nezaket kuralı
+ve robots kapısı demoda da işler. Animasyon koşunun kendi olaylarından beslenir;
+sahte ilerleme, sahte sayaç, uydurma gecikme yoktur.
+
+**Streamlit sayfasında `@dataclass` TANIMLAMA — bedeli ölçüldü.** Sayfa betiği her
+çizimde baştan koşar, yani orada tanımlı bir sınıf her koşuda YENİ nesne olur;
+`st.session_state`'te duran örnek eski sınıftan geldiği için `isinstance` **False**
+döner ve biriken durum sessizce sıfırlanır. Ölçüldü: canlı sayaç iki kayıt
+işlenmişken «1 / ?» kaldı. Bu yüzden durum sınıfları `app/boru_durumu.py`'de,
+modül düzeyinde durur. Aynı sebeple bitmiş işin sonucu yalnız canlı parçada değil,
+betiğin **her tam koşusunda** devralınır (`_bekleyen_isi_devral`) — sayfa
+değiştirilip dönüldüğünde sonuç kaybolmasın diye.
+
 Yeni bağımlılık eklendiğinde `make lisanslar`, yeni model eklendiğinde
 `make lisanslar-teyit` çalıştır (lisansı HF'ten çeker, tutmazsa kırılır).
 
@@ -217,7 +235,7 @@ make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka, RAG indeksi kurulu mu
 make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make run          # Streamlit arayüzü
-make test         # testler (847 test)
+make test         # testler (918 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)

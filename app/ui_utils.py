@@ -168,7 +168,7 @@ def ortak_kenar(*, demo_ipuclari: bool = True) -> None:
         st.caption("Takım SVARTAL · banka çalışanı aracı")
         if demo_ipuclari:
             st.caption(
-                "Demo sırası: Genel Bakış → Metin Analizi → "
+                "Demo sırası: Genel Bakış → **Boru Hattı** → Metin Analizi → "
                 "Karşılaştırma → Müşteri Profili → Chatbot"
             )
         st.toggle(

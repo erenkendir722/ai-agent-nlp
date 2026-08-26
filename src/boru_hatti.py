@@ -18,9 +18,14 @@ import json
 import logging
 import os
 import sys
+import threading
+import time
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Literal
 
 from src.collector.toplayici import bankalari_yukle, ham_kayitlari_oku, topla
 from src.depolama import (
@@ -151,31 +156,161 @@ def ablasyon_veritabani(yapilandirma: str) -> str:
     return f"sqlite:///{dizin / f'{yapilandirma}.db'}"
 
 
-def _cikar_ve_kaydet(
-    kayitlar: list[HamKayit],
-    args: argparse.Namespace,
-    url: str | None = None,
-) -> int:
-    if not kayitlar:
-        log.error("İşlenecek kayıt yok. Önce `make crawl` veya seed.jsonl doldurun.")
-        return 1
+# ---------------------------------------------------------------------------
+# Çıkarım çekirdeği — CLI ve arayüz aynı kod yolunu kullanır
+# ---------------------------------------------------------------------------
+#
+# NEDEN AYRILDI: çıkarım mantığı `_cikar_ve_kaydet(kayitlar, args)` içindeydi
+# ve girdi olarak `argparse.Namespace` istiyordu; ilerlemesi de yalnız
+# `log.info`'ya gidiyordu. Arayüzden ne çağrılabiliyor ne de izlenebiliyordu.
+# Aşağıdaki üç veri sınıfı + `cikarim_kos` o gövdenin AYNISIDIR; `_cikar_ve_
+# kaydet` artık yalnız `args`'ı çevirip özeti basan ince bir sarmalayıcı.
 
-    yapilandirma = "kural" if args.yalniz_kural else "llm" if args.yalniz_llm else "hibrit"
+
+@dataclass(frozen=True)
+class CikarimAyarlari:
+    """Bir çıkarım koşusunun yapılandırması — `args`'ın yerine geçen tip."""
+
+    yalniz_kural: bool = False
+    yalniz_llm: bool = False
+    elestirmen_yok: bool = False
+    yuklem_yok: bool = False
+    model: str | None = None
+
+    @property
+    def yapilandirma(self) -> str:
+        """Ablasyon tablosundaki kol adı — veritabanı seçimi buna bakar."""
+        if self.yalniz_kural:
+            return "kural"
+        if self.yalniz_llm:
+            return "llm"
+        return "hibrit"
+
+    @classmethod
+    def argstan(cls, args: argparse.Namespace) -> CikarimAyarlari:
+        return cls(
+            yalniz_kural=bool(args.yalniz_kural),
+            yalniz_llm=bool(args.yalniz_llm),
+            elestirmen_yok=bool(args.elestirmen_yok),
+            yuklem_yok=bool(args.yuklem_yok),
+            model=args.model,
+        )
+
+
+@dataclass(frozen=True)
+class CikarimIlerlemesi:
+    """Çıkarım sırasında dışarı bildirilen tek olay.
+
+    `src.collector.temel_kaziyici.Ilerleme` ile aynı desen: çekirdek ekrana
+    hiçbir şey yazmaz, olayı geri çağrıya verir. Böylece aynı kod hem
+    terminalden hem Streamlit'ten sürülebilir.
+    """
+
+    asama: Literal["basladi", "kayit", "hata", "ara_kayit", "bitti"]
+    sira: int = 0
+    toplam: int = 0
+    banka_adi: str = ""
+    url: str = ""
+    doluluk: float = 0.0
+    guven: float = 0.0
+    sure: float = 0.0
+    mesaj: str = ""
+
+    kural: int = 0
+    llm: int = 0
+    hibrit: int = 0
+    """O ANA KADAR birikmiş katman alan sayıları — koşan toplam, kayıt başına değil.
+
+    `UzlastirmaRaporu` bu üç sayacı zaten kayıt başına üretiyordu; koşu
+    sonuna kadar bekletmek için bir sebep yoktu. Arayüzdeki katman hattı
+    bunlardan besleniyor, yani çubuklar koşu sürerken de ölçülmüş değerle
+    doluyor — ara değer uydurulmuyor, var olan ölçüm erken veriliyor.
+    """
+
+
+CikarimGeriCagrisi = Callable[[CikarimIlerlemesi], None]
+
+
+@dataclass
+class CikarimOzeti:
+    """Koşu bitiminde ölçülmüş sayılar. Terminal özeti de arayüz de bunu basar."""
+
+    yapilandirma: str = "hibrit"
+    veritabani_url: str = ""
+    kayit_sayisi: int = 0
+    hatali_kayit: int = 0
+    kural_alan_sayisi: int = 0
+    llm_alan_sayisi: int = 0
+    hibrit_alan_sayisi: int = 0
+    yuklem_duzeltme_sayisi: int = 0
+    yuklem_reddi_sayisi: int = 0
+    elenen_alan_sayisi: int = 0
+    celiskiler: list = field(default_factory=list)
+    kanit_denetimi_hatasi: int = 0
+    sure: float = 0.0
+    ortalama_doluluk: float = 0.0
+    ortalama_guven: float = 0.0
+    banka_dagilimi: dict[str, int] = field(default_factory=dict)
+    kampanyalar: list = field(default_factory=list)
+    iptal_edildi: bool = False
+
+    @property
+    def saniye_basina_kayit(self) -> float:
+        """Ölçülen hız. Kayıt yoksa 0 — uydurma bölme yapılmaz."""
+        return self.sure / self.kayit_sayisi if self.kayit_sayisi else 0.0
+
+
+def demo_veritabani() -> str:
+    """Arayüzdeki «Canlı Boru Hattı» sayfasının yazdığı veritabanı.
+
+    `ablasyon_veritabani` ile aynı gerekçe: demo koşusu birkaç kayıtlık
+    kırpılmış bir çıkarımdır; üretim ambarının üstüne yazarsa Genel Bakış
+    sessizce eksik veri gösterir. Türetilmiş ve atılabilir.
+    """
+    dizin = KOK / "data" / "demo"
+    dizin.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{dizin / 'demo.db'}"
+
+
+def cikarim_kos(
+    kayitlar: list[HamKayit],
+    ayarlar: CikarimAyarlari,
+    *,
+    url: str | None = None,
+    ilerleme: CikarimGeriCagrisi | None = None,
+    iptal: Callable[[], bool] | None = None,
+) -> CikarimOzeti:
+    """Ham kayıtları çıkarır, veritabanına yazar, ölçülmüş özeti döner.
+
+    `iptal` her öbek ve her kayıt öncesinde yoklanır. İş parçacığı
+    öldürülmez: kalan kayıtlar atlanır, açık öbek biter, ara kayıt yazılır.
+    Yarıda kesilen koşu da bir koşudur — `cikarim_kosusu_yaz` yine çağrılır,
+    aksi hâlde `make eval` yeni yazılan kayıtları «bayat» sayardı.
+    """
+    baslangic = time.monotonic()
+    yapilandirma = ayarlar.yapilandirma
     if url is None:
         url = VERITABANI_URL if yapilandirma == "hibrit" else ablasyon_veritabani(yapilandirma)
     if url != VERITABANI_URL:
         log.info("Ablasyon koşusu — ayrı veritabanı: %s", url)
 
+    def _bildir(asama: str, **ayrinti: Any) -> None:
+        if ilerleme is not None:
+            ilerleme(CikarimIlerlemesi(asama=asama, **ayrinti))  # type: ignore[arg-type]
+
+    def _iptal_edildi() -> bool:
+        return iptal is not None and iptal()
+
     semayi_kur(url)
     llm_cikarici = None
-    if not args.yalniz_kural:
+    if not ayarlar.yalniz_kural:
         from src.ajanlar.elestirmen import ElestirmenAjani
         from src.extraction.llm import LLMCikarici
 
-        elestirmen = ElestirmenAjani(etkin=not args.elestirmen_yok)
-        llm_cikarici = LLMCikarici(model=args.model, elestirmen=elestirmen)
+        elestirmen = ElestirmenAjani(etkin=not ayarlar.elestirmen_yok)
+        llm_cikarici = LLMCikarici(model=ayarlar.model, elestirmen=elestirmen)
         log.info("LLM katmanı: %s / %s", llm_cikarici.saglayici.ad, llm_cikarici.model)
-        if args.elestirmen_yok:
+        if ayarlar.elestirmen_yok:
             log.warning(
                 "⚠️  ELEŞTİRMEN AJANI KAPALI — çıkarılan değerler ham metinde "
                 "doğrulanmayacak. Bu yalnız ablasyon ölçümü içindir; üretim "
@@ -186,7 +321,7 @@ def _cikar_ve_kaydet(
     # Ölçüm (60 kayıtlık altın set, 3 tekrar): `vade_ay_max` 0,791→0,810,
     # `tahsis_ucreti` 0,833→0,909. Ayrıntı: `src/ajanlar/yuklem.py`.
     yuklem_ajani = None
-    if not args.yalniz_kural and not args.yuklem_yok:
+    if not ayarlar.yalniz_kural and not ayarlar.yuklem_yok:
         from src.ajanlar.yuklem import YuklemAjani
 
         yuklem_ajani = YuklemAjani()
@@ -195,44 +330,117 @@ def _cikar_ve_kaydet(
     toplam_rapor = UzlastirmaRaporu()
     kampanyalar: list = []
     bekleyen: list = []
+    hatali = 0
 
     isci = _varsayilan_isci()
     obek_boyu = max(ARA_KAYIT_ARALIGI, isci)
     if isci > 1:
         log.info("Eş zamanlı çıkarım: %d işçi, %d kayıtlık öbekler", isci, obek_boyu)
 
-    def _guvenli_cikar(kayit: HamKayit):
-        """Tek kaydı çıkarır; hatayı yutar.
+    _bildir(
+        "basladi",
+        toplam=len(kayitlar),
+        mesaj=f"{yapilandirma} · {isci} işçi · {len(kayitlar)} kayıt",
+    )
 
-        Bir kaydın düşmesi 590 kayıtlık koşuyu düşürmemeli. Seri sürümdeki
-        `continue` davranışının paraleldeki karşılığı budur.
+    # CANLI SAYAÇLAR — ilerleme olayları İŞÇİ PARÇACIĞINDAN, kayıt biter bitmez
+    # gönderilir. Eskiden tüketici döngüsünden gönderiliyordu ve `havuz.map`
+    # sonuçları GİRDİ SIRASINDA verdiği için 16 işçiyle koşan bir öbeğin bütün
+    # olayları öbek sonunda tek seferde düşüyordu: arayüz koşu boyunca donuk
+    # durup en sonda birden doluyordu. Ölçüldü — 3 kayıtlık koşuda üç olay da
+    # 3,7 saniyenin sonunda geldi.
+    #
+    # Günlük satırı ve veritabanı yazma sırası DEĞİŞMEDİ: onlar hâlâ tüketici
+    # döngüsünde, girdi sırasında. Paralelden çıkan tek şey ekranın beslendiği
+    # olay akışı; `ilerleme` geri çağrısının bu yüzden iş parçacığı güvenli
+    # olması gerekir (arayüzde `queue.Queue.put`).
+    canli_kilit = threading.Lock()
+    canli = {"biten": 0, "denenen": 0, "kural": 0, "llm": 0, "hibrit": 0}
+
+    def _canli_kayit(kayit: HamKayit, kampanya, rapor) -> None:
+        with canli_kilit:
+            canli["biten"] += 1
+            canli["denenen"] += 1
+            canli["kural"] += rapor.kural_alan_sayisi
+            canli["llm"] += rapor.llm_alan_sayisi
+            canli["hibrit"] += rapor.hibrit_alan_sayisi
+            anlik = dict(canli)
+        # SÜRE YENİDEN ÖLÇÜLMEZ: `kampanya_cikar` zaten `trace_log` içine
+        # yazıyor. İkinci bir ölçüm ikinci bir gerçeklik olurdu.
+        _bildir(
+            "kayit",
+            sira=anlik["biten"],
+            toplam=len(kayitlar),
+            banka_adi=kampanya.banka_adi,
+            url=kayit.url,
+            doluluk=kampanya.doluluk_orani(),
+            guven=kampanya.ortalama_guven(),
+            sure=float(getattr(rapor, "trace_log", {}).get("toplam_sure", 0.0)),
+            kural=anlik["kural"],
+            llm=anlik["llm"],
+            hibrit=anlik["hibrit"],
+        )
+
+    def _canli_hata(kayit: HamKayit, hata: Exception) -> None:
+        with canli_kilit:
+            canli["denenen"] += 1
+            sira = canli["denenen"]
+        _bildir(
+            "hata",
+            sira=sira,
+            toplam=len(kayitlar),
+            banka_adi=kayit.banka_adi,
+            url=kayit.url,
+            mesaj=f"{type(hata).__name__}: {hata}",
+        )
+
+    def _guvenli_cikar(kayit: HamKayit):
+        """Tek kaydı çıkarır; hatayı YUTMAZ, çağırana geri verir.
+
+        Bir kaydın düşmesi 590 kayıtlık koşuyu düşürmemeli — seri sürümdeki
+        `continue` davranışının paraleldeki karşılığı budur. Ama hata
+        kaybolmaz: istisna nesnesi döndürülür, sayılır ve arayüze bildirilir.
         """
+        if _iptal_edildi():
+            return None
         try:
-            return kampanya_cikar(
+            sonuc = kampanya_cikar(
                 kayit,
                 llm_cikarici=llm_cikarici,
-                kural_kullan=not args.yalniz_llm,
-                llm_kullan=not args.yalniz_kural,
+                kural_kullan=not ayarlar.yalniz_llm,
+                llm_kullan=not ayarlar.yalniz_kural,
                 yuklem=yuklem_ajani,
             )
         except Exception as hata:
             log.error("Çıkarım hatası (%s): %s", kayit.url, hata)
-            return None
+            _canli_hata(kayit, hata)
+            return hata
+        _canli_kayit(kayit, *sonuc)
+        return sonuc
 
     # ÖBEKLİ PARALELLİK — iki kısıtı aynı anda karşılar:
     #   1. `havuz.map` sonuçları GİRDİ SIRASINDA verir, bitiş sırasında değil.
     #      Günlük satırları ve veritabanı yazma sırası koşudan koşuya oynamaz.
+    #      (Arayüzü besleyen olaylar bu sıraya BAĞLI DEĞİL — onlar işçiden,
+    #      bitiş sırasında gidiyor; bkz. `_canli_kayit`.)
     #   2. Ara kayıt öbek sonunda yapılır; çökmede en fazla bir öbek kaybedilir.
     #
     # `isci = 1` olduğunda bu, eski seri döngüyle aynı davranışı üretir —
     # bilerek: ablasyon satırlarının aynı kod yolundan çıkması gerekiyor.
     sira = 0
+    iptal_edildi = False
     with ThreadPoolExecutor(max_workers=isci) as havuz:
         for obek_bas in range(0, len(kayitlar), obek_boyu):
+            if _iptal_edildi():
+                iptal_edildi = True
+                break
             obek = kayitlar[obek_bas : obek_bas + obek_boyu]
 
             for kayit, sonuc in zip(obek, havuz.map(_guvenli_cikar, obek)):
                 sira += 1
+                if isinstance(sonuc, Exception):
+                    hatali += 1  # olay `_canli_hata`'dan zaten gitti
+                    continue
                 if sonuc is None:
                     continue
                 kampanya, rapor = sonuc
@@ -263,32 +471,97 @@ def _cikar_ve_kaydet(
             if bekleyen:
                 kaydet(bekleyen, url)
                 log.info("   ↳ %d kayıt veritabanına yazıldı (ara kayıt)", len(bekleyen))
+                _bildir(
+                    "ara_kayit",
+                    sira=len(kampanyalar),
+                    toplam=len(kayitlar),
+                    mesaj=f"{len(bekleyen)} kayıt veritabanına yazıldı",
+                )
                 bekleyen.clear()
 
     # Koşuyu kaydet: `make eval` bayat sayı raporlamasın diye. Ara kayıttan
     # SONRA, tek sefer — koşunun tamamlandığı an budur.
     cikarim_kosusu_yaz(yapilandirma, len(kampanyalar), url)
 
+    banka_dagilimi: dict[str, int] = {}
+    for kampanya in kampanyalar:
+        banka_dagilimi[kampanya.banka_adi] = banka_dagilimi.get(kampanya.banka_adi, 0) + 1
+
+    ozet = CikarimOzeti(
+        yapilandirma=yapilandirma,
+        veritabani_url=url,
+        kayit_sayisi=len(kampanyalar),
+        hatali_kayit=hatali,
+        kural_alan_sayisi=toplam_rapor.kural_alan_sayisi,
+        llm_alan_sayisi=toplam_rapor.llm_alan_sayisi,
+        hibrit_alan_sayisi=toplam_rapor.hibrit_alan_sayisi,
+        yuklem_duzeltme_sayisi=toplam_rapor.yuklem_duzeltme_sayisi,
+        yuklem_reddi_sayisi=toplam_rapor.yuklem_reddi_sayisi,
+        elenen_alan_sayisi=toplam_rapor.elenen_alan_sayisi,
+        celiskiler=list(toplam_rapor.celiskiler),
+        kanit_denetimi_hatasi=sum(len(k.kanit_denetimi()) for k in kampanyalar),
+        sure=time.monotonic() - baslangic,
+        ortalama_doluluk=(
+            sum(k.doluluk_orani() for k in kampanyalar) / len(kampanyalar)
+            if kampanyalar
+            else 0.0
+        ),
+        ortalama_guven=(
+            sum(k.ortalama_guven() for k in kampanyalar) / len(kampanyalar)
+            if kampanyalar
+            else 0.0
+        ),
+        banka_dagilimi=banka_dagilimi,
+        kampanyalar=kampanyalar,
+        iptal_edildi=iptal_edildi or _iptal_edildi(),
+    )
+    _bildir(
+        "bitti",
+        sira=ozet.kayit_sayisi,
+        toplam=len(kayitlar),
+        sure=ozet.sure,
+        mesaj="iptal edildi" if ozet.iptal_edildi else "tamamlandı",
+    )
+    return ozet
+
+
+def _cikar_ve_kaydet(
+    kayitlar: list[HamKayit],
+    args: argparse.Namespace,
+    url: str | None = None,
+) -> int:
+    """CLI sarmalayıcısı — `cikarim_kos`'u çağırır, özeti terminale basar.
+
+    Terminal çıktısı ve dönüş kodu refactor öncesiyle aynıdır; ayrılan tek
+    şey mantık, biçim değil.
+    """
+    if not kayitlar:
+        log.error("İşlenecek kayıt yok. Önce `make crawl` veya seed.jsonl doldurun.")
+        return 1
+
+    ozet = cikarim_kos(kayitlar, CikarimAyarlari.argstan(args), url=url)
+
     print("\n" + "=" * 64)
-    print(f"  Yapılandırma         : {yapilandirma}")
-    print(f"  İşlenen kayıt        : {len(kampanyalar)}")
-    print(f"  Yalnız kuraldan gelen: {toplam_rapor.kural_alan_sayisi} alan")
-    print(f"  Yalnız LLM'den gelen : {toplam_rapor.llm_alan_sayisi} alan")
-    print(f"  Hibrit (iki katman)  : {toplam_rapor.hibrit_alan_sayisi} alan")
-    print(f"  Yüklem düzeltmesi    : {toplam_rapor.yuklem_duzeltme_sayisi} alan")
-    print(f"  Yüklem reddi         : {toplam_rapor.yuklem_reddi_sayisi} alan")
-    print(f"  Çelişki              : {len(toplam_rapor.celiskiler)}")
-    for celiski in toplam_rapor.celiskiler[:8]:
+    print(f"  Yapılandırma         : {ozet.yapilandirma}")
+    print(f"  İşlenen kayıt        : {ozet.kayit_sayisi}")
+    print(f"  Yalnız kuraldan gelen: {ozet.kural_alan_sayisi} alan")
+    print(f"  Yalnız LLM'den gelen : {ozet.llm_alan_sayisi} alan")
+    print(f"  Hibrit (iki katman)  : {ozet.hibrit_alan_sayisi} alan")
+    print(f"  Yüklem düzeltmesi    : {ozet.yuklem_duzeltme_sayisi} alan")
+    print(f"  Yüklem reddi         : {ozet.yuklem_reddi_sayisi} alan")
+    print(f"  Çelişki              : {len(ozet.celiskiler)}")
+    for celiski in ozet.celiskiler[:8]:
         print(f"     - {celiski}")
     print("=" * 64)
 
-    hata_sayisi = sum(len(k.kanit_denetimi()) for k in kampanyalar)
-    if hata_sayisi:
-        print(f"  ⚠️  Kanıt denetimi: {hata_sayisi} alan ham metinde doğrulanamadı")
+    if ozet.kanit_denetimi_hatasi:
+        print(
+            f"  ⚠️  Kanıt denetimi: {ozet.kanit_denetimi_hatasi} alan "
+            "ham metinde doğrulanamadı"
+        )
     else:
         print("  ✅ Kanıt denetimi: tüm değerler ham metinde doğrulandı")
     return 0
-
 
 def komut_extract(args: argparse.Namespace) -> int:
     return _cikar_ve_kaydet(list(ham_kayitlari_oku()), args)
