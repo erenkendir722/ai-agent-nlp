@@ -702,6 +702,54 @@ class Aday:
 _CUMLE_SONU = re.compile(r"[.!?\n]")
 
 
+def _sayi_basina_geri_sar(metin: str, bas: int) -> int:
+    """Alıntı bir sayının ORTASINDAN başlıyorsa, sayının başına geri sarar.
+
+    26 Ağustos'ta ölçülen kusur: Türkçede binlik ayracı noktadır ve
+    `_CUMLE_SONU` çıplak `[.!?\\n]` olduğu için "500.000" cümle sonu
+    sanılıyordu. Jüriye gösterilen kanıt şöyle çıkıyordu:
+
+        ham metin : "... 500.000 TL'ye kadar kullanabileceğiniz ..."
+        alıntı    : "000 TL'ye kadar kullanabileceğiniz ..."
+
+    Veritabanındaki 4221 alıntının 30'u böyle kesikti; biri "31 Aralık"ı
+    "1 Aralık" gösteriyordu.
+
+    NEDEN CÜMLE SINIRININ KENDİSİ DÜZELTİLMEDİ — denendi, ÖLÇÜLDÜ, geri alındı:
+        `_CUMLE_SONU`'yu "nokta yalnız iki rakam arasında değilse sınırdır"
+        yapmak daha doğru görünüyor ama cümleyi genişletiyor. Genişleyen
+        aralık YALNIZ gösterim değil: `Kaynak.karakter_baslangic/bitis` olarak
+        saklanıyor ve `uzlastirici._makul_mu` onu `deger_makul_mu`'nun VETO
+        PENCERESİ olarak okuyor. `tools/kural_olc.py` (deterministik, LLM yok):
+
+            makro-F1  0,7033 -> 0,6964   ·   681 hücrenin 4'ü değişti
+
+        Kaybedilen 3 doğru hücrenin hepsi TABLO SATIRINDAydı:
+
+            "10.000 TL | 12 Ay | 4,82 % | ... | Toplam Masraflar | ..."
+
+        Tablo satırında cümle sonu yoktur; binlik ayracı bölmeyi bırakınca
+        pencere komşu kolonların başlıklarına uzanıyor ve veto tetikleniyor.
+        Yani eski davranış tabloları KAZAYLA koruyordu.
+
+    Bu çözüm pencereyi yalnız KESİLEN SAYI kadar geri alır (birkaç karakter),
+    tablo satırının tamamını kapsamaz. Ölçüldü: makro-F1 değişmedi.
+    """
+    if bas <= 0 or bas >= len(metin) or not metin[bas].isdigit():
+        return bas
+    # "1.700.000" gibi çok gruplu sayılarda her grup için geri sarılır.
+    while (
+        bas >= 2
+        and metin[bas - 1] == "."
+        and metin[bas - 2].isdigit()
+        and metin[bas].isdigit()
+    ):
+        bas -= 1
+        while bas > 0 and metin[bas - 1].isdigit():
+            bas -= 1
+    return bas
+
+
 def _cumle_araligi(metin: str, baslangic: int, bitis: int, azami: int = 300) -> tuple[int, int]:
     """Eşleşmeyi içeren cümleyi bulur — kullanıcıya gösterilecek alıntı budur."""
     sol = max(0, baslangic - azami)
@@ -1404,6 +1452,7 @@ def kurallarla_cikar(metin: str, url: str, cekim_tarihi: datetime) -> dict[str, 
         if secilen is None:
             continue
         alinti_bas, alinti_bit = _cumle_araligi(metin, secilen.baslangic, secilen.bitis)
+        alinti_bas = _sayi_basina_geri_sar(metin, alinti_bas)
         sonuc[kural.alan] = Alan(
             deger=secilen.deger,
             ham_ifade=secilen.ham_ifade,
@@ -1499,14 +1548,27 @@ def _vade_farksiz_orani(metin: str, url: str, cekim_tarihi: datetime) -> Alan | 
     if eslesme is None:
         return None
     cumle = " ".join(eslesme.group(0).split())
+
+    # KANIT geri sarılır, KARAR sarılmaz — `_sayi_basina_geri_sar` ile aynı
+    # gerekçe. Desenin `[^.!?...]{0,80}` öneki binlik ayracında duruyor, o
+    # yüzden alıntı "000 TL arası okul ödemelerinize vade farksız..." diye
+    # sayının ortasından başlıyordu. Yeniden çıkarım sonrası kalan 13 kesik
+    # alıntının tamamı bu yoldan geliyordu.
+    #
+    # `deger`, `guven` ve `birim` yukarıdaki DAR eşleşmeden hesaplanır:
+    # kararı veren ifade («vade farksız») zaten eşleşmenin içinde, geri sarma
+    # yalnız solundaki sayıyı tamamlıyor.
+    kanit_bas = _sayi_basina_geri_sar(metin, eslesme.start())
+    kanit = " ".join(metin[kanit_bas : eslesme.end()].split())
+
     return Alan(
         deger=0.0,
-        ham_ifade=cumle[:120],
+        ham_ifade=kanit[:120],
         kaynak=Kaynak(
             url=url,
             cekim_tarihi=cekim_tarihi,
-            alinti=cumle[:280],
-            karakter_baslangic=eslesme.start(),
+            alinti=kanit[:280],
+            karakter_baslangic=kanit_bas,
             karakter_bitis=eslesme.end(),
         ),
         guven=0.80,
@@ -1534,12 +1596,23 @@ def _masrafsizlik(metin: str, url: str, cekim_tarihi: datetime) -> Alan | None:
         karar = masrafsiz_mi(cumle)
         if karar is None:
             continue
+
+        # KARAR dar cümlede verilir, KANIT geri sarılmış hâliyle saklanır.
+        #
+        # `_MASRAF_CUMLE` deseninin önek kısmı binlik ayracında da duruyor,
+        # o yüzden alıntı "000 TL'ye kadar ... masraf ..." diye sayının
+        # ortasından başlıyordu (bkz. `_sayi_basina_geri_sar`). Geri sarma
+        # YALNIZ saklanan kanıta uygulanır: `karar` yukarıda zaten dar cümleyle
+        # hesaplandı, dolayısıyla bu düzeltme hiçbir kararı değiştirmez.
+        kanit_bas = _sayi_basina_geri_sar(metin, eslesme.start())
+        kanit = metin[kanit_bas : eslesme.end()]
+
         if karar:
             if ilk_olumlu is None:
-                ilk_olumlu = (cumle, eslesme.start(), eslesme.end())
+                ilk_olumlu = (kanit, kanit_bas, eslesme.end())
             continue
         return _masrafsizlik_alani(
-            False, cumle, eslesme.start(), eslesme.end(), url, cekim_tarihi
+            False, kanit, kanit_bas, eslesme.end(), url, cekim_tarihi
         )
     if ilk_olumlu is not None:
         return _masrafsizlik_alani(True, *ilk_olumlu, url, cekim_tarihi)

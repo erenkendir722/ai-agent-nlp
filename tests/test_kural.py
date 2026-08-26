@@ -753,3 +753,75 @@ def test_makul_olmayan_kucuk_sonuc_elenir() -> None:
     tutar, sebep = sonuc.tutar, sonuc.sebep
     assert tutar is None
     assert "makul" in sebep
+
+
+# ---------------------------------------------------------------------------
+# Kanıt alıntısı — sayının ortasından başlamamalı (26 Ağustos)
+# ---------------------------------------------------------------------------
+
+
+def test_alinti_binlik_ayracinda_kesilmez() -> None:
+    """Türkçede binlik ayracı noktadır; alıntı "000 TL..." diye başlamamalı.
+
+    Ölçülen kusur: `_CUMLE_SONU` çıplak nokta arıyor, "500.000" cümle sonu
+    sanılıyor ve jüriye gösterilen kanıt sayının ORTASINDAN başlıyordu.
+    Veritabanındaki 4221 alıntının 30'u böyleydi.
+    """
+    from src.extraction.kural import kurallarla_cikar
+
+    metin = (
+        "Konut finansmani kampanyamiz kapsaminda %1,89 kar payi orani sunuyoruz. "
+        "500.000 TL'ye kadar kullanabileceginiz bu finansmanda hicbir tahsis "
+        "ucreti veya gizli masraf bulunmamaktadir."
+    )
+    sonuc = kurallarla_cikar(metin, url="x://y", cekim_tarihi=CEKIM)
+
+    for ad, alan in sonuc.items():
+        if alan.deger is None or alan.kaynak is None:
+            continue
+        alinti = alan.kaynak.alinti
+        if not alinti:
+            continue
+        bas = alan.kaynak.karakter_baslangic
+        kesik = alinti[:1].isdigit() and bas >= 2 and metin[bas - 1] == "." and metin[bas - 2].isdigit()
+        assert not kesik, f"{ad}: alinti sayinin ortasindan basliyor -> {alinti[:40]!r}"
+
+
+def test_alinti_konumla_tutarli() -> None:
+    """`alinti`, ham metnin [karakter_baslangic:karakter_bitis] dilimi olmalı.
+
+    Geri sarma yalnız `alinti`ya uygulanıp konum güncellenmezse kanıt zinciri
+    sessizce kopar: arayüz alıntıyı gösterir ama konum başka yeri işaret eder.
+    """
+    from src.extraction.kural import kurallarla_cikar
+
+    metin = (
+        "Tasit finansmaninda 1.700.000 TL'ye kadar finansman ve %2,05 kar payi "
+        "orani gecerlidir. Tahsis ucreti alinmamaktadir."
+    )
+    sonuc = kurallarla_cikar(metin, url="x://y", cekim_tarihi=CEKIM)
+
+    for ad, alan in sonuc.items():
+        if alan.deger is None or alan.kaynak is None or not alan.kaynak.alinti:
+            continue
+        dilim = metin[alan.kaynak.karakter_baslangic : alan.kaynak.karakter_bitis]
+        assert alan.kaynak.alinti in (dilim, dilim.strip()), (
+            f"{ad}: alinti konumla tutmuyor -- "
+            f"alinti={alan.kaynak.alinti!r} dilim={dilim!r}"
+        )
+
+
+def test_geri_sarma_kesik_olmayan_sayiya_dokunmaz() -> None:
+    """Sayı zaten tamsa konum değişmemeli — pencere gereksiz genişletilmez.
+
+    Pencere `uzlastirici._makul_mu` içinde veto penceresi olarak da okunuyor;
+    gereksiz her genişleme doğru bir değeri elettirebilir. Ölçüldü: cümle
+    sınırının kendisini değiştirmek makro-F1'i 0,7033'ten 0,6964'e düşürdü.
+    """
+    from src.extraction.kural import _sayi_basina_geri_sar
+
+    assert _sayi_basina_geri_sar("Merhaba 500 TL", 8) == 8      # kesik degil
+    assert _sayi_basina_geri_sar("500.000 TL", 4) == 0          # kesik -> geri sar
+    assert _sayi_basina_geri_sar("1.700.000 TL", 2) == 0        # cok gruplu
+    assert _sayi_basina_geri_sar("abc", 1) == 1                 # rakam yok
+    assert _sayi_basina_geri_sar("", 0) == 0                    # bos metin
