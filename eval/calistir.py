@@ -58,9 +58,15 @@ ABLASYON_DOSYASI = KOK / "data" / "ablasyon.json"
 ABLASYON_SIRASI: tuple[tuple[str, str], ...] = (
     ("kural", "Yalnız kural (regex)"),
     ("llm", "Yalnız LLM (şema kısıtlı)"),
-    ("hibrit", "**Hibrit (bizim)**"),
+    ("hibrit", "Hibrit (kural + LLM)"),
+    ("hibrit_elestirmensiz", "Hibrit · eleştirmen KAPALI"),
+    ("tam", "**Tam hiyerarşi (bizim)**"),
 )
-"""Ablasyon tablosunun satır sırası — `CikarimKosusu.yapilandirma` değerleri."""
+"""Ablasyon tablosunun satır sırası — `eval/ablasyon.py::YAPILANDIRMALAR` ile aynı.
+
+İlk üç satır ÇIKARIM KATMANLARINI, son iki satır AJANLARI ölçer (A-09).
+`hibrit` ile `hibrit_elestirmensiz` arasındaki fark eleştirmen ajanının,
+`hibrit` ile `tam` arasındaki fark yüklem ajanının katkısıdır."""
 
 
 # ---------------------------------------------------------------------------
@@ -661,13 +667,18 @@ def _ablasyon_notu() -> str:
     s = [
         "\n## Ablasyon tablosu",
         "",
-        "Üç yapılandırma **aynı kod yolundan** koşulur; yalnız katman bayrakları değişir.",
-        "Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.",
+        "Beş yapılandırma **aynı kod yolundan, tek süreçte** koşulur; yalnız katman ve",
+        "ajan bayrakları değişir. Ayrı kod yolu yazmak ölçümü karşılaştırılamaz hâle getirirdi.",
+        "",
+        "İlk üç satır *hangi çıkarım katmanı ne katıyor*, son iki satır *hangi ajan ne katıyor*",
+        "sorusunu cevaplar: `hibrit` → `hibrit_elestirmensiz` farkı **eleştirmen ajanının**,",
+        "`hibrit` → `tam` farkı **yüklem ajanının** katkısıdır. `tam`, `make extract`'in",
+        "koştuğu üretim yapılandırmasıdır.",
         "",
         "```bash",
-        "make extract-kural && make eval   # yalnız kural",
-        "make extract-llm   && make eval   # yalnız LLM",
-        "make extract       && make eval   # hibrit",
+        "make ablasyon            # beş yapılandırma, tek komut, tek kod izi",
+        "make ablasyon altin=1    # yalnız altın set korpusunda (hızlı)",
+        "make eval-ablation       # tabloyu bu dosyaya bas",
         "```",
         "",
         "| Yapılandırma | Kâr payı F1 | Vade F1 | Makro-F1 | Halüsinasyon | Doluluk |",

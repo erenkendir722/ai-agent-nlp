@@ -1,5 +1,6 @@
 .PHONY: help kur crawl extract extract-yerel saglayici-dogrula seed durum run api test lint eval lisanslar lisanslar-teyit temiz temiz-db docker-up docker-down \
-        birim-goc ablasyon eval-gorulmemis \
+        birim-goc uygunluk-goc ablasyon eval-gorulmemis \
+        kapsam cikti-ornekleri veri-seti \
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         altin-tur2 altin-tur2-fark kural-olc \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
@@ -49,7 +50,7 @@ durum:  ## veritabanı özeti
 vektor:  ## RAG vektör indeksini kur (gömme + kosinüs, ~2 dk)
 	$(PYTHON) -m src.boru_hatti vektor
 
-chatbot-test:  ## chatbot 30 soruluk test seti (S-10): doğruluk + kaynak gösterme
+chatbot-test:  ## chatbot 31 soruluk test seti (S-10): doğruluk + kaynak gösterme
 	$(PYTHON) -m eval.chatbot_testi
 
 paket:  ## çevrimdışı kurulum paketi (E-14) — bağımlılıkları paketler/ altına indir
@@ -84,7 +85,7 @@ lint:  ## kod denetimi
 eval:  ## metrikleri hesapla -> docs/SONUCLAR.md
 	$(PYTHON) -m eval.calistir
 
-eval-ablation:  ## ablasyon tablosu (kural / LLM / hibrit)
+eval-ablation:  ## metrikler + 5 kollu ablasyon tablosu -> docs/SONUCLAR.md
 	$(PYTHON) -m eval.calistir --ablasyon
 
 eval-gorulmemis:  ## görülmemiş metin ölçümü (llm=1 ile LLM katmanı da) -> docs/GORULMEMIS_METIN.md
@@ -95,6 +96,15 @@ eval-robust:  ## dayanıklılık ölçümü (şartname 5.2) -> docs/DAYANIKLILIK
 
 veri-kalitesi:  ## veri kalitesi denetimi -> docs/VERI_KALITESI.md (kati=1 ile esik asiminda kirilir)
 	$(PYTHON) tools/veri_kalitesi.py $(if $(kati),--kati)
+
+kapsam:  ## banka bazli kapsam raporu -> docs/KAPSAM_RAPORU.md (sartname 15.1)
+	$(PYTHON) tools/kapsam_raporu.py
+
+cikti-ornekleri:  ## model cikti ornekleri -> docs/CIKTI_ORNEKLERI.md (dokuman basligi 9)
+	$(PYTHON) tools/cikti_ornekleri.py
+
+veri-seti:  ## yayinlanabilir veri seti + veri karti -> data/exports/ (sartname madde 9)
+	$(PYTHON) tools/veri_seti_disa_aktar.py $(if $(deneme),--deneme)
 
 suresi-gecenleri-ele:  ## suresi gecmis kampanyalari sil (uygula=1 olmadan yalniz gosterir)
 	$(PYTHON) tools/suresi_gecenleri_ele.py $(if $(uygula),--uygula)
@@ -116,8 +126,8 @@ lisanslar-teyit:  ## aynı rapor + model lisanslarını Hugging Face'ten teyit e
 	$(PYTHON) -m eval.lisanslar --model-teyit
 	@echo "✅ docs/LISANSLAR.md + docs/kanit/model-lisanslari.json güncellendi"
 
-ablasyon:  ## ATOMİK ablasyon: üç yapılandırma tek süreçte, tek kod izi (hizli=1 ile LLM'siz)
-	$(PYTHON) -m eval.ablasyon $(if $(hizli),--yalniz-kural)
+ablasyon:  ## ATOMİK ablasyon: beş yapılandırma tek süreçte (hizli=1 LLM'siz · altin=1 altın korpus)
+	$(PYTHON) -m eval.ablasyon $(if $(hizli),--yalniz-kural) $(if $(altin),--altin-korpus)
 	@echo "Tablo için: make eval-ablation"
 
 # --- ablasyon yardımcıları ---
@@ -182,6 +192,9 @@ kural-olc:  ## kural katmanının altın set skoru — LLM yok, saniyeler, deter
 birim-goc:  ## eski veritabanına birim ekler (şema v1.1.0 -> v1.2.0)
 	$(PYTHON) tools/birim_goc.py $(if $(deneme),--deneme)
 
+uygunluk-goc:  ## mevcut kayıtlara uygunluk koşullarını yazar (A-08, LLM'siz)
+	$(PYTHON) tools/uygunluk_goc.py $(if $(deneme),--deneme)
+
 # --- görev panosu ---
 gorev:  ## görev durumu (ad=Esra ile kişiye özel)
 	@$(PYTHON) tools/gorevler.py $(ad)
@@ -198,7 +211,7 @@ git-kontrol:  ## GitHub ile senkron mu (pull/push gerekiyor mu)
 # olmasına gerek yok. Tarayıcı yolu değişirse KROM değişkeniyle geçilebilir.
 KROM ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 
-sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (8 sayfa, 16:9)
+sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (10 sayfa, 16:9)
 	@"$(KROM)" --headless --disable-gpu --no-sandbox \
 	  --allow-file-access-from-files --no-pdf-header-footer \
 	  --print-to-pdf="$(CURDIR)/docs/sunum/Svartal_Sunum.pdf" \

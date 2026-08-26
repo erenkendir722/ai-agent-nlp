@@ -95,6 +95,8 @@ def test_farkli_kodla_kosulan_satirlar_karsilastirilamaz_isaretlenir(
         kural=_satir(parmak_izi="f797dd3f69630cfc"),
         llm=_satir(parmak_izi="f797dd3f69630cfc"),
         hibrit=_satir(parmak_izi="f835ccc2f7e8d116"),
+        hibrit_elestirmensiz=_satir(parmak_izi="f797dd3f69630cfc"),
+        tam=_satir(parmak_izi="f797dd3f69630cfc"),
     )
     metin = ec._ablasyon_notu()
     assert "KARŞILAŞTIRILAMAZ" in metin
@@ -109,6 +111,8 @@ def test_farkli_korpus_buyuklugu_karsilastirilamaz_isaretlenir(
         kural=_satir(kampanya_sayisi=96),
         llm=_satir(kampanya_sayisi=96),
         hibrit=_satir(kampanya_sayisi=300),
+        hibrit_elestirmensiz=_satir(kampanya_sayisi=96),
+        tam=_satir(kampanya_sayisi=96),
     )
     metin = ec._ablasyon_notu()
     assert "KARŞILAŞTIRILAMAZ" in metin
@@ -122,6 +126,8 @@ def test_tam_ve_tutarli_tablo_uyari_vermez(ablasyon_dosyasi) -> None:
         kural=_satir(makro_f1=0.628),
         llm=_satir(makro_f1=0.176),
         hibrit=_satir(makro_f1=0.778),
+        hibrit_elestirmensiz=_satir(makro_f1=0.760),
+        tam=_satir(makro_f1=0.828),
     )
     metin = ec._ablasyon_notu()
     assert "KARŞILAŞTIRILAMAZ" not in metin

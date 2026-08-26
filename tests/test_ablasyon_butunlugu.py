@@ -50,16 +50,23 @@ class TestKosucuGarantileri:
     def test_bayraklar_ayni_kod_yolunu_kullanir(self) -> None:
         """Ayrı kod yolu yazmak ölçümü karşılaştırılamaz kılardı.
 
-        Üç yapılandırma yalnız `kural_kullan` / `llm_kullan` bayraklarında
-        ayrışmalı; başka hiçbir parametre farkı olmamalı.
+        Yapılandırmalar YALNIZ bu dört bayrakta ayrışmalı: ikisi çıkarım
+        katmanını (kural / LLM), ikisi ajanı (eleştirmen / yüklem) açıp kapar.
+        Beşinci bir parametre eklenirse satırlar "aynı kod yolu" olmaktan çıkar.
         """
         for _, bayraklar in ablasyon_modulu.YAPILANDIRMALAR:
-            assert set(bayraklar) == {"kural_kullan", "llm_kullan"}
-        kombinasyonlar = {
-            (b["kural_kullan"], b["llm_kullan"])
-            for _, b in ablasyon_modulu.YAPILANDIRMALAR
+            assert set(bayraklar) == {"kural_kullan", "llm_kullan", "elestirmen", "yuklem"}
+
+        # Katman soruları: üç klasik kombinasyon hâlâ ölçülüyor.
+        katmanlar = {
+            (b["kural_kullan"], b["llm_kullan"]) for _, b in ablasyon_modulu.YAPILANDIRMALAR
         }
-        assert kombinasyonlar == {(True, False), (False, True), (True, True)}
+        assert katmanlar == {(True, False), (False, True), (True, True)}
+
+        # Ajan soruları (A-09): eleştirmensiz ve tam hiyerarşi kolları var.
+        ajanlar = dict(ablasyon_modulu.YAPILANDIRMALAR)
+        assert ajanlar["hibrit_elestirmensiz"]["elestirmen"] is False
+        assert ajanlar["tam"]["elestirmen"] is True and ajanlar["tam"]["yuklem"] is True
 
     def test_kural_once_kosulur(self) -> None:
         """LLM'siz koşu saniyeler sürer; sorun iki saatlik koşulardan ÖNCE çıksın."""
@@ -98,7 +105,7 @@ class TestAtomiklik:
         monkeypatch.setattr(
             ablasyon_modulu,
             "_yapilandirmayi_kos",
-            lambda ad, bayraklar, kayitlar: [],
+            lambda ad, bayraklar, kayitlar, isci: [],
         )
         monkeypatch.setattr(
             ablasyon_modulu, "temel_metrikler",
@@ -146,3 +153,61 @@ class TestYayinlananTablo:
         garantinin bozulduğu günü sessiz kılardı."""
         metin = _ablasyon_notu()
         assert "KARŞILAŞTIRILAMAZ" in metin or "⏳" in metin or "|" in metin
+
+
+# ---------------------------------------------------------------------------
+# 4) Sessiz bayatlık — 26 Ağustos akşamı ölçüldü
+# ---------------------------------------------------------------------------
+
+
+class TestSessizBayatlikYasagi:
+    """Koşu çökerse tablo ESKİ sayıları yeni damgayla yazmamalı.
+
+    Yaşanan: makinenin ağı düştü, LLM'li kolların 1024 kaydının tamamı hata
+    verdi, `kaydet([])` hiçbir şey yazmadı ve koşucu veritabanını okuyup
+    ÖNCEKİ koşunun kayıtlarını döndürdü. Tablo eski sayılarla, yeni kod parmak
+    iziyle yazıldı — her kontrol yeşil, sayılar yanlış.
+    """
+
+    def _kayit(self, no: int):
+        from datetime import datetime
+
+        from src.schema import HamKayit
+
+        return HamKayit(
+            banka_kodu="0299",
+            banka_adi="Test Katılım Bankası A.Ş.",
+            url=f"https://ornek.test/k{no}",
+            cekim_tarihi=datetime(2026, 8, 26),
+            http_durum=200,
+            govde_metin="Kampanya metni.",
+        )
+
+    def test_kol_cokerse_patlar(self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+        def _patla(*a, **kw):
+            raise RuntimeError("ağ yok")
+
+        monkeypatch.setattr(ablasyon_modulu, "kampanya_cikar", _patla)
+        monkeypatch.setattr(
+            ablasyon_modulu, "ablasyon_veritabani",
+            lambda ad: f"sqlite:///{tmp_path / (ad + '.db')}",
+        )
+        kayitlar = [self._kayit(i) for i in range(4)]
+
+        with pytest.raises(RuntimeError, match="Kırpılmış korpusta ölçüm yapılmaz"):
+            ablasyon_modulu._yapilandirmayi_kos(
+                "kural",
+                {"kural_kullan": True, "llm_kullan": False, "elestirmen": True, "yuklem": False},
+                kayitlar,
+                isci=1,
+            )
+
+    def test_eski_veritabani_kosudan_once_silinir(self, tmp_path: Path) -> None:
+        eski = tmp_path / "kural.db"
+        eski.write_bytes(b"eski kosu")
+        ablasyon_modulu._veritabanini_sil(f"sqlite:///{eski}")
+        assert not eski.exists(), "eski kol veritabanı hayatta kaldı"
+
+    def test_asgari_basari_orani_makul(self) -> None:
+        """Tek tük düşen kayıt normaldir; onda birinden fazlası arızadır."""
+        assert 0.5 < ablasyon_modulu.ASGARI_BASARI_ORANI < 1.0
