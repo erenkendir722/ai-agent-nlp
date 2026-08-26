@@ -201,7 +201,13 @@ if soru:
           }
           for iz in iz_defteri.izler
         ],
-        width="stretch",
+        # `width="stretch"` DEĞİL — o API Streamlit 1.44'te geldi, burada
+        # 1.40.1 pinli (requirements.txt) ve `width` int bekliyor. Yanlış tip
+        # `TypeError` firlatiyordu ve istisna ajan izleri panelinde patladigi
+        # icin CEVAP EKRANA BASILDIKTAN SONRA olusuyordu: kullanici cevabi
+        # goruyor, altinda kirmizi hata kutusu goruyor ve `gecmis`e ekleme
+        # satirina hic gelinmediginden sohbet gecmisi de kayboluyordu.
+        use_container_width=True,
         hide_index=True,
       )
       if iz_defteri.llm_cagrisi_sayisi() == 0:
