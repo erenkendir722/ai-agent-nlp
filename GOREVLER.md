@@ -1435,8 +1435,21 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır: mekanizma koşuyor, `make test` yeşil, ADR yazıldı
         (`docs/kararlar/017-*.md`), `docs/JURI_PROVASI.md` §11 «yok» demekten çıktı
 
-- [ ] **G-18** **Canlı Boru Hattı sayfası** · 📅 **26 Ağu gecesi** — *takım isteği*
+- [x] **G-18** ✅ **Canlı Boru Hattı sayfası** *(27 Ağu, Görkem)* — *takım isteği*
       ↳ Planı hazır ve ayrıntılı: [`docs/PLAN_BORU_HATTI_SAYFASI.md`](docs/PLAN_BORU_HATTI_SAYFASI.md)
+      ↳ **Bitti.** Planın yedi adımı da yapıldı. Sekme 1 ve Sekme 2'nin ikisinde de
+        **Demo / Tam koşu** kipi var; çıkarım sekmesi demo kipinde toplama
+        sekmesinin yazdığı kayıtlarla çalışır.
+      ↳ Uçtan uca ölçüldü: gerçek Selenium demo koşusu (tavan tam 3 sayfada kesti,
+        `data/raw` **1024 → 1024**), gerçek EVREN çıkarımı (`data/demo/demo.db`
+        doldu, üretim veritabanı dokunulmadı), koşu ortası iptal (Chrome süreç
+        sayısı 17 → 17, temiz kapandı).
+      ↳ CLI regresyonu geçti: `python -m src.boru_hatti seed --yalniz-kural`
+        çıktısı refactor öncesiyle **birebir aynı** (diff boş).
+      ↳ Yol boyunca ölçülen üç tuzak `CLAUDE.md`'ye yazıldı: Streamlit sayfasında
+        `@dataclass` tanımlamak biriken durumu sıfırlıyor · bitmiş işin sonucu
+        her tam koşuda devralınmalı · `havuz.map` girdi sırasında sonuç verdiği
+        için ilerleme olayları işçiden gönderilmeli.
       ↳ Mentör listesinden çıkmadı, **bizim kendi isteğimiz** — plan bunu açıkça yazsın
       ↳ Kapsam: `topla()`'ya `azami_sayfa` + `iptal` · `boru_hatti.py`'de
         `cikarim_kos()` ayrımı · `app/is_yurutucu.py` · `app/akis.py` ·
