@@ -66,6 +66,20 @@ class Gerekce:
     gecti_mi: bool
     aciklama: str
     alinti: str = ""
+    sayilar: dict[str, float] = field(default_factory=dict)
+    """`aciklama` metninde geçen sayıların KAYNAK değerleri.
+
+    NEDEN VAR (26 Ağustos) — sayısal doğrulama kalkanı profil cevabına
+    bağlandığında ortaya çıktı: «Azami vade 60 ay; talep 120 ay.» cümlesindeki
+    iki sayı da gerçek, ama ikisi de yapısal SÜTUNLARDA yok. `min_vade_ay`
+    kampanyanın `uygunluk` nesnesinden, `120` ise müşterinin sorusundan
+    geliyor; kalkanın `YAPISAL` ölçütü ikisini de «uydurma» sayardı.
+
+    Ölçüt `SISTEM` olmalı — «sayılar `hesap` girdilerinden yeniden
+    üretilebilmeli». O hesabı verebilecek tek yer, sayıyı üreten kontrolün
+    kendisidir. Açıklamayı yazan, sayısını da beyan eder; `Alan`'ın kendi
+    kanıtını taşıması ile aynı refleks.
+    """
 
     def __str__(self) -> str:
         return ("✅ " if self.gecti_mi else "❌ ") + self.aciklama
@@ -147,6 +161,7 @@ class MuhakemeAjani:
                 False,
                 f"Minimum tutar {kosul.min_tutar:,.0f} TL; "
                 f"talep {profil.tutar:,.0f} TL.".replace(",", "."),
+                sayilar={"min_tutar": kosul.min_tutar, "talep_tutar": profil.tutar},
             )
         if kosul.max_tutar is not None and profil.tutar > kosul.max_tutar:
             return Gerekce(
@@ -154,6 +169,7 @@ class MuhakemeAjani:
                 False,
                 f"Azami tutar {kosul.max_tutar:,.0f} TL; "
                 f"talep {profil.tutar:,.0f} TL.".replace(",", "."),
+                sayilar={"max_tutar": kosul.max_tutar, "talep_tutar": profil.tutar},
             )
         if kosul.min_tutar is not None or kosul.max_tutar is not None:
             return Gerekce("tutar", True, "Talep edilen tutar aralıkta.")
@@ -170,15 +186,22 @@ class MuhakemeAjani:
                 "min_vade_ay",
                 False,
                 f"Asgari vade {kosul.min_vade_ay} ay; talep {profil.vade_ay} ay.",
+                sayilar={"min_vade_ay": kosul.min_vade_ay, "talep_vade": profil.vade_ay},
             )
         if kosul.max_vade_ay is not None and profil.vade_ay > kosul.max_vade_ay:
             return Gerekce(
                 "max_vade_ay",
                 False,
                 f"Azami vade {kosul.max_vade_ay} ay; talep {profil.vade_ay} ay.",
+                sayilar={"max_vade_ay": kosul.max_vade_ay, "talep_vade": profil.vade_ay},
             )
         if kosul.min_vade_ay is not None or kosul.max_vade_ay is not None:
-            return Gerekce("vade", True, f"{profil.vade_ay} ay vade kampanya sınırları içinde.")
+            return Gerekce(
+                "vade",
+                True,
+                f"{profil.vade_ay} ay vade kampanya sınırları içinde.",
+                sayilar={"talep_vade": profil.vade_ay},
+            )
         return None
 
     @staticmethod

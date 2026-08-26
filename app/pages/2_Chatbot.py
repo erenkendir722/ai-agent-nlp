@@ -15,8 +15,9 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from src.ajanlar.orkestrator import Orkestrator # noqa: E402
 from src.depolama import tum_kayitlar # noqa: E402
-from src.rag.chatbot import YASAL_UYARI, Niyet, sor # noqa: E402
+from src.rag.chatbot import YASAL_UYARI, Niyet # noqa: E402
 from app.ui_utils import inject_custom_css, ortak_kenar # noqa: E402
 
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
@@ -156,7 +157,12 @@ if soru:
     with st.spinner("Yapısal veri sorgulanıyor…"):
       baslangic = time.time()
       try:
-        cevap = sor(soru, kayitlar)
+        # ORKESTRATÖR ÜZERİNDEN (26 Ağustos). Doğrudan `sor()` çağrılırken
+        # beşinci niyet (profil sorgusu) erişilemiyordu: «maaş müşterisi,
+        # 800.000 TL, 10 yıl vade» sorusu muhakeme ajanına hiç gitmiyor,
+        # `tekil_sorgu`ya düşüp müşterinin kısıtlarını yok sayıyordu.
+        # `kayitlar` geçiriliyor ki chatbot aynı listeyi yeniden okumasın.
+        cevap, iz_defteri = Orkestrator().calistir(soru, kayitlar=kayitlar)
         gecen_sure = time.time() - baslangic
       except ConnectionError as e:
         # Yerleşik ConnectionError — Ollama/vektör yolu kapalıyken yakalanır.
@@ -175,7 +181,32 @@ if soru:
         st.stop()
 
     cevap_renderla(cevap, gecen_sure)
-      
+
+    # AJAN İZLERİ — `ajanlar/temel.py`: "jüri ajan mimarisinin varlığını bizim
+    # sözümüze değil, ekrandaki koşum kaydına bakarak görür". Panel 26 Ağustos'a
+    # kadar hiç çizilmiyordu, çünkü izleri üreten orkestratör çağrılmıyordu.
+    with st.expander(f"🔍 Ajan izleri — {iz_defteri.ozet()}", expanded=False):
+      st.caption(
+        "Her satır bir ajan koşusu. **motor** sütunu kritik: karşılaştırma, "
+        "kısıt çözme ve sayısal kalkan deterministik KODDUR — aritmetiği "
+        "dil modeline yaptırmıyoruz ve bu iddia burada denetlenebilir."
+      )
+      st.dataframe(
+        [
+          {
+            "Ajan": iz.ajan_adi,
+            "Motor": "LLM" if iz.llm_kullanildi else "kod",
+            "Süre (ms)": iz.sure_ms,
+            "Karar gerekçesi": iz.karar_gerekcesi,
+          }
+          for iz in iz_defteri.izler
+        ],
+        width="stretch",
+        hide_index=True,
+      )
+      if iz_defteri.llm_cagrisi_sayisi() == 0:
+        st.success("Bu cevapta hiçbir ajan dil modeli çağırmadı.", icon="✅")
+
     # Geliştirici Modu (API)
     if st.session_state.get("dev_mode", False):
       st.markdown("---")

@@ -21,8 +21,17 @@ from __future__ import annotations
 
 from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili, UygunlukSonucu
 from src.ajanlar.temel import AjanIzi, IzDefteri, iz_tut
+from src.depolama import KampanyaKaydi
 from src.preprocessing.normalizasyon import arama_anahtari, para_ayristir, vade_ayristir
-from src.rag.chatbot import Cevap, Kaynakca, Niyet, niyet_belirle
+from src.rag.chatbot import (
+    Cevap,
+    CevapParcasi,
+    Kaynakca,
+    Koken,
+    Niyet,
+    kalkandan_gecir,
+    niyet_belirle,
+)
 from src.rag.chatbot import sor as chatbot_sor
 from src.schema import HedefKitle, Kampanya
 
@@ -127,80 +136,139 @@ def profil_sorgusu_mu(soru: str) -> bool:
 def _profil_cevabi(
     profil: MusteriProfili, sonuclar: list[UygunlukSonucu]
 ) -> Cevap:
-    """Uygunluk sonuçlarını gerekçeli metne çevirir.
+    """Uygunluk sonuçlarını gerekçeli metne çevirir — KÖKEN TİPLİ parçalarla.
 
-    Kalkan ayrımı `_karsilastirma_cevabi` ile aynı mantıkta: kampanyadan
-    ALINTILANAN oran bir veri iddiasıdır ve denetlenir; taksit ve toplam geri
-    ödeme BİZİM HESABIMIZDIR, veriden gelmez, dolayısıyla denetlenecek metnin
-    dışında tutulur. Aksi halde kalkan kendi aritmetiğimizi halüsinasyon sanıp
-    geçerli bir cevabı bloke ederdi.
+    ESKİDEN MİRAS YOLDAYDI ve iki ayrı delik açıyordu (26 Ağustos, ölçüldü):
+
+        `metin=` / `dogrulanacak_metin=` çağrısı, taksit ve toplam geri ödeme
+        satırlarını `Koken.DENETIMSIZ` yapıyordu. Yani sistemin ürettiği en
+        riskli sayılar — müşteriye söylenecek aylık taksit — hiçbir denetimden
+        geçmiyordu. Üstelik `Orkestrator.calistir` profil kolunda kalkanı hiç
+        çağırmıyordu; yani çağrılsa bile o parçalar atlanacaktı.
+
+    NEDEN HEPSİ `SISTEM`, HİÇBİRİ `YAPISAL`:
+        Bu cevaptaki sayıların TAMAMI ya bizim hesabımızdır ya da müşterinin
+        kendi girdisidir; hiçbiri bir kampanya kaydının sütununda durmuyor.
+        `YAPISAL` ölçütü («kayıtta birebir karşılığı olmalı») uygulanırsa
+        müşterinin yazdığı «800.000 TL» bile uydurma sayılır ve meşru cevap
+        bloke olur — ölçüldü:
+
+            kalkan ÇAĞRILSA sonucu : REDDETTİ ['800.000', '120']
+
+        `SISTEM` ölçütü doğru olanıdır: «sayılar `hesap` girdilerinden yeniden
+        üretilebilmeli». Bu bir GEVŞETME DEĞİL sertleştirmedir — eskiden bu
+        satırlar hiç denetlenmiyordu, artık her biri kendi girdisine karşı
+        doğrulanıyor. Açıklamaya elle yazılmış bir taksit tutarı yakalanır.
     """
     uygunlar = [s for s in sonuclar if s.uygun_mu]
     elenenler = [s for s in sonuclar if not s.uygun_mu]
 
+    # Müşterinin kendi girdisi her parçada geçebilir (profil özeti) — ortak taban.
+    profil_hesabi = {"talep_tutar": profil.tutar, "talep_vade": float(profil.vade_ay)}
+
+    def _engel_parcasi(baslik: str) -> CevapParcasi | None:
+        """Elenen kampanyaların sebepleri + o sebeplerin KAYNAK sayıları.
+
+        Sayılar `Gerekce.sayilar`'dan geliyor: açıklamayı yazan kontrol,
+        içindeki sayıyı da beyan ediyor. Bu olmadan «Azami vade 60 ay; talep
+        120 ay.» cümlesi denetlenemezdi — iki sayı da gerçek ama ikisi de
+        yapısal sütunlarda yok.
+        """
+        satirlar: list[str] = []
+        hesap = dict(profil_hesabi)
+        for sonuc in elenenler[:5]:
+            for gerekce in sonuc.engelleyenler():
+                satirlar.append(f"- **{sonuc.banka_adi}**: {gerekce.aciklama}")
+                hesap.update(gerekce.sayilar)
+        if not satirlar:
+            return None
+        govde = baslik + "\n" + "\n".join(satirlar)
+        return CevapParcasi(govde, Koken.SISTEM, hesap=hesap)
+
     if not uygunlar:
-        satirlar = [
-            f"**{profil.ozet()}** profiline uygun kampanya bulunamadı.",
-            "",
-            "**Neden uygun değiller:**",
+        parcalar = [
+            CevapParcasi(
+                f"**{profil.ozet()}** profiline uygun kampanya bulunamadı.",
+                Koken.SISTEM,
+                hesap=profil_hesabi,
+            )
         ]
-        for s in elenenler[:5]:
-            for g in s.engelleyenler():
-                satirlar.append(f"- **{s.banka_adi}**: {g.aciklama}")
-        return Cevap(
-            metin="\n".join(satirlar),
-            dogrulanacak_metin="",  # burada veri iddiası yok, yalnız kısıt açıklaması
-            niyet=Niyet.KOSUL_SORGUSU,
-        )
+        engel = _engel_parcasi("\n**Neden uygun değiller:**")
+        if engel is not None:
+            parcalar.append(engel)
+        return Cevap(parcalar=parcalar, niyet=Niyet.KOSUL_SORGUSU)
 
     # DÜRÜSTLÜK KAPISI: `uygunluk` koşulları henüz çıkarılmamış kayıtlar
     # elenmedikleri için "uygun" görünür. Hepsi böyleyse hiçbir kısıt
     # doğrulanmamış demektir; bunu satır başlarına gömüp geçmek, sistemin
     # yapmadığı bir filtrelemeyi yapmış gibi sunmak olurdu.
     dogrulanmamis = sum(1 for s in uygunlar if s.veri_eksik)
-    veri_satirlari = [
-        f"**{profil.ozet()}** profiline **{len(uygunlar)} kampanya** uygun.",
-        "",
+
+    baslik_satirlari = [
+        f"**{profil.ozet()}** profiline **{len(uygunlar)} kampanya** uygun."
     ]
     if dogrulanmamis == len(uygunlar):
-        veri_satirlari.insert(
-            1,
+        baslik_satirlari.append(
             "\n> ⚠️ **Bu kampanyaların hiçbirinde uygunluk koşulu çıkarılamadı.**\n"
-            "> Liste profile göre SÜZÜLMEMİŞTİR; yalnız maliyete göre sıralanmıştır.\n",
+            "> Liste profile göre SÜZÜLMEMİŞTİR; yalnız maliyete göre sıralanmıştır.\n"
         )
     elif dogrulanmamis:
-        veri_satirlari.insert(
-            1,
+        baslik_satirlari.append(
             f"\n> ⚠️ {dogrulanmamis} kampanyanın uygunluk koşulu çıkarılamadı; "
-            "onlar için kısıtlar doğrulanmadı.\n",
+            "onlar için kısıtlar doğrulanmadı.\n"
         )
 
-    hesap_satirlari: list[str] = ["**Toplam maliyete göre sıralı:**", ""]
+    parcalar = [
+        CevapParcasi(
+            "\n".join(baslik_satirlari),
+            Koken.SISTEM,
+            # Sayımlar da denetlenir: «3 kampanya uygun» yazıp beş göstermek
+            # bir iddiadır ve yeniden üretilebilir olmalıdır.
+            hesap={
+                **profil_hesabi,
+                "uygun_sayisi": float(len(uygunlar)),
+                "dogrulanmamis_sayisi": float(dogrulanmamis),
+            },
+        )
+    ]
 
-    for sira, s in enumerate(uygunlar[:5], 1):
-        hesap_satirlari.append(f"{sira}. **{s.banka_adi}**")
-        if s.maliyet:
-            aylik = f"{s.maliyet['aylik_taksit']:,.0f}".replace(",", ".")
-            toplam = f"{s.maliyet['toplam_geri_odeme']:,.0f}".replace(",", ".")
-            hesap_satirlari.append(f"   - Aylık taksit: {aylik} TL")
-            hesap_satirlari.append(f"   - Toplam geri ödeme: {toplam} TL")
+    # -- Maliyet listesi: her sayı kendi hesabından yeniden üretilebilmeli --
+    maliyet_satirlari: list[str] = ["", "**Toplam maliyete göre sıralı:**", ""]
+    maliyet_hesabi = dict(profil_hesabi)
+
+    for sira, sonuc in enumerate(uygunlar[:5], 1):
+        maliyet_satirlari.append(f"{sira}. **{sonuc.banka_adi}**")
+        # Sıra numarası tek haneli olduğu sürece kalkan onu zaten atlıyor
+        # (`_metindeki_sayilar` tek haneleri saymaz). Yine de hesaba yazılıyor:
+        # liste bir gün beşten uzarsa «10.» sessiz bir rede dönüşmesin.
+        maliyet_hesabi[f"sira_{sira}"] = float(sira)
+
+        if sonuc.maliyet:
+            aylik = f"{sonuc.maliyet['aylik_taksit']:,.0f}".replace(",", ".")
+            toplam = f"{sonuc.maliyet['toplam_geri_odeme']:,.0f}".replace(",", ".")
+            maliyet_satirlari.append(f"   - Aylık taksit: {aylik} TL")
+            maliyet_satirlari.append(f"   - Toplam geri ödeme: {toplam} TL")
+            maliyet_hesabi[f"aylik_taksit_{sira}"] = sonuc.maliyet["aylik_taksit"]
+            maliyet_hesabi[f"toplam_{sira}"] = sonuc.maliyet["toplam_geri_odeme"]
         else:
-            hesap_satirlari.append("   - Kâr payı oranı **Belirtilmemiş**, maliyet hesaplanamadı.")
-        if s.veri_eksik:
-            hesap_satirlari.append(
+            maliyet_satirlari.append(
+                "   - Kâr payı oranı **Belirtilmemiş**, maliyet hesaplanamadı."
+            )
+        if sonuc.veri_eksik:
+            maliyet_satirlari.append(
                 "   - ⚠️ Uygunluk koşulları metinden çıkarılamadı; kısıtlar doğrulanmadı."
             )
 
-    if elenenler:
-        hesap_satirlari += ["", "**Uygun olmayanlar ve sebepleri:**"]
-        for s in elenenler[:5]:
-            for g in s.engelleyenler():
-                hesap_satirlari.append(f"- **{s.banka_adi}**: {g.aciklama}")
+    parcalar.append(
+        CevapParcasi("\n".join(maliyet_satirlari), Koken.SISTEM, hesap=maliyet_hesabi)
+    )
 
-    veri_bolumu = "\n".join(veri_satirlari)
+    engel = _engel_parcasi("\n**Uygun olmayanlar ve sebepleri:**")
+    if engel is not None:
+        parcalar.append(engel)
+
     return Cevap(
-        metin=veri_bolumu + "\n".join(hesap_satirlari),
-        dogrulanacak_metin=veri_bolumu,
+        parcalar=parcalar,
         niyet=Niyet.KOSUL_SORGUSU,
         kaynaklar=[
             Kaynakca(banka_adi=s.banka_adi, url="", cekim_tarihi="")
@@ -230,9 +298,26 @@ class Orkestrator:
         return niyet_belirle(soru).value
 
     def calistir(
-        self, soru: str, kampanyalar: list[Kampanya] | None = None
+        self,
+        soru: str,
+        kampanyalar: list[Kampanya] | None = None,
+        *,
+        kayitlar: list[KampanyaKaydi] | None = None,
     ) -> tuple[Cevap, IzDefteri]:
-        """Tek giriş noktası. `(cevap, iz_defteri)` döner."""
+        """Tek giriş noktası. `(cevap, iz_defteri)` döner.
+
+        İKİ AYRI KOLEKSİYON, İKİ AYRI TİP — karıştırmayın:
+          * `kampanyalar` (`Kampanya`) muhakeme ajanının girdisi; kanıt
+            zinciri ve `uygunluk` kısıtları orada duruyor.
+          * `kayitlar` (`KampanyaKaydi`) chatbot'un girdisi; düz sütunlar
+            üzerinden sorgulanıyor ve sayısal kalkanın izin listesi ondan
+            doğuyor.
+
+        İkisi de opsiyonel ve verilmezse ilgili kol kendi okumasını yapar.
+        Arayüz ikisini de geçirebilir: Streamlit her etkileşimde betiği baştan
+        koşturduğu için, sayfanın önbelleğindeki listeyi tekrar okutmak
+        1.024 kaydı ve ~12 MB ham metni boşuna diskten çekmek olurdu.
+        """
         defter = IzDefteri()
 
         with iz_tut(self.ad, llm=False, girdi=soru[:80]) as iz:
@@ -242,20 +327,39 @@ class Orkestrator:
         defter.ekle(iz)
 
         if niyet != PROFIL_SORGUSU:
-            cevap, chatbot_izi = self._chatbot_yolu(soru)
+            cevap, chatbot_izi = self._chatbot_yolu(soru, kayitlar)
             defter.ekle(chatbot_izi)
             return cevap, defter
 
         profil, eksikler = self._profil_izi(soru, defter)
         if profil is None:
+            # KÖKEN `SISTEM`, `DUZ` DEĞİL — kalkan bu hatayı kuruluşta yakaladı.
+            # `eksikler` girdileri ÖRNEK SAYI taşıyor ("vade (örn. 120 ay veya
+            # 10 yıl)"), dolayısıyla metin sayısız değil. `DUZ` sözleşmesi
+            # («sayı içeremez») haklı olarak reddetti; doğru köken, sayıları
+            # `hesap`'tan yeniden üretilebilen `SISTEM`.
+            #
+            # Bu sayılar bir veri iddiası değil, arayüz metnindeki örnekler —
+            # ama denetimsiz de bırakılmıyorlar: hiçbir parça `DENETIMSIZ`
+            # kalmadığı için `eval`'deki denetimsiz parça oranı sıfır kalır.
             return (
                 Cevap(
-                    metin=(
-                        "Uygunluk değerlendirmesi için şu bilgiler eksik: "
-                        + ", ".join(eksikler)
-                        + ".\n\nÖrnek: *\"Maaş müşterisi, 800.000 TL konut "
-                        "finansmanı, 10 yıl vade\"*"
-                    ),
+                    parcalar=[
+                        CevapParcasi(
+                            "Uygunluk değerlendirmesi için şu bilgiler eksik: "
+                            + ", ".join(eksikler)
+                            + ".\n\nÖrnek: *\"Maaş müşterisi, 800.000 TL konut "
+                            "finansmanı, 10 yıl vade\"*",
+                            Koken.SISTEM,
+                            hesap={
+                                # `profil_ayristir`'ın ürettiği ipuçlarındaki
+                                # örnek değerler + örnek cümledeki tutar.
+                                "ornek_tutar": 800_000.0,
+                                "ornek_vade_ay": 120.0,
+                                "ornek_vade_yil": 10.0,
+                            },
+                        )
+                    ],
                     niyet=Niyet.KOSUL_SORGUSU,
                 ),
                 defter,
@@ -276,7 +380,52 @@ class Orkestrator:
             iz.karar_gerekcesi = "Gerekçeler ve maliyetler kaynaklarıyla yazıldı"
         defter.ekle(iz)
 
-        return cevap, defter
+        # SAYISAL DOĞRULAMA KALKANI — profil kolunda da (26 Ağustos).
+        #
+        # Bu çağrı EKSİKTİ. Chatbot yolu `chatbot.sor` içinde kalkandan
+        # geçiyordu ama profil yolu doğrudan dönüyordu; yani sistemin ürettiği
+        # en riskli sayılar — müşteriye söylenecek aylık taksit ve toplam geri
+        # ödeme — hiçbir denetimden geçmeden ekrana gidiyordu.
+        #
+        # `docs/SONUCLAR.md`'deki «denetimsiz cevap parçası %0,0» ölçümü bu
+        # deliği göremiyordu: o ölçüm `eval/sorular.yaml` üzerinden yalnız
+        # `chatbot.sor` yolunu kat ediyor, profil yolunu hiç ziyaret etmiyor.
+        #
+        # `kullanilan_kayitlar` boş: bu cevapta YAPISAL parça yok, tamamı
+        # SISTEM kökenli (gerekçesi `_profil_cevabi` docstring'inde).
+        return self._kalkandan_gecir(cevap, defter), defter
+
+    @staticmethod
+    def _kalkandan_gecir(cevap: Cevap, defter: IzDefteri) -> Cevap:
+        """Kalkanı uygular ve kararını ize yazar — jüri ekranda görebilsin."""
+        with iz_tut("kalkan", llm=False, girdi=f"{len(cevap.parcalar)} parça") as iz:
+            gecti, reddedilen = kalkandan_gecir(cevap, cevap.kullanilan_kayitlar)
+            cevap.dogrulama_gecti = gecti
+            cevap.reddedilen_sayilar = reddedilen
+            iz.cikti_ozeti = "geçti" if gecti else "REDDETTİ"
+            iz.karar_gerekcesi = (
+                f"{len(cevap.parcalar)} parçanın tamamı kökenine göre doğrulandı"
+                if gecti
+                else f"Doğrulanamayan sayılar: {', '.join(reddedilen[:6])}"
+            )
+        defter.ekle(iz)
+
+        if gecti:
+            return cevap
+
+        return Cevap(
+            parcalar=[
+                CevapParcasi(
+                    "Cevabı üretirken doğrulayamadığım sayısal değerler oluştu, "
+                    "bu yüzden cevabı vermiyorum. Bu bilgi veri setinde "
+                    "doğrulanabilir biçimde bulunmuyor.",
+                    Koken.DUZ,
+                )
+            ],
+            niyet=cevap.niyet,
+            dogrulama_gecti=False,
+            reddedilen_sayilar=reddedilen,
+        )
 
     # -- iç ---------------------------------------------------------------
 
@@ -298,9 +447,16 @@ class Orkestrator:
         return f"{bulunan} + müşteri ipucu → muhakeme ajanı (eksik bilgi sorulacak)"
 
     @staticmethod
-    def _chatbot_yolu(soru: str) -> tuple[Cevap, AjanIzi]:
+    def _chatbot_yolu(
+        soru: str, kayitlar: list[KampanyaKaydi] | None = None
+    ) -> tuple[Cevap, AjanIzi]:
+        """Chatbot kolu. Kalkan `chatbot.sor`'un İÇİNDE uygulanır, burada değil.
+
+        `kayitlar` geçirilirse chatbot yeniden okuma yapmaz — çağıran zaten
+        elinde tutuyorsa aynı listeyi iki kez diskten çekmenin anlamı yok.
+        """
         with iz_tut("cevap", llm=False, girdi=soru[:80]) as iz:
-            cevap = chatbot_sor(soru)
+            cevap = chatbot_sor(soru, kayitlar)
             iz.cikti_ozeti = cevap.niyet.value
             iz.karar_gerekcesi = (
                 f"Sayısal doğrulama kalkanı: "

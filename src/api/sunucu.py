@@ -21,7 +21,6 @@ from pydantic import BaseModel, Field
 
 from src.comparison.karsilastirma import Agirliklar, Kriter, sirala, uyarilar
 from src.depolama import kampanyalari_getir, tum_kayitlar
-from src.rag.chatbot import sor
 from src.schema import Kampanya
 
 STATIK = Path(__file__).resolve().parent / "statik"
@@ -166,16 +165,49 @@ def compare(
 
 @uygulama.post("/ask", tags=["chatbot"])
 def ask(istek: SoruIstegi) -> dict[str, object]:
-    """Kaynak gösteren, sayısal doğrulamadan geçmiş cevap."""
-    cevap = sor(istek.soru)
+    """Kaynak gösteren, sayısal doğrulamadan geçmiş cevap — ajan izleriyle.
+
+    ORKESTRATÖR ÜZERİNDEN KOŞAR (26 Ağustos). Önceden doğrudan `chatbot.sor`
+    çağrılıyordu ve bunun iki bedeli vardı:
+
+      1. Beşinci niyet olan PROFİL SORGUSU erişilemiyordu. «Maaş müşterisi,
+         800.000 TL konut, 10 yıl vade» gibi şartnamenin kendi senaryosunu
+         yazan bir soru `tekil_sorgu`'ya düşüyor ve muhakeme ajanına hiç
+         gitmiyordu — müşterinin tutarı, vadesi ve tipi kullanılmadan
+         «en dolu kayıt» gösteriliyordu.
+      2. Ajan izleri hiç üretilmiyordu. `ajanlar/temel.py` izleri «jüri ajan
+         mimarisini bizim sözümüze değil koşum kaydına bakarak görür» diye
+         gerekçelendiriyor; o kaydı üreten sınıf çağrılmıyordu.
+
+    `izler` alanı bu yüzden cevaba eklendi: hangi ajanın ne kadar sürdüğü ve
+    LLM kullanıp kullanmadığı artık HTTP üzerinden de denetlenebilir.
+    """
+    from src.ajanlar.orkestrator import Orkestrator
+
+    cevap, defter = Orkestrator().calistir(istek.soru)
     return {
         "soru": istek.soru,
         "niyet": cevap.niyet.value,
         "cevap": cevap.metin,
         "uyarilar": cevap.uyarilar,
         "sayisal_dogrulama_gecti": cevap.dogrulama_gecti,
+        "reddedilen_sayilar": cevap.reddedilen_sayilar,
         "kaynaklar": [
             {"banka_adi": k.banka_adi, "url": k.url, "cekim_tarihi": k.cekim_tarihi}
             for k in cevap.kaynaklar
         ],
+        # Ajan koşum kaydı — «aritmetiği ajana yaptırmıyoruz» iddiasının
+        # makine-okunur kanıtı: `llm_kullanildi` alanlarının tamamı false.
+        "izler": {
+            "ozet": defter.ozet(),
+            "adimlar": [
+                {
+                    "ajan": iz.ajan_adi,
+                    "llm_kullanildi": iz.llm_kullanildi,
+                    "sure_ms": iz.sure_ms,
+                    "gerekce": iz.karar_gerekcesi,
+                }
+                for iz in defter.izler
+            ],
+        },
     }

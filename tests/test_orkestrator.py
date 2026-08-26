@@ -181,7 +181,46 @@ def test_profil_yolunda_hicbir_ajan_llm_kullanmaz(ork):
     yaptırmıyoruz' iddiasının ekrandaki kanıtı."""
     _, defter = ork.calistir("maaş müşterisi 800.000 TL 120 ay", [_kampanya()])
     assert defter.llm_cagrisi_sayisi() == 0
-    assert len(defter.izler) == 4  # orkestratör, profil, muhakeme, cevap
+    # orkestratör, profil, muhakeme, cevap, KALKAN
+    # Kalkan izi 26 Ağustos'ta eklendi: profil kolu o güne dek kalkandan hiç
+    # geçmiyordu ve taksit tutarları denetimsiz çıkıyordu.
+    assert len(defter.izler) == 5
+
+
+def test_profil_cevabi_kalkandan_gecer(ork):
+    """Profil kolunun kalkan izi DEFTERDE olmalı — jüri ekranda görecek.
+
+    NEDEN VAR: `Orkestrator.calistir` profil dalında `kalkandan_gecir`'i hiç
+    çağırmıyordu. Chatbot yolu korunuyordu, profil yolu korunmuyordu; yani
+    sistemin ürettiği en riskli sayılar (aylık taksit, toplam geri ödeme)
+    denetimsiz geçiyordu.
+    """
+    cevap, defter = ork.calistir("maaş müşterisi 800.000 TL 120 ay", [_kampanya()])
+
+    kalkan_izleri = [iz for iz in defter.izler if iz.ajan_adi == "kalkan"]
+    assert len(kalkan_izleri) == 1, "Profil kolunda kalkan izi yok"
+    assert cevap.dogrulama_gecti, f"Meşru cevap bloke edildi: {cevap.reddedilen_sayilar}"
+
+
+def test_profil_cevabinda_denetimsiz_parca_kalmaz(ork):
+    """Miras `metin=` yolu profil cevabından tümüyle çıktı.
+
+    `DENETIMSIZ` köken kalkanın atladığı tek köken; `docs/SONUCLAR.md` bunu
+    ölçülen teknik borç olarak raporluyor ve hedefi sıfır. Profil yolu bu
+    ölçümün dışındaydı, çünkü ölçüm `eval/sorular.yaml` üzerinden yalnız
+    `chatbot.sor`'u kat ediyor.
+    """
+    from src.rag.chatbot import Koken
+
+    for soru, kampanyalar in (
+        ("maaş müşterisi 800.000 TL 120 ay", [_kampanya()]),
+        ("Müşterim 500.000 TL istiyor", []),  # eksik bilgi kolu
+    ):
+        cevap, _ = ork.calistir(soru, kampanyalar)
+        assert cevap.denetimsiz_parca_sayisi() == 0, (
+            f"{soru!r} cevabında denetimsiz parça var: "
+            f"{[p.metin[:40] for p in cevap.parcalar if p.koken is Koken.DENETIMSIZ]}"
+        )
 
 
 def test_kalkan_sonucu_ize_yazilir(ork):
