@@ -6,8 +6,24 @@
         gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
         suresi-gecenleri-ele kanit kanit-robots kanit-kvkk
 
-PYTHON ?= .venv/bin/python
-STREAMLIT ?= .venv/bin/streamlit
+# SANAL ORTAMIN YERİ İŞLETİM SİSTEMİNE GÖRE DEĞİŞİR (26 Ağustos).
+#
+# POSIX'te `.venv/bin/python`, Windows'ta `.venv/Scripts/python.exe`. Sabit
+# POSIX yolu yazılıydı; ekipteki Windows makinelerinde HİÇBİR make hedefi
+# çalışmıyordu ("No such file or directory"). Komutlar elle çalıştırılıyordu,
+# yani `make eval`in bayatlık koruması da devreden çıkıyordu.
+ifeq ($(wildcard .venv/Scripts/python.exe),)
+  PYTHON ?= .venv/bin/python
+  STREAMLIT ?= .venv/bin/streamlit
+else
+  PYTHON ?= .venv/Scripts/python.exe
+  STREAMLIT ?= .venv/Scripts/streamlit.exe
+endif
+
+# Windows konsolu varsayılan olarak cp1254 kullanır; çıktıdaki emoji ve
+# Türkçe karakterler `UnicodeEncodeError` ile SÜRECİ ÇÖKERTİYOR. `make durum`
+# tam olarak bu yüzden Windows'ta hiç çalışmadı. Değişken her hedefe geçer.
+export PYTHONIOENCODING := utf-8
 
 # PyArrow'un varsayılan mimalloc ayırıcısı macOS/arm64'te thread yeniden
 # başlatılırken çöküyor (SIGSEGV, mi_thread_init). Streamlit her sayfa
@@ -58,9 +74,12 @@ paket:  ## çevrimdışı kurulum paketi (E-14) — bağımlılıkları paketler
 	@echo ""
 	@echo "✅ paketler/ hazır. USB'ye kopyalanacaklar:"
 	@echo "   1) paketler/            (bağımlılıklar)"
-	@echo "   2) data/katilim.db      (işlenmiş veri)"
-	@echo "   3) data/vektor_indeksi.npz  (RAG indeksi — ağsız kurulamaz!)"
-	@echo "   4) deponun kendisi"
+	@echo "   2) deponun kendisi      — data/katilim.db ve"
+	@echo "                             data/vektor_indeksi.npz artık İÇİNDE"
+	@echo ""
+	@echo "   RAG indeksi 26 Ağustos'ta depoya alındı: ağsız kurulamıyordu"
+	@echo "   (EVREN anahtarı + ağ ister) ve elle kopyalama adımı atlanınca"
+	@echo "   koşul soruları sessizce cevapsız kalıyordu."
 	@echo ""
 	@echo "   Hedef makinede:  make kur-cevrimdisi"
 
@@ -209,7 +228,14 @@ git-kontrol:  ## GitHub ile senkron mu (pull/push gerekiyor mu)
 # HTML kaynaktan PDF üretir. Carlito fontu docs/sunum/fontlar/ içinde gömülü
 # durur (LibreOffice dağıtımından, SIL Open Font License) — makinede kurulu
 # olmasına gerek yok. Tarayıcı yolu değişirse KROM değişkeniyle geçilebilir.
-KROM ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+# Tarayıcı yolu da işletim sistemine bağlı. Windows'ta Chrome iki yerden
+# birinde durur; ikisi de yoksa değişken elle geçilebilir:
+#     make sunum KROM="C:/.../chrome.exe"
+ifeq ($(wildcard /Applications/Google Chrome.app),)
+  KROM ?= C:/Program Files/Google/Chrome/Application/chrome.exe
+else
+  KROM ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+endif
 
 sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (10 sayfa, 16:9)
 	@"$(KROM)" --headless --disable-gpu --no-sandbox \
