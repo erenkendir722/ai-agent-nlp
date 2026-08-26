@@ -1,13 +1,27 @@
 # Tek komutla kurulum:  docker compose up -d
 #
-# İki servis: Ollama (çıkarım) + uygulama (Streamlit + API). Dışarıya hiçbir
-# çağrı yapılmaz — modeller yerel diskte, veri yerel diskte.
+# İki servis: Ollama (çıkarım) + uygulama (Streamlit + API). Varsayılan
+# yapılandırmada çıkarım yereldir — modeller yerel diskte, veri yerel diskte.
 #
 # HAVA BOŞLUĞU (AIR-GAP) KANITI:
 #   Ağ bağlantısını kesip `docker compose up -d` çalıştırın. Model bir kez
 #   indirildikten sonra sistem internetsiz çalışır. `internal: true` ağı,
 #   servislerin dışarıya çıkışını ALTYAPI DÜZEYİNDE engeller — bu bir vaat
 #   değil, uygulanmış bir kısıttır.
+#
+# ⚠️ KAPSAMI TAM YAZIYORUZ — «hiçbir çağrı yapılmaz» demek bugün YANLIŞ olur:
+#
+#   ✅ Kural katmanı, normalizasyon, karşılaştırma, muhakeme, chatbot'un
+#      YAPISAL sorgu yolu ve `LLM_SAGLAYICI=ollama` ile çıkarım: kapalı devre.
+#      Ölçümü `tests/test_sizinti_yok.py`.
+#   ❌ Chatbot'un KOŞUL SORGUSU yolu: `src/vektor_db.gom()` sorgu ANINDA EVREN
+#      gömme ucuna çıkar ve yerel yedeği YOKTUR. İnternetsiz demoda o yol
+#      çalışmaz; kullanıcı «gömme servisine ulaşılamadı» mesajı alır (sessizce
+#      yanlış cevap vermez — `chatbot._kosul_cevabi`).
+#
+#   Yani hava boşluğu iddiası ÇIKARIM ve KARŞILAŞTIRMA için geçerlidir,
+#   RAG metin araması için değildir. Kapatmanın yolu yerel bir gömme
+#   sağlayıcısıdır (ollama `bge-m3`, 1024 boyut — `vektor_db.BOYUT` ile uyar).
 
 services:
   ollama:
@@ -42,6 +56,35 @@ services:
       - ic-ag          # ollama'ya erisim
       - sunum          # yalnizca 8501'in host'a yayinlanmasi icin
     environment:
+      # SAĞLAYICI SEÇİMİ — SABİT `ollama`. İnterpolasyon KULLANILMIYOR.
+      #
+      # Bu satır olmadan `saglayici.SAGLAYICI_ADI` varsayılanı `evren` oluyordu
+      # ve compose kendi kendisiyle çelişiyordu: yanı başında rotası kapalı bir
+      # model sunucusu ayakta dururken uygulama dış HTTPS'e çıkmaya çalışıyor,
+      # anahtar yoksa `EvrenSaglayici` daha kurulurken `RuntimeError` atıyordu.
+      #
+      # ⚠️ NEDEN `${LLM_SAGLAYICI:-ollama}` DEĞİL — ölçüldü (26 Ağu, `compose config`):
+      #     Docker Compose interpolasyonu, varsayılana düşmeden ÖNCE proje
+      #     kökündeki `.env` dosyasını okur. `.env` içinde `LLM_SAGLAYICI=evren`
+      #     var (yerel `make extract` için DOĞRUSU o) ve compose onu alıp
+      #     varsayılanı eziyordu:
+      #
+      #         uygulama: LLM_SAGLAYICI: evren      <- hava boşluğu sessizce bitti
+      #         uygulama: EVREN_API_ANAHTARI: sk-…  <- sır konteynere sızdı
+      #
+      #     Yani "üzerine yazılabilir olsun" iyi niyeti, tam da engellemek
+      #     istediğimiz hatayı geri getiriyordu. Aynı `.env`, iki tüketiciye
+      #     (yerel venv ve Docker) zıt varsayılanlar borçlu; çakışmayı çözmenin
+      #     tek dürüst yolu bu dosyada seçimi SABİTLEMEK.
+      #
+      # EVREN ile koşmanın yolu Docker DEĞİLDİR, yerel sanal ortamdır:
+      #     make extract            (LLM_SAGLAYICI=.env'den okunur)
+      # Bu dosya hava boşluğu kanıtıdır (E-07); iki işi birden yapmaya
+      # çalışması zaten bu hatanın kaynağıydı.
+      LLM_SAGLAYICI: "ollama"
+      # EVREN_* DEĞİŞKENLERİ BİLEREK GEÇİRİLMİYOR: sağlayıcı yerel olduğu için
+      # gereksizler ve bankacılık ortamına giden bir konteynerin ortamında
+      # duran bir API anahtarı `docker inspect` ile okunabilir.
       OLLAMA_HOST: "http://ollama:11434"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:4b-q4_K_M}"
       VERITABANI_URL: "sqlite:///data/katilim.db"
@@ -75,6 +118,12 @@ services:
       - ic-ag          # ollama'ya erisim
       - sunum          # yalnizca 8000'in host'a yayinlanmasi icin
     environment:
+      # `uygulama` ile AYNI seçim, aynı gerekçe (orada yazılı — interpolasyon
+      # `.env`'i okuduğu için sabitlendi). İki serviste birden olmak zorunda:
+      # `/extract` ucu çıkarım hattını çağırıyor, yani API de sağlayıcı seçer.
+      # Yalnız birine koymak, arayüz yereldeyken API'nin dışarı çıktığı bir
+      # yarım hava boşluğu üretirdi.
+      LLM_SAGLAYICI: "ollama"
       OLLAMA_HOST: "http://ollama:11434"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-qwen3.5:4b-q4_K_M}"
       VERITABANI_URL: "sqlite:///data/katilim.db"
