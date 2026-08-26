@@ -224,27 +224,35 @@ bir klonda `make extract` ağ olmadan koşabilir.
 
 Dürüst raporlama, eksiği gizlemekten daha değerlidir:
 
-1. **JavaScript ile render edilen sayfalar tam toplanamaz.** Statik HTML
-   çekilir; Playwright bilinçli olarak kapsam dışı bırakıldı (yeni bağımlılık +
-   tarayıcı ikilisi, on-prem kurulumu ağırlaştırır). "Daha fazla göster"
-   düğmesiyle parça parça yüklenen sitelerde ilk grup otomatik alınır, kalanı
-   manuel toplanır — şartname 5.1 buna açıkça izin veriyor. Banka bazlı notlar
-   `data/banks.yaml` içindedir.
-2. **Kapsam bankalar arasında dengesiz.** En geniş kapsamlı bankada, en dar
+1. **Toplama gerçek bir tarayıcı ister.** JavaScript ile render edilen
+   sayfalar 26 Ağustos'ta çözüldü — toplama Selenium'a taşındı (§2), «daha
+   fazla yükle» düğmesi kart sayısı artmayı bırakana dek basılıyor. Bedeli:
+   `make crawl` için makinede **Chrome** gerekir; bu yüzden Docker imajında
+   toplama adımı yoktur (imaj toplanmış veriyi işler). Yeniden toplama yerel
+   kurulumda yapılır.
+   *Not: burada eskiden "statik HTML çekilir, Playwright kapsam dışı, kalanı
+   manuel toplanır" yazıyordu; `data/raw`'daki 1.024 kaydı fiilen Selenium
+   kazıyıcıları üretti. Madde düzeltildi.*
+2. **Bir bankada otomatik URL keşfi yok.** Türkiye Finans'ın kampanya listesi
+   gezilebilir bir yapıda olmadığı için adresler `data/banks.yaml` ·
+   `seed_urls` içinde elle tutulur (şartname 5.1 manuel toplamaya izin veriyor).
+   Yeni kampanya çıkarsa listeye elle eklenmelidir — eksik kalırsa sistem
+   uyarmaz.
+3. **Kapsam bankalar arasında dengesiz.** En geniş kapsamlı bankada, en dar
    kapsamlının 13,6 katı kayıt var. Bu bir yanlılık kaynağıdır ve ölçülüp
    yazılmıştır: [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (şartname 15.1).
    *Not: 9 Ağustos'ta "T.O.M. Katılım'da kampanya sayfası bulunamadı" yazıyordu;
    toplayıcı yeniden koşulduğunda o bankadan 103 kayıt geldi. Madde düzeltildi.*
-3. **Kâr payı oranları çoğu kampanya sayfasında yazmaz;** başvuru ekranında
+4. **Kâr payı oranları çoğu kampanya sayfasında yazmaz;** başvuru ekranında
    veya hesaplama aracında bulunur. Bu, veri setinin gerçek bir özelliğidir ve
    `Belirtilmemiş` olarak raporlanır — uydurulmaz. Ölçülen doluluk: %16.
-4. **Veri bir anlık görüntüdür.** Kampanyalar sürelidir; her kayıt kendi
+5. **Veri bir anlık görüntüdür.** Kampanyalar sürelidir; her kayıt kendi
    `cekim_tarihi`'ni taşır. Süresi geçmiş kayıtlar `make suresi-gecenleri-ele`
    ile ayıklanabilir.
-5. **Yabancı para cinsinden tutarlar TL sayılabiliyor.** Şema
+6. **Yabancı para cinsinden tutarlar TL sayılabiliyor.** Şema
    `finansman_tutari_max` alanını TL olarak tanımlar; "600 Milyon Euro"
    gibi bir ifade sayı olarak çıkarılır ama birimi TL varsayılır. 1.024
    kayıtta bir örneği var ve `make veri-kalitesi` raporunda «> 10.000.000 TL»
    satırında görünür — gizlenmiyor, ama düzeltilmesi şema değişikliği
    gerektirir (yeni bir para birimi boyutu).
-6. **Bazı EFT kodları doğrulanmamıştır** (§1.3).
+7. **Bazı EFT kodları doğrulanmamıştır** (§1.3).
