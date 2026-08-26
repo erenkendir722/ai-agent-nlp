@@ -42,7 +42,7 @@ Depo durumu GitHub API'sinden teyit edildi (`api.github.com/repos/erenkendir722/
 | ~~Depo private~~ | **Public** (`"private": false`) — madde 8 karşılandı |
 | ~~`BilisimVadisi2026` etiketi yok~~ | **Var** (`bilisimvadisi2026`; GitHub topic'leri küçük harfe indirir) |
 | ~~"Türkiye Açık Kaynak Platformu" etiketi yok~~ | **Var** (`turkiye-acik-kaynak-platformu`) |
-| ~~Veri seti indirme bağlantısı yok~~ | **Var** — 96 ham kayıt (`data/raw/**/*.json`) depoda izleniyor, README'de «Veri seti» bölümünde belgelendi |
+| ~~Veri seti indirme bağlantısı yok~~ | **Var** — ham kayıtlar (`data/raw/**/*.json`) depoda izleniyor, README'de «Veri seti» bölümünde belgelendi. *(15 Ağu'da 96 kayıttı; **26 Ağu itibarıyla 1024**, GitHub API ile banka banka teyit edildi)* |
 
 > ✅ **26 Ağu:** Depo açıklaması da düzeltildi — *"Katılım bankası kampanya
 > metinlerinden kaynağa bağlı yapısal bilgi çıkarımı"*. Madde 9'un istediği
@@ -154,7 +154,7 @@ planlanmalı.
 | Ağırlık | Kriter | Bizdeki dayanak | Risk |
 |---|---|---|---|
 | **%30** | Model Başarısı ve Anlamlandırma | Altın set + `make eval` + ablasyon | 🔴 Altın set 16 Ağu'da bitmezse ölçüm yok |
-| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 3 ekran, API | 🟠 96/300 kampanya |
+| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 5 ekran, API | ✅ **1024 kampanya / 9 faal banka** — 26 Ağu ölçümü. «96/300» hedefi 15 Ağu'dan kalma bayat satırdı |
 | **%20** | Teknik İmplementasyon ve Mimari | Donmuş şema, hibrit çıkarım, modüler yapı | ✅ |
 | **%20** | On-Prem Uygulanabilirlik | Docker (**18 Ağu'da koşuldu**), yerel LLM yolu, hava boşluğu ölçümü, sızıntı testleri, **[`KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md)** (LDAP/AD · vekil · ambar besleme · denetim izi) | ✅ Bu satır 18 Ağu'dan beri bayattı — Docker koşulmuştu, tabloya yansımamıştı |
 | **%10** | Yenilikçilik ve Yaratıcılık | Kanıt zinciri, sayısal doğrulama kalkanı, hava boşluğu | 🟠 Dokümantasyon netliği de bu kalemde |
@@ -189,7 +189,7 @@ planlanmalı.
 | Ekip adı repo'da belirtilmiş | 🟠 | README: "Takım SVARTAL" ✅ — ama **repo açıklaması yalnız "SVARTAL"**; madde 9 proje tanımı istiyor | Eren (E-01) |
 | (1) Bağımlılıkların **eksiksiz** listesi | ✅ | `requirements.txt` + `docs/LISANSLAR.md` | Eren |
 | (2) Çalıştırma adımlarının tamamı | ✅ | `docs/KURULUM.md` + README «Veri seti» | Eren |
-| (3) Veri setinin **herkese açık indirme bağlantısı** | ✅ | 96 ham kayıt `data/raw/**/*.json` olarak depoda; README'de belgelendi. Taze klonda `make extract` ağsız koşar | Eren |
+| (3) Veri setinin **herkese açık indirme bağlantısı** | ✅ | **1024 ham kayıt** `data/raw/**/*.json` olarak depoda (**26 Ağu: dokuz bankanın dokuzu da GitHub API ile tek tek sayıldı, yerelle birebir**); ayrıca yayın sürümü `data/exports/` (CSV + JSONL + veri kartı). Taze klonda `make extract` ağsız koşar | Eren |
 | **En az haftalık** güncelleme | ✅ | 7, 9, 10, 12, 14, 15 Ağustos commit'leri | Eren (E-03) |
 | Sürüm etiketleri | ❌ | Depoda hiç git tag yok (şartname zorunlu tutmuyor, izlenebilirlik için istiyoruz) | Eren (E-03) |
 
@@ -229,6 +229,7 @@ planlanmalı.
 
 | Tarih | Denetleyen | Bulgu |
 |---|---|---|
+| 26 Ağu (2. tur) | Eren | **Teslim öncesi ikinci tarama — şartname baştan sona yeniden okundu.** Yeni bulgular: (1) `.venv` bayattı, `selenium` kurulu değildi ve `tests/test_kaziyicilar.py` toplama hatası tüm paketi durduruyordu — bağımlılık `requirements.txt`'te zaten vardı, kurulunca **814 test yeşil**, `ruff` temiz; (2) README üç yerde veriyi üreten yolu yanlış gösteriyordu (mermaid'de «Jenerik Toplayıcı httpx+trafilatura», lisans tablosunda `selenium` yok, klon komutunda yanlış depo adı `katilim-lens`) — üçü de düzeltildi; (3) bu panoda «96 ham kayıt» ve «96/300 kampanya» satırları bayattı, gerçek **1024**; (4) veri setinin GitHub'da eksiksiz olduğu **banka banka API ile sayılarak** teyit edildi (9/9 dizin, 1024 dosya, yerelle birebir). Açık kalan üç kalem değişmedi: PPTX, iki video, `v1.0` etiketi. |
 | 26 Ağu | Eren | **Teslim öncesi tam tarama.** Kapanan maddeler: 5.1 (9/9 faal bankada veri), 5.5 + G-10 (terim sözlüğü isteme bağlandı), 15.1 (kapsam raporu), dokümantasyon başlıkları 3-4-8-9, depo açıklaması. Yeni ölçümler: uygunluk çıkarımı %70,1 (A-08), beş kollu ablasyon (A-09). Açık kalan: PPTX, iki video, `v1.0` etiketi. |
 | 12 Ağu | Eren | İlk tam tarama. Depo private, 2 etiket eksik, veri seti bağlantısı yok, 2 bankada veri yok, madde 9'da tarih çelişkisi bulundu. |
 | 15 Ağu | Eren | **Panonun kendisi bayattı:** depo public'e alınmış, iki etiket de eklenmiş, veri seti (96 ham kayıt) zaten depodaydı — pano üçüne de ❌ diyordu. Düzeltildi. |
