@@ -226,3 +226,63 @@ def test_profil_cevabinda_denetimsiz_parca_kalmaz(ork):
 def test_kalkan_sonucu_ize_yazilir(ork):
     _, defter = ork.calistir("kampanya koşulları neler?")
     assert any("kalkan" in iz.karar_gerekcesi.lower() for iz in defter.izler)
+
+
+# ---------------------------------------------------------------------------
+# Kalkan × çok banka — `hesap` anahtar çakışması
+# ---------------------------------------------------------------------------
+
+
+def _limitli(ad: str, *, max_tutar: float, max_vade: int) -> Kampanya:
+    """Talebi karşılamayan, yani ELENECEK bir kampanya."""
+    return _kampanya(
+        ad,
+        uygunluk=UygunlukKosullari(max_tutar=max_tutar, max_vade_ay=max_vade),
+    )
+
+
+def test_birden_cok_elenen_bankanin_sayilari_izin_listesinde_kalir(ork):
+    """Farklı limitli beş banka elendiğinde HİÇBİRİNİN sayısı düşmemeli.
+
+    NEDEN VAR (26 Ağu, uçtan uca sağlık taramasında bulundu):
+    `_engel_parcasi` her gerekçenin sayılarını `hesap.update(gerekce.sayilar)`
+    ile yazıyordu. Anahtarlar bankadan bağımsız sabit adlar (`max_tutar`,
+    `max_vade_ay`), dolayısıyla **son banka öncekileri eziyordu**. Ezilen sayı
+    izin listesinden düşünce `_sistem_dogrula` onu «doğrulanamadı» sayıyor ve
+    kalkan cevabın TAMAMINI reddediyordu.
+
+    Gerçek veriyle ölçülen sonuç: «Maaş müşterisiyim, 800.000 TL konut
+    finansmanı istiyorum, 120 ay vade» sorgusu — chatbot'un amiral gemisi
+    senaryosu — kullanıcıya yalnız *«cevabı vermiyorum»* döndürüyordu.
+
+    Hata mevcut testlerden kaçtı çünkü hepsi TEK kampanya veriyordu; çakışma
+    en az iki elenen banka gerektiriyor.
+    """
+    kampanyalar = [
+        _limitli("A Bankası", max_tutar=125_000, max_vade=36),
+        _limitli("B Bankası", max_tutar=250_000, max_vade=48),
+        _limitli("C Bankası", max_tutar=400_000, max_vade=60),
+    ]
+    cevap, _ = ork.calistir("maaş müşterisi 800.000 TL 120 ay", kampanyalar)
+
+    assert cevap.dogrulama_gecti, (
+        f"Meşru cevap bloke edildi: {cevap.reddedilen_sayilar}. "
+        "`hesap` anahtarları bankalar arasında çakışıyor olabilir."
+    )
+    assert not cevap.reddedilen_sayilar
+
+    # Her bankanın kendi limiti metinde görünmeli — biri elenirse sayı da düşer.
+    metin = cevap.tam_metin()
+    for beklenen in ("125.000", "250.000", "400.000"):
+        assert beklenen in metin, f"{beklenen} sebep listesinden düşmüş"
+
+
+def test_ilk_bankanin_sayisi_sonuncusu_tarafindan_ezilmez(ork):
+    """Çakışmayı doğrudan hedefleyen dar test: ilk gerekçenin sayısı korunur."""
+    kampanyalar = [
+        _limitli("İlk Banka", max_tutar=125_000, max_vade=36),
+        _limitli("Son Banka", max_tutar=999_000, max_vade=240),
+    ]
+    cevap, _ = ork.calistir("maaş müşterisi 800.000 TL 120 ay", kampanyalar)
+    assert "125.000" not in cevap.reddedilen_sayilar
+    assert "36" not in cevap.reddedilen_sayilar

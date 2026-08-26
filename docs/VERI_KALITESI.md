@@ -1,6 +1,6 @@
 # Veri Kalitesi Raporu
 
-_Otomatik üretildi: 26.08.2026 18:22 · `make veri-kalitesi`_
+_Otomatik üretildi: 26.08.2026 23:21 · `make veri-kalitesi`_
 
 > Bu dosya elle düzenlenmez. `make veri-kalitesi` her koşuda yeniden üretir.
 

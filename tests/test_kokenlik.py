@@ -98,14 +98,28 @@ def test_parmak_izi_satir_sonundan_etkilenmez(tmp_path):
 
 
 def test_parmak_izi_izlenen_kaynaklari_kapsar():
-    """Liste daralırsa bayatlık tespiti sessizce körleşir — sözleşme testi."""
+    """Liste daralırsa bayatlık tespiti sessizce körleşir — sözleşme testi.
+
+    26 Ağustos'ta bu test `"src/ajanlar" in CIKARIM_KAYNAKLARI` diyordu, yani
+    KLASÖR ADINI düz metin arıyordu. Liste ADR 017 ile dosya bazına indirilince
+    kırıldı — ama körleşme YOK: kapsanan ajanlar aynı, üstelik sorgu zamanı
+    ajanları artık dışarıda. Test, adı değil **kapsamı** denetleyecek biçimde
+    yeniden yazıldı.
+
+    Kapsamın öbür ucunu (sorgu zamanı ajanları listede OLMAMALI) ve yanlış
+    alarm hikâyesini `tests/test_parmak_izi.py` tutuyor.
+    """
     assert "src/schema.py" in CIKARIM_KAYNAKLARI
     assert "src/extraction" in CIKARIM_KAYNAKLARI
     assert "src/preprocessing/normalizasyon.py" in CIKARIM_KAYNAKLARI
+
     # Ajanlar çıkarım hattının İÇİNDE koşar ve değerleri değiştirir
     # (eleştirmen düşürür, yüklem düzeltir, uygunluk yeni alan yazar).
     # Liste onlarsızken ajan değişikliği veritabanını bayatlatmıyordu.
-    assert "src/ajanlar" in CIKARIM_KAYNAKLARI
+    for ajan in ("elestirmen", "yuklem", "uygunluk"):
+        assert any(f"ajanlar/{ajan}" in girdi for girdi in CIKARIM_KAYNAKLARI), (
+            f"{ajan} ajanı çıkarımda koşuyor ama parmak izi kapsamında değil"
+        )
 
 
 # ---------------------------------------------------------------------------

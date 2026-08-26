@@ -125,6 +125,9 @@ cikti-ornekleri:  ## model cikti ornekleri -> docs/CIKTI_ORNEKLERI.md (dokuman b
 veri-seti:  ## yayinlanabilir veri seti + veri karti -> data/exports/ (sartname madde 9)
 	$(PYTHON) tools/veri_seti_disa_aktar.py $(if $(deneme),--deneme)
 
+parmak-izi-goc:  ## cikarim damgasini yeni tanima tasi (ADR 017; uygula=1 ile yazar)
+	$(PYTHON) tools/parmak_izi_goc.py $(if $(uygula),--uygula,)
+
 suresi-gecenleri-ele:  ## suresi gecmis kampanyalari sil (uygula=1 olmadan yalniz gosterir)
 	$(PYTHON) tools/suresi_gecenleri_ele.py $(if $(uygula),--uygula)
 

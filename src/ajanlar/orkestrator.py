@@ -176,10 +176,20 @@ def _profil_cevabi(
         """
         satirlar: list[str] = []
         hesap = dict(profil_hesabi)
-        for sonuc in elenenler[:5]:
-            for gerekce in sonuc.engelleyenler():
+        for sira, sonuc in enumerate(elenenler[:5], 1):
+            for no, gerekce in enumerate(sonuc.engelleyenler()):
                 satirlar.append(f"- **{sonuc.banka_adi}**: {gerekce.aciklama}")
-                hesap.update(gerekce.sayilar)
+                # ⚠️ `hesap.update(gerekce.sayilar)` DEĞİL — anahtarlar bankadan
+                # bağımsız sabit adlar (`max_tutar`, `max_vade_ay`, ...). Beş banka
+                # listelenince sonuncusu öncekileri EZİYORDU; ezilen sayı izin
+                # listesinden düşünce kalkan, sistemin kendi beyan ettiği değeri
+                # «doğrulanamadı» diye reddediyordu. Ölçüldü (26 Ağu): «Maaş
+                # müşterisiyim, 800.000 TL, 120 ay» sorgusu 125.000 ve 36 yüzünden
+                # tamamen reddediliyordu — chatbot'un amiral gemisi senaryosu.
+                # `_sistem_dogrula` yalnız `.values()` okur; anahtarın adı değil
+                # BENZERSİZLİĞİ önemlidir.
+                for anahtar, deger in gerekce.sayilar.items():
+                    hesap[f"{anahtar}_{sira}_{no}"] = deger
         if not satirlar:
             return None
         govde = baslik + "\n" + "\n".join(satirlar)

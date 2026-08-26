@@ -65,7 +65,12 @@ CIKARIM_KAYNAKLARI: tuple[str, ...] = (
     "src/schema.py",
     "src/preprocessing/normalizasyon.py",
     "src/extraction",
-    "src/ajanlar",
+    # Ajanlardan YALNIZ çıkarım zamanı koşanlar — gerekçe aşağıda.
+    "src/ajanlar/__init__.py",
+    "src/ajanlar/temel.py",
+    "src/ajanlar/elestirmen.py",
+    "src/ajanlar/yuklem.py",
+    "src/ajanlar/uygunluk.py",
 )
 """Çıktıyı belirleyen kaynaklar — parmak izi bunlardan hesaplanır.
 
@@ -73,11 +78,30 @@ Bu listeye giren dosya değiştiğinde veritabanındaki değerler eskir. Toplay�
 (`src/collector/`) ve arayüz (`app/`) DIŞARIDA: ham metni değiştirmezler,
 dolayısıyla aynı ham metinden aynı değerler çıkar.
 
-**`src/ajanlar` 26 Ağustos'ta eklendi.** Ajanlar çıkarım hattının içinde koşuyor
-ve DEĞERLERİ DEĞİŞTİRİYOR: eleştirmen kanıtı olmayan değeri düşürür, yüklem
-ajanı yanlış alana yazılmış sayıyı düzeltir, uygunluk ajanı kayda yeni bir alan
-yazar. Liste onlarsızken, `src/ajanlar/elestirmen.py` değişse bile veritabanı
-"taze" görünüyordu — bayatlık tespitinin tam olarak körleştiği yer burasıydı.
+**Çıkarım zamanı ajanları 26 Ağustos'ta eklendi.** Bu üçü çıkarım hattının
+içinde koşuyor ve DEĞERLERİ DEĞİŞTİRİYOR: eleştirmen kanıtı olmayan değeri
+düşürür (`extraction/llm.py`), yüklem ajanı yanlış alana yazılmış sayıyı
+düzeltir (`extraction/uzlastirici.py`), uygunluk ajanı kayda yeni bir alan yazar
+(`extraction/uzlastirici.py`). Liste onlarsızken `elestirmen.py` değişse bile
+veritabanı "taze" görünüyordu — bayatlık tespitinin körleştiği yer burasıydı.
+
+**MUHAKEME VE ORKESTRATÖR BİLEREK DIŞARIDA (26 Ağustos, ikinci düzeltme.)**
+Önce `src/ajanlar` klasörünün TAMAMI listedeydi. Ama beş ajanın ikisi —
+`muhakeme.py` ve `orkestrator.py` — çıkarım hattında hiç çağrılmaz; yalnız
+SORGU zamanında, kullanıcı soru sorduğunda koşarlar. Çağrı yerleri:
+`ajanlar/orkestrator.py`, `api/sunucu.py`, `app/pages/`. Hiçbiri
+`boru_hatti.py`'nin içinde değil.
+
+Sonuç ölçüldü: chatbot cevap biçiminde yapılan bir düzeltme parmak izini
+kaydırdı ve `cikarim_durumu()` "BAYAT" dedi. Veritabanı güncelken `make eval`,
+jüriye giden `docs/SONUCLAR.md`'nin başına "🔴 BAYAT — bu sayıları sunuma
+kopyalamayın" yazacaktı. Uyarı yanlıştı; çıkarılan tek bir değer bile
+değişmemişti.
+
+Bu, `kod_parmak_izi()`'nin CRLF hikâyesiyle **aynı sınıf hata**: iz, çıktıyı
+belirleyen şeyi değil, ona yakın duran şeyi özetliyordu. Kural şudur —
+**listeye bir dosya, çıkarım çıktısını değiştirebiliyorsa girer.**
+Bkz. [ADR 017](../docs/kararlar/017-parmak-izi-cikarim-zamani.md).
 """
 
 
