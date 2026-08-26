@@ -69,6 +69,10 @@ def test_parmak_izi_izlenen_kaynaklari_kapsar():
     assert "src/schema.py" in CIKARIM_KAYNAKLARI
     assert "src/extraction" in CIKARIM_KAYNAKLARI
     assert "src/preprocessing/normalizasyon.py" in CIKARIM_KAYNAKLARI
+    # Ajanlar çıkarım hattının İÇİNDE koşar ve değerleri değiştirir
+    # (eleştirmen düşürür, yüklem düzeltir, uygunluk yeni alan yazar).
+    # Liste onlarsızken ajan değişikliği veritabanını bayatlatmıyordu.
+    assert "src/ajanlar" in CIKARIM_KAYNAKLARI
 
 
 # ---------------------------------------------------------------------------

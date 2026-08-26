@@ -80,6 +80,14 @@ class UzlastirmaRaporu:
     onarılır — ret sayacından ayrı tutulur, çünkü biri veri kaybı diğeri
     veri onarımıdır."""
 
+    yuklem_duzeltme_reddi_sayisi: int = 0
+    """Yüklem ajanının önerdiği ama MAKUL OLMAYAN düzeltmeler.
+
+    Ajan "doğru alan, yanlış hücre" deyip aynı tablodan başka bir sayı
+    getirebiliyor; getirdiği sayı alanın makul aralığının dışındaysa düzeltme
+    uygulanmaz ve eski değer korunur (26 Ağu ölçümü, `uzlastir` içindeki not).
+    Ayrı sayaç, çünkü bu bir veri kaybı değil, bir düzeltmenin geri çevrilmesi."""
+
     yuklem_reddi_sayisi: int = 0
     """YÜKLEM AJANININ düşürdüğü kural-tek değerler.
 
@@ -339,7 +347,30 @@ def uzlastir(
                 # Doğru alan, yanlış kanıt: değeri düzeltilmiş ifadeden
                 # yeniden türet. Türetilemezse eski değere DOKUNMA —
                 # ajan yalnız kanıtı iyileştirebilir, veri kaybettiremez.
+                #
+                # DÜZELTME DE MAKULLÜK KAPISINDAN GEÇER — ölçülmüş hata (26 Ağu):
+                #     turkiyefinans.com.tr/.../gunluk-hesap.aspx
+                #     kural %11,00  ->  yüklem düzeltmesi %44,00  (0,842 güvenle)
+                #
+                #     Sayfa bir katılma hesabı getiri tablosu; ajan "doğru alan,
+                #     yanlış hücre" deyip aynı tablonun tepesindeki oranı
+                #     getirdi. Aylık kâr payı üst sınırı %15 olduğu için o değer
+                #     makullük kapısından ZATEN geçemezdi — ama kapı bu satırın
+                #     ÜSTÜNDE, yani düzeltilmiş değere hiç uygulanmıyordu.
+                #     Sonuç: kural katmanının elediği bir büyüklük, ajan yolundan
+                #     geri giriyordu. Bu, `deger_makul_mu`'nun doğuş sebebiyle
+                #     birebir aynı hata sınıfı — eleme hatayı önlemek yerine
+                #     kaynağını değiştiriyor.
                 yenilenmis = _ifadeden_alan(alan_adi, karar, kayit, sonuc)
+                if yenilenmis is not None and not _makul_mu(
+                    alan_adi, yenilenmis, kayit.govde_metin
+                ):
+                    log.info(
+                        "%s: yüklem düzeltmesi makul değil, eski değer korundu "
+                        "(%r -> %r)", alan_adi, sonuc.deger, yenilenmis.deger,
+                    )
+                    rapor.yuklem_duzeltme_reddi_sayisi += 1
+                    yenilenmis = None
                 if yenilenmis is not None:
                     sonuc = yenilenmis
                     durum = "yuklem_duzeltmesi"
@@ -423,6 +454,17 @@ def kampanya_cikar(
     t_uz = time.time()
     kampanya, rapor = uzlastir(kural_alanlari, llm_alanlari, kayit=kayit, yuklem=yuklem)
     trace["uzlastirma_suresi"] = time.time() - t_uz
+
+    # UYGUNLUK AJANI — uzlaştırmadan SONRA koşar (A-08).
+    # Kısıtların çoğu uzlaştırılmış alanlardan türer (`max_tutar` ←
+    # `finansman_tutari_max`); kural ve LLM katmanları ayrı ayrı çıkarım
+    # yaparken türetmek, uzlaştırıcının seçmediği bir değeri kısıta yazma
+    # riski taşırdı. LLM çağırmaz, bu yüzden ablasyonun her kolunda koşar.
+    t_uygunluk = time.time()
+    from src.ajanlar.uygunluk import UygunlukAjani
+
+    kampanya.uygunluk = UygunlukAjani().cikar(kampanya)
+    trace["uygunluk_suresi"] = time.time() - t_uygunluk
     trace["toplam_sure"] = time.time() - t0
     
     rapor.trace_log = trace

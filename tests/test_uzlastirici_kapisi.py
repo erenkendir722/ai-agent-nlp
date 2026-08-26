@@ -25,7 +25,7 @@ import pytest
 
 from src.extraction.kural import kurallarla_cikar
 from src.extraction.uzlastirici import uzlastir
-from src.schema import Alan, HamKayit, Kaynak
+from src.schema import Alan, Birim, HamKayit, Kaynak
 
 CEKIM = datetime(2026, 8, 16, 12, 0)
 
@@ -278,3 +278,71 @@ def test_yalniz_TL_yazan_sayfa_etkilenmez() -> None:
     kampanya, _ = uzlastir(kural, {}, kayit=kayit)
 
     assert kampanya.tahsis_ucreti.deger == pytest.approx(750.0)
+
+
+# ---------------------------------------------------------------------------
+# YÜKLEM DÜZELTMESİ DE MAKULLÜK KAPISINDAN GEÇER (26 Ağustos)
+# ---------------------------------------------------------------------------
+
+
+class _SabitYuklem:
+    """Her seferinde aynı düzeltmeyi öneren sahte yüklem ajanı."""
+
+    def __init__(self, karar: str) -> None:
+        self.karar = karar
+
+    def denetle(self, alan_adi: str, deger: object, ham_ifade: str, metin: str) -> str:
+        return self.karar
+
+
+GETIRI_TABLOSU = (
+    "Konut finansmanı kampanyasında aylık kâr payı oranı %1,89 olarak uygulanır. "
+    "Ayrıca %1,95 ve %44,00 oranları listelenmiştir."
+)
+
+
+def _kural_alani(deger: float, ham: str, metin: str) -> Alan:
+    """Metinde geçen, konumu doğrulanmış bir KURAL değeri."""
+    bas = metin.index(ham)
+    return Alan(
+        deger=deger,
+        ham_ifade=ham,
+        kaynak=Kaynak(
+            url="https://ornek.test/kampanya",
+            cekim_tarihi=CEKIM,
+            alinti=ham,
+            karakter_baslangic=bas,
+            karakter_bitis=bas + len(ham),
+        ),
+        guven=0.9,
+        yontem="kural",
+        birim=Birim.YUZDE,
+    )
+
+
+def test_makul_olmayan_yuklem_duzeltmesi_uygulanmaz() -> None:
+    """Ölçülmüş hata: ajan aynı tablonun tepesindeki %44'ü getiriyordu.
+
+    Aylık kâr payı üst sınırı %15. Makullük kapısı uzlaştırmanın hemen
+    ardında çalışıyor, yüklem düzeltmesi ise ONDAN SONRA değeri yeniden
+    kuruyordu — yani kural katmanının elediği büyüklük ajan yolundan geri
+    giriyordu. Düzeltme artık aynı kapıdan geçiyor.
+    """
+    kayit = _kayit(GETIRI_TABLOSU)
+    kural = {"kar_payi_orani": _kural_alani(1.89, "%1,89", kayit.govde_metin)}
+
+    kampanya, rapor = uzlastir(kural, {}, kayit=kayit, yuklem=_SabitYuklem("%44,00"))
+    assert kampanya.kar_payi_orani.deger == 1.89, "makul olmayan düzeltme uygulandı"
+    assert rapor.yuklem_duzeltme_reddi_sayisi == 1
+    assert rapor.yuklem_duzeltme_sayisi == 0
+
+
+def test_makul_yuklem_duzeltmesi_uygulanir() -> None:
+    """Karşı kontrol: kapı, DOĞRU düzeltmeleri engellemiyor."""
+    kayit = _kayit(GETIRI_TABLOSU)
+    kural = {"kar_payi_orani": _kural_alani(1.89, "%1,89", kayit.govde_metin)}
+
+    kampanya, rapor = uzlastir(kural, {}, kayit=kayit, yuklem=_SabitYuklem("%1,95"))
+    assert kampanya.kar_payi_orani.deger == 1.95, "makul düzeltme uygulanmadı"
+    assert rapor.yuklem_duzeltme_sayisi == 1
+    assert rapor.yuklem_duzeltme_reddi_sayisi == 0

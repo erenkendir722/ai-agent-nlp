@@ -65,12 +65,19 @@ CIKARIM_KAYNAKLARI: tuple[str, ...] = (
     "src/schema.py",
     "src/preprocessing/normalizasyon.py",
     "src/extraction",
+    "src/ajanlar",
 )
 """Çıktıyı belirleyen kaynaklar — parmak izi bunlardan hesaplanır.
 
 Bu listeye giren dosya değiştiğinde veritabanındaki değerler eskir. Toplayıcı
 (`src/collector/`) ve arayüz (`app/`) DIŞARIDA: ham metni değiştirmezler,
 dolayısıyla aynı ham metinden aynı değerler çıkar.
+
+**`src/ajanlar` 26 Ağustos'ta eklendi.** Ajanlar çıkarım hattının içinde koşuyor
+ve DEĞERLERİ DEĞİŞTİRİYOR: eleştirmen kanıtı olmayan değeri düşürür, yüklem
+ajanı yanlış alana yazılmış sayıyı düzeltir, uygunluk ajanı kayda yeni bir alan
+yazar. Liste onlarsızken, `src/ajanlar/elestirmen.py` değişse bile veritabanı
+"taze" görünüyordu — bayatlık tespitinin tam olarak körleştiği yer burasıydı.
 """
 
 
