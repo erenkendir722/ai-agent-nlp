@@ -155,6 +155,58 @@ def format_kategori(kategori_adi: str | None) -> str:
     return _KATEGORI_ISIMLERI.get(temiz, temiz.replace('_', ' ').title())
 
 
+def uyarilari_goster(
+    uyari_listesi,
+    *,
+    baslik: str = "Karşılaştırma notları",
+) -> None:
+    """Uyarıları ÖNEMİNE göre ayırarak çizer.
+
+    NEDEN VAR — 26 Ağustos'ta ölçüldü: her uyarı ayrı bir `st.warning` kutusuydu.
+    Dört özdeş sarı kutu 1.060 karakterle ekranı dolduruyor, cevabı ve kaynakları
+    aşağı itiyordu. Hepsi aynı ağırlıkta göründüğü için kullanıcı hangisinin
+    kararını değiştirdiğini seçemiyordu.
+
+    Ayrım şu: `engelleyici` uyarı bir kriteri SIRALAMADAN DÜŞÜRÜR — kullanıcı
+    onu görmeden karar veremez, o yüzden açıkta durur. Kalanlar bağlam notudur
+    («farklı türler karşılaştırılıyor»); bilinmesi iyidir ama ekranı kapatmamalı,
+    katlanabilir tek panelde toplanır.
+
+    Metin taşımayan sade `str` uyarılar da kabul edilir: `engelleyici` alanı
+    olmayan her şey bağlam notu sayılır. Böylece bu yardımcı, uyarıyı nereden
+    alırsa alsın (API, chatbot, karşılaştırma) çalışır.
+    """
+    if not uyari_listesi:
+        return
+
+    engelleyiciler = [u for u in uyari_listesi if getattr(u, "engelleyici", False)]
+    notlar = [u for u in uyari_listesi if not getattr(u, "engelleyici", False)]
+
+    for uyari in engelleyiciler:
+        st.warning(_uyari_metni(uyari), icon="⛔")
+
+    if not notlar:
+        return
+
+    # Tek not için panel açıp kapamak gereksiz tıklama; doğrudan gösterilir.
+    if len(notlar) == 1:
+        st.info(_uyari_metni(notlar[0]), icon="ℹ️")
+        return
+
+    with st.expander(f"{baslik} ({len(notlar)})", expanded=False):
+        for uyari in notlar:
+            st.markdown(_uyari_metni(uyari))
+
+
+def _uyari_metni(uyari) -> str:
+    """Başlığı kalın, detayı alt satırda. Markdown'da satır sonu iki boşluktur."""
+    baslik = getattr(uyari, "baslik", None)
+    detay = getattr(uyari, "detay", None)
+    if baslik and detay:
+        return f"**{baslik}**  \n{detay}"
+    return str(uyari)
+
+
 def ortak_kenar(*, demo_ipuclari: bool = True) -> None:
     """Her sayfada aynı kimlik + geliştirici anahtarı.
 

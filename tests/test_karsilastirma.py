@@ -186,6 +186,99 @@ class TestUyarilar:
         assert uyarilar(kayitlar), "karışık birimde uyarı bekleniyordu"
 
 
+class TestUyariBicimi:
+    """Uyarı METNİNİN sözleşmesi — 26 Ağustos'ta ölçülen okunabilirlik kusuru.
+
+    Dört uyarı 1.060 karakter ediyordu; 300 karakteri «Katılım Bankası A.Ş.»
+    ifadesini dokuz kez tekrar etmekti, 206 karakteri on dokuz vade değerini
+    tek tek dökmekti. Ekranı doldurup asıl cevabı aşağı itiyordu.
+    """
+
+    def test_uyari_metin_gibi_davranir(self) -> None:
+        """`/compare` ucu ve `Cevap.uyarilar` `list[str]` bekliyor — sözleşme testi.
+
+        `Uyari` bir `str` alt sınıfıdır; ayrı bir tip döndürmek API'yi, chatbot
+        cevabını ve metin birleştirmeyi birden kırardı.
+        """
+        mesajlar = uyarilar([_kayit("a", vade_ay_max=12), _kayit("b", vade_ay_max=120)])
+        assert mesajlar
+        for mesaj in mesajlar:
+            assert isinstance(mesaj, str)
+            assert mesaj.strip(), "boş uyarı metni"
+
+    def test_birim_karisimi_engelleyici_isaretlenir(self) -> None:
+        """Kriteri SIRALAMADAN DÜŞÜREN uyarı, bağlam notundan ayrılmalı.
+
+        Ayrım olmadan dört uyarı aynı görsel ağırlıkta çiziliyor ve kullanıcı
+        hangisinin kararını değiştirdiğini seçemiyordu.
+        """
+        kayitlar = [
+            _kayit("oranli", tahsis_ucreti=0.5, tahsis_ucreti_birim=Birim.YUZDE, vade_ay_max=12),
+            _kayit("tutarli", tahsis_ucreti=500.0, tahsis_ucreti_birim=Birim.TL, vade_ay_max=120),
+        ]
+        mesajlar = uyarilar(kayitlar)
+
+        engelleyiciler = [m for m in mesajlar if m.engelleyici]
+        notlar = [m for m in mesajlar if not m.engelleyici]
+
+        assert len(engelleyiciler) == 1, "birim karışımı tek engelleyici uyarı olmalı"
+        assert "sıralamaya katılmadı" in engelleyiciler[0].baslik
+        assert notlar, "vade farkı bağlam notu olarak kalmalı"
+
+    def test_uzun_vade_listesi_araliga_iner(self) -> None:
+        """On dokuz değeri tek tek yazmak kullanıcıya bir şey söylemiyor."""
+        kayitlar = [_kayit(f"k{v}", vade_ay_max=v) for v in (2, 6, 12, 24, 36, 60, 120)]
+        vade_uyarisi = next(m for m in uyarilar(kayitlar) if "Vade" in m.baslik)
+
+        assert "2–120 ay arasında 7 farklı değer" in vade_uyarisi.detay
+        assert "2, 6, 12" not in vade_uyarisi.detay, "uzun liste hâlâ dökülüyor"
+
+    def test_kisa_vade_listesi_dokulur(self) -> None:
+        """Az sayıda değerde asıl bilgi değerlerin KENDİSİ; aralığa indirmek kayıptır."""
+        kayitlar = [_kayit("a", vade_ay_max=12), _kayit("b", vade_ay_max=36)]
+        vade_uyarisi = next(m for m in uyarilar(kayitlar) if "Vade" in m.baslik)
+
+        assert "12, 36 ay" in vade_uyarisi.detay
+
+    def test_tum_bankalarda_eksikse_ad_sayilmaz(self) -> None:
+        """Dokuz bankanın hepsi listedeyse «hiçbirinde» demek doğrudur.
+
+        Eski metin dokuz tam unvanı sıralıyordu: 382 karakterin ~300'ü tekrar.
+        """
+        kayitlar = [
+            _kayit("a", banka_adi="A Katılım Bankası A.Ş.", vade_ay_max=12),
+            _kayit("b", banka_adi="B Katılım Bankası A.Ş.", vade_ay_max=36),
+        ]
+        oran_uyarisi = next(m for m in uyarilar(kayitlar) if "Kâr payı" in m.baslik)
+
+        assert "Hiçbir kampanyada belirtilmemiş" in oran_uyarisi.detay
+        assert "Katılım Bankası A.Ş." not in oran_uyarisi.detay
+
+    def test_bir_iki_banka_eksikse_adlari_yazilir(self) -> None:
+        """Az sayıda bankada eksikse HANGİSİ olduğu bilgi taşır."""
+        kayitlar = [
+            _kayit("a", banka_adi="A Bankası", kar_payi_orani=1.5, vade_ay_max=12),
+            _kayit("b", banka_adi="B Bankası", vade_ay_max=36),
+        ]
+        oran_uyarisi = next(m for m in uyarilar(kayitlar) if "Kâr payı" in m.baslik)
+
+        assert "B Bankası" in oran_uyarisi.detay
+        assert "Hiçbir" not in oran_uyarisi.detay
+
+    def test_uyari_toplam_uzunlugu_makul(self) -> None:
+        """Ekranı kapatan metin duvarı geri gelmesin — üst sınır sözleşmesi."""
+        kayitlar = [
+            _kayit(f"k{i}", vade_ay_max=v, kampanya_turu=t, banka_adi=f"{ad} Bankası")
+            for i, (v, t, ad) in enumerate(
+                [(2, "konut_finansmani", "A"), (12, "tasit_finansmani", "B"),
+                 (36, "ihtiyac_finansmani", "C"), (60, "kart", "D"),
+                 (120, "yatirim_urunu", "E")]
+            )
+        ]
+        toplam = sum(len(m) for m in uyarilar(kayitlar))
+        assert toplam < 600, f"uyarı metni yine şişti: {toplam} karakter"
+
+
 class TestOrtakTaban:
     """Farklı birimler ancak bir senaryoda kıyaslanabilir."""
 

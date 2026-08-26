@@ -996,10 +996,48 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             else max(adaylar, key=lambda k: getattr(k, alan))
         deger = getattr(kazanan, alan)
         gosterilen.append(kazanan)
-        olcut_satirlari.append(
+        satir = (
             f"- **{etiket}** açısından **{kazanan.banka_adi}** daha avantajlıdır, "
-            f"çünkü {kalip.format(alan_goster(alan, deger, kazanan.birim(alan)))}."
+            f"çünkü {kalip.format(alan_goster(alan, deger, kazanan.birim(alan)))}"
         )
+
+        # İKİ BANKA KIYASINDA KAYBEDENİN DEĞERİ DE YAZILIR (26 Ağustos).
+        #
+        # «Ziraat Katılım mı Türkiye Finans mı?» sorusunda Türkiye Finans beş
+        # ölçütü birden kazanıyor ve Ziraat cevapta HİÇ geçmiyordu. Kullanıcı
+        # iki banka sordu, tek bankalık monolog alıyordu; aradaki FARKI
+        # göremediği için kazananın ne kadar önde olduğu da bilinmiyordu.
+        #
+        # Kusur uzun süre görünmedi çünkü `eval/chatbot_sorulari.yaml` bu soruda
+        # «ziraat» kelimesini arıyordu ve kelime cevapta değil, UYARI metnindeki
+        # dokuz bankalık listede bulunuyordu — test yanlış sebeple geçiyordu.
+        # Uyarı kısaltılınca ortaya çıktı.
+        #
+        # Yalnız BAŞ BAŞA karşılaştırmada yazılır: üç ve fazlasında her ölçütün
+        # yanına bütün rakiplerin değerini dizmek satırı tekrar okunmaz yapardı.
+        rakipler = [k for k in adaylar if k.banka_adi != kazanan.banka_adi]
+        if rakipler and len({k.banka_adi for k in adaylar}) == 2:
+            rakip = (min if yon == "dusuk" else max)(
+                rakipler, key=lambda k: getattr(k, alan)
+            )
+            gosterilen.append(rakip)  # kanıt zinciri: adı geçen her banka kaynaklı
+            rakip_deger = getattr(rakip, alan)
+
+            if rakip_deger == deger:
+                # BERABERLİK «daha avantajlı» diye yazılmaz. İki banka da %0 kâr
+                # payı sunarken birini öne çıkarmak veriyle çelişir; jüri o
+                # cümleyi hatalı karşılaştırma sayar.
+                satir = (
+                    f"- **{etiket}** açısından iki banka EŞİT: "
+                    f"{alan_goster(alan, deger, kazanan.birim(alan))}"
+                )
+            else:
+                satir += (
+                    f"; **{rakip.banka_adi}** için bu değer "
+                    f"{alan_goster(alan, rakip_deger, rakip.birim(alan))}"
+                )
+
+        olcut_satirlari.append(satir + ".")
 
     masraf_satiri: str | None = None
     masrafsizlar = [k for k in kayitlar if k.masrafsiz_mi]

@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.ajanlar.orkestrator import Orkestrator # noqa: E402
 from src.depolama import tum_kayitlar # noqa: E402
 from src.rag.chatbot import YASAL_UYARI, Niyet # noqa: E402
-from app.ui_utils import inject_custom_css, ortak_kenar # noqa: E402
+from app.ui_utils import inject_custom_css, ortak_kenar, uyarilari_goster # noqa: E402
 
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
 inject_custom_css()
@@ -113,8 +113,7 @@ def cevap_renderla(cevap, gecen_sure=None):
 
   st.markdown(cevap.metin)
 
-  for mesaj in cevap.uyarilar:
-    st.warning(mesaj)
+  uyarilari_goster(cevap.uyarilar, baslik="Bu cevapla ilgili notlar")
 
   if cevap.dogrulama_gecti:
     st.success(

@@ -116,3 +116,57 @@ def test_chatbot_ornek_soru_dugmesi_calisir() -> None:
 
     at.button[0].click().run()
     _istisna_yok(at, "chatbot örnek soru düğmesi")
+
+
+# ---------------------------------------------------------------------------
+# Uyarı sunumu — 26 Ağustos'ta ölçülen metin duvarı
+# ---------------------------------------------------------------------------
+#
+# Her uyarı ayrı bir `st.warning` kutusuydu; dört özdeş sarı kutu 1.060
+# karakterle ekranı doldurup cevabı ve kaynakları aşağı itiyordu. Hepsi aynı
+# ağırlıkta göründüğü için kullanıcı hangisinin kararını değiştirdiğini
+# seçemiyordu.
+
+
+def test_chatbot_uyarilari_tek_panelde_toplar() -> None:
+    """Bağlam notları katlanabilir panelde; ekranı kapatmamalı."""
+    at = _kos(KOK / "app" / "pages" / "2_Chatbot.py")
+    at.chat_input[0].set_value(YAPISAL_SORU).run()
+    _istisna_yok(at, "chatbot uyarı sunumu")
+
+    paneller = [str(getattr(e, "label", "")) for e in at.expander]
+    assert any("notlar" in p.lower() for p in paneller), (
+        f"bağlam notları paneli çizilmedi; paneller: {paneller}"
+    )
+
+
+def test_chatbot_ekranda_uyari_duvari_yok() -> None:
+    """Yan yana yığılmış sarı kutu sayısına üst sınır.
+
+    Yalnız ENGELLEYİCİ uyarı açıkta durur (bir kriteri sıralamadan düşürür,
+    kullanıcı onu görmeden karar veremez). Kalanlar panele iner.
+    """
+    at = _kos(KOK / "app" / "pages" / "2_Chatbot.py")
+    at.chat_input[0].set_value(YAPISAL_SORU).run()
+
+    assert len(at.warning) <= 2, (
+        "chatbot ekranında uyarı duvarı: "
+        + " | ".join(str(w.value)[:60] for w in at.warning)
+    )
+
+
+def test_uyari_metni_baslik_ve_detay_tasir() -> None:
+    """Kalın başlık + alt satırda detay — üç ekranda ortak dil."""
+    from app.ui_utils import _uyari_metni
+    from src.comparison.karsilastirma import Uyari
+
+    metin = _uyari_metni(Uyari("Vadeler farklı", "12, 36 ay.", engelleyici=False))
+    assert metin.startswith("**Vadeler farklı**")
+    assert "12, 36 ay." in metin
+
+
+def test_uyari_metni_sade_metni_de_kabul_eder() -> None:
+    """Başlıksız `str` uyarılar da çizilebilmeli — yardımcı her kaynağa açık."""
+    from app.ui_utils import _uyari_metni
+
+    assert _uyari_metni("düz bir uyarı") == "düz bir uyarı"

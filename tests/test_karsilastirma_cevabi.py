@@ -287,6 +287,69 @@ def test_siralama_isareti_olan_soru_liste_olmaz(kayitlar) -> None:
     assert _ilk_olcut_satiri(cevap.metin).startswith("- **Vade**")
 
 
+# ---------------------------------------------------------------------------
+# Baş başa karşılaştırma: kaybeden de görünür (26 Ağustos)
+# ---------------------------------------------------------------------------
+
+
+def _iki_banka() -> list[KampanyaKaydi]:
+    return [
+        _kayit("0001-a", "A Katılım Bankası A.Ş.", kar_payi=1.0, vade=120, tutar=1_000_000, odul=5_000),
+        _kayit("0002-b", "B Katılım Bankası A.Ş.", kar_payi=2.5, vade=12, tutar=50_000, odul=100),
+    ]
+
+
+def test_basbasa_kiyasta_kaybeden_de_anilir() -> None:
+    """«A mı B mi?» sorusuna tek bankalık monolog dönmemeli.
+
+    Ölçüldü: «Ziraat Katılım mı Türkiye Finans mı?» sorusunda Türkiye Finans
+    beş ölçütü birden kazanıyor ve Ziraat cevapta HİÇ geçmiyordu. Kullanıcı iki
+    banka sordu; aradaki farkı göremediği için kazananın ne kadar önde olduğunu
+    da bilmiyordu.
+    """
+    cevap = _karsilastirma_cevabi("A mı daha iyi B mi?", _iki_banka())
+
+    assert "A Katılım Bankası A.Ş." in cevap.metin
+    assert "B Katılım Bankası A.Ş." in cevap.metin, "kaybeden banka cevapta hiç geçmiyor"
+
+
+def test_basbasa_kiyasta_kaybedenin_degeri_yazilir() -> None:
+    """Farkın büyüklüğü kararı değiştirir: 120 ay ile 12 ay aynı şey değil."""
+    cevap = _karsilastirma_cevabi("A mı daha iyi B mi?", _iki_banka())
+    vade_satiri = next(s for s in cevap.metin.splitlines() if s.startswith("- **Vade**"))
+
+    assert "120 ay" in vade_satiri
+    assert "12 ay" in vade_satiri, f"kaybedenin değeri yok: {vade_satiri!r}"
+
+
+def test_basbasa_kiyasta_kaybeden_kaynakli() -> None:
+    cevap = _karsilastirma_cevabi("A mı daha iyi B mi?", _iki_banka())
+    kaynakta = {k.banka_adi for k in cevap.kaynaklar}
+
+    assert "B Katılım Bankası A.Ş." in kaynakta, "kaybeden anılıyor ama kaynaksız"
+
+
+def test_esitlik_daha_avantajli_diye_yazilmaz() -> None:
+    """İki banka da %0 sunarken birini öne çıkarmak veriyle çelişir."""
+    esitler = [
+        _kayit("0001-a", "A Katılım Bankası A.Ş.", kar_payi=0.0, vade=12),
+        _kayit("0002-b", "B Katılım Bankası A.Ş.", kar_payi=0.0, vade=24),
+    ]
+    cevap = _karsilastirma_cevabi("A mı daha iyi B mi?", esitler)
+    kar_satiri = next(s for s in cevap.metin.splitlines() if s.startswith("- **Kâr payı"))
+
+    assert "EŞİT" in kar_satiri, f"beraberlik avantaj gibi yazılmış: {kar_satiri!r}"
+    assert "daha avantajlıdır" not in kar_satiri
+
+
+def test_uc_bankada_rakip_degerleri_dizilmez(kayitlar) -> None:
+    """Üç ve fazlasında her ölçütün yanına bütün rakipleri dizmek satırı boğar."""
+    cevap = _karsilastirma_cevabi("Hangi banka daha iyi?", kayitlar)
+    vade_satiri = next(s for s in cevap.metin.splitlines() if s.startswith("- **Vade**"))
+
+    assert "için bu değer" not in vade_satiri
+
+
 def test_olcute_uyan_kayit_yoksa_uydurmaz() -> None:
     """Süzgeç boş küme bırakırsa liste uydurulmaz."""
     cevap = _karsilastirma_cevabi(

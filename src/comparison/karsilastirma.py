@@ -283,17 +283,75 @@ def sirala(
 # ---------------------------------------------------------------------------
 
 
-def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
+_BIRIM_ADLARI = {
+    Birim.TL: "TL",
+    Birim.YUZDE: "yüzde",
+    Birim.AY: "ay",
+    Birim.ADET: "adet",
+    Birim.PUAN: "puan",
+}
+"""Birimin CÜMLE İÇİNDE okunacak adı.
+
+`schema.BIRIM_GOSTERIMLERI` biçim kalıbı tutar (`"{} TL"`, `"%{}"`) — bir
+DEĞERİ göstermek için. Burada değer değil birimin kendisi anılıyor:
+«alan farklı birimlerde (TL ve yüzde)»."""
+
+
+class Uyari(str):
+    """Uyarı metni + başlık/detay ayrımı + önem derecesi.
+
+    `str` ALT SINIFI olmasının sebebi sözleşme: `/compare` ucu ve
+    `Cevap.uyarilar` yıllardır `list[str]` döndürüyor, chatbot da metni
+    doğrudan cevaba ekliyor. Ayrı bir tip döndürmek üç yeri birden kırardı.
+    Bu sınıf her yerde metin gibi davranır; arayüz fazladan alanlara bakarak
+    önemli olanı öne çıkarabilir.
+
+    `engelleyici` = bu durum bir kriteri SIRALAMADAN DÜŞÜRÜYOR. Bilgi amaçlı
+    notla («farklı türler karşılaştırılıyor») aynı görsel ağırlıkta gösterilirse
+    kullanıcı hangisinin kararını değiştirdiğini seçemez — 26 Ağustos'ta dört
+    özdeş sarı kutu ekranı doldurup cevabı aşağı itiyordu.
+    """
+
+    baslik: str
+    detay: str
+    engelleyici: bool
+
+    def __new__(cls, baslik: str, detay: str, *, engelleyici: bool = False) -> "Uyari":
+        nesne = super().__new__(cls, f"**{baslik}** — {detay}")
+        nesne.baslik = baslik
+        nesne.detay = detay
+        nesne.engelleyici = engelleyici
+        return nesne
+
+
+def _sayi_ozeti(degerler: list[int], birim: str, azami_dokum: int = 4) -> str:
+    """Kısa listeyi sayar, uzun listeyi ARALIĞA indirir.
+
+    «2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 18, 34, 36, 48, 60, 84, 108, 120 ay»
+    okunmuyor; 19 değerin tek tek yazılması kullanıcıya hiçbir şey söylemiyor.
+    «2–120 ay arasında 19 değer» aynı bilgiyi taşır ve okunur.
+    """
+    if len(degerler) <= azami_dokum:
+        return ", ".join(str(d) for d in degerler) + f" {birim}"
+    return f"{min(degerler)}–{max(degerler)} {birim} arasında {len(degerler)} farklı değer"
+
+
+def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[Uyari]:
     """Karşılaştırmayı yanıltabilecek durumları kullanıcıya bildirir.
 
     Farklı vadeli iki ürünü yan yana koyup "bu daha ucuz" demek finansal olarak
     yanlıştır. Bunu söylemek 5 dakikalık iş ve jüriye ciddiyet sinyali.
+
+    Metinler KISA tutulur: 26 Ağustos'ta ölçüldü, dört uyarı 1.060 karakter
+    ediyordu ve bunun 300'ü «Katılım Bankası A.Ş.» ifadesini dokuz kez tekrar
+    etmekti. Dokuz bankanın hepsi listedeyse zaten «hiçbirinde» demek doğrudur.
     """
-    mesajlar: list[str] = []
+    mesajlar: list[Uyari] = []
     if len(kayitlar) < 2:
         return mesajlar
 
     # BİRİM KARIŞIMI — sessizce sıralamaktansa beyan etmek.
+    # Tek ENGELLEYİCİ uyarı budur: kriter sıralamadan düşüyor.
     for alan_adi in ALAN_BOYUTLARI:
         if len(ALAN_BOYUTLARI[alan_adi]) == 1:
             continue
@@ -303,27 +361,39 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
             if getattr(k, alan_adi, None) is not None and k.birim(alan_adi)
         }
         if len(birimler) > 1:
-            adlar = ", ".join(sorted(b.value for b in birimler))
-            etiket = alan_etiketi(alan_adi)
-            mesajlar.append(
-                f"**{etiket}** alanı farklı birimlerde ({adlar}). Ortak tabana "
-                "indirmek için bir senaryo (anapara, vade) gerekir; senaryo "
-                "verilmeden bu kriter sıralamaya KATILMAZ."
+            adlar = " ve ".join(
+                _BIRIM_ADLARI.get(b, b.value)
+                for b in sorted(birimler, key=lambda birim: birim.value)
             )
+            etiket = alan_etiketi(alan_adi)
+            mesajlar.append(Uyari(
+                f"{etiket} sıralamaya katılmadı",
+                f"Alan farklı birimlerde ({adlar}). Ortak tabana inmek için "
+                "anapara ve vade senaryosu gerekiyor.",
+                engelleyici=True,
+            ))
 
-    vadeler = {k.vade_ay_max for k in kayitlar if k.vade_ay_max is not None}
+    vadeler = sorted({k.vade_ay_max for k in kayitlar if k.vade_ay_max is not None})
     if len(vadeler) > 1:
-        mesajlar.append(
-            f"Karşılaştırılan ürünlerin vadeleri farklı ({', '.join(str(v) for v in sorted(vadeler))} ay). "
-            "Farklı vadeli ürünler doğrudan karşılaştırılamaz; toplam maliyet üzerinden değerlendirin."
-        )
+        mesajlar.append(Uyari(
+            "Vadeler farklı",
+            f"{_sayi_ozeti(vadeler, 'ay')}. Farklı vadeli ürünler doğrudan "
+            "karşılaştırılamaz; toplam maliyet üzerinden değerlendirin.",
+        ))
 
-    eksik_oran = [k.banka_adi for k in kayitlar if k.kar_payi_orani is None]
+    eksik_oran = sorted({k.banka_adi for k in kayitlar if k.kar_payi_orani is None})
+    tum_bankalar = {k.banka_adi for k in kayitlar}
     if eksik_oran:
-        mesajlar.append(
-            f"Kâr payı oranı şu bankaların kampanyasında belirtilmemiş: {', '.join(sorted(set(eksik_oran)))}. "
-            "Sıralamada bu alan nötr sayıldı."
-        )
+        if len(eksik_oran) == len(tum_bankalar):
+            nerede = "Hiçbir kampanyada belirtilmemiş"
+        elif len(eksik_oran) <= 2:
+            nerede = f"{' ve '.join(eksik_oran)} kampanyasında belirtilmemiş"
+        else:
+            nerede = f"{len(eksik_oran)} bankanın kampanyasında belirtilmemiş"
+        mesajlar.append(Uyari(
+            "Kâr payı oranı eksik",
+            f"{nerede}. Sıralamada bu alan nötr sayıldı.",
+        ))
 
     turler = {k.kampanya_turu for k in kayitlar if k.kampanya_turu}
     if len(turler) > 1:
@@ -331,10 +401,15 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[str]:
         # güzelleştirmeyin: `.title()` Türkçe'de sessizce bozar ve yama
         # listesi yeni tür eklendiğinde eksik kalır (bkz. o sözlüğün notu).
         guzel_turler = [tur_etiketi(t) for t in sorted(turler)]
-        mesajlar.append(
-            f"Farklı kampanya türleri karşılaştırılıyor ({', '.join(guzel_turler)}). "
-            "Aynı tür içinde karşılaştırma daha anlamlıdır."
+        hangileri = (
+            ", ".join(guzel_turler) if len(guzel_turler) <= 3
+            else f"{len(guzel_turler)} farklı tür"
         )
+        mesajlar.append(Uyari(
+            "Karışık kampanya türü",
+            f"{hangileri} bir arada karşılaştırılıyor. Aynı tür içinde "
+            "karşılaştırma daha anlamlıdır.",
+        ))
 
     return mesajlar
 

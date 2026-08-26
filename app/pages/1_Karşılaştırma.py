@@ -39,6 +39,7 @@ from app.ui_utils import (  # noqa: E402
   ortak_kenar,
   sonuclari_oku,
   tr_sayi,
+  uyarilari_goster,
 )
 
 st.set_page_config(page_title="Karşılaştırma", page_icon="", layout="wide")
@@ -257,8 +258,7 @@ with col_e:
 
 sirali = sirala(suzulmus, secili_kriter, agirliklar)
 
-for mesaj in uyarilar(sirali):
-  st.warning(mesaj)
+uyarilari_goster(uyarilar(sirali))
 
 # ---------------------------------------------------------------------------
 # Tablo

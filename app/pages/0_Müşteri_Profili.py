@@ -130,7 +130,20 @@ kayit_dizini = {k.kampanya_id: k for k in kampanyalar}
 dogrulanmamis = sum(1 for s in uygunlar if s.veri_eksik)
 toplam_uygun = len(uygunlar)
 if toplam_uygun > 0 and dogrulanmamis > 0:
-    st.warning(f"{dogrulanmamis} / {toplam_uygun} kampanyada kısıt doğrulanamadı (kaynak veri eksikliği, kalkan arızası değil).", icon="⚠️")
+    # «1024 / 1024 kampanyada doğrulanamadı» tuhaf okunuyordu: hepsi
+    # doğrulanamadıysa oran vermek bilgi taşımaz, «hiçbirinde» taşır.
+    # Diğer ekranlardaki uyarılarla aynı dil: kalın başlık, altında detay.
+    kapsam = (
+        "Hiçbir kampanyada kısıt doğrulanamadı"
+        if dogrulanmamis == toplam_uygun
+        else f"{toplam_uygun} kampanyanın {dogrulanmamis} tanesinde kısıt doğrulanamadı"
+    )
+    st.warning(
+        f"**{kapsam}**  \n"
+        "Sebep kaynak veride eksik alan; kalkan arızası değil. "
+        "Bu kampanyalar listede kalır, yalnız kısıt kontrolü yapılamamıştır.",
+        icon="⚠️",
+    )
 elif uygunlar:
     st.toast("Kısıt Çıkarımı Başarılı. Sistem koşulları başarıyla çözümledi.", icon="✔️")
 
