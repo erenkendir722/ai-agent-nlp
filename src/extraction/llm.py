@@ -21,6 +21,8 @@ HALÜSİNASYON ÖNLEME — bu modülün en önemli tasarım kararı:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import json
 import logging
 import os
@@ -120,32 +122,49 @@ def _kismi_json_kurtar(icerik: str) -> dict[str, Any]:
 # Katılım bankacılığı terminolojisi — istem enjeksiyonu
 # ---------------------------------------------------------------------------
 # Genel amaçlı bir model "kâr payı"nı faiz sanabilir veya "murabaha"yı bilmeyebilir.
-# Bu sözlük, alan bilgisini modele doğrudan taşır. Sözlüğün tamamı
-# docs/TERIM_SOZLUGU.md'de yayınlanacak (Görkem, Sprint 2).
+# Bu sözlük, alan bilgisini modele doğrudan taşır.
+#
+# TEK KAYNAK — G-10 (26 Ağustos):
+#     Metin burada DEĞİL, `docs/TERIM_SOZLUGU.md` §12'de durur ve oradan okunur.
+#     Önceden iki kopya vardı (kodda sabit, dokümanda tablo) ve "sözlüğü
+#     güncelleyince istemi de güncelle" adımı elle takip ediliyordu. İki kopya,
+#     ayrışmayı garanti eder: sözlük büyür, model eski terimlerle çalışmaya
+#     devam eder ve kimse fark etmez.
+#
+# NEDEN SESSİZ YEDEK YOK:
+#     Dosya yoksa istem terimsiz gider ve çıkarım sessizce kötüleşir — ölçüm
+#     düşer, sebebi görünmez. Bu, projenin "sessiz yutma yasak" kuralının tam
+#     hedefidir. Bu yüzden dosya ya da işaretçiler bulunamazsa hata fırlatılır.
+#     (Docker imajı sözlüğü kopyalar; bkz. `Dockerfile`.)
 
-TERIMLER = """
-Katılım bankacılığı terimleri (şartname 5.5'teki resmî tanımlar):
-- Kâr Payı Oranı: Katılım bankacılığında FAİZ YERİNE kullanılan, finansman
-  işlemine konu olan mal veya hizmet üzerinden oluşan kâr payı oranını ifade eder.
-- Finansman Maliyeti: Kullandırılan finansman kapsamında oluşan toplam geri ödeme
-  tutarını ve müşterinin katlandığı toplam maliyeti ifade eder.
-- Katılım Fonu: Katılım bankacılığı prensiplerine uygun olarak değerlendirilen ve
-  fon sahipleri ile banka arasında kâr-zarar paylaşımına dayanan hesap türü.
-- Masrafsız Finansman: Finansman işlemi kapsamında tahsis ücreti, dosya masrafı
-  veya benzeri ek maliyetlerin UYGULANMADIĞI finansman türü.
-- Avantajlı Finansman: Standart finansman koşullarına göre daha uygun maliyet,
-  kâr payı oranı veya ek fayda sunan kampanyalı finansman ürünü.
+TERIM_SOZLUGU_YOLU = Path(__file__).resolve().parents[2] / "docs" / "TERIM_SOZLUGU.md"
+ISTEM_BASLA = "<!-- ISTEM:BASLA -->"
+ISTEM_BITIR = "<!-- ISTEM:BITIR -->"
 
-Ek notlar:
-- "Finansman" sözcüğü kredi anlamındadır; "kâr payı" faiz DEĞİLDİR.
-- Kâr payı oranı genellikle AYLIK yüzde olarak verilir (örn. aylık %2,05).
-- Tahsis ücreti = dosya masrafı; finansman tahsisinde alınan tek seferlik masraf.
 
-Dolaylı ifadeler de kâr payı avantajını anlatır ve tanınmalıdır (şartname 5.2):
-"avantajlı kâr payı fırsatı", "özel oranlı finansman", "düşük maliyetli finansman".
-Bu ifadelerde SAYI YOKSA kar_payi_orani alanını null bırak — dolaylı ifadeden
-sayı UYDURMA. İfadeyi kampanya_avantaji alanına yaz.
-"""
+def terimleri_yukle(yol: Path | None = None) -> str:
+    """Sözlükteki istem bloğunu okur. Bulamazsa PATLAR, boş istem göndermez."""
+    yol = yol or TERIM_SOZLUGU_YOLU
+    if not yol.exists():
+        raise FileNotFoundError(
+            f"Terim sözlüğü bulunamadı: {yol}. İstem bu dosyadan besleniyor; "
+            "terimsiz çıkarım sessizce kötüleşeceği için koşu durduruldu."
+        )
+    metin = yol.read_text(encoding="utf-8")
+    try:
+        govde = metin.split(ISTEM_BASLA, 1)[1].split(ISTEM_BITIR, 1)[0]
+    except IndexError as hata:
+        raise ValueError(
+            f"{yol.name} içinde {ISTEM_BASLA}/{ISTEM_BITIR} işaretçileri yok. "
+            "İstem bloğu bu iki satır arasında durur."
+        ) from hata
+    govde = govde.strip()
+    if govde.startswith("```"):  # kod çiti kabuğu — dokümanda okunaklı dursun diye
+        govde = govde.split("\n", 1)[1].rsplit("```", 1)[0]
+    return "\n" + govde.strip() + "\n"
+
+
+TERIMLER = terimleri_yukle()
 
 SISTEM_ISTEMI = f"""Sen bir katılım bankacılığı metin madenciliği uzmanısın.
 Sana bir katılım bankasının kampanya/ürün sayfasının metni verilecek.

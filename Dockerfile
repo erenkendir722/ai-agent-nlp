@@ -22,6 +22,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ ./src/
 COPY app/ ./app/
 COPY data/banks.yaml ./data/banks.yaml
+# Terim sözlüğü — LLM istemi buradan besleniyor (G-10). Kopyalanmazsa çıkarım
+# başlarken hata verir; sessizce terimsiz koşmaz.
+COPY docs/TERIM_SOZLUGU.md ./docs/TERIM_SOZLUGU.md
 COPY eval/ ./eval/
 
 # Makefile BİLEREK kopyalanmıyor: `python:3.12-slim` içinde `make` ikilisi yok

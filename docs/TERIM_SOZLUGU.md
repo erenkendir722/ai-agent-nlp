@@ -352,6 +352,50 @@ bu alanın neredeyse tamamını kaçırırdı; sistemin morfolojik yaklaşımı
    biçimi ve terim sayısını denetler.
 2. **İstem sütununu ölçmeden ✓ yapma.** Derlemde geçmeyen terim isteme girmez
    (§10). Şüpheliysen ham metinde ara.
-3. **Şu an** [`src/extraction/llm.py`](../src/extraction/llm.py) içindeki
-   `TERIMLER` sabiti **elle** tutuluyor; bu dosyayı güncellerken orayı da
-   güncelle. G-10 tamamlandığında bağ otomatikleşecek ve bu adım kalkacak.
+3. **İsteme girecek terimi §12'deki bloğa yaz.** Kod o bloğu bu dosyadan
+   okur (G-10, 26 Ağustos); artık `src/extraction/llm.py` içinde elle tutulan
+   bir kopya yoktur. Bloğu değiştirdiysen çıkarım değişir: `make extract &&
+   make eval` koşmadan sonuç yayımlama.
+
+---
+
+## 12. İsteme beslenen blok (G-10)
+
+Aşağıdaki blok, dil modeline gönderilen sistem isteminin içine **bu dosyadan
+okunarak** yerleştirilir (`src/extraction/llm.py::terimleri_yukle`). Yani sözlük
+ile modelin gördüğü metin **tek kaynaktır**; ikisi ayrışamaz.
+
+**Blok neden sözlüğün tamamı değil?** İstem bütçesi sınırlı ve §10'da ölçüldü:
+derlemde hiç geçmeyen bir terimi isteme koymak, modele işe yaramayan bağlam
+yüklemektir. Buraya şartnamenin beş resmî kavramı, sık geçen kalıplar ve 5.2'nin
+dolaylı ifadeleri girer. Blok değişirse **çıkarım da değişir** — değiştirdikten
+sonra `make extract && make eval` koşulmalıdır.
+
+⚠️ İşaretçi satırlarını (`ISTEM:BASLA` / `ISTEM:BITIR`) silmeyin; kod bu iki
+satır arasını okur, bulamazsa **hata fırlatır** (sessizce boş istem göndermez).
+
+<!-- ISTEM:BASLA -->
+```text
+Katılım bankacılığı terimleri (şartname 5.5'teki resmî tanımlar):
+- Kâr Payı Oranı: Katılım bankacılığında FAİZ YERİNE kullanılan, finansman
+  işlemine konu olan mal veya hizmet üzerinden oluşan kâr payı oranını ifade eder.
+- Finansman Maliyeti: Kullandırılan finansman kapsamında oluşan toplam geri ödeme
+  tutarını ve müşterinin katlandığı toplam maliyeti ifade eder.
+- Katılım Fonu: Katılım bankacılığı prensiplerine uygun olarak değerlendirilen ve
+  fon sahipleri ile banka arasında kâr-zarar paylaşımına dayanan hesap türü.
+- Masrafsız Finansman: Finansman işlemi kapsamında tahsis ücreti, dosya masrafı
+  veya benzeri ek maliyetlerin UYGULANMADIĞI finansman türü.
+- Avantajlı Finansman: Standart finansman koşullarına göre daha uygun maliyet,
+  kâr payı oranı veya ek fayda sunan kampanyalı finansman ürünü.
+
+Ek notlar:
+- "Finansman" sözcüğü kredi anlamındadır; "kâr payı" faiz DEĞİLDİR.
+- Kâr payı oranı genellikle AYLIK yüzde olarak verilir (örn. aylık %2,05).
+- Tahsis ücreti = dosya masrafı; finansman tahsisinde alınan tek seferlik masraf.
+
+Dolaylı ifadeler de kâr payı avantajını anlatır ve tanınmalıdır (şartname 5.2):
+"avantajlı kâr payı fırsatı", "özel oranlı finansman", "düşük maliyetli finansman".
+Bu ifadelerde SAYI YOKSA kar_payi_orani alanını null bırak — dolaylı ifadeden
+sayı UYDURMA. İfadeyi kampanya_avantaji alanına yaz.
+```
+<!-- ISTEM:BITIR -->

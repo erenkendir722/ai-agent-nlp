@@ -243,3 +243,63 @@ def test_istem_sayisi_guncel(satirlar, terimler) -> None:
     assert int(iddia.group(1)) == isaretli, (
         f"Giriş «{iddia.group(1)}» diyor ama ✓ işaretli terim {isaretli} tane."
     )
+
+
+# ---------------------------------------------------------------------------
+# G-10 — istem bloğu sözlükten okunuyor (26 Ağustos)
+# ---------------------------------------------------------------------------
+
+
+class TestIstemBagi:
+    """Sözlük ile modelin gördüğü metin TEK KAYNAK olmalı.
+
+    Önceden iki kopya vardı: `llm.py` içinde elle tutulan bir sabit ve bu
+    dosyadaki tablolar. İki kopya ayrışmayı garanti eder — sözlük büyür, model
+    eski terimlerle çalışmaya devam eder ve kimse fark etmez.
+    """
+
+    def test_istem_blogu_sozlukten_geliyor(self) -> None:
+        from src.extraction.llm import TERIMLER, terimleri_yukle
+
+        assert TERIMLER == terimleri_yukle()
+        assert "Kâr Payı Oranı" in TERIMLER
+
+    def test_bes_resmi_kavram_isteme_giriyor(self) -> None:
+        """Şartname 5.5'in beşi de modele taşınmalı."""
+        from src.extraction.llm import TERIMLER
+
+        for kavram in (
+            "Kâr Payı Oranı",
+            "Finansman Maliyeti",
+            "Katılım Fonu",
+            "Masrafsız Finansman",
+            "Avantajlı Finansman",
+        ):
+            assert kavram in TERIMLER, f"{kavram} isteme girmiyor"
+
+    def test_dolayli_ifadeler_isteme_giriyor(self) -> None:
+        """Şartname 5.2'nin üç ifadesi — sayı uydurmama talimatıyla birlikte."""
+        from src.extraction.llm import TERIMLER
+
+        for ifade in ("avantajlı kâr payı", "özel oranlı finansman", "düşük maliyetli"):
+            assert ifade in TERIMLER
+        assert "UYDURMA" in TERIMLER
+
+    def test_sozluk_yoksa_sessizce_devam_etmez(self, tmp_path) -> None:
+        """Terimsiz istem çıkarımı sessizce kötüleştirir — patlaması doğrudur."""
+        import pytest
+
+        from src.extraction.llm import terimleri_yukle
+
+        with pytest.raises(FileNotFoundError):
+            terimleri_yukle(tmp_path / "yok.md")
+
+    def test_isaretciler_bozuksa_patlar(self, tmp_path) -> None:
+        import pytest
+
+        from src.extraction.llm import terimleri_yukle
+
+        bozuk = tmp_path / "TERIM_SOZLUGU.md"
+        bozuk.write_text("# Sözlük\nişaretçi yok", encoding="utf-8")
+        with pytest.raises(ValueError):
+            terimleri_yukle(bozuk)
