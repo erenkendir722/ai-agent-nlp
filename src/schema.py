@@ -749,7 +749,33 @@ def ollama_json_semasi() -> dict[str, Any]:
             "kampanya_bitis": {"type": ["string", "null"]},
             "kampanya_kosullari": {"type": ["string", "null"]},
         },
-        "required": ["kampanya_turu"],
+        # `required` bir ÜRETİM KAPISIDIR, veri sözleşmesi değil: modelin
+        # anahtarı ATLAMASINI engeller, uydurmasını değil (tipler `null`
+        # kabul ediyor). `KampanyaKaydi`'nin şekli değişmez, `SEMA_SURUMU`
+        # bu yüzden sabit kalır.
+        #
+        # 27 Ağustos'ta ölçüldü — `urun_turu` neden eklendi:
+        #   liste yalnız `kampanya_turu` iken model 16 alandan 4'ünü
+        #   döndürüyordu (`kampanya_turu`, `hedef_kitle`, `kampanya_avantaji`,
+        #   `kampanya_kosullari`) ve `urun_turu` 734 kaydın 734'ünde BOŞTU.
+        #   Alanı isteme tanıtmak TEK BAŞINA yetmedi (10 kayıtta 0 dolu);
+        #   `required`'a eklenince 10 kayıtta 9 doldu ve çıktı temizdi:
+        #   «Sağlam Business Kredi Kartı», «Pratik BES», «Referans Mektupları».
+        #
+        # `masraf_bilgisi` BİLEREK EKLENMEDİ — aynı koşuda ölçüldü ve
+        # zorlandığında model uyduruyor: 10 kayıtta 3 dolu, o üçün ikisi
+        # masraf değil vade bilgisi («vade farksız», «vade farksız 9 aya
+        # varan taksit imkanı»). Alan altın sette etiketlenmiyor (ADR 008),
+        # yani bu gürültü ÖLÇÜLEMEZ — kanıtsız değer üretmeme kuralının
+        # doğrudan ihlali olurdu. İstemde tanımı var, zorlaması yok: model
+        # gerçekten görürse yazar.
+        #
+        # Bedeli ölçüldü ve kabul edildi: aynı 10 kayıtta üretim bütçesi
+        # (4096 tok) 2 kez doldu ve kısmi JSON kurtarmaya düşüldü. Dört alan
+        # birden zorlandığında bu 3'e çıkıyordu.
+        #
+        # Karar: `docs/kararlar/025-metinsel-alanlar.md`
+        "required": ["kampanya_turu", "urun_turu"],
     }
 
 

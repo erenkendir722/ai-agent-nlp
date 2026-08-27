@@ -179,8 +179,14 @@ MUTLAK KURALLAR:
 2. Metinde olmayan hiçbir bilgiyi üretme. Emin değilsen null yaz.
    Boş bırakmak yanlış cevap vermekten HER ZAMAN daha iyidir.
 3. Tahmin etme, çıkarım yapma, "genelde böyledir" deme.
-4. Metinsel alanlarda (avantaj, koşullar) metni kısa özetleyebilirsin,
-   ama sayı eklersen o sayı metinde geçmek zorundadır.
+4. Metinsel alanlarda (urun_turu, masraf_bilgisi, kampanya_avantaji,
+   kampanya_kosullari) metni kısa özetleyebilirsin, ama sayı eklersen o sayı
+   metinde geçmek zorundadır.
+   - urun_turu: kampanyanın bağlı olduğu ÜRÜNÜN adı ("Sağlam Kart",
+     "İhtiyaç Finansmanı", "Katılma Hesabı"). Kampanyanın adı değildir.
+   - masraf_bilgisi: masraflara dair metinde geçen BEYAN ("dosya masrafı
+     alınmaz", "tahsis ücreti finansman tutarının binde 5'i"). Sayı alanı
+     değildir; beyanın kendisi yazılır.
 """
 
 
