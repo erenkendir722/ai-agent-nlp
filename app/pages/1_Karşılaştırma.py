@@ -370,8 +370,6 @@ secilen_adlar: list[str] = []
 _sk_maliyet, _sk_vade = st.tabs(["Yan yana toplam maliyet", "Vade duyarlılığı"])
 
 with _sk_maliyet:
-  st.caption("Aynı anapara ve vadede bankaları gerçek toplam maliyetle kıyaslayın.")
-
   if not sirali:
     st.info("Karşılaştırılacak kampanya yok.")
   else:
@@ -568,10 +566,6 @@ with _sk_vade:
 
     st.divider()
     st.subheader("Vade Duyarlılığı — kısa vade ne kazandırır?")
-    st.caption(
-      "Seçilen kampanyalar, aynı finansman tutarında farklı vadelerle yeniden "
-      "hesaplanır. Karar toplam maliyet ile aylık taksit arasındaki takastır."
-    )
 
     v1, v2 = st.columns(2)
     duyarlilik_kampanyasi = v1.selectbox(
@@ -794,10 +788,7 @@ if benim_bankam != "(Seçilmedi)" and sirali:
     "ve maliyet için yukarıdaki tabloyu esas alın.</div></div>",
     unsafe_allow_html=True,
   )
-  if st.button(
-    "Rakip analizi taslağı üret",
-    help="Dil modeli (EVREN) çağrılır. Hava boşluğu demosunda çalışmaz; sıra tabloda kalır.",
-  ):
+  if st.button("Rakip analizi taslağı üret"):
     biz_data = [k for k in sirali if format_bank_name(k.banka_adi) == format_bank_name(benim_bankam)]
     onlar_data = [k for k in sirali if format_bank_name(k.banka_adi) != format_bank_name(benim_bankam) and format_bank_name(k.banka_adi) in [format_bank_name(b) for b in secili_bankalar]]
     

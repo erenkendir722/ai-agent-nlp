@@ -55,6 +55,19 @@ def _kos(banka: str | None = None):
     return at
 
 
+def _biten_satir_sayisi(at) -> int:
+    """«Yakında bitenler» tablosunun satır sayısı.
+
+    Sayı eskiden başlıkta da yazıyordu; başlıktan kaldırıldığı için tek
+    kaynağı tablonun kendisi. Tablo «Kalan» sütunuyla ayırt edilir — sayfadaki
+    diğer tabloda o sütun yok.
+    """
+    for eleman in at.dataframe:
+        if "Kalan" in list(eleman.value.columns):
+            return len(eleman.value)
+    return 0
+
+
 def _gun_kaldi(deger) -> int | None:
     if deger is None:
         return None
@@ -123,8 +136,9 @@ class TestYakindaBitenler:
                 assert not varmi, f"{banka}: biten kampanya yokken bölüm çizilmiş"
             else:
                 assert varmi, f"{banka}: {beklenen} kampanya bitiyor ama bölüm yok"
-                baslik = next(b for b in basliklar if "Yakında biten" in b)
-                assert f"({beklenen})" in baslik, f"{banka}: sayı tutmuyor -> {baslik}"
+                assert _biten_satir_sayisi(at) == beklenen, (
+                    f"{banka}: sayı tutmuyor -> {_biten_satir_sayisi(at)}"
+                )
 
     def test_gecmis_tarihli_kampanya_yakinda_bitenlere_girmez(self, kayitlar) -> None:
         """«Kalan gün» negatifse kampanya bitmiştir; «yakında bitiyor» değildir."""
@@ -145,7 +159,8 @@ class TestYakindaBitenler:
         )
         baslik = [str(s.value) for s in at.subheader if "Yakında biten" in str(s.value)]
         if beklenen:
-            assert f"({beklenen})" in baslik[0]
+            assert baslik
+            assert _biten_satir_sayisi(at) == beklenen
         else:
             assert not baslik
 

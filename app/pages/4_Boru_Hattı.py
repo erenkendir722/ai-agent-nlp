@@ -516,7 +516,6 @@ with sekme_cikarim:
     )
   elif c_demo:
     c_sinir = havuz
-    st.caption(f"Kaynakta **{havuz}** kayıt var — adet sınırına gerek yok.")
   else:
     c_sinir = 0
     st.caption(f"Tam koşu: kaynaktaki **{havuz}** kaydın tamamı işlenir.")

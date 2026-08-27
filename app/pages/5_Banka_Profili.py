@@ -93,10 +93,6 @@ with st.container(border=True):
   secili = s1.selectbox(
     "Banka", options=bankalar, format_func=format_bank_name, key="bp_secili_banka"
   )
-  s2.caption(
-    "Sayılar yalnız bu bankanın kayıtlarından hesaplanır. "
-    "Bankalar arası kıyas için Karşılaştırma ekranını kullanın."
-  )
 
 banka = [k for k in kayitlar if k.banka_adi == secili]
 if not banka:
@@ -137,33 +133,27 @@ tazelik = _tazelik_gun()
 
 u1, u2, u3, u4 = st.columns(4)
 u1.metric("Kampanya", len(banka))
-u1.caption(f"Korpusun %{pay:.1f}'i")
 
 if oranlar:
   u2.metric("Kâr payı oranı", f"%{tr_sayi(min(oranlar))} – %{tr_sayi(max(oranlar))}")
-  u2.caption(f"{len(oranlar)} kampanyada belirtilmiş")
 else:
   u2.metric("Kâr payı oranı", "Belirtilmemiş")
   u2.caption("Bu bankanın hiçbir kampanyasında yok")
 
 if vadeler:
   u3.metric("En uzun vade", f"{max(vadeler)} ay")
-  u3.caption(f"{len(vadeler)} kampanyada belirtilmiş")
 else:
   u3.metric("En uzun vade", "Belirtilmemiş")
 
 u4.metric("Masrafsız kampanya", len(masrafsizlar))
 
 # VERİ TAZELİĞİ — diğer ekranlarda hiç görünmüyordu.
-if tazelik is not None:
-  if tazelik <= 3:
-    st.caption(f"Veri {tazelik} gün önce çekildi.")
-  else:
-    st.warning(
-      f"**Veri {tazelik} gün önce çekildi**  \n"
-      "Bankanın sitesi o tarihten sonra değişmiş olabilir; "
-      "Canlı Boru Hattı ekranından yeniden toplayabilirsiniz."
-    )
+if tazelik is not None and tazelik > 3:
+  st.warning(
+    f"**Veri {tazelik} gün önce çekildi**  \n"
+    "Bankanın sitesi o tarihten sonra değişmiş olabilir; "
+    "Canlı Boru Hattı ekranından yeniden toplayabilirsiniz."
+  )
 
 st.divider()
 
@@ -185,7 +175,7 @@ for k in banka:
 
 if bitenler:
   bitenler.sort(key=lambda s: s["Bitiş"])
-  st.subheader(f"Yakında biten kampanyalar ({len(bitenler)})")
+  st.subheader("Yakında biten kampanyalar")
   st.caption(f"Önümüzdeki {YAKIN_GUN} gün içinde bitiş tarihi dolan kampanyalar.")
   st.dataframe(
     pd.DataFrame(bitenler),
@@ -216,7 +206,6 @@ with sol:
 
 with sag:
   st.subheader("Alan doluluğu")
-  st.caption("Bu bankanın kampanyalarında hangi alanlar dolu.")
   satirlar = []
   for alan in ALAN_ADLARI:
     dolu = sum(1 for k in banka if getattr(k, alan, None) is not None)
@@ -300,11 +289,6 @@ for alan in ("kar_payi_orani", "vade_ay_max", "finansman_tutari_max", "tahsis_uc
 
 if eksikler:
   with st.expander("Bu bankada neyi bilmiyoruz"):
-    st.caption(
-      "Eksik alan bir çıkarım hatası değil: bankaların çoğu bu bilgiyi "
-      "kampanya sayfasında yayımlamıyor, başvuru ekranında veriyor. "
-      "Uydurmak yerine boş bırakıyoruz."
-    )
     for satir in eksikler:
       st.markdown(f"- {satir}")
 
