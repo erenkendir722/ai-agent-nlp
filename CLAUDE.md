@@ -270,8 +270,8 @@ ayrı olgu değil, aynı olgunun iki adı.
 
 Doğru çözüm ayırmak değil, hakemliği delmekti: `KuralTanimi.sahiplik_disi`.
 `taksit_sayisi` vadeyle **yarışmaz, onu niteler** — makro-F1 birebir aynı
-kaldı (0,7018) ve alan 0'dan **216/734**'e çıktı, 30'unda değer vadeden
-farklı. Kazanç köken bilgisidir: `vade_ay_max=6` + `taksit_sayisi=6` «bu bir
+kaldı (0,7018). Tam koşuda ölçüldü (27 Ağu, 726 kayıt): alan **0'dan
+215'e** çıktı (%30), **29'unda değer vadeden farklı**. Kazanç köken bilgisidir: `vade_ay_max=6` + `taksit_sayisi=6` «bu bir
 kart taksidi» der, `vade_ay_max=36` tek başına «bu gerçek bir vade» der.
 Bayrak DAR tutulur — sahiplik dışı kural kimsenin span'ını düşürmez de.
 

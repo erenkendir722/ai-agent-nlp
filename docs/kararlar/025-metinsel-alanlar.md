@@ -104,9 +104,23 @@ istediği şey (veri şekli değişti) gerçekleşmedi.
 * `urun_turu` bir sonraki `make extract` koşusunda dolmaya başlar. **Bu ADR
   tek başına veriyi değiştirmez** — `data/katilim.db` yeniden çıkarılana kadar
   alan 0/734 kalır.
-* `docs/SONUCLAR.md` doluluk tablosunda `urun_turu` satırı %0'dan çıkacak;
-  `masraf_bilgisi` %0'da KALACAK ve bu artık bir kusur değil, beyan edilmiş
-  bir karardır.
+
+**27 Ağustos 21:17 — koşu yapıldı, 726 kayıt.** Öngörülenle ölçülen:
+
+| Alan | Önce | Öngörü | Ölçülen |
+|---|---|---|---|
+| `urun_turu` | %0 | dolacak | **%88** |
+| `masraf_bilgisi` | %0 | %0'da kalacak | **%2** |
+
+`masraf_bilgisi` öngörüsü **tuttu ama tam değil**: alan `required` listesinde
+olmadığı hâlde %2 doldu. Sebebi ADR'nin kendi cümlesi — «İstemde tanımı var,
+zorlaması yok: model gerçekten görürse yazar». Zorlanmadığında model 100
+kayıttan 98'inde susuyor; yazdığı 2'de sayfada gerçekten masraf beyanı var.
+Aradaki fark kararın niçin asimetrik olduğunu gösteriyor: zorlama %2'yi %30'a
+çıkarıyor ama çıkardığı 28 kayıt uydurma.
+
+Makro-F1 0,812 → **0,817** (±0,01 gürültü bandının içinde, yani değişmedi);
+alan doluluğu %28,4 → **%32,7**; halüsinasyon %0,36 → **%0,21**.
 * Jüriye verilecek cevap: «on altı alanın on beşini üretiyoruz; on altıncısını
   ölçemediğimiz için zorlamıyoruz» — ölçümü olan bir cümle.
 
