@@ -185,3 +185,63 @@ def test_sartname_ornegi_korundu() -> None:
     assert alanlar["vade_ay_max"].deger == 120
     assert alanlar["finansman_tutari_max"].deger == pytest.approx(5_000_000.0)
     assert alanlar["masrafsiz_mi"].deger is True
+
+
+# ---------------------------------------------------------------------------
+# 5) Sahiplik dışı kurallar — `taksit_sayisi` vadeyle YARIŞMAZ
+# ---------------------------------------------------------------------------
+
+
+class TestSahiplikDisi:
+    """`taksit_sayisi` 27 Ağustos'a kadar 0/734 kayıtta doluydu.
+
+    Sebep tam da bu dosyanın anlattığı hakemlikti: «6 taksit» için hem
+    `vade_ay_max` hem `taksit_sayisi` AYNI span'ı üretiyor, mesafe ikisinde de
+    0, ve beraberliği `KURALLAR` bildirim sırası çözüyordu. `vade_ay_max` önce
+    bildirildiği için `taksit_sayisi` hiçbir zaman kazanamıyordu — şemada duran
+    ama yapısal olarak erişilemeyen bir alan.
+
+    Hakemliğin varsayımı («iki alan aynı sayıyı sahiplenmişse biri yanılıyor»)
+    bu çift için yanlış: «6 taksit» hem 6 aylık ertelenmiş ödemedir hem 6
+    taksittir. Altın seti etiketleyen dört kişi de bu ifadelere `vade_ay_max`
+    yazmış — yani vadeyi taksitten AYIRMAK ölçülmüş bir gerileme getiriyordu
+    (`make kural-olc`: vade F1 0,7671 -> 0,6866). Çözüm ayırmak değil, ikisinin
+    birlikte var olmasına izin vermekti.
+    """
+
+    def test_taksit_ifadesi_iki_alani_birden_doldurur(self) -> None:
+        alanlar = _cikar("Alışverişlerde vade farksız 6 taksit ile ödeyin.")
+        assert alanlar["vade_ay_max"].deger == 6
+        assert alanlar["taksit_sayisi"].deger == 6
+
+    def test_ay_ve_taksit_ayri_yazildiginda_ayri_okunur(self) -> None:
+        """Kesişim her zaman aynı sayı demek değil."""
+        alanlar = _cikar("36 aya kadar vade ve 12 taksit imkanı.")
+        assert alanlar["vade_ay_max"].deger == 36
+        assert alanlar["taksit_sayisi"].deger == 12
+
+    def test_saf_ay_ifadesi_taksit_uretmez(self) -> None:
+        """Köken bilgisi ancak ayırt edebiliyorsa değerlidir."""
+        alanlar = _cikar("%1,89 kâr payı oranı ile 120 aya kadar konut finansmanı.")
+        assert alanlar["vade_ay_max"].deger == 120
+        assert "taksit_sayisi" not in alanlar
+
+    def test_sahiplik_disi_kural_kimseyi_dusurmez(self) -> None:
+        """Bayrak DAR: okur, ama başka alanın span'ını çalmaz."""
+        adaylar = {
+            kural.alan: _adaylari_bul(
+                "Alışverişlerde vade farksız 6 taksit ile ödeyin.", kural
+            )
+            for kural in KURALLAR
+        }
+        kalan = _tek_atama(adaylar)
+        assert kalan["vade_ay_max"], "sahiplik dışı kural vadeyi düşürmüş"
+        assert kalan["taksit_sayisi"], "sahiplik dışı kural kendi adayını kaybetmiş"
+
+    def test_yarisan_kurallar_hala_hakemlikten_geciyor(self) -> None:
+        """Bayrak, dosyanın asıl konusu olan düzeltmeyi delmemeli."""
+        alanlar = _cikar(
+            "…aylık kâr payı oranı %2,45'ten başlıyor. … Tahsis ücreti %0,75."
+        )
+        assert alanlar["kar_payi_orani"].deger == pytest.approx(2.45)
+        assert alanlar["tahsis_ucreti"].deger == pytest.approx(0.75)

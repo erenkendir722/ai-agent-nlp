@@ -340,7 +340,13 @@ def para_ayristir(parca: str, birim_zorunlu: bool = True) -> float | None:
             if taban is None:
                 continue
             if carpan_sozu is not None:
-                taban *= _CARPAN_SOZLERI[carpan_sozu.lower()]
+                # `tr_kucult`, düz `.lower()` DEĞİL — bu dosyanın 22. satırındaki
+                # TUZAK 1 tam burada ısırdı: desen `re.IGNORECASE` ile "MİLYON"u
+                # yakalıyor, ama "MİLYON".lower() 'mi̇lyon' (i + U+0307) veriyor
+                # ve sözlükte öyle bir anahtar yok. Sonuç sessiz bir yanlış
+                # değil, `KeyError` — kural katmanı komple çöküyordu:
+                # `make kural-olc` altın sette bu yüzden hiç koşmuyordu.
+                taban *= _CARPAN_SOZLERI[tr_kucult(carpan_sozu)]
             return taban
         return None
 
@@ -361,9 +367,27 @@ def para_ayristir(parca: str, birim_zorunlu: bool = True) -> float | None:
 # Türkçe eklerine dikkat: "120 ay", "120 aya kadar", "36 aylık", "24 ayda".
 # Basit \bay\b sınırı bunların hepsini kaçırır. Ek listesi kapalı tutulur ki
 # "ayrıca" gibi sözcükler yanlışlıkla eşleşmesin.
-_TR_EKLER = r"(?:a|e|ı|i|da|de|ta|te|dan|den|tan|ten|lık|lik|luk|lük|lı|li|ya|ye|nın|nin)?"
-_AY_DESENI = re.compile(rf"(\d+)\s*(?:ay|taksit){_TR_EKLER}\b", re.IGNORECASE)
-_YIL_DESENI = re.compile(rf"(\d+)\s*(?:y[ıi]l|sene){_TR_EKLER}\b", re.IGNORECASE)
+#
+# TEK KAYNAK: `extraction.kural` bu listeyi ADAY DESENLERİ için de kullanır
+# (`D_VADE`, `D_TAKSIT`). İki kopya tutulsaydı ayrışmaları an meselesiydi —
+# nitekim vasıta hâli («6 taksitLE») burada YOKTU ve 27 Ağustos'ta ölçüldü:
+# desen "6 taksitle"yi yakalıyor, `vade_ayristir` onu `None` çeviriyor, aday
+# sessizce düşüyordu.
+TR_EKLER = (
+    r"(?:a|e|ı|i|da|de|ta|te|dan|den|tan|ten|lık|lik|luk|lük|lı|li|ya|ye"
+    r"|nın|nin|le|la|yle|yla)?"
+)
+_TR_EKLER = TR_EKLER  # geriye dönük ad
+
+# «taksit» BURADA duruyor ama `kural.D_VADE`'de DURMUYOR — ikisi farklı iş yapar
+# ve bu bilinçli bir ayrımdır, temizlenecek bir tutarsızlık değil:
+#   ADAY DESENİ (kural)  hangi birimin hangi ALANA ait olduğunu söyler;
+#                        «6 taksit» -> `taksit_sayisi`, «36 ay» -> `vade_ay_max`.
+#   AYRIŞTIRICI (burası) bir süre ifadesini AY SAYISINA çevirir; `taksit_sayisi`
+#                        de aynı fonksiyonu kullandığı için «taksit»i tanımalı.
+# Buradan «taksit»i silmek `taksit_sayisi` alanını komple susturur.
+_AY_DESENI = re.compile(rf"(\d+)\s*(?:ay|taksit){TR_EKLER}\b", re.IGNORECASE)
+_YIL_DESENI = re.compile(rf"(\d+)\s*(?:y[ıi]l|sene){TR_EKLER}\b", re.IGNORECASE)
 
 
 def vade_ayristir(parca: str) -> int | None:

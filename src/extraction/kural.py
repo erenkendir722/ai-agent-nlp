@@ -21,6 +21,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from src.preprocessing.normalizasyon import (
+    TR_EKLER,
     arama_anahtari,
     masrafsiz_mi,
     olumsuzlanmis_mi,
@@ -62,11 +63,49 @@ D_PARA = re.compile(
     r"\d[\d.,]*\s*(?:milyar|milyon|bin)?\s*(?:₺|TL\b|TRY\b|T[üu]rk\s+Liras[ıi])",
     re.IGNORECASE,
 )
-D_VADE = re.compile(
-    r"\d+\s*(?:ay|taksit|y[ıi]l|sene)"
-    r"(?:a|e|ı|i|da|de|ta|te|dan|den|tan|ten|lık|lik|luk|lük|lı|li|ya|ye)?\b",
-    re.IGNORECASE,
-)
+# Ek listesi `normalizasyon.TR_EKLER`'den gelir — İKİNCİ BİR KOPYA YAZILMAZ.
+# Desen ile ayrıştırıcı aynı ekleri tanımak ZORUNDA: desen «6 taksitle»yi
+# yakalayıp `vade_ayristir` onu tanımazsa aday sessizce düşer, ki 27 Ağustos'a
+# kadar tam olarak bu oluyordu.
+D_VADE = re.compile(rf"\d+\s*(?:ay|taksit|y[ıi]l|sene){TR_EKLER}\b", re.IGNORECASE)
+"""Vade ifadesi. «taksit» BURADA — kaldırılması denendi ve ÖLÇÜLDÜ, geri alındı.
+
+27 Ağustos: «6 taksit»in `vade_ay_max` yerine yalnız `taksit_sayisi`'ne gitmesi
+denendi. Gerekçe makuldü — 353 vadenin 181'inin `ham_ifade`'sinde «taksit»
+geçiyor ve bunların 173'ü kart/alışveriş kampanyası. Ama **altın set aksini
+söylüyor**: dört etiketleyici, bağımsız olarak, bu ifadelere vade yazmış.
+
+    «Alışverişlerde vade farksız 6 taksit …»            -> altın: vade_ay_max = 6
+    «… vade farksız 5 taksite kadar»                    -> altın: vade_ay_max = 5
+    «peşin fiyatına 6 taksit fırsatından …»             -> altın: vade_ay_max = 6
+
+`make kural-olc` (deterministik, LLM yok, 92 kayıt):
+
+    vade_ay_max  F1 0,7671 -> 0,6866   ·   makro-F1 0,7018 -> 0,6918
+
+Beş doğru pozitif yanlış negatife döndü. Yani ayrımın kendisi yanlıştı, çünkü
+«N taksitle öde» ifadesi katılım bankacılığında **N ay ertelenmiş ödeme**
+demektir; taksit sayısı ile vade ayrı iki olgu değil, aynı olgunun iki adı.
+Cevap anahtarı ADR 008'e göre altın settir; ölçüm karşısında sezgi kaybeder."""
+
+D_TAKSIT = re.compile(rf"\d+\s*taksit{TR_EKLER}\b", re.IGNORECASE)
+"""Taksit SAYISI ifadesi — `D_VADE`'nin taksit yazan alt kümesi.
+
+Kesişim BİLEREK var: «6 taksit» hem `vade_ay_max` (6 ay) hem `taksit_sayisi`
+(6 taksit) olarak okunur ve ikisi de doğrudur. `taksit_sayisi` bu yüzden
+`sahiplik_disi` bildirilir — `vade_ay_max` ile YARIŞMAZ, onu NİTELER.
+
+Bu alan 27 Ağustos'a kadar **0/734 kayıtta** doluydu, yani şemada duran ama
+yapısal olarak erişilemeyen bir alandı. Sebep: iki kural da aynı span'ı
+üretiyor, `_tek_atama` mesafeyle ayıramıyor (ikisi de 0) ve beraberliği
+`KURALLAR` bildirim sırası çözüyordu — `vade_ay_max` önce bildirildiği için
+`taksit_sayisi` HİÇBİR ZAMAN kazanamıyordu.
+
+Alanın kazandırdığı şey KÖKEN BİLGİSİ: `vade_ay_max=6` + `taksit_sayisi=6`
+«bu 6 bir kart taksidinden geldi» der, `vade_ay_max=36` tek başına «bu gerçek
+bir finansman vadesi» der. Aynı sütuna bakan bir tüketici bu ikisini artık
+ayırt edebilir; önce ayırt edemiyordu."""
+
 AYLAR = (
     "Ocak", "Şubat", "Subat", "Mart", "Nisan", "Mayıs", "Mayis", "Haziran",
     "Temmuz", "Ağustos", "Agustos", "Eylül", "Eylul", "Ekim", "Kasım", "Kasim",
@@ -196,6 +235,18 @@ class KuralTanimi:
     Bağlam sözcüğü kuralının tek istisnası ve gerekçesi ölçülmüş: kampanya
     bitiş tarihlerinin çoğu, yakınında hiçbir anahtar sözcük olmayan çıplak
     bir aralık olarak yazılıyor. Bkz. `_tarih_araligi_sonu_mu`."""
+    sahiplik_disi: bool = False
+    """True ise bu kural `_tek_atama` hakemliğine KATILMAZ.
+
+    `_tek_atama`'nın varsayımı şudur: bir sayıyı iki alan sahiplenmişse biri
+    yanılıyordur (kâr payı mı, tahsis ücreti mi — ikisi birden olamaz). Bu
+    varsayım tek bir çift için yanlış: `vade_ay_max` ile `taksit_sayisi`.
+    «6 taksit» ifadesi ikisi için de DOĞRUDUR — biri süreyi, diğeri o sürenin
+    nasıl yazıldığını söyler. Hakemlik bu çifte uygulandığında kaybeden alan
+    susuyordu ve 27 Ağustos'a kadar `taksit_sayisi` 0/734 kayıtta doluydu.
+
+    Bayrak DAR tutulur: sahiplik dışı bir kural, span'ı başka bir alandan
+    ÇALMAZ da. Yalnız kendi listesinden okur, kimseyi düşürmez."""
     aralik_ucu_reddet: bool = False
     """True ise bir ARALIĞIN UCU olarak yazılmış sayı aday sayılmaz.
 
@@ -481,13 +532,15 @@ KURALLAR: tuple[KuralTanimi, ...] = (
     ),
     KuralTanimi(
         alan="taksit_sayisi",
-        deger_deseni=re.compile(r"\d+\s*taksit\w*", re.IGNORECASE),
+        deger_deseni=D_TAKSIT,
         ayristirici=vade_ayristir,
         baglam_sozcukleri=("taksit", "pesin fiyatina"),
         veto_ifadeleri=SAYISAL_ALAN_VETOLARI,
         secim="en_yuksek",
         taban_guven=0.90,
         gecerli_aralik=(0.0, 361.0),
+        # `vade_ay_max` ile aynı span'ı okur ve bu doğrudur — bkz. `D_TAKSIT`.
+        sahiplik_disi=True,
     ),
     KuralTanimi(
         alan="tahsis_ucreti",
@@ -1365,11 +1418,20 @@ def _tek_atama(adaylar: dict[str, list[Aday]]) -> dict[str, list[Aday]]:
 
     Kaybeden alan susmaz: span'ı listesinden düşer ve KALAN adaylarından
     seçim yapar. Yukarıdaki örnekte `kar_payi_orani` böylece %2,45'e ulaşır.
+
+    İSTİSNA — `KuralTanimi.sahiplik_disi`: hakemliğin dayandığı varsayım
+    «aynı sayıyı iki alan sahiplenmişse biri yanılıyordur». Bu varsayım tek
+    bir çift için yanlış: «6 taksit» hem 6 aylık vadedir hem 6 taksittir.
+    Sahiplik dışı kurallar ne kaybeder ne kazandırır; kendi adaylarını
+    olduğu gibi alır ve kimsenin span'ını düşürmez.
     """
+    yarisanlar = {k.alan for k in KURALLAR if not k.sahiplik_disi}
     sira = {kural.alan: i for i, kural in enumerate(KURALLAR)}
     sahipler: dict[tuple[int, int], str] = {}
 
     for alan, alan_adaylari in adaylar.items():
+        if alan not in yarisanlar:
+            continue
         for aday in alan_adaylari:
             anahtar = (aday.baslangic, aday.bitis)
             mevcut = sahipler.get(anahtar)
@@ -1388,7 +1450,11 @@ def _tek_atama(adaylar: dict[str, list[Aday]]) -> dict[str, list[Aday]]:
                 sahipler[anahtar] = alan
 
     return {
-        alan: [a for a in alan_adaylari if sahipler[(a.baslangic, a.bitis)] == alan]
+        alan: (
+            alan_adaylari
+            if alan not in yarisanlar
+            else [a for a in alan_adaylari if sahipler[(a.baslangic, a.bitis)] == alan]
+        )
         for alan, alan_adaylari in adaylar.items()
     }
 

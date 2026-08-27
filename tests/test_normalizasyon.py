@@ -366,3 +366,59 @@ class TestTutarBirimeBagli:
     def test_birim_zorunlu_degilken_ilk_sayi_alinir(self) -> None:
         """Çıpa yoksa bağlanacak bir şey de yok — eski davranış korunur."""
         assert para_ayristir("50.000", birim_zorunlu=False) == 50_000.0
+
+
+class TestBuyukHarfliCarpanSozcugu:
+    """`para_ayristir` çarpan sözcüğünü `tr_kucult` ile çözmeli, `.lower()` ile DEĞİL.
+
+    Bu dosyanın 22. satırındaki TUZAK 1 tam olarak burada ısırdı ve sessiz bir
+    yanlış değil, bir ÇÖKME üretti:
+
+        desen `re.IGNORECASE` ile "MİLYON"u yakalıyor
+        "MİLYON".lower() -> 'mi̇lyon'  (i + U+0307 birleşik nokta)
+        _CARPAN_SOZLERI['mi̇lyon']     -> KeyError
+
+    Kural katmanı komple çöküyordu: `make kural-olc` altın sette hiç
+    koşamıyordu ve korpusta bu yazımı taşıyan iki ham kayıt var.
+    """
+
+    @pytest.mark.parametrize(
+        ("girdi", "beklenen"),
+        [
+            ("1,5 MİLYON TL", 1_500_000.0),
+            ("1,5 milyon TL", 1_500_000.0),
+            ("2 MİLYAR TL", 2_000_000_000.0),
+            ("500 BİN TL", 500_000.0),
+            ("500 bin TL", 500_000.0),
+        ],
+    )
+    def test_carpan_buyuk_harfle_de_cozulur(self, girdi: str, beklenen: float) -> None:
+        assert para_ayristir(girdi) == pytest.approx(beklenen)
+
+
+class TestVasitaHali:
+    """«6 taksitLE», «36 ayLA» — ek listesinde vasıta hâli yoktu.
+
+    Boşluk `taksit_sayisi` diriltilince görünür oldu: aday deseni ifadeyi
+    yakalıyor, `vade_ayristir` onu tanımıyor ve aday sessizce düşüyordu.
+    Desen ile ayrıştırıcının aynı ek listesini (`TR_EKLER`) okuması bu yüzden
+    bir tercih değil, bir zorunluluk.
+    """
+
+    @pytest.mark.parametrize(
+        ("girdi", "beklenen"),
+        [
+            ("6 taksitle", 6),
+            ("12 taksitle ödeme", 12),
+            ("36 ayla", 36),
+            ("3 yılla", 36),
+            ("36 aylık", 36),  # eski ekler bozulmadı
+            ("24 ayda", 24),
+        ],
+    )
+    def test_vasita_hali_okunur(self, girdi: str, beklenen: int) -> None:
+        assert vade_ayristir(girdi) == beklenen
+
+    def test_kapali_ek_listesi_hala_kapali(self) -> None:
+        """Ek eklemek «ayrıca» gibi sözcükleri serbest bırakmamalı."""
+        assert vade_ayristir("50000 ayrıca geçerlidir") is None
