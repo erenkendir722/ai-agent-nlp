@@ -201,6 +201,25 @@ beşinde kâr payı verisinin TAMAMI bu türdendi. Kapı
 chatbot aynı kapıdan geçer — kopya tutma. Kapsam dışı kayıt SİLİNMEZ, yalnız
 sıralamadan düşer. Ayrıntı: [ADR 020](docs/kararlar/020-olcut-kapsami.md).
 
+**Chatbot'un soru anlama sözlüğü ELLE YAZILMAZ (ADR 021, 27 Ağu).** Üç kaynak
+var ve üçü de zaten depoda: ölçüt eşlemesi `docs/TERIM_SOZLUGU.md`'nin
+«Sistemdeki karşılığı» sütunundan (`terim_sozlugu.alan_eslemesi`), segment
+dağarcığı korpustaki `uygunluk.segment_detayi` değerlerinden, sistem sorusu
+ayrımı Türkçe ikinci şahıs ekinden (`MUHATAP_EKLERI`). Elle yazılan dördüncü
+bir liste, o listenin diğer üçüyle ayrışmasını garanti eder — nitekim
+`_OLCUT_IPUCLARI` sabit sıradaydı ve «vade» dört harf olduğu için «toplam
+maliyet»i yeniyordu. **Sıra uzunluktan gelir, elle yazılmış öncelikten değil.**
+
+Sözlük kimlik kurmadığında onu da beyan ediyor ve chatbot buna uyar:
+«`kar_payi_orani` ile KARIŞTIRILMAZ» → sıralama, ayrımı söyle · «tek alan
+değil, hesaplanır» → formül, eksik girdiyi sor. **İlk cümlecik kimliği kurar**
+(`odul_miktari`; `kar_payi_orani` VETOSU → terim ödüldür), **küçük harf şema
+alanı, BÜYÜK HARF veto sabitidir**.
+
+**Bütün ipucu eşleştirmeleri `terim_gecer`'den geçer.** Alt dize araması bu
+depoda üç kez ısırdı: «ev» ~ «ters çEVrilir», «en» ~ «geçEN», «tanımla» ~
+«tanımLAnmış». Yeni ipucu eklerken `in` kullanma.
+
 **Sayı BİRİMİNE bağlanır — `para_ayristir` metnin ilk sayısını almaz.**
 Eski kod «metinde TL geçiyor mu?» diye sorup ilk sayıyı alıyordu; ikisi
 arasında bağ yoktu. «120 ay vadeli 1.000.000 TL konut finansmanı» → **120 TL**.

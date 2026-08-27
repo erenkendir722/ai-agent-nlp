@@ -16,9 +16,11 @@ Akış:
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from dataclasses import dataclass, field
+from datetime import date
 from enum import StrEnum
 from difflib import get_close_matches
 from functools import lru_cache
@@ -35,7 +37,13 @@ from src.comparison.karsilastirma import (
 )
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
-from src.terim_sozlugu import tanim_sorusu_mu, terim_bul
+from src.terim_sozlugu import (
+    alan_eslemesi,
+    hesaplanan_olcutler,
+    karistirilan_olcutler,
+    tanim_sorusu_mu,
+    terim_bul,
+)
 from src.schema import (
     ALAN_ETIKETLERI,
     SEGMENT_ORNEKLERI,
@@ -769,6 +777,104 @@ def _urun_filtrele(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
 # SAYISAL DOĞRULAMA KALKANI
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# SEGMENT SÜZGECİ — sözcük dağarcığı VERİDEN türer
+# ---------------------------------------------------------------------------
+#
+# 27 Ağustos, jüri havuzu 21 · 23 · 24. madde:
+#
+#     «KOBİ, esnaf ve tüzel segment müşterilerine özel … paketler hangileridir?»
+#       -> «Kuveyt Türk — Alışveriş Puanı Kampanyası: aylık %1,99 …»
+#
+# Sorulan segment hiç dikkate alınmıyordu. Oysa uygunluk ajanı `segment_detayi`
+# alanını çıkarmış ve 133 kayıtta doldurmuş; chatbot ona hiç bakmıyordu.
+#
+# DAĞARCIK ELLE YAZILMAZ: korpustaki `segment_detayi` değerlerinden okunur.
+# Bugün yedi segment var (genç · KOBİ · emekli · çiftçi · esnaf · öğrenci ·
+# kadın girişimci); çıkarım yeni bir segment üretirse süzgeç kendiliğinden
+# tanır. Elle yazılan liste, veriyle ayrışmayı garanti ederdi.
+
+SEGMENT_SORUSU_ISARETLERI = ("segment", "meslek grubu", "meslek grubuna")
+"""Segment SORULDUĞUNU söyleyen ama bir segment ADLANDIRMAYAN ifadeler.
+
+«Belirli bir meslek grubuna (ör. sağlık çalışanları) özel kampanya var mı?»
+korpusta olmayan bir grubu soruyor. Doğru cevap rastgele bir kayıt değil,
+hangi segmentlerin işaretli olduğunu söylemektir."""
+
+
+def _segment_ham(kayit: KampanyaKaydi) -> list[str]:
+    """Kaydın uygunluk koşullarındaki segment adları — YAZILDIĞI gibi.
+
+    `KampanyaKaydi` düz sütunlarda `segment_detayi` taşımıyor; tam kayıt
+    JSON'unda duruyor ve 931 kaydın tamamı bir milisaniyede ayrıştırılıyor.
+    """
+    ham = kayit.tam_kayit
+    if isinstance(ham, str):
+        try:
+            ham = json.loads(ham)
+        except json.JSONDecodeError:
+            return []
+    uygunluk = (ham or {}).get("uygunluk") or {}
+    return [s for s in (uygunluk.get("segment_detayi") or []) if s]
+
+
+def _kayit_segmentleri(kayit: KampanyaKaydi) -> set[str]:
+    """Eşleştirme anahtarları — `arama_anahtari` normalizasyonuyla."""
+    return {arama_anahtari(s) for s in _segment_ham(kayit)}
+
+
+def segment_dagarcigi(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
+    """Korpusta işaretli segmentler: arama anahtarı -> GÖSTERİLECEK ad.
+
+    Eşleştirme şapkasız-ASCII anahtarla yapılır, ekrana yazılan ad ham
+    biçimiyle kalır. Anahtarı göstermek «çiftçi»yi «ciftci» diye yazdırıyordu;
+    `arama_anahtari`'nin docstring'i zaten «kullanıcıya gösterilen metinde
+    şapkayı koruyun» diyor.
+    """
+    dagarcik: dict[str, str] = {}
+    for kayit in kayitlar:
+        for ham in _segment_ham(kayit):
+            dagarcik.setdefault(arama_anahtari(ham), ham.strip())
+    return dagarcik
+
+
+def _sorulan_segment(soru: str, kayitlar: list[KampanyaKaydi]) -> str | None:
+    """Soruda adı geçen segment — en uzun eşleşme kazanır."""
+    anahtar = arama_anahtari(soru)
+    eslesen = [ad for ad in segment_dagarcigi(kayitlar) if ad and terim_gecer(anahtar, ad)]
+    return max(eslesen, key=len) if eslesen else None
+
+
+def _segment_filtrele(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
+    segment = _sorulan_segment(soru, kayitlar)
+    if segment is None:
+        return kayitlar
+    return [k for k in kayitlar if segment in _kayit_segmentleri(k)]
+
+
+def _segment_yok_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap | None:
+    """Segment soruluyor ama korpusta o segment yoksa — uydurma yerine kapsam."""
+    anahtar = arama_anahtari(soru)
+    if not any(isaret in anahtar for isaret in SEGMENT_SORUSU_ISARETLERI):
+        return None
+    if _sorulan_segment(soru, kayitlar) is not None:
+        return None
+
+    dagarcik = sorted(segment_dagarcigi(kayitlar).values())
+    if not dagarcik:
+        return None
+    return Cevap(
+        parcalar=[CevapParcasi(
+            "Sorduğunuz gruba özel işaretlenmiş bir kampanya veri setinde yok. "
+            "Kampanya metinlerinden ayrıca çıkarılabilen segmentler şunlar: "
+            + ", ".join(dagarcik)
+            + ".",
+            Koken.DUZ,
+        )],
+        niyet=Niyet.KOSUL_SORGUSU,
+    )
+
+
 def _sayi_varyantlari(sayi: float) -> set[str]:
     """Bir sayının metinde geçebileceği yazımları üretir.
 
@@ -999,6 +1105,18 @@ def alan_goster(alan_adi: str, deger: float | int, birim: Birim | None) -> str:
     return _KAR_PAYI_ONEKI.get(alan_adi, "") + kalip.format(gosterim)
 
 
+def _suresi_dolmus(kayit: KampanyaKaydi, bugun: date | None = None) -> bool:
+    """Kampanyanın bitiş tarihi geçmiş mi?
+
+    Tarihi olmayan kayıt «dolmuş» sayılmaz: `kampanya_bitis` 931 kaydın
+    361'inde dolu ve boş hücre bir bitiş beyanı DEĞİLDİR — bilinmeyeni
+    geçersiz saymak, `Alan.yok()` ile uydurma değeri ayıran kuralın tersi
+    olurdu.
+    """
+    bitis = kayit.kampanya_bitis
+    return bitis is not None and bitis < (bugun or date.today())
+
+
 def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     if not kayitlar:
         return Cevap(
@@ -1069,6 +1187,18 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     if bulunan == 0 and not odaklar:
         satirlar.append("- Bu kampanya için sayısal bilgi **Belirtilmemiş**.")
 
+    # SÜRESİ DOLMUŞ KAMPANYA GÜNCEL TEKLİF GİBİ SUNULMAZ (jüri havuzu 27).
+    #
+    # Tarih YAZILMAZ, yalnız durum söylenir: `kampanya_bitis` sayısal
+    # doğrulama kalkanının izin listesinde yok ve «31.12.2026» kalkanda tek
+    # bir sayı (31122026) olarak okunup cevabı bloklardı. Söylenmesi gereken
+    # şey zaten tarih değil, teklifin geçerli olmadığıdır.
+    if _suresi_dolmus(kayit):
+        satirlar.append(
+            "\n**Bu kampanyanın süresi dolmuş**; güncel teklif olarak "
+            "değerlendirilmemelidir."
+        )
+
     # Tüm satırlar yapısal alanlardan geliyor: tek YAPISAL parça yeterli.
     return Cevap(
         parcalar=[CevapParcasi("\n".join(satirlar), Koken.YAPISAL)],
@@ -1105,18 +1235,169 @@ _OLCUT_IPUCLARI: tuple[tuple[str, tuple[str, ...]], ...] = (
 )
 
 
-def _sorulan_olcutler(soru: str) -> list[str]:
-    """Soruda geçen BÜTÜN ölçütler — `_sorulan_olcut` bunların ilkidir.
+OLCUT_ALANLARI = frozenset(
+    {"kar_payi_orani", "vade_ay_max", "finansman_tutari_max", "odul_miktari", "masrafsiz_mi"}
+)
+"""Chatbot'un KIYASLADIĞI alanlar — şartname 5.7'nin beş kriteri."""
 
-    «Kâr payı oranı ve maksimum vade süresi nedir?» iki şey soruyor; tek alan
-    döndürmek, ikisinden birini taşıyan kaydı yeterli saymaya yol açıyordu.
+_ALAN_IZDUSUMU = {"tahsis_ucreti": "masrafsiz_mi", "taksit_sayisi": "vade_ay_max"}
+"""Sözlük alanı -> kıyas ölçütü. Sözlük şemanın TAMAMINI eşliyor; chatbot beş
+ölçüt kıyaslıyor. «Tahsis ücreti» sorusu masraf ölçütüne, «taksit» vadeye
+düşer — ikisi de aynı kararı besleyen ölçüler."""
+
+
+@lru_cache(maxsize=1)
+def _olcut_ipuclari() -> dict[str, str]:
+    """İpucu -> ölçüt. Sözlükten TÜRETİLİR, konuşma dili elle eklenir.
+
+    İki kaynak var ve ikisi de gerekli:
+
+      * `terim_sozlugu.alan_eslemesi()` — resmî terimler ve şema karşılıkları.
+        Dört kişi bu sözlüğe karşı çalışıyor; ikinci bir liste tutmak iki
+        listenin zamanla ayrışmasını garanti eder. Yan kazanç: «nakit iade»
+        ve «mil» sözlükte ödül alanına bağlı, elle yazılan listede yoktu.
+      * `_OLCUT_IPUCLARI` — sözlükte olmayan konuşma biçimleri («kaç ay»,
+        «faiz», «limit»). Sözlük terimleri resmîdir, kullanıcı öyle konuşmaz.
+    """
+    ipuclari: dict[str, str] = {}
+    for ad, alan in alan_eslemesi().items():
+        hedef = _ALAN_IZDUSUMU.get(alan, alan)
+        if hedef in OLCUT_ALANLARI:
+            ipuclari[ad] = hedef
+    for alan, sozcukler in _OLCUT_IPUCLARI:
+        for sozcuk in sozcukler:
+            ipuclari.setdefault(sozcuk, alan)
+    return ipuclari
+
+
+def _sorulan_olcutler(soru: str) -> list[str]:
+    """Soruda geçen BÜTÜN ölçütler — EN ÖZGÜL ipucu önce.
+
+    SIRA UZUNLUKTAN GELİR, elle yazılmış bir öncelikten değil. Eski kod sabit
+    sıradaki ilk eşleşeni alıyordu ve «vade» baskın çıkıyordu:
+
+        «48 ay vadeli taşıt finansmanında en düşük TOPLAM MALİYET…»
+          -> «Vade en düşük olan banka: 3 ay»
+
+    «toplam maliyet» on üç harf, «vade» dört. Uzun olan daha özgüldür ve
+    kullanıcının sorduğu şeydir; sıralamayı elle bakım gerektiren bir listeye
+    bırakmak, her yeni ipucunda aynı hatayı davet eder.
     """
     anahtar = arama_anahtari(soru)
-    return [
-        alan
-        for alan, ipuclari in _OLCUT_IPUCLARI
-        if any(ipucu in anahtar for ipucu in ipuclari)
+    eslesen = [
+        (len(ipucu), alan)
+        for ipucu, alan in _olcut_ipuclari().items()
+        if ipucu and ipucu in anahtar
     ]
+    sirali: list[str] = []
+    for _, alan in sorted(eslesen, key=lambda p: -p[0]):
+        if alan not in sirali:
+            sirali.append(alan)
+    return sirali
+
+
+# ---------------------------------------------------------------------------
+# SİSTEM SORULARI — soru bankalara değil BİZE soruluyor
+# ---------------------------------------------------------------------------
+
+MUHATAP_EKLERI = (
+    "yorsun", "yorsunuz", "diniz", "tiniz", "dunuz", "tunuz",
+    "misin", "misiniz", "musun", "musunuz",
+)
+"""İKİNCİ TEKİL/ÇOĞUL şahıs ekleri — sorunun MUHATABI sistemdir.
+
+BU BİR KONU LİSTESİ DEĞİL, BİR DİLBİLGİSİ KURALI. Jüri havuzunun altı
+sorusu (17 · 18 · 19 · 29 · 31 · 34) sistemin kendisi hakkında ve hepsi
+bize hitap ediyor:
+
+    «… filtreleyebiliyor MUSUN?»      «… nasıl ayrıştırıyorSUN?»
+    «… nasıl parse ettiNİZ?»          «… nasıl garanti ediyorSUNUZ?»
+
+Bunlar kampanya verisinden cevaplanamaz; sistem yine de rastgele kayıt
+dökümü veriyordu. Dört tanesi (26 · 32 · 33 · 35) TESADÜFEN reddediliyordu —
+alan sözcüğü içermedikleri için. Tutarsızlık jüriye kararsızlık gibi görünür.
+
+Ayrım ekten geldiği için bir konu listesi bakımı gerekmiyor ve veri
+soruları etkilenmiyor: «vade veriyor mu?» üçüncü şahıstır, «veriyor musun?»
+değildir. `arama_anahtari` ı→i, ü→u yaptığı için ekler burada tek biçimde
+yazılır."""
+
+OZ_GONDERIM_SOZCUKLERI = ("sistem", "chatbot", "mimari", "algoritma", "yaklasim")
+"""Sistemin KENDİSİNİ adlandıran sözcükler.
+
+Birincil işaret ektir; bu küme ekin bulunmadığı iki soru için var
+(«SİSTEM tahminde bulunuyor mu?», «CHATBOT bu durumu nasıl raporluyor?»).
+Tek başına yetmez — «nasıl/neden» sorusuyla birlikte ve soruda banka
+adlandırılmamışken sayılır, yoksa «ödeme sistemi olan kampanya» gibi meşru
+ifadeler kapsam dışına düşerdi.
+
+Modül adlarından türetmek denendi ve BIRAKILDI: `comparison/karsilastirma`
+modülünün adı kullanıcının en sık yazdığı sözcüktür ve «Kuveyt Türk ile
+Albaraka karşılaştırması» sistem sorusu sayılırdı."""
+
+
+YONTEM_SORULARI = ("nasil", "neden", "niye")
+"""Yöntem soran soru sözcükleri — «nasıl yapıyorsunuz?»."""
+
+VERI_ISTEGI_ISARETLERI = ("en", "sirala", "listele", "karsilastir", "kiyasla")
+"""İkinci şahıs kipinde gelen ama VERİ İSTEYEN sorular.
+
+Şahıs eki tek başına yetmiyor — Türkçe'de kibar istek de ikinci şahıstır:
+
+    «… kampanyalarını EN avantajlıdan EN dezavantajlıya doğru SIRALAr mısın?»
+
+Bu bir kampanya sıralamasıdır, sistem sorusu değil; ilk denemede jüri
+havuzunun 11. maddesi tam bu yüzden yanlışlıkla dokümantasyona
+yönlendiriliyordu. Ayırt edici olan kip değil, İSTENEN ŞEY: sıralanacak bir
+ölçüt varsa soru veriye sorulmuştur."""
+
+
+def sistem_sorusu_mu(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
+    anahtar = arama_anahtari(soru)
+    sozcukler = anahtar.replace("?", " ").split()
+    if any(sozcuk.endswith(MUHATAP_EKLERI) for sozcuk in sozcukler):
+        # Kibar istek mi, sistem sorusu mu? Sıralanacak bir ölçüt varsa veri.
+        # SÖZCÜK SINIRI ŞART: «geçEN kâr payı oranları» ifadesinde «en» alt
+        # dize olarak bulunuyordu ve 17. madde veri isteği sanılıyordu.
+        # Aynı hata ürün sözlüğünde «ev»in «ters çEVrilir» içinde bulunmasıydı.
+        siralama_istegi = any(
+            terim_gecer(anahtar, isaret) for isaret in VERI_ISTEGI_ISARETLERI
+        )
+        # «NASIL» YÖNTEMİ SORAR, İSTEK SORMAZ. İkisi de ikinci şahıstır:
+        #     «kampanyaları sıralar mısın?»        -> veri isteği
+        #     «kampanyaları nasıl sıralıyorsunuz?» -> yöntem sorusu
+        # Ayrım kipte değil, soru sözcüğünde.
+        yontem_sorusu = any(terim_gecer(anahtar, s) for s in YONTEM_SORULARI)
+        return not (siralama_istegi and not yontem_sorusu)
+    if not any(terim_gecer(anahtar, ad) for ad in OZ_GONDERIM_SOZCUKLERI):
+        return False
+    if not any(terim_gecer(anahtar, ipucu) for ipucu in YONTEM_SORULARI):
+        return False
+    return not _bankalari_bul(soru, kayitlar)
+
+
+def _sistem_cevabi() -> Cevap:
+    """«Bu bir sistem sorusu» — kampanya verisinden cevaplanmaz.
+
+    Kibar ret DEĞİL, DOĞRU ADRES: soru meşru ve cevabı depoda yazılı, ama
+    kampanya kayıtlarında değil. Jüri paneli bu soruları sorar ve cevabı
+    ekipten bekler; chatbot'un yapması gereken, uydurmak yerine kaynağı
+    göstermektir.
+    """
+    return Cevap(
+        parcalar=[CevapParcasi(
+            "Bu soru sistemin **kendi işleyişi** hakkında; kampanya "
+            "verisinden cevaplanamaz. Uydurmak yerine kaynağı göstereyim — "
+            "cevabı depoda yazılı:\n"
+            "- Mimari ve katmanlar: `docs/MIMARI.md`\n"
+            "- Şartname uyumu ve kanıtlar: `docs/SARTNAME_UYUM.md`\n"
+            "- Tasarım kararları ve gerekçeleri: `docs/kararlar/`\n"
+            "- Terminoloji: `docs/TERIM_SOZLUGU.md`\n"
+            "- Ölçüm sonuçları: `docs/SONUCLAR.md`",
+            Koken.DUZ,
+        )],
+        niyet=Niyet.KAPSAM_DISI,
+    )
 
 
 def _sorulan_olcut(soru: str) -> str | None:
@@ -1136,11 +1417,8 @@ def _sorulan_olcut(soru: str) -> str | None:
     Ölçüt bulunamazsa None döner ve cevap eski genel döküm biçimini korur —
     «hangi banka daha iyi?» gibi ölçüt belirtmeyen sorular için doğrusu odur.
     """
-    anahtar = arama_anahtari(soru)
-    for alan, ipuclari in _OLCUT_IPUCLARI:
-        if any(ipucu in anahtar for ipucu in ipuclari):
-            return alan
-    return None
+    olcutler = _sorulan_olcutler(soru)
+    return olcutler[0] if olcutler else None
 
 
 # SORULAN UÇ — «daha yüksek mi?» ile «daha düşük mü?» aynı ölçütün İKİ UCUDUR.
@@ -1463,6 +1741,107 @@ _DEGER_IPUCLARI = ("kac", "ne kadar", "hangi banka", "hangi bankada", "hangisi")
 """Bir SAYI ya da BANKA isteyen ipuçları — «nedir» geçse bile tanım sorusu değil."""
 
 
+def _sozluk_parcasi(govde: str) -> CevapParcasi:
+    """Sözlükten gelen metni kalkana uygun parçaya çevirir.
+
+    KÖKEN `SISTEM`: sözlükteki sayılar («%15 üstü aylık oran değildir») bir
+    kampanya kaydında değil, kendi belgemizde duruyor. `YAPISAL` ölçütü
+    («kayıtta birebir karşılığı olmalı») meşru bir tanımı bloklardı. Sayılar
+    `hesap` içinde beyan edilir ve sözlük dosyasından yeniden üretilebilir —
+    `Gerekce.sayilar` ile aynı refleks.
+    """
+    return CevapParcasi(
+        govde,
+        Koken.SISTEM,
+        hesap={
+            f"sozluk_{i}": deger
+            for i, (_, deger) in enumerate(_metindeki_sayilar(govde))
+        },
+    )
+
+
+def _ozel_olcut(soru: str) -> tuple[str, object] | None:
+    """Sorulan ölçüt, sözlüğün ÖZEL olarak işaretlediği bir ölçüt mü?
+
+    Sözlük iki şeyi ayrıca beyan ediyor ve ikisi de sıralanamaz:
+
+      * KARIŞAN — «`kar_payi_orani` ile KARIŞTIRILMAZ». Katılma hesabının
+        kâr paylaşım oranı finansman oranı değildir; şemada karşılığı yok.
+        Sıralamak, sözlüğün ayırdığı iki kavramı birleştirmek olurdu.
+      * HESAPLANAN — «tek alan değil, hesaplanır». Finansman maliyeti bir
+        sütun değil `toplam_maliyet()` formülüdür; anapara ve vade ister.
+
+    Normal bir ölçüt ipucu daha uzunsa o kazanır: «kâr payı oranı» sorusu
+    «kâr payı dağıtım oranı» beyanına düşmemeli.
+    """
+    anahtar = arama_anahtari(soru)
+    adaylar = [
+        (len(ad), tur, terim)
+        for kaynak, tur in (
+            (karistirilan_olcutler(), "karisan"),
+            (hesaplanan_olcutler(), "hesaplanan"),
+        )
+        for ad, terim in kaynak.items()
+        if ad in anahtar
+    ]
+    if not adaylar:
+        return None
+    en_uzun_normal = max(
+        (len(ipucu) for ipucu in _olcut_ipuclari() if ipucu and ipucu in anahtar),
+        default=0,
+    )
+    uzunluk, tur, terim = max(adaylar, key=lambda a: a[0])
+    return (tur, terim) if uzunluk >= en_uzun_normal else None
+
+
+def _ozel_olcut_cevabi(soru: str) -> Cevap | None:
+    """Sıralanamayan ölçütü SIRALAMAK YERİNE beyan eder.
+
+    27 Ağustos, jüri havuzu 12. ve 14. madde:
+
+        «48 ay vadeli taşıt finansmanında en düşük TOPLAM MALİYET…»
+          -> «Vade en düşük olan banka: 3 ay»
+        «Katılma hesaplarında en yüksek KÂR PAYLAŞIM oranı?»
+          -> «Vade açısından Albaraka daha avantajlı: 120 ay»
+
+    İkisinde de sorulan ölçüt hiç tanınmıyor, sorudaki başka bir sözcük
+    ölçüt sanılıyordu. Tanımak ve «bunu şöyle sıralayamam» demek, yanlış
+    ölçütü sıralamaktan iyidir.
+    """
+    ozel = _ozel_olcut(soru)
+    if ozel is None:
+        return None
+    tur, terim = ozel
+
+    if tur == "karisan":
+        govde = (
+            f"**{terim.ad}** bu sistemde ayrı tutulan bir kavramdır — "
+            f"{terim.tanim} Sistemdeki durumu: {terim.karsilik}.\n\n"
+            "Bu ölçüt şemada ayrı bir alan olarak tutulmuyor, bu yüzden "
+            "bankalar arasında sıralayamıyorum."
+        )
+    else:
+        govde = (
+            f"**{terim.ad}** tek bir alan değil, hesaplanan bir ölçüttür: "
+            f"{terim.tanim} ({terim.karsilik}).\n\n"
+            "Hesap için **anapara ve vade** gerekiyor. Tutarı da söylerseniz "
+            "kampanyaları toplam geri ödemeye göre sıralayabilirim — örnek: "
+            "«mevcut müşteri, bir milyon TL, yüz yirmi ay konut finansmanı»."
+        )
+
+    return Cevap(
+        parcalar=[
+            _sozluk_parcasi(govde),
+            CevapParcasi(
+                "\nAyrım, projenin terim sözlüğünden alınmıştır "
+                "(`docs/TERIM_SOZLUGU.md`).",
+                Koken.DUZ,
+            ),
+        ],
+        niyet=Niyet.TANIM_SORGUSU,
+    )
+
+
 def _tanim_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap | None:
     """«Kâr payı nedir?» — tanım, kampanya değil.
 
@@ -1496,7 +1875,7 @@ def _tanim_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap | None:
     if _bankalari_bul(soru, kayitlar):
         return None
     anahtar = arama_anahtari(soru)
-    if any(ipucu in anahtar for ipucu in _DEGER_IPUCLARI):
+    if any(terim_gecer(anahtar, ipucu) for ipucu in _DEGER_IPUCLARI):
         return None
 
     terim = terim_bul(soru)
@@ -1507,14 +1886,9 @@ def _tanim_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap | None:
     if terim.karsilik and terim.karsilik != "—":
         satirlar.append(f"\nSistemdeki karşılığı: {terim.karsilik}")
 
-    govde = "\n".join(satirlar)
-    hesap = {
-        f"sozluk_{i}": deger
-        for i, (_, deger) in enumerate(_metindeki_sayilar(govde))
-    }
     return Cevap(
         parcalar=[
-            CevapParcasi(govde, Koken.SISTEM, hesap=hesap),
+            _sozluk_parcasi("\n".join(satirlar)),
             CevapParcasi(
                 "\nTanım, projenin terim sözlüğünden alınmıştır "
                 "(`docs/TERIM_SOZLUGU.md`, şartname madde beş nokta beş).",
@@ -1889,6 +2263,13 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     if tanim is not None:
         return tanim
 
+    # SIRALANAMAYAN ÖLÇÜT — sözlük onu ayrı tutuyor ya da formül olduğunu
+    # söylüyor. Yanlış bir sütunu sıralamaktansa beyan etmek (bkz.
+    # `_ozel_olcut_cevabi`).
+    ozel = _ozel_olcut_cevabi(soru)
+    if ozel is not None:
+        return ozel
+
     # VERİ SETİNİN KENDİSİ soruluyorsa kayıt dökümü değil, kapsam dönmeli.
     # Kapsam kapısından ÖNCE: «Veriler ne zaman toplandı?» sorusu hiçbir alan
     # sözcüğü taşımıyor ve kapıda kapsam dışı ilan ediliyordu, oysa jürinin
@@ -1896,6 +2277,14 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     # kapı burada gevşemiyor (bkz. `_KORPUS_DESENLERI`).
     if _korpus_sorusu_mu(soru):
         return _korpus_cevabi(kayitlar)
+
+    # SORU BANKALARA DEĞİL BİZE SORULUYORSA doğru adres dokümantasyondur.
+    # Kapsam kapısından ÖNCE: bu sorular zaten kapsam dışı sayılıyordu ama
+    # dördü tesadüfen, altısı hiç — ve reddedilenler «kibar ret» metnini
+    # alıyordu. Soru meşru, cevabı depoda; söylenmesi gereken şey nerede
+    # olduğudur (bkz. `_sistem_cevabi`).
+    if sistem_sorusu_mu(soru, kayitlar):
+        return _sistem_cevabi()
 
     # Alan dışı mı? Yasak listesi yerine DAYANAK aranıyor — gerekçe
     # `alan_disi_soru`'nun notunda.
@@ -1933,8 +2322,15 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
             niyet=Niyet.KAPSAM_DISI,
         )
 
+    # SEGMENT SORULUYOR AMA KORPUSTA YOK — rastgele kayıt yerine kapsam.
+    segment_yok = _segment_yok_cevabi(soru, kayitlar)
+    if segment_yok is not None:
+        return segment_yok
+
     ilgili = _bankalari_bul(soru, kayitlar) or kayitlar
     ilgili = _urun_filtrele(soru, ilgili)
+    # Segment adlandırılmışsa küme ona daralır (bkz. `_segment_filtrele`).
+    ilgili = _segment_filtrele(soru, ilgili) or ilgili
 
     # «… 500 ay veriyor mu?» — reddedilebilir bir iddia varsa önce o.
     dogrulama = _dogrulama_cevabi(soru, ilgili)

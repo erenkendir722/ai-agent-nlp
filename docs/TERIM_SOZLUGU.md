@@ -166,7 +166,7 @@ Katılım bankacılığının *neden* böyle çalıştığını açıklayan katm
 | **Özel cari hesap** | Kâr payı ödenmeyen, istendiğinde çekilebilen hesap. | `kampanya_turu = yatirim_urunu` | — |
 | **Havuz** | Katılma hesaplarının vade ve para birimine göre toplandığı fon kümesi. | — | — |
 | **Birim hesap değeri** | Havuzun günlük değeri; kâr payı dağıtımı bu değerin değişimiyle yapılır. | — | — |
-| **Kâr payı dağıtım oranı / katılım oranı** | Havuz kârının banka ile hesap sahibi arasındaki paylaşım yüzdesi. | `kar_payi_orani` ile KARIŞTIRILMAZ — finansman oranı değildir | ✓ |
+| **Kâr payı dağıtım oranı / katılım oranı / kâr paylaşım oranı** | Havuz kârının banka ile hesap sahibi arasındaki paylaşım yüzdesi. | `kar_payi_orani` ile KARIŞTIRILMAZ — finansman oranı değildir | ✓ |
 | **Kıymetli maden hesabı** | Altın veya gümüş cinsinden tutulan katılma ya da cari hesap. | `urun_turu`; `Birim` TL olmayabilir | — |
 | **TMSF güvencesi** | Katılım fonunun yasal limite kadar sigortalı olması. | — | — |
 | **Katılım endeksi** | Faizsiz bankacılık ölçütlerine göre taranmış hisse endeksi (Katılım 30 vb.). | `kampanya_turu = yatirim_urunu` | — |

@@ -175,11 +175,18 @@ def terimler(yol: Path | None = None) -> tuple[Terim, ...]:
 
 
 TANIM_IPUCLARI = (
-    "nedir", "ne demek", "ne anlama gel", "tanimi", "tanimla", "aciklar misin",
-    "aciklayabilir misin", "ne demektir", "farki ne", "farki nedir",
-    "arasindaki fark", "ne anlama geliyor",
+    "nedir", "ne demek", "ne demektir", "ne anlama gel",
+    "aciklar misin", "aciklayabilir misin",
+    "farki ne", "farki nedir", "arasindaki fark",
 )
-"""«… nedir?» — bir TANIM isteniyor, bir kampanya değil."""
+"""«… nedir?» — bir TANIM isteniyor, bir kampanya değil.
+
+YALNIZ SORU BİÇİMLERİ. «tanımı», «tanımla» ipucu olarak denendi ve
+BIRAKILDI: alt dize olarak «özel TANIMLAnmış kampanyalar nelerdir?»
+içinde bulunuyor ve o soruyu — bir kampanya listesi sorusunu — sözlük
+tanımına düşürüyordu (27 Ağustos, jüri havuzu 21. madde). «Tanımı nedir?»
+zaten «nedir» ile yakalanıyor; ikinci ipucu kazanç getirmeden yanlış
+pozitif üretiyordu."""
 
 
 def tanim_sorusu_mu(soru: str) -> bool:
@@ -244,8 +251,122 @@ def terim_bul(soru: str) -> Terim | None:
     return None
 
 
+# ---------------------------------------------------------------------------
+# Ölçüt eşlemesi — sözlük ŞEMAYA bağlıyor, biz de ondan okuyoruz
+# ---------------------------------------------------------------------------
+
+VETO_ISARETLERI = ("degil", "karistirilmaz", "veto", "sizmasin", "aranmaz")
+"""Sözlüğün «Sistemdeki karşılığı» sütununda BEYAN EDİLMİŞ olumsuzlamalar.
+
+Sütun her zaman bir kimlik kurmuyor; bazen tam tersini söylüyor:
+
+    | **Riba** | … | Kavramsal — `kar_payi_orani` faiz DEĞİLDİR |
+    | **Kâr payı dağıtım oranı** | … | `kar_payi_orani` ile KARIŞTIRILMAZ |
+    | **Erken ödeme tazminatı** | … | `kar_payi_orani` VETOSU |
+
+Alan adını körü körüne okuyan bir eşleme, sözlüğün AYIRDIĞI iki kavramı
+birleştirirdi — üstelik sözlüğün §10'u bu ikisini «karışanlar» tablosunda
+ayrıca uyarıyor. İşaretler dosyanın kendi diliyle yazılmış; yeni bir veto
+eklenirse aynı sözcüklerle yazılacaktır."""
+
+HESAPLANAN_ISARETI = "hesaplan"
+"""«tek alan değil, **hesaplanır**» — ölçüt bir sütun değil, bir FORMÜLDÜR.
+
+`Finansman Maliyeti` böyle: `toplam_maliyet()` anapara ve vade ister. Bu
+ölçüt sorulduğunda bir sütun sıralanamaz; eksik girdi SORULUR."""
+
+_KOD_ADI = re.compile(r"`([^`]+)`")
+
+
+def _ilk_beyan(karsilik: str) -> str:
+    """Karşılık sütununun İLK cümleciği — kimliği o kurar.
+
+    Sütun sık sık noktalı virgülle ayrılmış birden çok beyan taşıyor ve
+    ikisi farklı şeyler söylüyor:
+
+        | **Nakit iade** | … | `odul_miktari`; `kar_payi_orani` VETOSU |
+
+    Burada terim `odul_miktari`DİR ve ayrıca «kâr payı değildir» diye
+    uyarılır. Sütunun tamamında veto sözcüğü aramak, geçerli kimliği de
+    silerdi — ilk okuyuşta «nakit iade» ve «mil» tam bu yüzden ödül
+    ölçütünden düşmüştü.
+    """
+    return karsilik.split(";", 1)[0]
+
+
+def _alan_adi(karsilik: str) -> str | None:
+    """İlk beyandaki şema alanı adı. Yoksa None.
+
+    KÜÇÜK HARF ŞARTI: şema alanları `snake_case`, veto sabitleri
+    `BUYUK_HARF` (`MEVDUAT_URUNU`, `HESAP_ARACI_CIKTISI`). İkisi aynı sütunda
+    duruyor; ayrım yazım biçiminden okunur, ayrı bir liste tutulmaz.
+    """
+    for kod in _KOD_ADI.findall(_ilk_beyan(karsilik)):
+        ad = kod.split("=")[0].strip().split("(")[0].strip()
+        if ad.isidentifier() and ad.islower():
+            return ad
+    return None
+
+
+def _veto_mu(karsilik: str) -> bool:
+    anahtar = arama_anahtari(_ilk_beyan(karsilik))
+    return any(isaret in anahtar for isaret in VETO_ISARETLERI)
+
+
+@lru_cache(maxsize=1)
+def alan_eslemesi() -> dict[str, str]:
+    """Terim anahtarı -> şema alanı. YALNIZ kimlik kuranlar.
+
+    NEDEN SÖZLÜKTEN: ölçüt ipuçları chatbot'ta elle yazılıydı ve sabit
+    sırayla ilk eşleşen kazanıyordu. «48 ay vadeli taşıt finansmanında en
+    düşük TOPLAM MALİYET» sorusunda «vade» baskın çıkıp cevabı
+    «Vade en düşük olan banka: 3 ay» yapıyordu.
+
+    Sözlük bu eşlemeyi zaten tutuyor ve dört kişi ona karşı çalışıyor;
+    ikinci bir liste tutmak, iki listenin zamanla ayrışmasını garanti eder.
+    Yan kazanç: «nakit iade» ve «mil» gibi konuşma dilindeki karşılıklar
+    sözlükte var, elle yazılan listede yoktu.
+    """
+    return {
+        ad: alan
+        for terim in terimler()
+        if not _veto_mu(terim.karsilik) and (alan := _alan_adi(terim.karsilik))
+        for ad in terim.adlar
+    }
+
+
+@lru_cache(maxsize=1)
+def karistirilan_olcutler() -> dict[str, Terim]:
+    """Sözlüğün AYRI TUTMAYI beyan ettiği terimler: anahtar -> terim.
+
+    «Katılma hesaplarında en yüksek kâr paylaşım oranı?» sorusunda doğru
+    davranış, `kar_payi_orani` sütununu sıralamak değil, sözlüğün yazdığı
+    ayrımı söylemektir.
+    """
+    return {
+        ad: terim
+        for terim in terimler()
+        if _veto_mu(terim.karsilik) and _alan_adi(terim.karsilik)
+        for ad in terim.adlar
+    }
+
+
+@lru_cache(maxsize=1)
+def hesaplanan_olcutler() -> dict[str, Terim]:
+    """Sütun değil FORMÜL olan ölçütler: anahtar -> terim."""
+    return {
+        ad: terim
+        for terim in terimler()
+        if HESAPLANAN_ISARETI in arama_anahtari(terim.karsilik)
+        for ad in terim.adlar
+    }
+
+
 __all__ = [
     "SOZLUK_YOLU",
+    "alan_eslemesi",
+    "hesaplanan_olcutler",
+    "karistirilan_olcutler",
     "TANIM_IPUCLARI",
     "Terim",
     "tanim_sorusu_mu",

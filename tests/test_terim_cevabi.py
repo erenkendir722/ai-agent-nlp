@@ -92,7 +92,10 @@ def test_sartnamenin_bes_kavrami_da_okunuyor() -> None:
         ("kâr payı nedir", "Kâr Payı Oranı"),
         ("vade nedir", "Vade"),
         # en uzun tam geçiş kazanır: iki kavram karıştırılmamalı
-        ("kâr payı dağıtım oranı nedir", "Kâr payı dağıtım oranı / katılım oranı"),
+        (
+            "kâr payı dağıtım oranı nedir",
+            "Kâr payı dağıtım oranı / katılım oranı / kâr paylaşım oranı",
+        ),
         # eğik çizgi EŞ ANLAMLI yazımları ayırır
         ("dosya parası nedir", "Dosya masrafı / dosya parası"),
         # ön ekte en KISA kazanır — genel olan istenir
