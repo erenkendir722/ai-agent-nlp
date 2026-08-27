@@ -38,12 +38,12 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from src.depolama import tum_kayitlar  # noqa: E402
 from src.schema import ALAN_ADLARI, alan_etiketi  # noqa: E402
 from app.ui_utils import (  # noqa: E402
   format_bank_name,
   format_kategori,
   inject_custom_css,
+  kayitlari_yukle,
   ortak_kenar,
   tr_sayi,
 )
@@ -64,24 +64,7 @@ st.markdown(
 YAKIN_GUN = 7
 
 
-@st.cache_data(ttl=60)
-def _kayitlar():
-  return tum_kayitlar()
-
-
-try:
-  with st.spinner("Kampanya verisi okunuyor…"):
-    kayitlar = _kayitlar()
-except Exception as e:
-  st.error("Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
-  if st.session_state.get("dev_mode", False):
-    with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
-      st.code(str(e))
-  st.stop()
-
-if not kayitlar:
-  st.info("Görüntülenecek kampanya verisi bulunamadı. Önce `make crawl` ve `make extract` çalıştırın.")
-  st.stop()
+kayitlar = kayitlari_yukle()
 
 
 # ---------------------------------------------------------------------------

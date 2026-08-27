@@ -35,11 +35,12 @@ import streamlit as st  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.collector.toplayici import bankalari_yukle # noqa: E402
-from src.depolama import istatistikler, tum_kayitlar # noqa: E402
+from src.depolama import istatistikler # noqa: E402
 from app.ui_utils import (  # noqa: E402
   format_bank_name,
   format_kategori,
   inject_custom_css,
+  kayitlari_yukle,
   ortak_kenar,
   sonuclari_oku,
   tr_sayi,
@@ -56,9 +57,8 @@ ortak_kenar()
 
 
 @st.cache_data(ttl=60)
-def _veri():
-  kayitlar = tum_kayitlar()
-  return kayitlar, istatistikler()
+def _ozet():
+  return istatistikler()
 
 
 @st.cache_data(ttl=300)
@@ -104,25 +104,12 @@ for _satir_bas in range(0, len(HIZLI_MENU), 3):
 
 st.divider()
 
-try:
-  with st.status("Sistem verileri hazırlanıyor...", expanded=False) as status:
-    st.write("Orkestratör veritabanını tarıyor...")
-    kayitlar, ozet = _veri()
-    st.write("Banka kayıt defteri yükleniyor...")
-    bankalar = _bankalar()
-    status.update(label="Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
-except Exception as e:
-  st.error("Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
-  if st.session_state.get("dev_mode", False):
-    with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
-      st.write("Veritabanı bağlantısı reddedildi veya tablo şeması eksik.")
-      st.code(str(e))
-  st.stop()
-
-if not kayitlar:
-  st.info("Veri ambarı şu an boş. Orkestratör ajanı çalıştırarak katılım bankalarından veri toplayın.")
-  st.code("make crawl\nmake extract", language="bash")
-  st.stop()
+# `st.status` KALDIRILDI: tamamlanmış durum kutusu ekranda KALICI duruyor ve
+# «grafikler oluşturuluyor» diye bitmiş bir işi anlatmaya devam ediyordu.
+# Yükleme bitince yer tutan kutu bilgi değil gürültüdür.
+kayitlar = kayitlari_yukle()
+ozet = _ozet()
+bankalar = _bankalar()
 
 # ---------------------------------------------------------------------------
 # Üst göstergeler

@@ -31,7 +31,6 @@ from src.comparison.karsilastirma import ( # noqa: E402
   vade_tavsiyesi,
   uyarilar,
 )
-from src.depolama import tum_kayitlar # noqa: E402
 from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import HedefKitle, Kampanya  # noqa: E402
 from app.ui_utils import (  # noqa: E402
@@ -40,6 +39,7 @@ from app.ui_utils import (  # noqa: E402
   format_hedef_kitle,
   format_kategori,
   inject_custom_css,
+  kayitlari_yukle,
   ortak_kenar,
   sonuclari_oku,
   tr_sayi,
@@ -59,10 +59,7 @@ def _halusinasyon_metni() -> str:
 
 st.title("Bankalar Arası Karşılaştırma")
 
-kayitlar = tum_kayitlar()
-if not kayitlar:
-  st.warning("Veritabanı boş. `make crawl && make extract` çalıştırın.")
-  st.stop()
+kayitlar = kayitlari_yukle()
 
 # ---------------------------------------------------------------------------
 # Süzgeçler

@@ -26,10 +26,14 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili  # noqa: E402
-from src.depolama import kampanyalari_oku  # noqa: E402
 from src.rag.chatbot import YASAL_UYARI  # noqa: E402
 from src.schema import HedefKitle  # noqa: E402
-from app.ui_utils import format_hedef_kitle, inject_custom_css, ortak_kenar  # noqa: E402
+from app.ui_utils import (  # noqa: E402
+    format_hedef_kitle,
+    inject_custom_css,
+    kampanyalari_yukle,
+    ortak_kenar,
+)
 
 st.set_page_config(page_title="Müşteri Profili", page_icon="", layout="wide")
 inject_custom_css()
@@ -58,29 +62,7 @@ st.caption(
 )
 
 
-@st.cache_data(show_spinner=False)
-def _kampanyalar():
-    return list(kampanyalari_oku())
-
-
-try:
-    # `st.status` DEĞİL: tamamlanmış durum kutusu ekranda KALICI duruyordu ve
-    # «grafikler oluşturuluyor» diyordu — bu sayfada grafik yok. Yükleme bittikten
-    # sonra ekranda yer tutan bir kutu bilgi değil gürültüdür. `st.spinner`
-    # bitince kaybolur; veri zaten önbelleklendiği için ikinci çizimde hiç görünmez.
-    with st.spinner("Kampanya verisi okunuyor…"):
-        kampanyalar = _kampanyalar()
-except Exception as e:
-    st.error("Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
-    if st.session_state.get("dev_mode", False):
-        with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
-            st.write("Veritabanı bağlantısı reddedildi veya tablo şeması eksik.")
-            st.code(str(e))
-    st.stop()
-
-if not kampanyalar:
-    st.info("Görüntülenecek kampanya verisi bulunamadı. Önce `make crawl` ve `make extract` çalıştırın.")
-    st.stop()
+kampanyalar = kampanyalari_yukle()
 
 # ---------------------------------------------------------------------------
 # Girdi — ANA ALANIN ÜSTÜNDE (27 Ağustos)

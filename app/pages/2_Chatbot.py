@@ -16,10 +16,14 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.ajanlar.orkestrator import Orkestrator # noqa: E402
-from src.depolama import tum_kayitlar # noqa: E402
 from src.rag.chatbot import YASAL_UYARI, Niyet, sayi_goster # noqa: E402
 from src.rag.chatbot import _OLCUT_ETIKETLERI as OLCUT_ETIKETLERI # noqa: E402
-from app.ui_utils import inject_custom_css, ortak_kenar, uyarilari_goster # noqa: E402
+from app.ui_utils import (  # noqa: E402
+  inject_custom_css,
+  kayitlari_yukle,
+  ortak_kenar,
+  uyarilari_goster,
+)
 
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
 inject_custom_css()
@@ -32,10 +36,7 @@ st.caption(
   "doğrulama kalkanından geçer."
 )
 
-kayitlar = tum_kayitlar()
-if not kayitlar:
-  st.warning("Veritabanı boş. `make crawl && make extract` çalıştırın.")
-  st.stop()
+kayitlar = kayitlari_yukle()
 
 NIYET_ETIKETLERI = {
   Niyet.TEKIL_SORGU: ("①", "Tekil sorgu", "Yapısal veritabanı sorgusu"),

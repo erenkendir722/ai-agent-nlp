@@ -196,6 +196,101 @@ def format_alan_adi(alan_adi: str) -> str:
     return alan_etiketi(alan_adi) or alan_adi.replace("_", " ")
 
 
+@st.cache_data(ttl=60, show_spinner=False)
+def _kampanyalari_oku():
+    """Veritabanı okuması — ÖNBELLEKLİ.
+
+    Ölçüldü: 931 kaydın ilk okuması ~400 ms, sonraki ~90 ms. Karşılaştırma ve
+    Chatbot bu okumayı önbelleksiz yapıyordu; Karşılaştırma'daki dört kaydırıcı
+    her harekette sayfayı baştan koşturduğu için her tıklamada bedel ödeniyordu.
+    """
+    from src.depolama import tum_kayitlar
+
+    return tum_kayitlar()
+
+
+@st.cache_data(ttl=60, show_spinner=False)
+def _kampanya_nesnelerini_oku():
+    """Şema nesnesi olarak okuma — `Alan` ve `uygunluk` erişimi gerektiğinde.
+
+    `_kampanyalari_oku`dan AYRI tutuluyor çünkü döndürdükleri tip farklı:
+    biri düz satır (`KampanyaKaydi`), bu ise tam şema nesnesi (`Kampanya`).
+    Tek fonksiyona zorlamak, çağıranın hangi tipi aldığını belirsizleştirirdi.
+    """
+    from src.depolama import kampanyalari_oku
+
+    return list(kampanyalari_oku())
+
+
+def _veri_hatasi(hata: Exception) -> None:
+    """Okuma hatasının TEK sunumu — altı sayfa aynı cümleyi görsün."""
+    st.error("Kampanya verisine ulaşılamadı.")
+    st.caption("Veritabanı dosyası eksik ya da tablo şeması uyumsuz olabilir.")
+    if st.session_state.get("dev_mode", False):
+        with st.expander("Teknik teşhis"):
+            st.code(f"{type(hata).__name__}: {hata}")
+
+
+def _veri_yok(bos_mesaji: str | None) -> None:
+    """Boş veri durumunun TEK sunumu.
+
+    Terminal komutu YAZMAZ. Aynı işi yapan «Canlı Boru Hattı» ekranı var;
+    kullanıcıyı terminale göndermek gereksiz.
+    """
+    st.info(
+        bos_mesaji
+        or "Henüz kampanya verisi yok. **Canlı Boru Hattı** ekranından "
+        "toplama ve çıkarım çalıştırabilirsiniz."
+    )
+
+
+def kampanyalari_yukle(*, bos_mesaji: str | None = None):
+    """Şema nesnesi olarak yükler (`Alan`, `uygunluk` erişimi için)."""
+    try:
+        with st.spinner("Kampanya verisi okunuyor…"):
+            kampanyalar = _kampanya_nesnelerini_oku()
+    except Exception as hata:  # noqa: BLE001 — sebebi kullanıcıya gösteriliyor
+        _veri_hatasi(hata)
+        st.stop()
+
+    if not kampanyalar:
+        _veri_yok(bos_mesaji)
+        st.stop()
+
+    return kampanyalar
+
+
+def kayitlari_yukle(*, bos_mesaji: str | None = None):
+    """Kampanya kayıtlarını yükler; olmazsa sayfayı DURDURUR.
+
+    NEDEN ORTAK — 27 Ağustos'ta ölçüldü: aynı blok altı sayfada kopyalanmıştı ve
+    aynı durum için ÜÇ FARKLI cümle gösteriyordu:
+
+        «Yerel veritabanına ulaşılamadı veya tablo bulunamadı.»        3 sayfa
+        «Görüntülenecek kampanya verisi bulunamadı. Önce `make crawl`…» 2 sayfa
+        «Veritabanı boş. `make crawl && make extract` çalıştırın.»      2 sayfa
+
+    Kullanıcı hangi sayfada olduğuna göre başka cümle görüyordu. İkisi ayrıca
+    terminal komutu yazıyordu; oysa aynı işi yapan «Canlı Boru Hattı» ekranı
+    var — kullanıcıyı terminale göndermek gereksiz.
+
+    `st.stop()` burada çağrılır: çağıran sayfa veri yokken çizmeye devam
+    ederse boş listeyle hesap yapıp yanlış sıfırlar gösterir.
+    """
+    try:
+        with st.spinner("Kampanya verisi okunuyor…"):
+            kayitlar = _kampanyalari_oku()
+    except Exception as hata:  # noqa: BLE001 — sebebi kullanıcıya gösteriliyor
+        _veri_hatasi(hata)
+        st.stop()
+
+    if not kayitlar:
+        _veri_yok(bos_mesaji)
+        st.stop()
+
+    return kayitlar
+
+
 def uyarilari_goster(
     uyari_listesi,
     *,
