@@ -18,8 +18,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.extraction.uzlastirici import kampanya_cikar  # noqa: E402
 from src.rag.chatbot import alan_goster  # noqa: E402
-from src.schema import BIRIM_GOSTERIMLERI, HamKayit  # noqa: E402
-from app.ui_utils import format_kategori, inject_custom_css, ortak_kenar, sayfa_gezinme, sayfa_sonu # noqa: E402
+from src.schema import BIRIM_GOSTERIMLERI, METINSEL_ALANLAR, HamKayit  # noqa: E402
+from app.ui_utils import (  # noqa: E402
+  format_alan_adi,
+  format_kategori,
+  inject_custom_css,
+  ortak_kenar,
+  sayfa_gezinme,
+  sayfa_sonu,
+)
 
 st.set_page_config(page_title="Metin Analizi", page_icon="", layout="wide")
 inject_custom_css()
@@ -105,12 +112,125 @@ def _tablo_kur(kampanya):
 
 
 def _motor_rozet(x: str) -> str:
-  renk = {"KURAL": "#00BCD4", "LLM": "#2196F3", "HİBRİT": "#9C27B0", "HIBRIT": "#9C27B0"}
-  bg = renk.get(x, "#607D8B")
+  bg = MOTOR_RENKLERI.get(x, MOTOR_RENKLERI.get("HİBRİT") if x == "HIBRIT" else "#607D8B")
   return (
     f"<span style='background-color:{bg};color:white;padding:2px 6px;"
     f"border-radius:4px;font-weight:600;font-size:0.75rem;'>{x}</span>"
   )
+
+
+# Rozet renkleri TEK YERDE (lejant ile tablo aynı kaynaktan okur — ikisi
+# ayrışırsa lejant yalan söyler).
+MOTOR_RENKLERI = {"KURAL": "#00BCD4", "LLM": "#2196F3", "HİBRİT": "#9C27B0"}
+
+
+def _lejant() -> str:
+    """Renklerin ne anlama geldiği (2. madde).
+
+    Renk kodlaması vardı ama hiçbir yerde açıklanmıyordu: ilk kez bakan biri
+    mavi ile morun farkını tahmin etmek zorundaydı. Renkler `MOTOR_RENKLERI`
+    sözlüğünden geliyor, elle yazılmadı.
+    """
+    noktalar = "".join(
+        f"<span style='display:inline-flex;align-items:center;gap:5px;"
+        f"margin-right:14px;font-size:0.8rem;color:#B4B4BE;'>"
+        f"<span style='width:9px;height:9px;border-radius:50%;"
+        f"background:{renk};display:inline-block;'></span>{ad}</span>"
+        for ad, renk in MOTOR_RENKLERI.items()
+    )
+    return (
+        f"<div style='margin:2px 0 10px 0;'>{noktalar}"
+        "<span style='font-size:0.8rem;color:#8E8E99;'>Güven yüzdesinin "
+        "üzerine gelin — nasıl ölçüldüğü çıkar.</span></div>"
+    )
+
+
+def _guven_hucresi(oran: float) -> str:
+    """Güven yüzdesi — noktalı alt çizgi ve açıklama balonu (3. madde).
+
+    Düz alt çizgi «tıklanabilir bağlantı» izlenimi veriyordu. Noktalı çizgi
+    HTML'de kısaltma/açıklama işaretidir ve `cursor:help` ile birlikte
+    tıklanamayacağını söyler; lejant satırı da bunu yazıyla doğruluyor.
+    """
+    return (
+        "<span title='Modelin kendi bildirdiği güven; bağımsız kalibrasyon yok.' "
+        "style='cursor:help;text-decoration:underline dotted;"
+        f"text-underline-offset:3px;'>%{oran * 100:.0f}</span>"
+    )
+
+
+def _alan_ozeti(kampanya, alan_ismi: str) -> tuple[str, str, float] | None:
+    """Bir alanın (değer, yöntem, güven) üçlüsü — yoksa None."""
+    alan = getattr(kampanya, alan_ismi, None) if kampanya is not None else None
+    if not alan or getattr(alan, "yontem", "belirtilmemis") == "belirtilmemis":
+        return None
+    return _deger_yazi(alan_ismi, alan), str(alan.yontem).upper(), float(alan.guven)
+
+
+def _karsilastirma_ciz(kural_k, hibrit_k) -> None:
+    """Regex ve hibrit sonucu ALAN BAZINDA hizalı, yan yana (1. madde).
+
+    Eskiden iki tam tablo ALT ALTA çiziliyordu: kullanıcı «Yalnız regex»i
+    okuyor, kaydırıyor, «Hibrit sonuç»u okuyor ve ikisini kafasında
+    eşleştirmeye çalışıyordu. Karşılaştırmanın bütün gücü FARKTA — dil
+    modelinin neyi eklediği, hangi güveni yükselttiği. Dikey akışta o fark
+    kayboluyordu.
+
+    Katkı sütunu farkı ADLANDIRIR; okuyucunun iki sayıyı çıkarması gerekmez.
+    """
+    adlar = [
+        ad for ad in hibrit_k.model_fields
+        if ad not in _ATLANAN
+        and (_alan_ozeti(kural_k, ad) or _alan_ozeti(hibrit_k, ad))
+    ]
+    if not adlar:
+        return
+
+    satirlar = []
+    yeni_alan = guven_artan = 0
+    for ad in adlar:
+        k = _alan_ozeti(kural_k, ad)
+        h = _alan_ozeti(hibrit_k, ad)
+
+        if k is None and h is not None:
+            katki, yeni_alan = "<b style='color:#4FD1A0;'>dil modeli ekledi</b>", yeni_alan + 1
+        elif k is not None and h is not None and h[2] > k[2] + 0.001:
+            katki = f"<b style='color:#4FD1A0;'>güven +{(h[2] - k[2]) * 100:.0f} puan</b>"
+            guven_artan += 1
+        elif k is not None and h is None:
+            katki = "<span style='color:#D98A8A;'>hibritte düştü</span>"
+        else:
+            katki = "<span style='color:#8E8E99;'>değişmedi</span>"
+
+        # SERBEST METIN ISARETI (4. madde). Bu alanlar musteriye dogrudan
+        # soylenecek cumleler ve dil modeli uretiyor — sayisal alanlardan
+        # daha riskliler. Liste elle yazilmadi: `METINSEL_ALANLAR` semadan.
+        isaret = " ⚠" if ad in METINSEL_ALANLAR and h and h[1] != "KURAL" else ""
+
+        satirlar.append({
+            "Alan": format_alan_adi(ad) + isaret,
+            "Yalnız regex": (
+                f"{k[0]} · {_motor_rozet(k[1])} {_guven_hucresi(k[2])}" if k else
+                "<span style='color:#6E6E78;'>—</span>"
+            ),
+            "Hibrit (kural + dil modeli)": (
+                f"{h[0]} · {_motor_rozet(h[1])} {_guven_hucresi(h[2])}" if h else
+                "<span style='color:#6E6E78;'>—</span>"
+            ),
+            "Katkı": katki,
+        })
+
+    st.subheader("Regex ile hibrit yan yana")
+    st.caption(
+        f"Dil modeli **{yeni_alan}** alanı regex'in hiç bulamadığı yerden ekledi, "
+        f"**{guven_artan}** alanda güveni yükseltti. ⚠ işaretli alanlar serbest "
+        "metindir: müşteriye söylenmeden önce kaynak alıntısıyla doğrulayın."
+    )
+    st.markdown(_lejant(), unsafe_allow_html=True)
+    st.markdown(
+        pd.DataFrame(satirlar).to_html(escape=False, index=False),
+        unsafe_allow_html=True,
+    )
 
 
 def _sonucu_ciz(kampanya, rapor_iz, ham, baslik: str):
@@ -129,9 +249,11 @@ def _sonucu_ciz(kampanya, rapor_iz, ham, baslik: str):
     df["Güven"] = df["Güven"].map(
       lambda g: (
         "<span title='Modelin kendi bildirdiği güven; bağımsız kalibrasyon yok.' "
-        f"style='cursor:help;text-decoration:underline dotted;'>{g}</span>"
+        "style='cursor:help;text-decoration:underline dotted;"
+        f"text-underline-offset:3px;'>{g}</span>"
       )
     )
+    st.markdown(_lejant(), unsafe_allow_html=True)
     st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)
     with st.expander("Yapısal JSON"):
       st.json(clean_json)
@@ -198,29 +320,49 @@ ham = st.session_state.get("analiz_metin")
 if ham:
   kelime = len(ham.split())
   iz = st.session_state.get("analiz_iz") or {}
-  toplam = iz.get("toplam_sure")
+
+  # SURE DOKUMU AYRISTIRILDI (5. madde). Eskiden «hibrit 3,45 s · LLM 3,45 s»
+  # yaziyordu: iki sayi birebir ayni oldugu icin kural motorunun suresi
+  # gorunmuyor, «milisaniye» iddiasi metinde kaliyordu. `kural_suresi` zaten
+  # OLCULUYOR (`uzlastirici` trace'i) — yalnizca ekrana yazilmiyordu.
+  kural_s = iz.get("kural_suresi")
   llm_s = iz.get("llm_toplam_suresi")
+  toplam = iz.get("toplam_sure")
+
+  def _sure(saniye: float) -> str:
+    return f"{saniye * 1000:.0f} ms" if saniye < 1 else f"{saniye:.2f} s"
+
   parcalar = [f"**{kelime} kelime**"]
-  if toplam is not None:
-    parcalar.append(f"hibrit **{toplam:.2f} s**")
+  if kural_s is not None:
+    parcalar.append(f"kural **{_sure(kural_s)}**")
   if llm_s is not None:
-    parcalar.append(f"LLM **{llm_s:.2f} s**")
+    parcalar.append(f"dil modeli **{_sure(llm_s)}**")
+  if toplam is not None:
+    parcalar.append(f"toplam **{_sure(toplam)}**")
   st.info(" · ".join(parcalar) + " · maliyet iddiası yok (on-prem / EVREN kotası)")
 
-  if st.session_state.get("analiz_kural") is not None:
+  kural_k = st.session_state.get("analiz_kural")
+  hibrit_k = st.session_state.get("analiz_kampanya")
+
+  if kural_k is not None and hibrit_k is not None:
     st.divider()
-    _sonucu_ciz(
-      st.session_state.analiz_kural,
-      st.session_state.get("analiz_kural_iz"),
-      ham,
-      "Yalnız regex",
-    )
-  if st.session_state.get("analiz_kampanya") is not None:
-    _sonucu_ciz(
-      st.session_state.analiz_kampanya,
-      iz,
-      ham,
-      "2. Hibrit sonuç (kural + LLM + uzlaştırıcı)",
-    )
+    _karsilastirma_ciz(kural_k, hibrit_k)
+
+  # Tam dokumler ASAGIDA ve SEKMEDE: yan yana tablo «ne degisti» sorusunu
+  # cevapliyor, bunlar «her alanin kaniti ne» sorusunu. Ikincisi daha uzun
+  # ve daha az sıklıkla soruluyor.
+  if kural_k is not None or hibrit_k is not None:
+    st.divider()
+    sk_hibrit, sk_regex = st.tabs(["Hibrit sonuç — tam döküm", "Yalnız regex — tam döküm"])
+    with sk_hibrit:
+      if hibrit_k is not None:
+        _sonucu_ciz(hibrit_k, iz, ham, "Kural + dil modeli + uzlaştırıcı")
+      else:
+        st.info("Hibrit çıkarım henüz koşmadı.")
+    with sk_regex:
+      if kural_k is not None:
+        _sonucu_ciz(kural_k, st.session_state.get("analiz_kural_iz"), ham, "Yalnız kural motoru")
+      else:
+        st.info("Kural motoru sonucu yok.")
 
 sayfa_sonu()

@@ -16,7 +16,7 @@ işlenmiş kampanya
 katılım bankası (faal olanın tamamı)
 16
 alanlı kanıt zinciri
-1630
+1636
 geçen test
 0
 ticari dış servis bağımlılığı

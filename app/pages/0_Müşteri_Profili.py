@@ -213,6 +213,70 @@ elif disarida:
         "maliyet hesaplanamadı."
     )
 
+# EN AVANTAJLI TEKLIF — «pasif rapor» degil «aktif asistan» (2. inceleme).
+#
+# Genel Bakis'taki aksiyon kartlari ayni isi yapiyor: veriyi okuyup NE
+# YAPILMASI GEREKTIGINI soyluyor. Burada karsiligi, listenin tepesinde
+# kullanicinin musteriye kuracagi cumleyi hazir vermektir:
+#
+#     «X bankasi en dusuk maliyeti veriyor — sıradakinden N TL ucuz.»
+#
+# Fark HESAPLANIR, iddia edilmez. Tek teklif varsa fark cumlesi hic cikmaz:
+# kiyaslanacak ikinci kalem yokken «en ucuz» demek bos bir ustunluk iddiasidir.
+if gosterilecek:
+    _en_iyi = gosterilecek[0]
+    _kazanan_kampanya = kayit_dizini.get(_en_iyi.kampanya_id)
+    _fark = None
+    if len(gosterilecek) > 1:
+        _fark = (
+            gosterilecek[1].maliyet["toplam_geri_odeme"]
+            - _en_iyi.maliyet["toplam_geri_odeme"]
+        )
+
+    with st.container(border=True):
+        _o1, _o2, _o3 = st.columns([4.1, 3.5, 1.7])
+        with _o1:
+            st.markdown(
+                '<div class="kl-kart-etiket">En düşük toplam maliyet</div>'
+                f'<div class="kl-kart-ad">{_en_iyi.banka_adi}'
+                '<span class="kl-rozet">en avantajlı</span></div>',
+                unsafe_allow_html=True,
+            )
+            if _fark and _fark > 0:
+                st.markdown(
+                    '<div class="kl-kart-alt">Sıradaki teklife göre '
+                    f"<b>{_tl(_fark)}</b> daha az geri ödeme.</div>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(
+                    '<div class="kl-kart-alt">Maliyeti hesaplanabilen tek '
+                    "teklif bu; kıyaslanacak ikinci kalem yok.</div>",
+                    unsafe_allow_html=True,
+                )
+        with _o2:
+            _d1, _d2 = st.columns(2)
+            _d1.markdown(
+                '<div class="kl-kart-etiket">Toplam geri ödeme</div>'
+                f'<div class="kl-kart-deger">{_tl(_en_iyi.maliyet["toplam_geri_odeme"])}</div>',
+                unsafe_allow_html=True,
+            )
+            _d2.markdown(
+                '<div class="kl-kart-etiket">Aylık taksit</div>'
+                f'<div class="kl-kart-deger">{_tl(_en_iyi.maliyet["aylik_taksit"])}</div>',
+                unsafe_allow_html=True,
+            )
+        with _o3:
+            if _kazanan_kampanya is not None:
+                st.link_button(
+                    "Devam et",
+                    _kazanan_kampanya.kaynak_url,
+                    use_container_width=True,
+                    type="primary",
+                )
+
+    st.markdown("**Diğer uygun teklifler**")
+
 for sira, sonuc in enumerate(gosterilecek[:15], 1):
     kampanya = kayit_dizini.get(sonuc.kampanya_id)
     with st.container(border=True):

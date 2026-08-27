@@ -112,6 +112,7 @@ with f2:
       bankalar,
       default=_rakipler,
       format_func=format_bank_name,
+      placeholder="Banka seçin",
       help="Kendi bankanız listeden çıkarıldı; karşılaştırmaya ayrıca katılır.",
     )
 
@@ -122,7 +123,11 @@ with st.expander("Gelişmiş Filtreler (Piyasa Özeti)", expanded=False):
     arama_metni = st.text_input("Serbest Metin Arama (Ad, içerik, avantaj)")
     
     hedef_kitleler = [h.value for h in HedefKitle]
-    secili_hedef_kitle = st.multiselect("Hedef Kitle (Segment İzolasyonu)", hedef_kitleler)
+    # Streamlit'in varsayilan «Choose an option» metni Turkce arayuzde
+    # kaliyordu (27 Agu, 2. inceleme).
+    secili_hedef_kitle = st.multiselect(
+      "Hedef Kitle (Segment İzolasyonu)", hedef_kitleler, placeholder="Seçim yapın"
+    )
   with c2:
     tarih_filtresi = st.date_input("Geçerlilik Tarihi (Bu tarihten önce bitenleri gizle)", value=datetime.date.today())
     
@@ -382,7 +387,8 @@ with _sk_maliyet:
       "Karşılaştırmak istediğiniz kampanyaları seçin (En fazla 3)",
       options=list(kampanya_secenekleri.keys()),
       default=list(kampanya_secenekleri.keys())[:2],
-      max_selections=3
+      max_selections=3,
+      placeholder="Kampanya seçin",
     )
 
     if secilen_adlar:
@@ -457,16 +463,59 @@ with _sk_maliyet:
           elif tahsis:
             st.caption(f"Tahsis ücreti dâhil: {tahsis:,.0f} TL".replace(",", "."))
         
-          # Görsel Maliyet Dağılımı (Plotly Donut)
-          df_donut = pd.DataFrame({
-            "Kategori": ["Anapara", "Kâr Payı", "Masraflar"],
-            "Tutar": [ortak_anapara, sonuc['toplam_kar_payi'], tahsis]
-          })
-          fig = px.pie(df_donut, values='Tutar', names='Kategori', hole=0.6, 
-                 color_discrete_sequence=['#1f77b4', '#aec7e8', '#ff7f0e'])
-          fig.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=150)
-          st.plotly_chart(fig, use_container_width=True, key=f"donut_karsilastirma_{i}")
+          # HALKA GRAFIK — LEJANT ACILDI (27 Agu, 2. inceleme).
+          #
+          # `showlegend=False` idi: ekranda yalniz «%0» ve «%100» yaziyor,
+          # dilimlerin neyi temsil ettigi HICBIR YERDE yazmiyordu. Kullanici
+          # anapara/kar payi ayrimi mi, odenen/kalan mi bilemiyordu. Ustelik
+          # masraf sifirken «%0» diye bir dilim etiketi cikiyor, grafik iki
+          # anlamsiz sayiya donuyordu.
+          #
+          # Sifir kalemler artik hic cizilmiyor; kalanlar adiyla ve tutariyla
+          # etiketli.
+          _kalemler = [
+            ("Anapara", ortak_anapara, "#2E7D9A"),
+            ("Kâr payı", sonuc["toplam_kar_payi"], "#4FD1A0"),
+            ("Masraflar", tahsis, "#D9A441"),
+          ]
+          _dolu = [(ad, tutar, renk) for ad, tutar, renk in _kalemler if tutar and tutar > 0]
+          if _dolu:
+            fig = px.pie(
+              pd.DataFrame({
+                "Kategori": [a for a, _, _ in _dolu],
+                "Tutar": [t for _, t, _ in _dolu],
+              }),
+              values="Tutar", names="Kategori", hole=0.6,
+              color_discrete_sequence=[r for _, _, r in _dolu],
+            )
+            fig.update_traces(
+              textposition="inside", textinfo="percent",
+              hovertemplate="<b>%{label}</b><br>%{value:,.0f} TL<br>%{percent}<extra></extra>",
+            )
+            fig.update_layout(
+              showlegend=True,
+              legend={"orientation": "h", "y": -0.12, "font": {"size": 10}},
+              margin={"t": 6, "b": 6, "l": 6, "r": 6},
+              height=190,
+              template="plotly_dark",
+            )
+            st.plotly_chart(fig, use_container_width=True, key=f"donut_karsilastirma_{i}")
+            st.caption("Toplam geri ödemenin dağılımı.")
         
+      # «NEDEN AYNI RAKAM?» (27 Agu, 2. inceleme). Farkli urunler (konut ve
+      # tasit) ayni tutar ve vadede birebir ayni maliyeti verebiliyor —
+      # dogrudur, cunku hesap YALNIZ kar payi oranina, tutara ve vadeye
+      # bakar; urun turu hesaba girmez. Ama kullanici bunu bilmedigi icin
+      # ayni sayiyi bir hata saniyordu. Not yalniz GERCEKTEN esitlik varken
+      # cikar; her zaman yazsaydi gurultu olurdu.
+      _gecerliler = [m for m in maliyet_sonuclari if m != float("inf")]
+      if len(_gecerliler) > 1 and len({round(m, 2) for m in _gecerliler}) < len(_gecerliler):
+        st.caption(
+          "Bazı kampanyalar birebir aynı maliyeti veriyor: toplam geri ödeme "
+          "yalnız **kâr payı oranı, tutar ve vadeden** hesaplanır — ürün türü "
+          "(konut, taşıt) hesaba girmez. Oranları aynıysa maliyetleri de aynıdır."
+        )
+
       # Kazananı Vurgulama
       gecerli_maliyetler = [m for m in maliyet_sonuclari if m != float('inf')]
       if gecerli_maliyetler:
@@ -725,15 +774,30 @@ st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
 # Yapay Zeka Battlecard (Biz vs Onlar)
 # ---------------------------------------------------------------------------
 if benim_bankam != "(Seçilmedi)" and sirali:
-  st.subheader("Yapay Zeka Battlecard: Biz vs Onlar")
-  st.caption(
-    "Serbest metin özetidir — sayısal iddia tablodaki yapısal kayıtlardan gelir. "
-    "Hava boşluğu demosunda EVREN yoksa bu düğme çalışmaz; sıra tabloda kalır."
+  st.subheader("Rakip analizi taslağı (yapay zekâ)")
+
+  # ROZET BUYUK VE ONDE (27 Agu, 2. inceleme). Sayfadaki HER SEY olculmus
+  # yapisal veriden gelir; burasi tek istisnadir — dil modeli serbest metin
+  # yazar ve sayisal kalkandan GECMEZ. Ayrimin kucuk bir sari kutuda
+  # kalmasi, juri onunde «bu da mi olculmus?» sorusunu doguruyordu.
+  #
+  # «EVREN API» adi dugmeden kalkti: kullaniciya hangi servise gidildigi
+  # degil, ciktinin ne oldugu lazim. Servis adi ipucunda duruyor.
+  st.markdown(
+    '<div style="border-left:3px solid #D9A441;background:rgba(217,164,65,0.10);'
+    'padding:10px 14px;border-radius:8px;margin-bottom:10px;">'
+    '<span style="background:#D9A441;color:#1A1A1F;font-weight:700;font-size:0.72rem;'
+    'padding:2px 8px;border-radius:20px;letter-spacing:0.4px;">AI ÜRETİMİ — DOĞRULANMAMIŞ</span>'
+    '<div style="margin-top:7px;color:#C4C4CE;font-size:0.88rem;line-height:1.55;">'
+    "Bu bölüm sayfadaki <b>tek</b> serbest metin çıktısıdır ve sayısal doğrulama "
+    "kalkanından <b>geçmez</b>. Satış argümanı taslağı olarak kullanın; oran, vade "
+    "ve maliyet için yukarıdaki tabloyu esas alın.</div></div>",
+    unsafe_allow_html=True,
   )
-  st.warning(
-    "Bu çıktı sayısal doğrulama kalkanından geçmez. Oran ve vade için yukarıdaki tabloyu kullanın."
-  ) 
-  if st.button("Battlecard Üret (EVREN API)"):
+  if st.button(
+    "Rakip analizi taslağı üret",
+    help="Dil modeli (EVREN) çağrılır. Hava boşluğu demosunda çalışmaz; sıra tabloda kalır.",
+  ):
     biz_data = [k for k in sirali if format_bank_name(k.banka_adi) == format_bank_name(benim_bankam)]
     onlar_data = [k for k in sirali if format_bank_name(k.banka_adi) != format_bank_name(benim_bankam) and format_bank_name(k.banka_adi) in [format_bank_name(b) for b in secili_bankalar]]
     
