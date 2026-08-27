@@ -521,3 +521,75 @@ def test_maliyet_hesaplanabiliyorsa_baslik_degismez(ork) -> None:
         "mevcut müşteri 1.000.000 TL 120 ay", [_kampanya(oran=2.5, vade=120)]
     )
     assert "**Toplam maliyete göre sıralı:**" in cevap.metin
+
+
+# ---------------------------------------------------------------------------
+# 27 Ağustos düzeltmeleri — jüri havuzu 9. madde
+# ---------------------------------------------------------------------------
+
+
+def test_manset_sorulan_olcutu_dogru_uctan_cevaplar(ork) -> None:
+    """«En DÜŞÜK oran» sorusu en düşüğü söylemeli — yön çevrimi sessiz bozuluyordu.
+
+    `_sorulan_yon` «dusuk» der, `ALAN_YONLERI` «dusuk_iyi». İkisi
+    `_yon_tercihi` ile birleşiyor; kopyalanmadığında karşılaştırma tutmuyor
+    ve manşete EN PAHALI kayıt çıkıyordu.
+    """
+    cevap, _ = ork.calistir(
+        SORU, kampanyalar=[_konut("Ucuzcu", 1.50), _konut("Pahalici", 2.95)]
+    )
+
+    assert "en düşük kâr payı oranı: Ucuzcu" in cevap.metin
+    assert "Pahalici — aylık" not in cevap.metin.split("\n")[0]
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
+
+
+def test_manset_yon_cozulemezse_yazilmaz(ork) -> None:
+    """Ölçüt yoksa manşet de yok — uydurulmuş yön yanlış kaydı vitrine koyar."""
+    cevap, _ = ork.calistir(
+        "1.000.000 TL, 120 ay konut finansmanı", kampanyalar=[_konut("Tek", 1.89)]
+    )
+    assert "arasında en" not in cevap.metin
+
+
+def test_liste_kirpmasi_beyan_edilir(ork) -> None:
+    """«10 kampanya uygun» deyip beş göstermek beyansız kalamaz."""
+    from src.ajanlar.orkestrator import LISTE_UST_SINIRI
+
+    kampanyalar = [_konut(f"Banka{i}", 1.5 + i / 10) for i in range(LISTE_UST_SINIRI + 3)]
+    cevap, _ = ork.calistir(SORU, kampanyalar=kampanyalar)
+
+    assert f"kalan {3} kampanya gösterilmiyor" in cevap.metin
+    assert f"**{LISTE_UST_SINIRI} kampanya** listeleniyor" in cevap.metin
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
+
+
+def test_kirpma_yoksa_beyan_da_yok(ork) -> None:
+    """Sınırın altındaki liste için «gösterilmiyor» cümlesi yazılmaz."""
+    cevap, _ = ork.calistir(SORU, kampanyalar=[_konut("Tek", 1.89)])
+    assert "gösterilmiyor" not in cevap.metin
+
+
+def test_banka_sayisi_kampanya_sayisindan_ayri_yazilir(ork) -> None:
+    """Aynı bankanın üç kampanyası «üç banka» sanılmamalı."""
+    cevap, _ = ork.calistir(
+        SORU,
+        kampanyalar=[
+            _konut("Aynı Banka", 1.5).model_copy(update={"kampanya_id": "0299-a"}),
+            _konut("Aynı Banka", 1.6).model_copy(update={"kampanya_id": "0299-b"}),
+        ],
+    )
+    assert "**2 kampanya** uygun (1 banka)" in cevap.metin
+
+
+def test_manset_kapsam_disi_orani_vitrine_koymaz(ork) -> None:
+    """ADR 020: kart promosyonunun %0'ı «en düşük kâr payı» olamaz.
+
+    `_maliyet_hesapla` oranı makullük için süzüyordu ama ÜRÜN SINIFI için
+    süzmüyordu; manşet oranı doğrudan okuduğu için kapı ayrıca uygulanmalı.
+    """
+    kampanyalar = [_konut("Konutcu", 2.50), _kart("Kartci", 0.0)]
+    cevap, _ = ork.calistir(SORU, kampanyalar=kampanyalar)
+
+    assert "en düşük kâr payı oranı: Konutcu" in cevap.metin
+    assert "Kartci" not in cevap.metin

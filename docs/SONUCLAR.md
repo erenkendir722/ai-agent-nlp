@@ -1,25 +1,25 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 27.08.2026 22:09 · `make eval`_
+_Otomatik üretildi: 28.08.2026 00:13 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> **Güncel.** Çıkarım 27.08.2026 21:17'de `hibrit` yapılandırmasıyla koştu (3 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> **Güncel.** Çıkarım 28.08.2026 00:09'de `hibrit` yapılandırmasıyla koştu (78 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
-- İşlenen kampanya: **726**
+- İşlenen kampanya: **979**
 - Banka sayısı: **9**
-- Toplam alan: 11616 · Dolu: 3799
+- Toplam alan: 15664 · Dolu: 5150
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | hedefte |
-| **Halüsinasyon oranı** | %0.21 | ≤ %3 | hedefte |
-| Alan doluluğu | %32.7 | — | — |
-| Ortalama güven | 0.784 | — | — |
+| **Halüsinasyon oranı** | %0.19 | ≤ %3 | hedefte |
+| Alan doluluğu | %32.9 | — | — |
+| Ortalama güven | 0.783 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | hedefte |
 | Denetimsiz cevap parçası | %0.0 | %0 | hedefte |
 
@@ -34,7 +34,7 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 |---|---|---|
 | `yapisal` | 22 | yapısal kayıtta birebir karşılığı olmalı |
 | `alinti` | 44 | kaynak metnin alt dizesi + sayıları alıntının içinde |
-| `sistem` | 8 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
+| `sistem` | 9 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
 | `duz` | 22 | sayı içeremez (yapıcıda denetlenir) |
 | `denetimsiz` | 0 | **miras yol — atlanır ama sayılır** |
 
@@ -44,9 +44,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 2461 |
-| `kural` | 1243 |
-| `hibrit` | 95 |
+| `llm` | 3334 |
+| `kural` | 1684 |
+| `hibrit` | 132 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
@@ -58,6 +58,8 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 - `kampanya_kosullari: özette geçen '90' sayısı ham metinde yok`
 - `kampanya_avantaji: özette geçen '1.000' sayısı ham metinde yok`
 - `kampanya_kosullari: özette geçen '1.000' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '05' sayısı ham metinde yok`
+- `kampanya_kosullari: özette geçen '3.000.000' sayısı ham metinde yok`
 
 ## Alan bazlı doluluk
 
@@ -66,17 +68,17 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | `kampanya_turu` | %100 |
 | `urun_turu` | %88 |
 | `kampanya_avantaji` | %82 |
-| `kampanya_kosullari` | %60 |
-| `vade_ay_max` | %49 |
-| `kampanya_bitis` | %43 |
-| `taksit_sayisi` | %30 |
-| `kar_payi_orani` | %19 |
-| `odul_miktari` | %14 |
+| `kampanya_kosullari` | %61 |
+| `kampanya_bitis` | %49 |
+| `vade_ay_max` | %46 |
+| `taksit_sayisi` | %26 |
+| `odul_miktari` | %20 |
+| `kar_payi_orani` | %18 |
 | `indirim_orani` | %8 |
-| `finansman_tutari_max` | %6 |
-| `masrafsiz_mi` | %6 |
+| `finansman_tutari_max` | %7 |
 | `hedef_kitle` | %6 |
-| `tahsis_ucreti` | %5 |
+| `masrafsiz_mi` | %6 |
+| `tahsis_ucreti` | %4 |
 | `alisveris_puani` | %3 |
 | `masraf_bilgisi` | %2 |
 

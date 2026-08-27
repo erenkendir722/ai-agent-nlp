@@ -550,6 +550,29 @@ def _cikar_ve_kaydet(
     print("\n" + "=" * 64)
     print(f"  Yapılandırma         : {ozet.yapilandirma}")
     print(f"  İşlenen kayıt        : {ozet.kayit_sayisi}")
+    # DÜŞEN KAYIT SAYISI BASILIR — bu satır YOKTU ve 175 kayıt kaybettirdi.
+    #
+    # `hatali_kayit` hesaplanıyor, `CikarimOzeti`'nde duruyor ve arayüz onu
+    # uyarı olarak gösteriyordu; TERMİNAL yolu hiç göstermiyordu. Takımın
+    # fiilen kullandığı yol terminal olduğu için koşu «İşlenen kayıt: 726»
+    # deyip 0 dönüyor, düşen 172 kayıt yalnız günlük satırlarında kalıyordu.
+    #
+    # Ölçüldü (27 Ağustos): data/raw'da 901 ham kayıt var, veritabanında 726.
+    # Düşen 175'in tamamı http=200 ve gövdeli — 144'ünün gövdesi 1000+
+    # karakter. Kural katmanı 175'inde de sorunsuz koşuyor, yani kayıp LLM
+    # çağrısının geçici hatalarından; kalıcı bir veri kusuru değil. Bu satır
+    # olmadan «726» korpusun tamamı sanıldı ve dokümana o sayı yazıldı.
+    #
+    # `girdi_kaydi` ile birlikte basılır: asıl bilgi mutlak sayı değil,
+    # girdi ile çıktı arasındaki FARK. Dönüş kodu bilerek 0 kalıyor —
+    # `make extract` zincirini kırmak, ara kayıtla yazılmış kayıtları da
+    # kullanılamaz hâle getirirdi; kusur sessizlikti, koşunun kendisi değil.
+    if ozet.hatali_kayit:
+        print(
+            f"  DİKKAT  Düşen kayıt  : {ozet.hatali_kayit} "
+            f"(girdi {len(kayitlar)} → yazılan {ozet.kayit_sayisi})"
+        )
+        print("          Yeniden koşmak için: make extract kimlik=\"<düşen kimlikler>\"")
     print(f"  Yalnız kuraldan gelen: {ozet.kural_alan_sayisi} alan")
     print(f"  Yalnız LLM'den gelen : {ozet.llm_alan_sayisi} alan")
     print(f"  Hibrit (iki katman)  : {ozet.hibrit_alan_sayisi} alan")
@@ -654,6 +677,33 @@ def komut_durum(_: argparse.Namespace) -> int:
             print(f"  BAYAT — {durum['sebep']}")
         elif durum["bayat"] is False:
             print("  güncel — indeks veritabanındaki korpusla aynı")
+
+    # HAM ENVANTER ↔ KORPUS FARKI (27 Ağustos).
+    #
+    # İndeks bayatlığı için kurulan refleksin aynısı, bir kademe yukarıda:
+    # `data/raw`da duran ama korpusa girmemiş kayıt kaç tane? Bu satır
+    # olmadan 175 kayıtlık bir kayıp iki gün görünmedi — düşen kayıtlar
+    # çıkarım koşusunda sayılıyordu ama koşu bitince o sayı hiçbir yerde
+    # durmuyordu, `make durum` da yalnız veritabanına bakıyordu.
+    #
+    # SAYIM ÜCRETSİZ DEĞİL ama ucuz: yalnız `.json` adlarından kimlik
+    # üretilir, gövdeler okunmaz (`ham_kayitlari_oku` HTML'i de yükler).
+    from src.collector.toplayici import HAM_DIZIN
+
+    ham_kimlikler = {yol.stem for yol in HAM_DIZIN.rglob("*.json")}
+    if ham_kimlikler:
+        korpus_kimlikleri = {k.kampanya_id for k in tum_kayitlar()}
+        eksik = ham_kimlikler - korpus_kimlikleri
+        print("\n=== HAM ENVANTER ↔ KORPUS ===")
+        print(f"  {'ham kayıt (data/raw)':22}: {len(ham_kimlikler)}")
+        print(f"  {'korpusta':22}: {len(ham_kimlikler) - len(eksik)}")
+        if eksik:
+            print(
+                f"  EKSİK — {len(eksik)} ham kayıt çıkarılmamış; "
+                "`make extract` ile tamamlanır"
+            )
+        else:
+            print("  tam — her ham kayıt korpusta")
     return 0
 
 

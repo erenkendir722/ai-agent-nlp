@@ -589,6 +589,29 @@ class Banka(BaseModel):
     durum: BankaDurumu = BankaDurumu.FAAL
     kod_dogrulandi: bool = False
     seed_urls: list[str] = Field(default_factory=list)
+    urun_bolumleri: list[str] = Field(default_factory=list)
+    """FİNANSMAN ÜRÜN bölümlerinin kök adresleri — kampanya listelerinden AYRI.
+
+    `seed_urls` kampanya LİSTELERİNİ gösterir ve kazıyıcılar onları banka
+    özel kart seçicileriyle gezer. Ürün sayfaları (konut/taşıt/ihtiyaç
+    finansmanı) o listelerde YOKTUR; ayrı bir bölümde dururlar ve kart
+    seçicisiyle bulunamazlar.
+
+    NEDEN EKLENDİ (27 Ağustos, ölçüldü): Vakıf Katılım'ın 32 kaydının
+    HİÇBİRİ finansman ürünü değildi (21 «diğer», 8 kart, 2 yeni müşteri,
+    1 yatırım) ve «Vakıf Katılım'ın taşıt finansmanı…» sorusu — jüri
+    havuzunun 3. maddesi — «bu bilgi veri setinde bulunmuyor» cevabı
+    alıyordu. Cevap dürüsttü ama sebebi kazımaydı: `seed_urls`'te ürün
+    bölümü yoktu. Albaraka (43) ve Kuveyt Türk'ün (37) ürün kayıtları
+    24 Ağustos'ta YAPILANDIRMA DIŞI bir koşudan gelmiş; `make crawl` ile
+    yeniden üretilemiyorlardı, yani korpusun bir parçası kaynağı
+    gösterilemeyen bir yoldan gelmişti.
+
+    `SEMA_SURUMU` YÜKSELMEDİ: bu alan kayıt defterine aittir, kaydın
+    sözleşmesine değil — `Kampanya`'nın şekli değişmiyor. ADR 025'teki
+    ayrımın aynısı: neyin ÇEKİLECEĞİNİ belirler, kaydın ne TAŞIYACAĞINI
+    değil. Eski `banks.yaml` da geçerli kalır (varsayılan boş liste).
+    """
     url_desenleri: list[str] = Field(default_factory=list)
     robots_kontrol: bool = True
     not_: str | None = Field(default=None, alias="not")

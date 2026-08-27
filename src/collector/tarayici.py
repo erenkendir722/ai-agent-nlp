@@ -26,8 +26,21 @@ from src.collector.toplayici import KULLANICI_AJANI
 
 log = logging.getLogger(__name__)
 
-SAYFA_ZAMAN_ASIMI = 180
-"""Sayfa yükleme üst sınırı (sn). Banka siteleri ağırdır; 180 ölçülmüş değer."""
+SAYFA_ZAMAN_ASIMI = 90
+"""Sayfa yükleme üst sınırı (sn). Banka siteleri ağırdır; 180 ölçülmüş değerdi.
+
+180 İSTEMCİ ZAMAN AŞIMINDAN BÜYÜKTÜ ve bu sessiz bir tuzaktı (27 Ağustos):
+Selenium'un chromedriver'a açtığı HTTP bağlantısının okuma sınırı **120 sn**.
+Sayfa 120 saniyeden uzun sürerse önce urllib3 kırılıyor ve ortaya
+`WebDriverException` DEĞİL, `urllib3.exceptions.ReadTimeoutError` çıkıyor.
+Kazıyıcıların yakaladığı tip `WebDriverException` olduğu için o hata hiçbir
+yerde tutulmuyor, **dokuz bankalık koşuyu komple düşürüyordu** — Vakıf
+Katılım'ın ürün bölümünde birebir bu oldu.
+
+90 seçildi: istemci sınırının belirgin biçimde altında, yani zaman aşımını
+artık HER ZAMAN Selenium fırlatır (`TimeoutException`) ve kazıyıcı onu
+yakalayıp kaydı atlayarak devam eder. Sınır büyütülecekse chromedriver
+istemci zaman aşımı da birlikte büyütülmelidir; ikisi bağımsız değildir."""
 
 BEKLEME_SANIYE = 15
 """`WebDriverWait` üst sınırı — öge belirene kadar beklenecek azami süre."""

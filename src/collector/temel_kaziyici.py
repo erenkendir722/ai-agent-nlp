@@ -412,10 +412,58 @@ class TemelKaziyici:
 
     # -- Ana akış ---------------------------------------------------------
 
+    def urun_urlleri(self) -> list[str]:
+        """Finansman ÜRÜN sayfaları — `banka.urun_bolumleri` altındaki bağlantılar.
+
+        BANKA BAŞINA KOD YOK, bilerek: dokuz kazıyıcının dokuzunda da kural
+        aynı — bölüm kökünün altındaki bağlantıları topla. Değişen tek şey
+        kökün kendisi ve o `banks.yaml`'da (bkz. `Banka.urun_bolumleri`).
+        Kampanya listelerinde durum farklıydı — orada her banka kendi kart
+        bileşenini kullanıyor ve seçici paylaşılamıyor; ürün bölümleri düz
+        gezinme menüleri olduğu için tek bir kural yetiyor.
+
+        SÜZGEÇ KÖKÜN KENDİSİDİR: yalnız kökle BAŞLAYAN adresler alınır, yani
+        menüdeki «iletişim», «hakkımızda» bağlantıları kendiliğinden düşer.
+        Kökün kendisi de listeye girer (bölüm sayfası çoğu bankada ürünü de
+        anlatıyor); yinelenenleri `benzersiz` atar.
+
+        Bölüm tanımlanmamışsa boş döner ve davranış eskisiyle birebir aynıdır.
+        """
+        if not self.banka.urun_bolumleri:
+            return []
+        bulunan: list[str] = []
+        for kok in self.banka.urun_bolumleri:
+            try:
+                self.sayfayi_ac(kok)
+            except Exception as hata:
+                # Bölüm açılamazsa KAMPANYA tarafı düşmez: ürün keşfi ek bir
+                # kademedir, tek bir bölümün erişilemez olması dokuz bankalık
+                # koşuyu iptal ettirmemeli. Hata YUTULMAZ, uyarı olarak yazılır.
+                #
+                # `except Exception` DAR YAZILAMAZ, ölçüldü: burada
+                # `WebDriverException` bekleniyordu ama gelen
+                # `urllib3.exceptions.ReadTimeoutError` oldu — chromedriver'ın
+                # HTTP istemcisi, Selenium'un kendi zaman aşımından önce
+                # kırılıyordu (bkz. `tarayici.SAYFA_ZAMAN_ASIMI`). Tip listesi
+                # tutmak, bu katmandan çıkabilecek her kütüphanenin istisna
+                # ağacını bilmeyi gerektirirdi; burada önemli olan hatanın
+                # TİPİ değil, ürün keşfinin İSTEĞE BAĞLI bir kademe olması.
+                log.warning("%s: ürün bölümü açılamadı (%s): %s",
+                            self.banka.kisa_ad, kok, hata)
+                continue
+            time.sleep(3)
+            self.acilir_pencereleri_kapat()
+            bulunan.append(kok)
+            bulunan += [
+                u for u in self.xpath_baglantilari("//a[@href]")
+                if u.split("#")[0].split("?")[0].startswith(kok)
+            ]
+        return benzersiz(bulunan)
+
     def tara(self) -> Iterator[HamKayit]:
-        """Kampanya URL'lerini gezip ham kayıt üretir."""
+        """Kampanya ve ÜRÜN sayfalarını gezip ham kayıt üretir."""
         self._bildir("url_kesfi", mesaj=f"{self.banka.kisa_ad}: kampanya listesi taranıyor")
-        urller = benzersiz(self.kampanya_urlleri())
+        urller = benzersiz(self.kampanya_urlleri() + self.urun_urlleri())
         toplam = len(urller)
         log.info("%-22s %3d kampanya bağlantısı bulundu", self.banka.kisa_ad, toplam)
         self._bildir("url_kesfi", toplam=toplam, mesaj=f"{toplam} kampanya bağlantısı")

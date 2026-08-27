@@ -1237,6 +1237,27 @@ def _siralanabilir(kayit: KampanyaKaydi, alan: str) -> bool:
     return getattr(kayit, alan, None) is not None and olcut_kapsaminda(kayit, alan)
 
 
+def _yon_tercihi(alan: str, yon: str | None) -> str | None:
+    """İKİ YÖN SÖZLÜĞÜNÜ BİRLEŞTİREN TEK KURAL.
+
+    Depoda yön iki ayrı dilde konuşuluyor ve ikisi FARKLI şey söylüyor:
+
+        `_sorulan_yon`  -> "dusuk" / "yuksek"       kullanıcı hangi ucu İSTEDİ
+        `ALAN_YONLERI`  -> "dusuk_iyi" / "yuksek_iyi"  hangi uç AVANTAJLI
+
+    Dönüşüm bir sonek eklemekten ibaret ama sessizce yanlış yapılabiliyor:
+    `sorulan_olcut_ve_yon` ilk yazıldığında bu satır kopyalanmadı ve
+    «en DÜŞÜK kâr payı oranı» sorusu «en YÜKSEK … %2,95» diye cevaplandı —
+    karşılaştırma `yon == "dusuk_iyi"` diye bakıyor, elde ise "dusuk" vardı,
+    eşitlik tutmayınca en pahalı kayıt manşete çıktı.
+
+    Kural artık tek yerde. Kullanıcı bir uç söylediyse o kazanır; söylemediyse
+    alanın kendi avantajlı ucuna düşülür; ikisi de yoksa None döner ve çağıran
+    SIRALAMA YAPMAZ (ADR 023).
+    """
+    return f"{yon}_iyi" if yon else ALAN_YONLERI.get(alan)
+
+
 def _odak_sirasi(kayit: KampanyaKaydi, alan: str | None, yon: str | None) -> float:
     """Sorulan ölçütün değeri, AVANTAJLI UÇ BÜYÜK olacak biçimde.
 
@@ -1264,9 +1285,7 @@ def _odak_sirasi(kayit: KampanyaKaydi, alan: str | None, yon: str | None) -> flo
     """
     if alan is None or not _siralanabilir(kayit, alan):
         return float("-inf")
-    # `_sorulan_yon` KÖKÜ döndürür («yuksek»), `Yon` ise «yuksek_iyi». İkisi
-    # `test_yon_sozcukleri_karsilastirma_yonleriyle_ortusur` ile kilitli.
-    tercih = f"{yon}_iyi" if yon else ALAN_YONLERI.get(alan)
+    tercih = _yon_tercihi(alan, yon)
     if tercih is None:
         return 0.0
     deger = float(getattr(kayit, alan))
@@ -1338,9 +1357,35 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # cevabını göremeyince sistemin soruyu anlamadığını sanıyor. Jüri
     # havuzunun 26. maddesi tam bunu soruyor: «açıkça yazmıyorsa sistem
     # tahminde bulunuyor mu yoksa Belirtilmemiş mi diyor?»
+    # BOŞLUĞUN KAPSAMI DA SÖYLENİR (27 Ağustos, ölçüldü).
+    #
+    #     soru  : «Kuveyt Türk'ün konut finansmanı oranı ne?»
+    #     cevap : «Gurbetten Sılaya … — Kâr payı oranı: Belirtilmemiş»
+    #
+    # Cümle doğruydu ama kapsamı yanlış okunuyordu: kullanıcı TEK bir
+    # kampanyanın oranının yazılmadığını sanıp «sistem diğer konut
+    # sayfalarını görmüyor» sonucuna varıyor. Oysa o bankanın soruya uyan
+    # 12 kaydının HİÇBİRİNDE oran yayımlanmamış — sayfalar «avantajlı kâr
+    # oranları» deyip rakam vermiyor, oran bankanın hesaplama aracının
+    # arkasında.
+    #
+    # Ölçüldü (9 banka × 3 ürün × 3 ölçüt): sorulan ölçüt, seçilen kayıtta
+    # yoksa 9 vakanın 9'unda İLGİLİ KAYITLARIN HİÇBİRİNDE yok. Yani bu boşluk
+    # kayıt seçiminin kusuru değil, verinin kendisi — «bilgi saklanan» vaka
+    # sıfır çıktı. Söylenmesi gereken şey de bu: eksik olan kampanya değil,
+    # kaynağın tamamı.
+    #
+    # SAYI AYRI PARÇAYA YAZILIR: «12» yapısal kayıtlarda bulunmayan, sistemin
+    # kendi saydığı bir değerdir; YAPISAL parçaya girseydi kalkan onu uydurma
+    # sayıp cevabı bloklardı (bkz. `_sistem_dogrula`).
+    kapsam_bosluklari: list[str] = []
     for alan in odaklar:
         if getattr(kayit, alan, None) is None:
             satirlar.append(f"- {alan_etiketi(alan)}: **Belirtilmemiş**")
+            if len(kayitlar) > 1 and all(
+                getattr(k, alan, None) is None for k in kayitlar
+            ):
+                kapsam_bosluklari.append(alan_etiketi(alan).lower())
 
     if bulunan == 0 and not odaklar:
         satirlar.append("- Bu kampanya için sayısal bilgi **Belirtilmemiş**.")
@@ -1357,9 +1402,21 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             "değerlendirilmemelidir."
         )
 
-    # Tüm satırlar yapısal alanlardan geliyor: tek YAPISAL parça yeterli.
+    # Satırlar yapısal alanlardan geliyor: tek YAPISAL parça yeterli.
+    parcalar = [CevapParcasi("\n".join(satirlar), Koken.YAPISAL)]
+    if kapsam_bosluklari:
+        parcalar.append(
+            CevapParcasi(
+                f"\n> Bu ölçüt tek bir kampanyada değil, sorunuza uyan "
+                f"**{len(kayitlar)} kaydın tamamında** yayımlanmamış: "
+                + ", ".join(kapsam_bosluklari)
+                + ". Bankanın kendi hesaplama aracına bakılmalı.",
+                Koken.SISTEM,
+                hesap={"taranan_kayit": float(len(kayitlar))},
+            )
+        )
     return Cevap(
-        parcalar=[CevapParcasi("\n".join(satirlar), Koken.YAPISAL)],
+        parcalar=parcalar,
         niyet=Niyet.TEKIL_SORGU,
         kaynaklar=[_kaynakca(kayit)],
         kullanilan_kayitlar=[kayit],
@@ -1577,6 +1634,27 @@ def _sorulan_olcut(soru: str) -> str | None:
     """
     olcutler = _sorulan_olcutler(soru)
     return olcutler[0] if olcutler else None
+
+
+def sorulan_olcut_ve_yon(soru: str) -> tuple[str | None, str | None]:
+    """Soru hangi ölçütü, hangi uçtan soruyor? — MODÜL DIŞI TEK KAPI.
+
+    `sorulan_bankalar` / `sorulan_urun` ile aynı gerekçe: orkestratörün profil
+    kolu da soruyu okumak zorunda ve orada `_sorulan_olcut` ile `_sorulan_yon`
+    özel adlar. İkisini elle kopyalamak, `_OLCUT_IPUCLARI`'nın uzunluk sırasını
+    ve `_YON_ISARETLERI`'nin «ilk geçen kazanır» kuralını ikinci kez yazmak
+    olurdu — ADR 021 ve 023 tam olarak bunu yasaklıyor.
+
+    Yön soruda belirtilmemişse ölçütün KENDİ yönüne düşülür
+    (`karsilastirma.ALAN_YONLERI`); «kâr payı oranını hangi banka sunuyor?»
+    sorusunda «en düşük» yazmasa da avantajlı uç bellidir. Yön hiçbir kaynakta
+    yoksa None döner ve çağıran sıralama YAPMAZ — uydurulmuş bir yön, yanlış
+    kaydı vitrine koymaktır.
+    """
+    olcut = _sorulan_olcut(soru)
+    if olcut is None:
+        return None, None
+    return olcut, _yon_tercihi(olcut, _sorulan_yon(soru))
 
 
 # SORULAN UÇ — «daha yüksek mi?» ile «daha düşük mü?» aynı ölçütün İKİ UCUDUR.

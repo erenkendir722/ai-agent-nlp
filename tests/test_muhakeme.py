@@ -328,3 +328,56 @@ def test_sifir_oranli_kayit_listenin_tepesine_cikmaz(ajan):
     ]
     sonuclar, _ = ajan.calistir((PROFIL, kampanyalar))
     assert sonuclar[0].banka_adi == "Gercek"
+
+
+# ---------------------------------------------------------------------------
+# 27 Ağustos — maliyetsiz kalemlerin kendi içinde sırası
+# ---------------------------------------------------------------------------
+
+
+def test_maliyetsiz_kalemler_dolu_olandan_bosa_siralanir() -> None:
+    """Gösterecek bilgisi olan kayıt, boş sayfanın ÖNÜNE geçmeli.
+
+    Sıralama anahtarının orta basamağı sabit `0` iken kâr payı olmayan
+    kayıtlar aralarında hiç sıralanmıyordu; jüri sorgusunda ilk beşin iki
+    sırasını gösterilebilir alanı SIFIR olan hesaplama aracı sayfaları aldı.
+    Ölçüt doluluktur — URL kalıbı değil (ADR 017 ile aynı refleks).
+    """
+    bos = _kampanya("Bos Sayfa", oran=None)
+    dolu = _kampanya("Dolu Kayit", oran=None, tahsis=0.5)
+
+    profil = MusteriProfili(musteri_tipi=None, tutar=1_000_000.0, vade_ay=120)
+    sonuclar, _ = MuhakemeAjani().calistir((profil, [bos, dolu]))
+
+    uygunlar = [s for s in sonuclar if s.uygun_mu]
+    assert [s.banka_adi for s in uygunlar] == ["Dolu Kayit", "Bos Sayfa"]
+
+
+def test_maliyetli_kayit_her_zaman_maliyetsizin_onunde() -> None:
+    """Doluluk sıralaması yalnız MALİYETSİZ kova içinde çalışır."""
+    maliyetli = _kampanya("Oranli", oran=2.95)
+    maliyetsiz_dolu = _kampanya("Oransiz", oran=None, tahsis=0.5)
+
+    profil = MusteriProfili(musteri_tipi=None, tutar=1_000_000.0, vade_ay=120)
+    sonuclar, _ = MuhakemeAjani().calistir((profil, [maliyetsiz_dolu, maliyetli]))
+
+    uygunlar = [s for s in sonuclar if s.uygun_mu]
+    assert uygunlar[0].banka_adi == "Oranli"
+
+
+def test_segment_gerekcesi_segment_adini_yazar() -> None:
+    """«Kampanya segment için» bozuk cümleydi ve elde olan adı saklıyordu."""
+    kampanya = _kampanya(
+        "Emeklici",
+        uygunluk=UygunlukKosullari(
+            musteri_tipi=[HedefKitle.SEGMENT], segment_detayi=["emekli"]
+        ),
+    )
+    profil = MusteriProfili(
+        musteri_tipi=HedefKitle.MEVCUT_MUSTERI, tutar=100_000.0, vade_ay=12
+    )
+    sonuc = MuhakemeAjani().degerlendir(profil, kampanya)
+
+    gerekce = next(g for g in sonuc.engelleyenler() if g.kural == "musteri_tipi")
+    assert "emekli" in gerekce.aciklama
+    assert "Kampanya segment için" not in gerekce.aciklama

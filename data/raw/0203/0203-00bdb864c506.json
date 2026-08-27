@@ -2,8 +2,8 @@
   "banka_kodu": "0203",
   "banka_adi": "Albaraka Türk Katılım Bankası A.Ş.",
   "url": "https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac/sms-li-finansman",
-  "cekim_tarihi": "2026-08-24T13:37:43.113064",
+  "cekim_tarihi": "2026-08-27T23:30:13.539731",
   "http_durum": 200,
   "baslik": "SMS’ li Finansman | Albaraka Türk",
-  "govde_metin": "SMS ile Konut, Taşıt, Tüketici finansmanı taleplerinize dair destek Albaraka’ da.\nNasıl Kullanılır?\n- SMS ile finansman başvurusu yapabilmek için sırasıyla TCKN, Doğum Tarihi (Gün Ay Yıl), Aylık Gelir, Finansman Türü (konut, taşıt, tüketici, eğitim), Talep Edilen Tutar ve Vade bilgileri aralarında birer boşluk bırakılarak 4462’ye mesaj atılır.\n- Müşteriye ret veya onay mesajı ile dönüş yapılır.\n- Onay alan müşteri limitini kullanmak istediğinde bankamız müşterisi ise ana şubesine, bankamız müşterisi değil ise herhangi bir şubeye başvurarak kullanıma başlayabilir.\n- Bu ürün aracılığıyla konut, taşıt, tüketici ve eğitim finansmanı kullanılabilir."
+  "govde_metin": "SMS ile Konut, Taşıt, Tüketici finansmanı taleplerinize dair destek Albaraka’ da.\n- SMS ile finansman başvurusu yapabilmek için sırasıyla TCKN, Doğum Tarihi (Gün Ay Yıl), Aylık Gelir, Finansman Türü (konut, taşıt, tüketici, eğitim), Talep Edilen Tutar ve Vade bilgileri aralarında birer boşluk bırakılarak 4462’ye mesaj atılır.\n- Müşteriye ret veya onay mesajı ile dönüş yapılır.\n- Onay alan müşteri limitini kullanmak istediğinde bankamız müşterisi ise ana şubesine, bankamız müşterisi değil ise herhangi bir şubeye başvurarak kullanıma başlayabilir.\n- Bu ürün aracılığıyla konut, taşıt, tüketici ve eğitim finansmanı kullanılabilir.\n0\n×"
 }

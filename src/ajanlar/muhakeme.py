@@ -101,6 +101,24 @@ class UygunlukSonucu:
     uygun_mu: bool
     gerekceler: list[Gerekce] = field(default_factory=list)
     maliyet: dict[str, float] | None = None
+    doluluk: float = 0.0
+    """Kaydın alan doluluğu — MALİYETSİZ kalemleri kendi içinde sıralar.
+
+    Sıralama anahtarının orta basamağı bugüne dek sabit `0` idi, yani kâr payı
+    oranı olmayan kayıtlar ARALARINDA hiç sıralanmıyor, veritabanı sırasıyla
+    geliyordu. Ölçüldü (27 Ağustos, jüri havuzu 9. madde): «120 ay / 1.000.000
+    TL konut» sorgusunda ilk beşin iki sırasını Albaraka ve Kuveyt Türk'ün
+    HESAPLAMA ARACI sayfaları aldı — gövdeleri boş bir hesap makinesi
+    widget'ı («Aylık Taksit Tutarı 0,00 TL»), gösterilebilir alan sayısı SIFIR.
+    Onların altında kalan `ilk-evim-konut-finansmani` ve `konut-finansmani`
+    kayıtlarında tahsis ücreti ve vade DOLUYDU ve ekrana hiç çıkmadılar.
+
+    ÖLÇÜT NEDEN DOLULUK: sayfayı türünden («hesaplama aracı», «liste») tanımak
+    bir URL kalıbı yazmayı gerektirirdi; kalıp yazılmaz — ADR 017'nin kararı
+    da buydu, kampanya olup olmadığına içerik karar verir. Doluluk zaten
+    kaydın taşıdığı bilgiyi ölçüyor: gösterecek şeyi olan kayıt öne çıkar,
+    boş sayfa kendiliğinden dibe iner. Kimse SİLİNMEZ, yalnız sıra değişir.
+    """
     veri_eksik: bool = False
     """Kampanyanın `uygunluk` koşulları hiç çıkarılmamış.
 
@@ -153,7 +171,27 @@ class MuhakemeAjani:
                 "musteri_tipi", True, f"Müşteri tipi uygun ({profil.musteri_tipi.value})."
             )
 
-        adlar = ", ".join(h.value for h in sorted(hedefler, key=lambda h: h.value))
+        # SEGMENT ADI VARSA YAZILIR (27 Ağustos).
+        #
+        #     eski : «Kampanya segment için; müşteri mevcut_musteri.»
+        #
+        # `HedefKitle.SEGMENT` bir kutu adıdır, kurumun kullandığı bir sözcük
+        # değil; tek başına yazılınca cümle hem bozuk hem bilgisiz oluyordu.
+        # Kaydın `segment_detayi` alanı DOLUYDU (Ziraat'in konut kampanyası:
+        # «emekli») ve o ad yalnız profilin kendisi SEGMENT olduğunda
+        # kullanılıyordu — yani elenme sebebini okuyan kullanıcı, kampanyanın
+        # kime açık olduğunu tam da öğrenmesi gereken yerde göremiyordu.
+        #
+        # «Bilineni saklama» kuralının bu daldaki karşılığı budur; ad yoksa
+        # eski davranış korunur.
+        def _hedef_adi(hedef: HedefKitle) -> str:
+            if hedef is HedefKitle.SEGMENT and kosul.segment_detayi:
+                return " / ".join(kosul.segment_detayi)
+            return hedef.value
+
+        adlar = ", ".join(
+            _hedef_adi(h) for h in sorted(hedefler, key=lambda h: h.value)
+        )
         return Gerekce(
             "musteri_tipi",
             False,
@@ -312,6 +350,7 @@ class MuhakemeAjani:
             gerekceler=gerekceler,
             maliyet=self._maliyet_hesapla(profil, kampanya) if uygun else None,
             veri_eksik=veri_eksik,
+            doluluk=kampanya.doluluk_orani(),
         )
 
     def calistir(
@@ -330,12 +369,15 @@ class MuhakemeAjani:
         with iz_tut(self.ad, llm=False, girdi=profil.ozet()) as iz:
             sonuclar = [self.degerlendir(profil, k) for k in kampanyalar]
 
-            def anahtar(s: UygunlukSonucu) -> tuple[int, int, float]:
+            def anahtar(s: UygunlukSonucu) -> tuple[int, float, float]:
                 if not s.uygun_mu:
-                    return (2, 0, 0.0)
+                    return (2, 0.0, 0.0)
                 if s.toplam_geri_odeme is None:
-                    return (1, 0, 0.0)
-                return (0, 0, s.toplam_geri_odeme)
+                    # Maliyet yoksa DOLU olan öne: orta basamak artık sabit
+                    # değil (bkz. `UygunlukSonucu.doluluk`). Negatif, çünkü
+                    # sıralama küçükten büyüğe.
+                    return (1, -s.doluluk, 0.0)
+                return (0, 0.0, s.toplam_geri_odeme)
 
             sonuclar.sort(key=anahtar)
 

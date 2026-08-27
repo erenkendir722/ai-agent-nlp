@@ -34,12 +34,13 @@ from src.rag.chatbot import (
     niyet_belirle,
     sayi_goster,
     sorulan_bankalar,
+    sorulan_olcut_ve_yon,
     sorulan_urun,
     urun_etiketi_uyar,
 )
 from src.rag.baglam import Devir, SohbetBaglami, baglam_guncelle, soruyu_tamamla
 from src.rag.chatbot import sor as chatbot_sor
-from src.comparison.karsilastirma import ALAN_YONLERI
+from src.comparison.karsilastirma import ALAN_YONLERI, turu_olcut_kapsaminda
 from src.rag.chatbot import alan_goster
 from src.schema import TEK_BIRIMLI_ALANLAR, Alan, Birim, HedefKitle, Kampanya, alan_etiketi
 
@@ -150,6 +151,20 @@ def profil_sorgusu_mu(soru: str) -> bool:
 # ---------------------------------------------------------------------------
 
 
+LISTE_UST_SINIRI = 5
+"""Profil cevabında kaç kalem listelenir.
+
+Sayı ELLE ÜÇ YERE yazılıydı (`uygunlar[:5]`, `elenenler[:5]`, kaynakça) ve
+hiçbiri kırpmayı BEYAN etmiyordu. Kırpmanın kendisi doğru — on kalemlik bir
+döküm okunmaz — ama beyansız kırpma, cevabın kendi başlığıyla çelişmesidir:
+başlık «10 kampanya uygun» diyor, gövde beşini gösteriyor, kalan beşin nerede
+olduğu yazmıyor. Ölçüldü (27 Ağustos, jüri havuzu 9. madde): gizlenen beş
+kaydın dördü Kuveyt Türk, biri Ziraat — «hangi katılım bankası» sorusunda
+uygun altı bankanın üçü ekrana hiç çıkmıyordu.
+
+`_profil_cevabi` içindeki yorum zaten «*«3 kampanya uygun» yazıp beş göstermek
+bir iddiadır*» diyor; kapatılmamış olan onun ters yönüydü."""
+
 BILINEN_ALANLAR: tuple[str, ...] = tuple(
     alan for alan in ALAN_YONLERI if alan != "kar_payi_orani"
 )
@@ -203,10 +218,73 @@ def _bilinen_satirlar(
     return satirlar
 
 
+def _manset_parcasi(
+    soru: str,
+    uygunlar: list[UygunlukSonucu],
+    kimlik_kampanya: dict[str, Kampanya],
+) -> CevapParcasi | None:
+    """SORULAN ÖLÇÜTÜN cevabını tek cümleyle, listeden ÖNCE söyler.
+
+    NEDEN VAR (27 Ağustos, jüri havuzu 9. madde):
+
+        soru  : «… en düşük kâr payı oranını hangi katılım bankası sunuyor?»
+        cevap : «**… profiline 10 kampanya uygun.** … 1. Albaraka …»
+
+    Cevap doğruydu ama soruya CÜMLEYLE karşılık vermiyordu: sorulan şey bir
+    banka adı, dönen şey bir döküm. Jüri «hangi banka» cevabını listenin ilk
+    maddesinden kendi çıkarmak zorundaydı.
+
+    SIRALAMA DEĞİŞMİYOR — liste toplam maliyete göre kalır; muhakeme ajanının
+    docstring'i bunu savunuyor («en düşük oran her zaman en ucuz değildir») ve
+    doğrudur. Değişen tek şey, sorulan ölçütün cevabının da AYRICA yazılması.
+    İkisi ayrıştığında bunu görmek gerekir: manşet oranı, liste maliyeti
+    söyler ve fark okunur olur. Ölçüldü — bu soruda ikisi örtüşüyor
+    (%2,87 hem en düşük oran hem en düşük maliyet), ama tahsis ücreti
+    farklıysa örtüşmeyebilirler.
+
+    Ölçüt ya da yön çözülemezse manşet YAZILMAZ: uydurulmuş bir yön, yanlış
+    kaydı vitrine koymaktır (ADR 023).
+    """
+    olcut, yon = sorulan_olcut_ve_yon(soru)
+    if olcut is None or yon is None:
+        return None
+
+    # ADR 020 KAPISI MANŞETE DE UYGULANIR. `_maliyet_hesapla` oranı zaten
+    # makullük için süzüyor (0 < oran < 15) ama ÜRÜN SINIFI için süzmüyordu;
+    # manşet oranı doğrudan okuduğu için «vade farksız 6 taksit» promosyonunun
+    # %0'ı «en düşük kâr payı oranı» diye vitrine çıkabilirdi. Kapı
+    # `karsilastirma`'daki tek beyandan okunur — ikinci bir eşik yazılmaz.
+    adaylar: list[tuple[float, UygunlukSonucu, Alan]] = []
+    for sonuc in uygunlar:
+        kampanya = kimlik_kampanya.get(sonuc.kampanya_id)
+        alan = getattr(kampanya, olcut, None)
+        if alan is None or alan.deger is None:
+            continue
+        turu = kampanya.kampanya_turu.deger if kampanya.kampanya_turu else None
+        if not turu_olcut_kapsaminda(turu, olcut):
+            continue
+        adaylar.append((float(alan.deger), sonuc, alan))
+    if not adaylar:
+        return None
+
+    en_iyi = min(adaylar) if yon == "dusuk_iyi" else max(adaylar)
+    deger, sonuc, alan = en_iyi
+    nitelik = "en düşük" if yon == "dusuk_iyi" else "en yüksek"
+    gosterim = alan_goster(olcut, alan.deger, _alan_birimi(olcut, alan))
+    return CevapParcasi(
+        f"**Profile uyan kampanyalar arasında {nitelik} "
+        f"{alan_etiketi(olcut).lower()}: {sonuc.banka_adi} — {gosterim}.**\n",
+        Koken.SISTEM,
+        hesap={"manset_deger": deger},
+    )
+
+
 def _profil_cevabi(
     profil: MusteriProfili,
     sonuclar: list[UygunlukSonucu],
     kampanyalar: list[Kampanya] | None = None,
+    *,
+    soru: str = "",
 ) -> Cevap:
     """Uygunluk sonuçlarını gerekçeli metne çevirir — KÖKEN TİPLİ parçalarla.
 
@@ -249,7 +327,7 @@ def _profil_cevabi(
         """
         satirlar: list[str] = []
         hesap = dict(profil_hesabi)
-        for sira, sonuc in enumerate(elenenler[:5], 1):
+        for sira, sonuc in enumerate(elenenler[:LISTE_UST_SINIRI], 1):
             for no, gerekce in enumerate(sonuc.engelleyenler()):
                 satirlar.append(f"- **{sonuc.banka_adi}**: {gerekce.aciklama}")
                 # DİKKAT: `hesap.update(gerekce.sayilar)` DEĞİL — anahtarlar bankadan
@@ -265,6 +343,15 @@ def _profil_cevabi(
                     hesap[f"{anahtar}_{sira}_{no}"] = deger
         if not satirlar:
             return None
+        # KIRPMA BEYAN EDİLİR — bkz. `LISTE_UST_SINIRI`.
+        if len(elenenler) > LISTE_UST_SINIRI:
+            gizli = len(elenenler) - LISTE_UST_SINIRI
+            satirlar.append(
+                f"- *(ayrıca {gizli} kampanya daha elendi; ilk "
+                f"{LISTE_UST_SINIRI} sebep gösteriliyor)*"
+            )
+            hesap["elenen_gizli"] = float(gizli)
+            hesap["liste_ust_siniri"] = float(LISTE_UST_SINIRI)
         govde = baslik + "\n" + "\n".join(satirlar)
         return CevapParcasi(govde, Koken.SISTEM, hesap=hesap)
 
@@ -287,9 +374,20 @@ def _profil_cevabi(
     # yapmadığı bir filtrelemeyi yapmış gibi sunmak olurdu.
     dogrulanmamis = sum(1 for s in uygunlar if s.veri_eksik)
 
+    # BANKA SAYISI DA SÖYLENİR: «hangi banka» sorusunda kampanya sayısı tek
+    # başına yanıltır — on kampanyanın üçü aynı bankadan olabilir ve nitekim
+    # öyleydi (ilk beşin üçü Albaraka).
+    uygun_bankalar = {s.banka_adi for s in uygunlar}
     baslik_satirlari = [
-        f"**{profil.ozet()}** profiline **{len(uygunlar)} kampanya** uygun."
+        f"**{profil.ozet()}** profiline **{len(uygunlar)} kampanya** uygun "
+        f"({len(uygun_bankalar)} banka)."
     ]
+    if len(uygunlar) > LISTE_UST_SINIRI:
+        baslik_satirlari.append(
+            f"\n> Aşağıda maliyeti en düşük **{LISTE_UST_SINIRI} kampanya** "
+            f"listeleniyor; kalan {len(uygunlar) - LISTE_UST_SINIRI} kampanya "
+            "gösterilmiyor.\n"
+        )
     if dogrulanmamis == len(uygunlar):
         baslik_satirlari.append(
             "\n> **Bu kampanyaların hiçbirinde uygunluk koşulu çıkarılamadı.**\n"
@@ -301,7 +399,11 @@ def _profil_cevabi(
             "onlar için kısıtlar doğrulanmadı.\n"
         )
 
-    parcalar = [
+    parcalar: list[CevapParcasi] = []
+    manset = _manset_parcasi(soru, uygunlar, kimlik_kampanya)
+    if manset is not None:
+        parcalar.append(manset)
+    parcalar.append(
         CevapParcasi(
             "\n".join(baslik_satirlari),
             Koken.SISTEM,
@@ -310,10 +412,13 @@ def _profil_cevabi(
             hesap={
                 **profil_hesabi,
                 "uygun_sayisi": float(len(uygunlar)),
+                "uygun_banka_sayisi": float(len(uygun_bankalar)),
+                "liste_ust_siniri": float(LISTE_UST_SINIRI),
+                "gizlenen_sayisi": float(max(0, len(uygunlar) - LISTE_UST_SINIRI)),
                 "dogrulanmamis_sayisi": float(dogrulanmamis),
             },
         )
-    ]
+    )
 
     # -- Maliyet listesi: her sayı kendi hesabından yeniden üretilebilmeli --
     #
@@ -323,7 +428,7 @@ def _profil_cevabi(
     # Ölçüldü: Kuveyt Türk ve Emlak Katılım'ın 11 konut kaydının HİÇBİRİNDE
     # kâr payı oranı yayımlanmamış (sayfalardaki yüzdeler kredi/değer oranı ve
     # tahsis ücreti; oran bankanın hesaplama aracının arkasında).
-    hesaplanabilir = sum(1 for s in uygunlar[:5] if s.maliyet)
+    hesaplanabilir = sum(1 for s in uygunlar[:LISTE_UST_SINIRI] if s.maliyet)
     if hesaplanabilir:
         maliyet_basligi = "**Toplam maliyete göre sıralı:**"
     else:
@@ -335,7 +440,7 @@ def _profil_cevabi(
     maliyet_satirlari: list[str] = ["", maliyet_basligi, ""]
     maliyet_hesabi = dict(profil_hesabi)
 
-    for sira, sonuc in enumerate(uygunlar[:5], 1):
+    for sira, sonuc in enumerate(uygunlar[:LISTE_UST_SINIRI], 1):
         maliyet_satirlari.append(f"{sira}. **{sonuc.banka_adi}**")
         # Sıra numarası tek haneli olduğu sürece kalkan onu zaten atlıyor
         # (`_metindeki_sayilar` tek haneleri saymaz). Yine de hesaba yazılıyor:
@@ -400,7 +505,7 @@ def _profil_cevabi(
     return Cevap(
         parcalar=parcalar,
         niyet=Niyet.KOSUL_SORGUSU,
-        kaynaklar=[_profil_kaynagi(s, kimlik_kampanya) for s in uygunlar[:5]],
+        kaynaklar=[_profil_kaynagi(s, kimlik_kampanya) for s in uygunlar[:LISTE_UST_SINIRI]],
     )
 
 
@@ -619,7 +724,7 @@ class Orkestrator:
         defter.ekle(muhakeme_izi)
 
         with iz_tut("cevap", llm=False, girdi=f"{len(sonuclar)} sonuç") as iz:
-            cevap = _profil_cevabi(profil, sonuclar, kampanyalar)
+            cevap = _profil_cevabi(profil, sonuclar, kampanyalar, soru=soru)
             uygun = sum(1 for s in sonuclar if s.uygun_mu)
             iz.cikti_ozeti = f"{uygun} uygun kampanya sunuldu"
             iz.karar_gerekcesi = "Gerekçeler ve maliyetler kaynaklarıyla yazıldı"

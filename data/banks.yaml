@@ -40,6 +40,9 @@
   not: "JS lazy load. Kazıyıcı «daha fazla kampanya» butonuna kart sayısı artmayı bırakana dek basar."
   seed_urls:
     - "https://www.albaraka.com.tr/tr/kampanyalar"
+  urun_bolumleri:
+    - "https://www.albaraka.com.tr/tr/bireysel/finansmanlar"
+    - "https://www.albaraka.com.tr/tr/kobi/finansmanlar"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/urun"]
   robots_kontrol: true
 
@@ -53,6 +56,9 @@
   seed_urls:
     - "https://www.kuveytturk.com.tr/kampanyalar/kendim-icin"
     - "https://www.kuveytturk.com.tr/kampanyalar/isim-icin"
+  urun_bolumleri:
+    - "https://www.kuveytturk.com.tr/kendim-icin/finansmanlar"
+    - "https://www.kuveytturk.com.tr/isim-icin/finansman-urunleri"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/bireysel"]
   robots_kontrol: true
 
@@ -83,6 +89,8 @@
     - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/gunluk-hesap-vade-kampanyasi.aspx"
     - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/katilim-hesabi-kampanyasi.aspx"
     - "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yeni-yatirim-hesabiniza-sifir-komisyon.aspx"
+  urun_bolumleri:
+    - "https://www.turkiyefinans.com.tr/tr-tr/bireysel"
   url_desenleri: ["/kampanya", "/finansman", "/kredi-karti", "/bireysel"]
   robots_kontrol: true
 
@@ -94,6 +102,9 @@
   kod_dogrulandi: true
   seed_urls:
     - "https://www.ziraatkatilim.com.tr/kart-kampanyalari"
+  urun_bolumleri:
+    - "https://www.ziraatkatilim.com.tr/bireysel/finansman-urunleri"
+    - "https://www.ziraatkatilim.com.tr/ticari/finansman-urunleri"
   url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
   robots_kontrol: true
 
@@ -110,6 +121,9 @@
   seed_urls:
     - "https://vakifkatilim.com.tr/tr/kendim-icin/kampanyalar"
     - "https://vakifkatilim.com.tr/tr/isim-icin/kampanyalar"
+  urun_bolumleri:
+    - "https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar"
+    - "https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar"
   url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
   robots_kontrol: true
 
@@ -122,6 +136,9 @@
   seed_urls:
     - "https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar"
     - "https://www.emlakkatilim.com.tr/tr/kurumsal/kampanyalar"
+  urun_bolumleri:
+    - "https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar"
+    - "https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar"
   url_desenleri: ["/kampanya", "/finansman", "/kart", "/bireysel"]
   robots_kontrol: true
 
@@ -135,6 +152,9 @@
   seed_urls:
     - "https://hayatfinans.com.tr/kampanyalar"
     - "https://hayatfinans.com.tr/isim-kampanyalar"
+  urun_bolumleri:
+    - "https://hayatfinans.com.tr/finansmanlar"
+    - "https://hayatfinans.com.tr/finansmanlar-is"
   url_desenleri: ["/kampanya", "/finansman", "/kart"]
   robots_kontrol: true
 

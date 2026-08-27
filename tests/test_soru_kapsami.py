@@ -383,3 +383,46 @@ def test_yon_beyan_edilmemis_alanda_siralama_yapilmaz() -> None:
     assert "taksit_sayisi" not in ALAN_YONLERI
     assert _odak_sirasi(kayit, "taksit_sayisi", None) == float("-inf")  # alan boş
     assert _odak_sirasi(kayit, None, None) == float("-inf")  # ölçüt sorulmadı
+
+
+# ---------------------------------------------------------------------------
+# BOŞLUĞUN KAPSAMI — 27 Ağustos
+#
+#     soru  : «Kuveyt Türk'ün konut finansmanı oranı ne?»
+#     cevap : «Gurbetten Sılaya … — Kâr payı oranı: Belirtilmemiş»
+#
+# Cümle doğruydu, kapsamı yanlış okunuyordu: kullanıcı TEK kampanyanın
+# oranının yazılmadığını sanıp «sistem diğer konut sayfalarını görmüyor»
+# sonucuna varıyordu. Oysa o bankanın soruya uyan kayıtlarının hiçbirinde
+# oran yayımlanmamış.
+
+
+def test_olcut_hicbir_kayitta_yoksa_kapsam_beyan_edilir() -> None:
+    """Eksik olan kampanya değil kaynağın tamamıysa, bu SÖYLENİR."""
+    kayitlar = [
+        _banka("bir", vade_ay_max=120, doluluk_orani=0.4),
+        _banka("iki", vade_ay_max=60, doluluk_orani=0.3),
+        _banka("uc", tahsis_ucreti=0.5, doluluk_orani=0.2),
+    ]
+    cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
+
+    assert "Belirtilmemiş" in cevap.metin
+    assert "3 kaydın tamamında" in cevap.metin, cevap.metin
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
+
+
+def test_olcut_bir_kayitta_varsa_kapsam_beyani_yazilmaz() -> None:
+    """Beyan yalnız BOŞLUK kapsamın tamamıyken; yoksa yanlış iddia olur."""
+    kayitlar = [
+        _banka("oransiz", vade_ay_max=120, doluluk_orani=0.9),
+        _banka("oranli", kar_payi_orani=1.89, doluluk_orani=0.1),
+    ]
+    cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
+    assert "kaydın tamamında" not in cevap.metin
+
+
+def test_tek_kayitta_kapsam_beyani_yazilmaz() -> None:
+    """«1 kaydın tamamında» demek bilgi değil, gürültüdür."""
+    kayitlar = [_banka("tek", vade_ay_max=120, doluluk_orani=0.4)]
+    cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
+    assert "kaydın tamamında" not in cevap.metin

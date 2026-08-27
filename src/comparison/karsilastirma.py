@@ -161,13 +161,26 @@ def olcut_kapsaminda(kayit: KampanyaKaydi, alan_adi: str) -> bool:
     bir kaydı finansman sayıp sıralamaya sokmak, bilmediğimiz şeyi varsaymak
     olurdu.
     """
+    return turu_olcut_kapsaminda(kayit.kampanya_turu, alan_adi)
+
+
+def turu_olcut_kapsaminda(kampanya_turu: str | None, alan_adi: str) -> bool:
+    """`olcut_kapsaminda`'nın TAŞIYICIDAN BAĞIMSIZ hâli.
+
+    Aynı kapı iki farklı nesne üzerinden soruluyor: karşılaştırma motorunda
+    elde `KampanyaKaydi` var ve `kampanya_turu` düz bir dize; orkestratörün
+    profil kolunda elde `Kampanya` var ve aynı bilgi bir `Alan` içinde
+    (`kampanya.kampanya_turu.deger`). Kapıyı ikinci kez yazmak yerine tür
+    değerini alan bu sürüm ayrıldı — ADR 020'nin kapsam kararı tek yerde
+    kalsın diye (CLAUDE.md: «kopya tutma»).
+    """
     kapsam = OLCUT_KAPSAMI.get(alan_adi)
     if kapsam is None:
         return True
-    if not kayit.kampanya_turu:
+    if not kampanya_turu:
         return False
     try:
-        return KampanyaTuru(kayit.kampanya_turu) in kapsam
+        return KampanyaTuru(kampanya_turu) in kapsam
     except ValueError:
         return False
 
