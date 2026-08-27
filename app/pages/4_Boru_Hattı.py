@@ -184,14 +184,13 @@ def _hata_kutusu(paket: dict) -> None:
   ad = type(hata).__name__
   if "WebDriver" in ad or "SessionNotCreated" in ad:
     st.info(
-      "Chrome veya chromedriver bulunamadı. Toplama gerçek tarayıcı ister; "
-      "yalnız çıkarımı denemek için 2. sekmeyi `data/demo_raw` ya da üretim "
-      "`data/raw` kaynağıyla koşabilirsiniz."
+      "Chrome bulunamadı. Toplama gerçek tarayıcı gerektirir; yalnız "
+      "çıkarımı denemek isterseniz 2. sekmeyi kullanabilirsiniz."
     )
   elif "HTTP" in ad or "Timeout" in ad or "Connect" in ad:
     st.info(
-      "LLM sağlayıcısına ulaşılamadı. EVREN anahtarı (`.env`) ve ağ bağlantısını "
-      "denetleyin; hava boşluğunda `LLM_SAGLAYICI=ollama` ile koşun."
+      "Dil modeli servisine ulaşılamadı. Ağ bağlantısını ve servis "
+      "ayarlarını denetleyin."
     )
   if st.session_state.get("dev_mode", False) and paket.get("iz"):
     with st.expander("Yığın izi (geliştirici modu)"):
@@ -290,7 +289,7 @@ with sekme_toplama:
       [f"Demo (banka başına {DEMO_SAYFA_TAVANI} sayfa)", "Tam koşu (tüm sayfalar)"],
       key="bh_t_kip",
       disabled=MESGUL,
-      help="İkisi de GERÇEK kazıma. Demo kipi sayfa sayısını kısar, temposunu değil.",
+      help="İkisi de gerçek toplama yapar; demo kipi yalnız sayfa sayısını kısar.",
     )
   with k2:
     tum_kodlar = [kod for kod, _ in bankalar_secenegi]
@@ -329,11 +328,11 @@ with sekme_toplama:
 
   t_demo = t_kip.startswith("Demo")
   t_uretime = st.checkbox(
-    "üretim boru hattına yaz (`data/raw`)",
+    "Üretim verisine yaz",
     value=False,
     key="bh_t_uretim",
     disabled=MESGUL,
-    help="İşaretlenmedikçe hiçbir koşu üretim verisine dokunmaz.",
+    help="İşaretlenmedikçe koşu yalnız demo alanına yazar.",
   )
   t_dizin = HAM_DIZIN if t_uretime else DEMO_HAM_DIZIN
 
@@ -396,9 +395,8 @@ with sekme_toplama:
     )
     if t_demo and durum.kesfedilen:
       st.caption(
-        f"Demo kipinde çubuk dolmaz: keşfedilen URL'lerin yalnız ilk "
-        f"{DEMO_SAYFA_TAVANI}'i banka başına çekilir. Payda keşfedilen "
-        "URL sayısıdır, kırpılmış bir hedef değil."
+        f"Demo kipinde banka başına yalnız ilk {DEMO_SAYFA_TAVANI} sayfa "
+        "çekilir; bu yüzden çubuk sonuna kadar dolmaz."
       )
     st.markdown(
       banka_izgarasi(list(durum.bankalar.values())), unsafe_allow_html=True
@@ -490,10 +488,10 @@ with sekme_cikarim:
   with c1:
     c_kip = st.radio(
       "Koşu kipi",
-      ["Demo (demo alanındaki kayıtlar)", "Tam koşu (üretim `data/raw`)"],
+      ["Demo (demo alanındaki kayıtlar)", "Tam koşu (tüm kayıtlar)"],
       key="bh_c_kip",
       disabled=MESGUL,
-      help="Demo kipi 1. sekmenin yazdığı `data/demo_raw` kayıtlarıyla çalışır.",
+      help="Demo kipi 1. sekmenin topladığı kayıtlarla çalışır.",
     )
   c_demo = c_kip.startswith("Demo")
 
@@ -533,9 +531,9 @@ with sekme_cikarim:
     st.caption(f"Tam koşu: kaynaktaki **{havuz}** kaydın tamamı işlenir.")
 
   c_uretime = st.checkbox(
-    "üretim boru hattına yaz (`data/katilim.db`)",
+    "Üretim verisine yaz",
     value=False, key="bh_c_uretim", disabled=MESGUL,
-    help="İşaretlenmedikçe demo veritabanına yazılır; Genel Bakış etkilenmez.",
+    help="İşaretlenmedikçe demo alanına yazılır; diğer ekranlar etkilenmez.",
   )
   c_url = VERITABANI_URL if c_uretime else demo_veritabani()
 
@@ -546,8 +544,8 @@ with sekme_cikarim:
   )
   if SAGLAYICI_ADI == "ollama":
     st.warning(
-      "Yerel Ollama etkin. Streamlit açıkken kayıt başına ~2,5 dakika sürer "
-      "(ölçüm: CLAUDE.md, 8 GB makine — bellek takası). Demo kipinde adedi düşük tutun."
+      "Yerel model kullanılıyor — kayıt başına yaklaşık 2,5 dakika sürer. "
+      "Demo kipinde kayıt sayısını düşük tutun."
     )
 
   e1, e2, _ = st.columns([1, 1, 3])
@@ -562,8 +560,8 @@ with sekme_cikarim:
 
   if not havuz:
     st.warning(
-      "Bu kaynakta ham kayıt bulunmuyor. Önce 1. sekmeden toplama yapın "
-      "ya da kaynağı üretim `data/raw` olarak değiştirin."
+      "Bu kaynakta kayıt yok. Önce 1. sekmeden toplama yapın ya da "
+      "koşu kipini «Tam koşu» olarak değiştirin."
     )
   if MESGUL and st.session_state.bh_is_turu == "toplama":
     st.info("Şu an bir toplama koşusu sürüyor — aynı anda tek iş çalışır.")
@@ -656,8 +654,8 @@ with sekme_cikarim:
       st.markdown("**Son işlenen kayıtlar**")
       st.markdown(kayit_seridi(durum.kayitlar), unsafe_allow_html=True)
       st.caption(
-        "Yeşil çubuk **doluluk** — şemadaki alanların yüzde kaçı dolduruldu · "
-        "Mavi çubuk **güven** — çıkarılan alanların ortalama güven skoru"
+        "Yeşil çubuk: alanların yüzde kaçı dolduruldu · "
+        "Mavi çubuk: çıkarılan alanların ortalama güveni"
       )
     _gunluk_ciz(durum.olaylar, anahtar="bh_c_gunluk")
 
@@ -759,13 +757,11 @@ with sekme_tazelik:
   # ---------------------------------------------------------------------
   st.subheader("A · Yeni Kampanya Keşfi")
   st.markdown(
-    "Bankanın kampanya **listesi** yeniden keşfedilir ve envanterimizle "
-    "karşılaştırılır: **listede olup elimizde olmayan** kampanya var mı?"
+    "Bankaların kampanya listesi yeniden taranır: **elimizde olmayan yeni "
+    "kampanya çıkmış mı?**"
   )
   st.caption(
-    "Aşağıdaki B bölümü farklı bir soruyu cevaplar — elimizdekiler bayatladı "
-    "mı. Keşif onu göremez, çünkü envanterde olmayan bir kampanyanın adresi "
-    "hiç bilinmez. Detay sayfası ÇEKİLMEZ: yalnız liste keşfi koşar."
+    "Yalnız liste taranır, kampanya sayfaları indirilmez."
   )
 
   kesif_taban = kesif_taban_oku()
@@ -802,9 +798,8 @@ with sekme_tazelik:
 
   # SÜRE ÖLÇÜLENDİR: Hayat Finans 9 sn, Albaraka 81 sn (27 Ağu, gerçek koşu).
   st.caption(
-    f"Seçili **{len(k_secili)} banka** · ölçülen keşif süresi banka başına "
-    "**9–81 sn** (liste uzunluğuna göre) · robots kapısı ve nezaket kuralı "
-    "keşifte de işler · yazma hedefi `data/izleme/kesif.json`."
+    f"Seçili **{len(k_secili)} banka** · banka başına 9–81 saniye · "
+    "üretim verisine dokunulmaz."
   )
 
   kd1, kd2, _ = st.columns([1, 1, 3])
@@ -892,9 +887,8 @@ with sekme_tazelik:
         )
       if k_ozet.toplam_yeni:
         st.warning(
-          f"**{k_ozet.toplam_yeni} kampanya listede var ama elimizde yok.** "
-          "Toplamak için Sekme 1'den ilgili bankaları koşun — keşif kendi "
-          "başına veri çekmez."
+          f"**{k_ozet.toplam_yeni} yeni kampanya bulundu.** Toplamak için "
+          "1. sekmeyi kullanın."
         )
         st.dataframe(
           pd.DataFrame(
@@ -941,9 +935,8 @@ with sekme_tazelik:
       if kaldirilanlar:
         with st.expander(f"Listeden düşenler ({len(kaldirilanlar)})"):
           st.caption(
-            "Önceki keşifte görünüp bu koşuda görünmeyen adresler. «Süresi "
-            "geçti» anlamına GELMEZ: arşive taşınmış ya da o turda kaçırılmış "
-            "olabilir."
+            "Önceki taramada görünüp bu koşuda görünmeyenler. Kampanyanın "
+            "bittiği anlamına gelmez — arşive taşınmış olabilir."
           )
           st.dataframe(
             pd.DataFrame(kaldirilanlar, columns=["Banka", "Kaynak"]),
@@ -954,11 +947,9 @@ with sekme_tazelik:
       if gorunmeyen:
         with st.expander(f"Envanterde olup listede görünmeyen ({gorunmeyen}) — bilgi"):
           st.caption(
-            "Bu sayı «kaldırıldı» DEĞİLDİR ve öyle raporlanmaz. Ölçüldü "
-            "(27 Ağu): `data/raw` yalnız kampanya detaylarından ibaret değil — "
-            "Albaraka'nın 136 kaydının 88'i ürün sayfası ve `kampanya_urlleri()` "
-            "onları tasarımı gereği hiç döndürmüyor. Bu yüzden «kaldırılmış» "
-            "yönü envantere değil, ÖNCEKİ KEŞFE karşı hesaplanır."
+            "Elimizdeki kayıtların bir bölümü kampanya değil ürün sayfası; "
+            "kampanya listesinde görünmemeleri normaldir. Bu sayı bir eksiklik "
+            "belirtisi değildir."
           )
       st.caption(f"Keşif tabanı: `{k_ozet.taban_dosyasi}`")
   else:
@@ -975,15 +966,11 @@ with sekme_tazelik:
   taban = taban_oku()
 
   st.markdown(
-    "Kayıtlı kampanya sayfaları **son yoklamadan beri değişmiş mi?** "
-    "Önce HTTP doğrulayıcı (`ETag` / `Last-Modified`), yoksa içerik özeti."
+    "Elimizdeki kampanya sayfaları **son bakıştan beri değişmiş mi?**"
   )
   st.info(
-    "Bu bir **değişiklik tespitidir, tazeleme değildir.** Değişmiş bulunan "
-    "sayfa kendiliğinden yeniden çekilmez — toplama Sekme 1'den, sizin "
-    "kararınızla yapılır. Sebep: `data/raw` ve `data/katilim.db` yayımlanan "
-    "ölçümlerin üzerinde koştuğu veridir; kendiliğinden değişirse `make eval` "
-    "çıktısı ile `docs/SONUCLAR.md` sessizce ayrışır."
+    "Bu tarama yalnız **tespit eder**, veriyi tazelemez. Değişmiş bir sayfayı "
+    "yeniden toplamak 1. sekmeden, sizin kararınızla yapılır."
   )
 
   z1, z2, z3 = st.columns(3)
@@ -994,10 +981,8 @@ with sekme_tazelik:
     tetikleyici.sonraki_calisma(datetime.now()).strftime("%d %b %H:%M"),
   )
   st.caption(
-    "Tetikleyici **tanımlı ama bilerek kurulu değil**: kurulu bir zamanlayıcı "
-    "teslim için donmuş ölçüm verisine yazabilir. Ürünleşince kurulacak satır "
-    f"hazır — `{tetikleyici.cron_satiri()}` "
-    "(`docs/KURUMSAL_ENTEGRASYON.md` §5 ve §8)."
+    "Zamanlayıcı bilerek kapalı: otomatik koşu, üzerinde ölçüm yayımladığımız "
+    "veriyi habersiz değiştirebilir. Kurulum satırı hazır, ürünleşince açılır."
   )
 
   st.divider()
@@ -1035,9 +1020,8 @@ with sekme_tazelik:
 
   # SÜRE UYARISI ölçülen nezaket kuralından türer, tahmin değil.
   st.caption(
-    f"**{z_adet} adres** yoklanacak · istek arası ≥2 sn → kabaca "
-    f"**{z_adet * 2 // 60} dk {z_adet * 2 % 60} sn**. "
-    "Yazma hedefi `data/izleme/tazelik.json` — üretim verisine dokunulmaz."
+    f"**{z_adet} adres** taranacak · yaklaşık "
+    f"**{z_adet * 2 // 60} dk {z_adet * 2 % 60} sn** · üretim verisine dokunulmaz."
   )
 
   v1, v2, _ = st.columns([1, 1, 3])
@@ -1095,8 +1079,8 @@ with sekme_tazelik:
     )
     if durum.dogrulayici_ile:
       st.caption(
-        f"{durum.dogrulayici_ile} adres **sayfa gövdesi hiç indirilmeden** "
-        "yanıtlandı (HTTP 304). Ölçüldü: 9 bankanın 2'si doğrulayıcı veriyor."
+        f"{durum.dogrulayici_ile} adres **sayfa indirilmeden** yanıtlandı — "
+        "banka sunucusu «değişmedi» dedi."
       )
     st.markdown(banka_izgarasi(list(durum.bankalar.values())), unsafe_allow_html=True)
     if durum.aktif_url:
@@ -1134,9 +1118,8 @@ with sekme_tazelik:
         )
       if z_ozet.taban_kuruldu_mu:
         st.info(
-          f"**Taban çizgisi kuruldu** ({z_ozet.ilk_kayit} adres). Bu koşu "
-          "değişiklik iddia etmez: karşılaştırılacak önceki ölçüm yoktu. "
-          "İkinci koşudan itibaren değişiklikler görünür."
+          f"**Başlangıç kaydı alındı** ({z_ozet.ilk_kayit} adres). "
+          "Değişiklikler bir sonraki taramadan itibaren görünür."
         )
       elif z_ozet.degisti == 0:
         st.success(
