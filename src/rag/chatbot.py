@@ -20,6 +20,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
+from difflib import get_close_matches
 from functools import lru_cache
 
 import httpx as _httpx
@@ -34,6 +35,7 @@ from src.comparison.karsilastirma import (
 )
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
+from src.terim_sozlugu import tanim_sorusu_mu, terim_bul
 from src.schema import (
     ALAN_ETIKETLERI,
     SEGMENT_ORNEKLERI,
@@ -59,6 +61,7 @@ class Niyet(StrEnum):
     KARSILASTIRMA = "karsilastirma"
     KOSUL_SORGUSU = "kosul_sorgusu"
     KORPUS_SORGUSU = "korpus_sorgusu"
+    TANIM_SORGUSU = "tanim_sorgusu"
     KAPSAM_DISI = "kapsam_disi"
 
 
@@ -396,6 +399,48 @@ def _benzersiz_ikililer(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
     return {s: next(iter(b)) for s, b in ikili_bankalari.items() if len(b) == 1}
 
 
+YAKINLIK_ESIGI = 0.88
+"""Yazım hatası toleransı — ölçülerek seçildi (27 Ağustos).
+
+    albraka   ~ albaraka      0,933   ← düzeltilmeli
+    kuvetturk ~ kuveytturk    0,947   ← düzeltilmeli
+    emlakci   ~ emlak         0,833   ← DÜZELTİLMEMELİ
+    katilim   ~ tomkatilim    0,824   ← DÜZELTİLMEMELİ
+
+Eşik gerçek yazım hatalarıyla meşru başka sözcükleri ayırmak zorunda. 0,88
+ikisinin arasında duruyor: 0,833'te «emlakçı» Türkiye Emlak'a, 0,824'te
+«katılım» T.O.M.'a kilitlenirdi ve «katılım bankacılığı nedir?» sorusu tek
+bankaya düşerdi."""
+
+ASGARI_YAKINLIK_UZUNLUGU = 5
+"""Kısa sözcükte yakınlık gürültüdür: «tom» ile «ton» arasındaki oran, iki
+farklı sözcüğü aynı sayan bir orandır."""
+
+
+def _yakin_banka(
+    bitisik_sozcukler: list[str], anahtar_banka: dict[str, str]
+) -> str | None:
+    """Yazım hatasını en yakın banka anahtarına götürür. LLM YOK.
+
+    NEDEN LLM DEĞİL: bu iş bir dil modeline gitmez. Mesafe hesabı
+    deterministik, ağsız, mikrosaniyelik ve test edilebilir; model çağrısı
+    üçünü de kaybettirir ve `chatbot`'un «LLM yok» iddiasını bozardı.
+    Yazım hatası bir ANLAMA problemi değil, bir eşleştirme problemidir.
+
+    Yalnız HİÇBİR kesin eşleşme bulunamadığında çağrılır — kesin eşleşmeyi
+    asla ezmez.
+    """
+    for sozcuk in bitisik_sozcukler:
+        if len(sozcuk) < ASGARI_YAKINLIK_UZUNLUGU:
+            continue
+        yakin = get_close_matches(
+            sozcuk, anahtar_banka.keys(), n=1, cutoff=YAKINLIK_ESIGI
+        )
+        if yakin:
+            return anahtar_banka[yakin[0]]
+    return None
+
+
 def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
     """Sorudaki banka adlarını kayıtlarla eşler.
 
@@ -444,7 +489,37 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
             for parca in parcalar
         ):
             eslesen.append(kayit)
-    return eslesen
+
+    if eslesen:
+        return eslesen
+
+    # YAZIM HATASI — «albraka», «kuvet türk». Yalnız burada, yani kesin
+    # eşleşme hiç bulunamadığında denenir (bkz. `_yakin_banka`).
+    anahtar_banka: dict[str, str] = {**tekil_adlar, **tekil_ikililer}
+    for kayit_adi in {k.banka_adi for k in kayitlar}:
+        anahtar_banka[_bitisik_anahtar(" ".join(arama_anahtari(kayit_adi).split()[:2]))] = kayit_adi
+
+    # BELİRTEÇ SÖZCÜKLERİ YAKINLIĞA GİRMEZ.
+    #
+    # «tüm katılım bankaları» -> «tumkatilim» ~ «tomkatilim» = 0,90 ve o soru
+    # T.O.M.'a kilitleniyordu. Eşiği yükseltmek yanlış çözümdü: «tüm», «her»,
+    # «hangi» korpusun TAMAMINA soruluyor, yani orada düzeltilecek bir yazım
+    # hatası yok. `_BELIRTEC_SOZCUKLERI` bu ayrımı zaten tutuyor.
+    parcali = [
+        sozcuk
+        for sozcuk in anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split()
+        if sozcuk not in _BELIRTEC_SOZCUKLERI and sozcuk not in _GENEL_BANKA_SOZCUKLERI
+    ]
+    tekil_sozcukler = [_bitisik_anahtar(sozcuk) for sozcuk in parcali]
+    tekil_sozcukler += [
+        _bitisik_anahtar(f"{once} {sonra}")
+        for once, sonra in zip(parcali, parcali[1:], strict=False)
+    ]
+
+    yakin_ad = _yakin_banka(tekil_sozcukler, anahtar_banka)
+    if yakin_ad is None:
+        return []
+    return [k for k in kayitlar if k.banka_adi == yakin_ad]
 
 
 _GENEL_BANKA_SOZCUKLERI = frozenset(
@@ -1384,6 +1459,72 @@ _AY_ADLARI = {
 """Ay adları — tarih NOKTALI yazılamıyor, gerekçesi `_korpus_cevabi`'nde."""
 
 
+_DEGER_IPUCLARI = ("kac", "ne kadar", "hangi banka", "hangi bankada", "hangisi")
+"""Bir SAYI ya da BANKA isteyen ipuçları — «nedir» geçse bile tanım sorusu değil."""
+
+
+def _tanim_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap | None:
+    """«Kâr payı nedir?» — tanım, kampanya değil.
+
+    NEDEN VAR — 27 Ağustos'ta ölçüldü:
+
+        soru  : «Kâr payı nedir?»
+        cevap : «Kuveyt Türk … — Alışveriş Puanı Kampanyası: aylık %1,99 …»
+
+    Kullanıcı bir TANIM sordu, rastgele bir kampanyanın alan dökümünü aldı.
+    Oysa tanım kendi depomuzda, `docs/TERIM_SOZLUGU.md`'de 78 satırlık bir
+    sözlükte yazılı duruyordu; sözlüğün çıkarım isteminden başka tüketicisi
+    yoktu. Şartname 5.5'in istediği terminoloji hâkimiyeti tam olarak budur.
+
+    KÖKEN `SISTEM`: tanımdaki sayılar («%15 üstü aylık oran değildir») bir
+    kampanya kaydında değil, kendi belgemizde duruyor. `YAPISAL` ölçütü
+    («kayıtta birebir karşılığı olmalı») meşru bir tanımı bloklardı. Sayılar
+    `hesap` içinde beyan edilir ve sözlük dosyasından yeniden üretilebilir —
+    `Gerekce.sayilar` ile aynı refleks.
+    """
+    if not tanim_sorusu_mu(soru):
+        return None
+
+    # «NEDİR» HER ZAMAN TANIM SORUSU DEĞİLDİR — ölçüldü (27 Ağustos):
+    #
+    #     «Kuveyt Türk'ün konut finansmanı kâr payı oranı nedir?»
+    #
+    # Jüri havuzunun 1. ve 5. maddesi bu kalıpta ve bir DEĞER istiyor. Tanım
+    # yolu bunları da yutunca chatbot bankanın oranı yerine sözlük tanımını
+    # dönüyordu. İki işaret ayırıyor: soruda BANKA adlandırılmışsa ya da bir
+    # sayı isteniyorsa («kaç», «ne kadar»), sorulan şey veridir.
+    if _bankalari_bul(soru, kayitlar):
+        return None
+    anahtar = arama_anahtari(soru)
+    if any(ipucu in anahtar for ipucu in _DEGER_IPUCLARI):
+        return None
+
+    terim = terim_bul(soru)
+    if terim is None:
+        return None
+
+    satirlar = [f"**{terim.ad}** — {terim.tanim}"]
+    if terim.karsilik and terim.karsilik != "—":
+        satirlar.append(f"\nSistemdeki karşılığı: {terim.karsilik}")
+
+    govde = "\n".join(satirlar)
+    hesap = {
+        f"sozluk_{i}": deger
+        for i, (_, deger) in enumerate(_metindeki_sayilar(govde))
+    }
+    return Cevap(
+        parcalar=[
+            CevapParcasi(govde, Koken.SISTEM, hesap=hesap),
+            CevapParcasi(
+                "\nTanım, projenin terim sözlüğünden alınmıştır "
+                "(`docs/TERIM_SOZLUGU.md`, şartname madde beş nokta beş).",
+                Koken.DUZ,
+            ),
+        ],
+        niyet=Niyet.TANIM_SORGUSU,
+    )
+
+
 def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # Liste sorusu sıralama DEĞİL; biçimi ayrı (bkz. `_liste_sorusu_mu`).
     #
@@ -1740,6 +1881,13 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     """Chatbot'un tek giriş noktası."""
     kayitlar = tum_kayitlar() if kayitlar is None else kayitlar
     niyet = niyet_belirle(soru)
+
+    # TANIM SORULUYORSA kampanya değil, sözlük dönmeli. Kapsam kapısından
+    # önce: «Riba nedir?» soruda hiçbir alan sözcüğü taşımıyor ama sözlükte
+    # tanımı var ve şartname 5.5 bunu istiyor.
+    tanim = _tanim_cevabi(soru, kayitlar)
+    if tanim is not None:
+        return tanim
 
     # VERİ SETİNİN KENDİSİ soruluyorsa kayıt dökümü değil, kapsam dönmeli.
     # Kapsam kapısından ÖNCE: «Veriler ne zaman toplandı?» sorusu hiçbir alan

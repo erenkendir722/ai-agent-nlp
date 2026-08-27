@@ -41,7 +41,8 @@ NIYET_ETIKETLERI = {
   Niyet.KARSILASTIRMA: ("②", "Karşılaştırma", "Deterministik karşılaştırma motoru"),
   Niyet.KOSUL_SORGUSU: ("③", "Koşul sorgusu", "Metin arama (RAG)"),
   Niyet.KORPUS_SORGUSU: ("④", "Veri seti sorgusu", "Korpus kapsamı — sayım"),
-  Niyet.KAPSAM_DISI: ("⑤", "Kapsam dışı", "Kibar ret"),
+  Niyet.TANIM_SORGUSU: ("⑤", "Terim sorgusu", "Terim sözlüğü (şartname 5.5)"),
+  Niyet.KAPSAM_DISI: ("⑥", "Kapsam dışı", "Kibar ret"),
 }
 
 ORNEK_SORULAR = [
@@ -50,6 +51,7 @@ ORNEK_SORULAR = [
   "En uzun vade hangi bankada?",
   "Taşıt finansmanı sunan bankalar hangileri?",
   "Veri setinde kaç kampanya var?",
+  "Kâr payı nedir?",
 ]
 KALKAN_ORNEGI = "Kampanya koşulları neler?"
 
