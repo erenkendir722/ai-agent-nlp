@@ -398,7 +398,13 @@ def test_yon_beyan_edilmemis_alanda_siralama_yapilmaz() -> None:
 
 
 def test_olcut_hicbir_kayitta_yoksa_kapsam_beyan_edilir() -> None:
-    """Eksik olan kampanya değil kaynağın tamamıysa, bu SÖYLENİR."""
+    """Eksik olan kampanya değil kaynağın tamamıysa, bu SÖYLENİR.
+
+    TEK KAYIT SEÇİLMEZ: sorulan ölçüt hiçbir kayıtta yoksa «en iyi kayıt»
+    diye bir şey yoktur ve hakemlik `doluluk_orani`'na düşer — soruyla
+    ilgisiz bir ölçü. Ölçüldü: Kuveyt Türk'ün dokuz konut kaydının dördü
+    doluluk 0,438'de eşitti ve kazanan o dördün EN ZAYIFI oldu.
+    """
     kayitlar = [
         _banka("bir", vade_ay_max=120, doluluk_orani=0.4),
         _banka("iki", vade_ay_max=60, doluluk_orani=0.3),
@@ -406,8 +412,45 @@ def test_olcut_hicbir_kayitta_yoksa_kapsam_beyan_edilir() -> None:
     ]
     cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
 
-    assert "Belirtilmemiş" in cevap.metin
-    assert "3 kaydın tamamında" in cevap.metin, cevap.metin
+    assert "3 kaydın hiçbirinde" in cevap.metin, cevap.metin
+    assert len(cevap.kaynaklar) == 3, "kapsam tek kayda indirgenmiş"
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
+
+
+def test_kapsam_cevabinda_sorulan_urun_one_gecer() -> None:
+    """«Konut» sorulunca konut adlı ürün, arsa/işyerinden ÖNCE gelir.
+
+    `_urun_filtrele` kümeyi tür+ürün+URL ile kurar; Kuveyt Türk'ün dokuz
+    kaydının dokuzu da adresinde «konut-finansmanlari» geçtiği için eşleşir.
+    Küme için doğrusu budur, sıra için değil — aynı eşleştirici burada
+    yalnız ÜRÜN ADIYLA çağrılır, ikinci bir sözlük yazılmadan.
+    """
+    # Arsa kaydı kümeye ADRESİNDEN giriyor — gerçekte de öyle: Kuveyt Türk'ün
+    # arsa sayfası `/konut-finansmanlari/arsa-finansmani` altında duruyor.
+    kayitlar = [
+        _banka("arsa", urun_turu="Arsa Finansmanı",
+               kaynak_url="https://ornek.test/konut-finansmanlari/arsa-finansmani",
+               vade_ay_max=60, tahsis_ucreti=1.1, doluluk_orani=0.9),
+        _banka("konut", urun_turu="Konut Finansmanı",
+               kaynak_url="https://ornek.test/konut-finansmanlari/konut-finansmani",
+               vade_ay_max=120, doluluk_orani=0.1),
+    ]
+    cevap = sor("K Katılım konut finansmanı kâr payı oranı kaç", kayitlar)
+
+    satirlar = [s for s in cevap.metin.splitlines() if s.startswith("- **")]
+    assert "Konut Finansmanı" in satirlar[0], cevap.metin
+
+
+def test_kapsam_kirpmasi_beyan_edilir() -> None:
+    """Beşten uzun kapsamda gizlenen kayıt sayısı yazılır."""
+    kayitlar = [
+        _banka(f"k{i}", vade_ay_max=60 + i, doluluk_orani=0.5)
+        for i in range(8)
+    ]
+    cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
+
+    assert "3 kayıt gösterilmiyor" in cevap.metin, cevap.metin
+    assert len(cevap.kaynaklar) == 5
     assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
 
 

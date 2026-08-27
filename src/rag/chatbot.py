@@ -1415,11 +1415,112 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
                 hesap={"taranan_kayit": float(len(kayitlar))},
             )
         )
+    # SORULAN ÖLÇÜT HİÇBİR KAYITTA YOKSA TEK KAYIT SEÇİLMEZ (28 Ağustos).
+    #
+    #     soru  : «kuveyttürk konut finansmanı oranı»
+    #     cevap : «Gurbetten Sılaya Gayrimenkul Finansmanı — … Belirtilmemiş»
+    #
+    # Kapsam beyanı eklenmişti ama asıl kusur duruyordu: hakemlik zinciri
+    # (taşıdığı alan sayısı → alanın değeri → doluluk) sorulan alan HİÇBİR
+    # kayıtta yokken ilk iki basamağı boş geçiyor ve kararı `doluluk_orani`
+    # veriyor — soruyla ilgisiz bir ölçü. Ölçüldü: dokuz kaydın DÖRDÜ
+    # 0,438'de eşit, sıralamayı liste sırası belirliyor ve kazanan
+    # «Gurbetten Sılaya» o dördün EN ZAYIFI (vade bile yok, yalnız tahsis
+    # ücreti). Bankanın asıl «Konut Finansmanı» sayfası ekrana hiç çıkmıyor.
+    #
+    # Doğru çözüm hakemi düzeltmek değil, TEK KAYIT SEÇMEMEKTİR: sorulan
+    # ölçüt hiçbir kayıtta yoksa «en iyi kayıt» diye bir şey yoktur ve
+    # rastgele birini vitrine koymak, kullanıcıya sistemin yalnız onu
+    # bildiğini düşündürür. Gösterilecek olan kapsamın kendisidir.
+    #
+    # SIRA BİLGİLENDİRİCİLİKTEN GELİR (muhakeme ajanındaki refleksin aynısı):
+    # gösterecek alanı olan kayıt öne çıkar, boş sayfa dibe iner. Doluluk
+    # ikincil hakem olarak kalır.
+    if kapsam_bosluklari and len(kayitlar) > 1:
+        return _kapsam_cevabi(soru, kayitlar, kapsam_bosluklari)
+
     return Cevap(
         parcalar=parcalar,
         niyet=Niyet.TEKIL_SORGU,
         kaynaklar=[_kaynakca(kayit)],
         kullanilan_kayitlar=[kayit],
+    )
+
+
+KAPSAM_UST_SINIRI = 5
+"""Ölçüt hiçbir kayıtta yokken kaç kayıt listelenir — bkz. `_kapsam_cevabi`."""
+
+
+def _kapsam_cevabi(
+    soru: str, kayitlar: list[KampanyaKaydi], eksik_olcutler: list[str]
+) -> Cevap:
+    """Sorulan ölçüt hiçbir kayıtta yokken KAPSAMI gösterir, tek kaydı değil.
+
+    Kırpma BEYAN EDİLİR (`_profil_cevabi` ile aynı kural): listeden düşen
+    kayıt varsa kaç tane olduğu yazılır, yoksa cevap kendi başlığıyla çelişir.
+
+    SIRANIN İLK BASAMAĞI ÜRÜN ALAKASI. `_urun_filtrele` kümeyi kurarken
+    `urun_etiketi_uyar`'a tür + ürün + URL'i BİRLİKTE verir; Kuveyt Türk'ün
+    dokuz kaydının dokuzu da adresinde «konut-finansmanlari» geçtiği için
+    eşleşiyor — «2B Finansmanı», «İş Yeri Finansmanı», «Arsa Finansmanı»
+    dâhil. Küme için doğrusu budur (hepsi o bölümün ürünü), ama SIRA için
+    yetersiz: «konut finansmanı» soran kullanıcıya İş Yeri Finansmanı'nı
+    önce göstermek soruyu ıskalamaktır.
+
+    Ayrım için ikinci bir sözlük yazılmaz — aynı eşleştirici, DAR girdiyle
+    çağrılır: yalnız ürün adı. «Konut Finansmanı» ve «İlk Evim Konut
+    Finansmanı» geçer, «Arsa Finansmanı» geçmez. Ürün sorulmamışsa bu
+    basamak herkes için eşittir ve sıra bilgilendiriciliğe düşer.
+    """
+    etiket = sorulan_urun(soru)
+
+    def _bilgi_sayisi(kayit: KampanyaKaydi) -> tuple[int, int, float]:
+        alaka = (
+            1
+            if etiket and urun_etiketi_uyar(etiket, None, kayit.urun_turu, "")
+            else 0
+        )
+        n = sum(getattr(kayit, a, None) is not None for a in _GOSTERILECEK_ALANLAR)
+        return (alaka, n, kayit.doluluk_orani)
+
+    sirali = sorted(kayitlar, key=_bilgi_sayisi, reverse=True)
+    gosterilen = sirali[:KAPSAM_UST_SINIRI]
+    banka = gosterilen[0].banka_adi
+
+    satirlar = [f"**{banka}** — sorunuza uyan kayıtlar:\n"]
+    for kayit in gosterilen:
+        tur = tur_etiketi(kayit.urun_turu or kayit.kampanya_turu) or "Kampanya"
+        alanlar = [
+            f"{alan_etiketi(a)}: {alan_goster(a, d, kayit.birim(a))}"
+            for a in _GOSTERILECEK_ALANLAR
+            if (d := getattr(kayit, a, None)) is not None
+        ]
+        if kayit.masrafsiz_mi is not None:
+            alanlar.append(f"Masraf: {'alınmıyor' if kayit.masrafsiz_mi else 'alınıyor'}")
+        satirlar.append(
+            f"- **{tur}** — " + (" · ".join(alanlar) if alanlar else "sayısal bilgi yok")
+        )
+
+    hesap = {"taranan_kayit": float(len(kayitlar))}
+    beyan = (
+        f"\n> **{', '.join(eksik_olcutler).capitalize()}** bu "
+        f"**{len(kayitlar)} kaydın hiçbirinde** yayımlanmamış — tek bir "
+        "kampanyanın eksiği değil. Bankanın kendi hesaplama aracına bakılmalı."
+    )
+    if len(kayitlar) > KAPSAM_UST_SINIRI:
+        gizli = len(kayitlar) - KAPSAM_UST_SINIRI
+        beyan += f" Yukarıda en dolu {KAPSAM_UST_SINIRI} kayıt var; {gizli} kayıt gösterilmiyor."
+        hesap["gizlenen"] = float(gizli)
+        hesap["ust_sinir"] = float(KAPSAM_UST_SINIRI)
+
+    return Cevap(
+        parcalar=[
+            CevapParcasi("\n".join(satirlar), Koken.YAPISAL),
+            CevapParcasi(beyan, Koken.SISTEM, hesap=hesap),
+        ],
+        niyet=Niyet.TEKIL_SORGU,
+        kaynaklar=[_kaynakca(k) for k in gosterilen],
+        kullanilan_kayitlar=list(gosterilen),
     )
 
 
