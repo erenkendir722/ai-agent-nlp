@@ -7,13 +7,12 @@
 </head>
 <body>
 
-<!-- SVARTAL markası — `marka/svartal-logo.png` gelene kadar vekil.
-     Gerçek dosya konunca her sayfadaki <svg><use/></svg> yerine
-     <img src="marka/svartal-logo.png"> yazmak yeter; yer ve boyut aynı. -->
+<!-- SVARTAL markası — `marka/svartal-logo.png` gelene kadar vekil SVG.
+     Gerçek dosya konunca <use href="#marka"/> yerine <img> yazmak yeter. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="marka" viewBox="0 0 100 100">
-    <rect width="100" height="100" rx="10" fill="#F5F4F0"/>
-    <path d="M64 13 L25 55 L46 55 L36 87 L75 45 L54 45 Z" fill="#E85D2A"/>
+    <rect width="100" height="100" rx="10" fill="#171A20"/>
+    <path d="M64 13 L25 55 L46 55 L36 87 L75 45 L54 45 Z" fill="#E8622A"/>
   </symbol>
 </svg>
 
@@ -22,358 +21,482 @@
 <section class="sayfa kapak"></section>
 
 
-<!-- ══════════ 02 · SVARTAL ══════════ -->
+<!-- ══════════ 02 · PROBLEM ══════════ -->
 <section class="sayfa">
-  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
-
-  <div style="display:flex;align-items:center;gap:30px;margin-top:34px;">
-    <svg viewBox="0 0 100 100" style="width:96px;height:96px;flex:none;"><use href="#marka"/></svg>
-    <div>
-      <div style="font-size:74px;font-weight:700;letter-spacing:-.04em;line-height:1;">SVARTAL</div>
-      <div style="font-size:18px;font-weight:700;color:var(--turuncu);margin-top:10px;">
-        Katılım Bankacılığı Finansal Metin Madenciliği ve Akıllı Karşılaştırma Sistemi
-      </div>
-    </div>
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">⚠ SEKTÖREL PROBLEM &amp; DARBOĞAZ</div>
   </div>
 
-  <div style="font-size:32px;font-weight:700;margin-top:52px;letter-spacing:-.02em;line-height:1.25;">
-    Kaynağı olmayan sayı <span class="turuncu">üretmeyen</span> bir sistem.
-  </div>
-  <p style="margin-top:14px;max-width:840px;">
-    Dokuz katılım bankasının kampanya metinlerini yapısal veriye çeviriyoruz.
-    Kanıtı olmayan bir değer üretilemez — bunu slaytta değil, <b>kodda kısıt olarak</b> uyguluyoruz.
-  </p>
-
-  <div style="display:flex;gap:58px;margin-top:88px;">
-    <div><div class="dev">979</div><div class="rakam-etiket">işlenmiş kampanya</div></div>
-    <div><div class="dev">9</div><div class="rakam-etiket">katılım bankası<br>faal olanın tamamı</div></div>
-    <div><div class="dev" style="color:var(--mor);">16</div><div class="rakam-etiket">alanlı kanıt zinciri</div></div>
-    <div><div class="dev" style="color:var(--turkuaz);" data-sayi="test">1654</div><div class="rakam-etiket">geçen test</div></div>
-    <div><div class="dev" style="color:var(--turkuaz);">0</div><div class="rakam-etiket">ticari dış servis<br>bağımlılığı</div></div>
-  </div>
-
-  <div class="altbilgi">
-    <span><b>Muhammed Eren</b> Mimari &nbsp;·&nbsp; <b>Samet</b> Bilgi çıkarımı ve ölçüm &nbsp;·&nbsp;
-          <b>Görkem</b> Veri toplama &nbsp;·&nbsp; <b>Esra</b> Arayüz ve asistan</span>
-    <span class="no">02</span>
-  </div>
-</section>
-
-
-<!-- ══════════ 03 · PROBLEM ══════════ -->
-<section class="sayfa">
-  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
-  <div class="baslik"><span class="no">03</span><h2>Aynı bilgi, dört farklı ifade</h2></div>
-  <div class="spot">Katılım bankacılığında ortak veri biçimi yok: ne API var, ne indirilebilir tablo. Şartname 5.2 bunu dört ifadeyle örnekliyor.</div>
+  <div class="baslik"><h2>En Düşük Oran, En Ucuz Finansman <span class="v">Değildir</span></h2></div>
+  <div class="spot">Katılım bankacılığında standart API yoktur; kurumlar aynı bilgiyi farklı jargon ve gizli maliyetlerle sunar.</div>
 
   <div class="govde satir" style="align-items:stretch;">
-    <div class="kolon" style="flex:1.1;display:flex;flex-direction:column;justify-content:center;">
-      <div style="font-size:27px;line-height:2;color:var(--sonuk);letter-spacing:-.01em;">
-        <span class="turuncu" style="font-weight:700;">“%2,05 kâr payı oranı”</span><br>
-        “avantajlı kâr payı fırsatı”<br>
-        “özel oranlı finansman”<br>
-        “düşük maliyetli finansman”
+    <div class="kolon" style="flex:1;">
+      <div class="kart" style="height:100%;">
+        <div class="kart-baslik"><span class="im">📄</span>Aynı Bilgi, Dört Farklı İfade <span style="color:var(--sonuk);font-weight:400;">(Şartname 5.2)</span></div>
+        <div class="ifade"><span class="m">"%2,05 kâr payı oranı"</span><span class="e var">[SAYI VAR]</span></div>
+        <div class="ifade"><span class="m">"avantajlı kâr payı fırsatı"</span><span class="e yok">[SAYI YOK]</span></div>
+        <div class="ifade"><span class="m">"özel oranlı finansman"</span><span class="e yok">[SAYI YOK]</span></div>
+        <div class="ifade"><span class="m">"düşük maliyetli finansman"</span><span class="e yok">[SAYI YOK]</span></div>
+        <div class="serit kirmizi-z" style="margin-top:14px;">
+          <b class="kirmizi">Standart LLM tuzağı:</b> Sayı içermeyen metinlerde halüsinasyonla oran uydurur.
+          SVARTAL, kanıtı olmayan değeri <b>kod seviyesinde boş bırakır</b> — deneyen program çöker.
+        </div>
       </div>
-      <p style="margin-top:28px;font-size:16px;">
-        İlkinde sayı var, diğer üçünde yok.<br>
-        <b>Sayı uyduran bir sistem son üçünde yanlış oran üretir.</b>
-      </p>
     </div>
 
-    <div class="kolon" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
-      <div class="kart vurgu">
-        <div class="kart-baslik o">En düşük oran, en ucuz ürün demek değildir</div>
-        <table style="font-size:15px;">
-          <tr><td>%1,87 kâr payı<br><span class="kucuk">+ 20.000 TL tahsis ücreti</span></td>
-              <td style="text-align:right;font-size:23px;font-weight:700;color:var(--krem);white-space:nowrap;">2.033.129 TL</td></tr>
-          <tr><td>%1,89 kâr payı<br><span class="kucuk">masrafsız</span></td>
-              <td style="text-align:right;font-size:23px;font-weight:700;color:var(--turkuaz);white-space:nowrap;">2.028.925 TL</td></tr>
+    <div class="kolon" style="flex:1;">
+      <div class="kart turuncu" style="height:100%;">
+        <div class="kart-baslik t"><span class="im">🧮</span>Maliyet Muhakemesi Tuzağı (800.000 TL · 120 Ay)</div>
+        <table>
+          <tr><th>Senaryo / Banka Teklifi</th><th style="text-align:right;">Ek Masraf</th><th style="text-align:right;">Toplam Geri Ödeme</th></tr>
+          <tr><td><b>%1,87 Kâr Payı</b> <span style="color:var(--sonuk);">(manşet teklif)</span></td>
+              <td style="text-align:right;" class="mono kirmizi">+20.000 TL</td>
+              <td style="text-align:right;" class="mono kirmizi"><b class="kirmizi">2.033.129 TL</b></td></tr>
+          <tr><td><b>%1,89 Kâr Payı</b> <span style="color:var(--sonuk);">(masrafsız kampanya)</span></td>
+              <td style="text-align:right;" class="mono yesil">0 TL</td>
+              <td style="text-align:right;" class="mono yesil"><b class="yesil">2.028.925 TL</b></td></tr>
         </table>
-        <div class="kucuk" style="margin-top:14px;">
-          800.000 TL · 120 ay. Manşette iyi görünen ürün toplamda <b>4.204 TL pahalı.</b>
-          Sıralamayı orana göre değil, <b>toplam geri ödemeye</b> göre yapıyoruz.
+        <div class="serit turuncu-z" style="margin-top:16px;">
+          <b class="turuncu">Deterministik karar:</b> Düşük oranlı teklif toplamda <b>4.204 TL daha pahalıdır.</b>
+          Sıralamayı orana değil, <b>toplam maliyet fonksiyonuna</b> göre yapıyoruz; hesap testle sabitli.
         </div>
       </div>
     </div>
   </div>
 
-  <div class="altbilgi"><span><b>Muhammed Eren</b> &nbsp;Problem ve mimari</span><span class="no">03</span></div>
+  <div class="altbilgi">
+    <span>◔ Sektörel Darboğaz &amp; Yanıltıcı Oran Analizi</span>
+    <span class="sag"><span class="etiket">MUHAMMED EREN</span><span class="sayfa-cip">02 / 09</span></span>
+  </div>
+</section>
+
+
+<!-- ══════════ 03 · KAPSAM ══════════ -->
+<section class="sayfa">
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">▤ SİSTEM KAPSAMI &amp; VERİ HAVUZU</div>
+  </div>
+
+  <div class="baslik"><h2>Kanıtı Olmayan Tek Bir Rakam Bile <span class="v-mavi">Üretmeyen Sistem</span></h2></div>
+  <div class="spot">BDDK listesindeki faal katılım bankalarının tamamını kapsayan, açık kaynak ve <b>sıfır ticari dış servis bağımlılıklı</b> altyapı.</div>
+
+  <div class="govde">
+    <div class="satir" style="gap:14px;">
+      <div class="ist" style="--ust:var(--turuncu);">
+        <div class="rakam">9<span class="ek">/9</span></div>
+        <div class="ad">Katılım Bankası</div>
+        <div class="aciklama">Faal katılım bankalarının tamamı taranıyor.</div>
+      </div>
+      <div class="ist" style="--ust:var(--mavi);">
+        <div class="rakam">979</div>
+        <div class="ad">İşlenmiş Kampanya</div>
+        <div class="aciklama">979 ham sayfadan çıkarılmış yapısal kayıt.</div>
+      </div>
+      <div class="ist" style="--ust:var(--mor);">
+        <div class="rakam" data-sayi="test">1654</div>
+        <div class="ad">Geçen Test</div>
+        <div class="aciklama">Her değişiklikte koşan regresyon takımı.</div>
+      </div>
+      <div class="ist" style="--ust:var(--yesil);">
+        <div class="rakam">0<span class="ek" style="color:var(--yesil);"> API</span></div>
+        <div class="ad">Ticari Dış Servis</div>
+        <div class="aciklama">Açık ağırlıklı model + kural motoru; bağımlılık yok.</div>
+      </div>
+    </div>
+
+    <div class="satir" style="margin-top:14px;align-items:stretch;">
+      <div class="kolon" style="flex:1.02;">
+        <div class="kart" style="height:100%;">
+          <div class="kart-baslik">
+            <span class="im">🏛</span>Taranan Bankalar &amp; Dağılım
+            <span class="mono" style="margin-left:auto;font-size:12px;color:var(--sonuk);font-weight:400;">N=979</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div class="banka-kutu"><b>Ziraat Katılım:</b> 219</div>
+            <div class="banka-kutu"><b>Kuveyt Türk:</b> 213</div>
+            <div class="banka-kutu"><b>Albaraka Türk:</b> 137</div>
+            <div class="banka-kutu"><b>T.O.M. Katılım:</b> 123</div>
+            <div class="banka-kutu"><b>Emlak Katılım:</b> 110</div>
+            <div class="banka-kutu"><b>Türkiye Finans:</b> 64</div>
+            <div class="banka-kutu"><b>Vakıf Katılım:</b> 49</div>
+            <div class="banka-kutu"><b>Dünya Katılım:</b> 45</div>
+            <div class="banka-kutu"><b>Hayat Finans:</b> 19</div>
+          </div>
+          <div class="serit mavi-z" style="margin-top:13px;">
+            Dağılım <b>dengesiz</b> ve bunu saklamıyoruz: en geniş kapsam en darın <b>11,5 katı.</b>
+            Sıralamayı bozmaz — motor tekil ürünleri karşılaştırır, banka ortalaması almaz.
+          </div>
+        </div>
+      </div>
+
+      <div class="kolon" style="flex:1;">
+        <div class="kart yesil" style="height:100%;">
+          <div class="kart-baslik">
+            <span class="im">🔗</span>16 Alanlı Kesintisiz Kanıt Zinciri
+            <span class="dcip iyi" style="margin-left:auto;">✓ Şema geçerliliği 1,00</span>
+          </div>
+          <div>
+            <span class="alan-cip">kampanya türü</span><span class="alan-cip">ürün türü</span><span class="alan-cip">hedef kitle</span>
+            <span class="alan-cip v">kâr payı oranı</span><span class="alan-cip">azami tutar</span><span class="alan-cip">azami vade</span>
+            <span class="alan-cip">taksit sayısı</span><span class="alan-cip v2">tahsis ücreti</span><span class="alan-cip">masraf beyanı</span>
+            <span class="alan-cip">masrafsız mı</span><span class="alan-cip">ödül miktarı</span><span class="alan-cip">indirim oranı</span>
+            <span class="alan-cip">alışveriş puanı</span><span class="alan-cip">kampanya avantajı</span><span class="alan-cip">bitiş tarihi</span>
+            <span class="alan-cip">kampanya koşulları</span>
+          </div>
+          <div class="serit yesil-z" style="margin-top:13px;">
+            Her alan <b>kaynak URL</b>, <b>dayandığı cümle</b>, <b>güven skoru</b> ve <b>çıkarım katmanını</b> yanında taşır.
+            Sayfa oran veya masraf vermiyorsa sistem tahmin yürütmez, <b>«Belirtilmemiş»</b> bırakır.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="altbilgi">
+    <span>▣ Veri Havuzu &amp; Şema Doğrulama Taahhüdü</span>
+    <span class="sag"><span class="etiket">GÖRKEM</span><span class="sayfa-cip">03 / 09</span></span>
+  </div>
 </section>
 
 
 <!-- ══════════ 04 · MİMARİ ══════════ -->
-<section class="sayfa mor">
-  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
-  <div class="baslik"><span class="no">04</span><h2>Mimari</h2></div>
-  <div class="spot">Beş katman. Her katman bir öncekinin çıktısını alır, kendi kanıtını ekler ve <b>hiçbir değeri kaynağından koparmaz.</b></div>
+<section class="sayfa">
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">⚙ OTONOM AJAN MİMARİSİ</div>
+  </div>
 
-  <div class="govde akis">
+  <div class="baslik"><h2>5 Katmanlı <span class="v">Hibrit Çıkarım &amp; Ajan</span> Boru Hattı</h2></div>
+  <div class="spot">Aritmetiği ve kısıt kontrolünü dil modeline bırakmayan, <b>deterministik doğrulama katmanlı</b> hibrit orkestrasyon.</div>
+
+  <div class="govde hat">
     <div class="asama">
-      <div class="asama-no">KAYNAK</div>
-      <h3>9 banka sitesi</h3>
-      <div class="satirlar">1.024 ham sayfa<br>BDDK listesindeki faal bankaların tamamı</div>
+      <div class="rozet rz-gri">01 · KAYNAK</div>
+      <h3>Toplayıcı &amp; Ön İşleme</h3>
+      <p>9 banka sitesi <b>Selenium</b> ile taranır; robots kapısı ve 2 sn nezaket kuralı uygulanır. Türkçe normalizasyon (İ/ı, “1.500,50”).</p>
     </div>
-    <div class="ok">&rsaquo;</div>
-
-    <div class="asama">
-      <div class="asama-no">1</div>
-      <h3>Toplayıcı</h3>
-      <div class="satirlar"><b style="color:var(--orta);">Selenium</b><br>robots kapısı<br>2 sn nezaket</div>
-    </div>
-    <div class="ok">&rsaquo;</div>
-
-    <div class="asama">
-      <div class="asama-no">2</div>
-      <h3>Ön işleme</h3>
-      <div class="satirlar">Türkçe normalizasyon<br>İ/ı · “1.500,50” · â</div>
-    </div>
-    <div class="ok">&rsaquo;</div>
-
-    <div class="asama cekirdek">
-      <div class="asama-no">3 · ÇEKİRDEK</div>
-      <h3>Hibrit çıkarım</h3>
-      <div class="ikili">
-        <div class="yarim"><b>Kural</b>kalıp eşleme<br>uyduramaz</div>
-        <div class="yarim"><b>Model</b>Qwen3.5<br>anlamı çözer</div>
-      </div>
-      <div class="uzlastirici">Uzlaştırıcı — çelişkiyi çözer</div>
-    </div>
-    <div class="ok">&rsaquo;</div>
-
-    <div class="asama ajanli">
-      <div class="asama-no">4</div>
-      <h3>Beş ajan</h3>
-      <div class="ajan-mini">uygunluk · eleştirmen<br>yüklem · muhakeme<br>orkestratör</div>
-      <div class="rozet">5/5 · LLM yok</div>
-    </div>
-    <div class="ok">&rsaquo;</div>
+    <div class="ok">→</div>
 
     <div class="asama">
-      <div class="asama-no">5</div>
-      <h3>SQLite<br>+ 3 yüzey</h3>
-      <div class="satirlar">tek dosya, kurulum yok<br>panolar · asistan · API</div>
+      <div class="rozet rz-mor">02 · ÇIKARIM</div>
+      <h3>Kural + Dil Modeli</h3>
+      <p>Kural katmanı kalıp eşler; <b>Qwen3.5-122B-A10B</b> (EVREN) anlamı çözer. Uzlaştırıcı çelişkide sayısal alanda kuralı seçer.</p>
+    </div>
+    <div class="ok">→</div>
+
+    <div class="asama">
+      <div class="rozet rz-yesil">03 · ELEŞTİRMEN</div>
+      <h3>Kanıt Doğrulama</h3>
+      <p>Modelin ürettiği her değeri <b>ham metne karşı</b> doğrular; kaynakta karşılığı olmayan alanı düşürür.</p>
+    </div>
+    <div class="ok">→</div>
+
+    <div class="asama">
+      <div class="rozet rz-mavi">04 · MUHAKEME</div>
+      <h3>Deterministik Hesap</h3>
+      <p>Toplam maliyet, taksit ve vade kısıtları <b>annüite formülüyle Python'da</b> çözülür — dil modeline aritmetik yaptırılmaz.</p>
+    </div>
+    <div class="ok">→</div>
+
+    <div class="asama">
+      <div class="rozet rz-turuncu">05 · ÇIKTI</div>
+      <h3>Kanıtlı Veritabanı</h3>
+      <p><b>SQLite</b> tek dosya + REST API. Kaynak URL, alıntı cümle ve güven skoruyla izlenebilir sunulur.</p>
     </div>
   </div>
 
-  <div class="kanit-serit">
-    <div class="ad">Kanıt<br>zinciri</div>
-    <div class="metin">
-      Her değer; geldiği <b>cümleyi</b>, sayfa <b>adresini</b>, <b>güven skorunu</b> ve hangi <b>katmandan</b>
-      çıktığını yanında taşır — baştan sona. Kanıtı olmayan değer üretilemez; kod bunu
-      <b>kısıt olarak</b> uygular, deneyen program çöker.
-    </div>
+  <div class="serit yesil-z" style="margin-top:20px;">
+    <b class="yesil">Çekirdek mühendislik ilkesi:</b> Dil modeli yalnızca <b>tek bir işte</b> — metinden alan ve anlam çıkarmada — kullanılır.
+    <b>Beş ajanın hiçbiri dil modeli çağırmaz;</b> aritmetik ve güvenlik kısıtları deterministik kodla garanti altına alınır.
+    Hazır bir ajan çatısı kullanılmadı — protokol <b>30 satır</b>.
   </div>
 
-  <div class="altbilgi"><span><b>Muhammed Eren</b> &nbsp;Problem ve mimari</span><span class="no">04</span></div>
+  <div class="altbilgi">
+    <span>◈ Deterministik Güvenlik Kalkanı &amp; Ajan Akışı</span>
+    <span class="sag"><span class="etiket">MUHAMMED EREN</span><span class="sayfa-cip">04 / 09</span></span>
+  </div>
 </section>
 
 
-<!-- ══════════ 05 · KANIT ZİNCİRİ VE AJANLAR ══════════ -->
-<section class="sayfa mor">
-  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
-  <div class="baslik"><span class="no">05</span><h2>Kanıt zinciri ve beş ajan</h2></div>
-  <div class="spot">Aritmetiği ve kısıt kontrolünü modele yaptırmak, halüsinasyon savunmasıyla kazandığımız güveni <b>tek hamlede kaybettirir.</b></div>
-
-  <div class="govde satir" style="align-items:stretch;">
-    <div class="kolon" style="flex:1.05;">
-      <div class="kart" style="height:100%;">
-        <div class="kart-baslik m">Gerçek bir kayıt</div>
-        <table>
-          <tr><th>Alan</th><th>Değer</th><th>Katman</th><th style="text-align:right;">Güven</th></tr>
-          <tr><td>kampanya türü</td><td>ihtiyaç finansmanı</td><td>model</td><td style="text-align:right;">0,80</td></tr>
-          <tr class="vurgu"><td>kâr payı oranı</td><td class="turuncu">%0</td><td>hibrit</td><td style="text-align:right;">1,00</td></tr>
-          <tr><td>azami tutar</td><td>50.000 TL</td><td>hibrit</td><td style="text-align:right;">0,94</td></tr>
-          <tr><td>tahsis ücreti</td><td style="color:var(--sonuk);">Belirtilmemiş</td><td>—</td><td style="text-align:right;">—</td></tr>
-        </table>
-        <div class="kucuk" style="margin-top:16px;">
-          <b>“%0” bir boşluk değil, bir beyandır</b> — “kâr paysız” demek sıfır oran demek.
-          Boş bıraktığımızda kampanya karşılaştırmadan tamamen düşüyordu.
-        </div>
-        <div class="kucuk" style="margin-top:10px;">
-          Son satır: sayfa ücret vermiyorsa sistem <b>boş bırakır, uydurmaz.</b>
-        </div>
-      </div>
-    </div>
-
-    <div class="kolon" style="flex:1;display:flex;flex-direction:column;gap:9px;">
-      <div class="cip"><span class="ad">Uygunluk</span><span class="is">kampanya kime açık: tip, tutar/vade, zorunlu ürün</span><span class="yok">LLM yok</span></div>
-      <div class="cip"><span class="ad">Eleştirmen</span><span class="is">her değeri ham metne karşı doğrular</span><span class="yok">LLM yok</span></div>
-      <div class="cip"><span class="ad">Yüklem</span><span class="is">sayı hangi alana ait — cümlenin yükleminden</span><span class="yok">LLM yok</span></div>
-      <div class="cip"><span class="ad">Muhakeme</span><span class="is">profili kısıtlara karşı çözer, maliyeti hesaplar</span><span class="yok">LLM yok</span></div>
-      <div class="cip"><span class="ad">Orkestratör</span><span class="is">soruyu doğru ajana yönlendirir, izleri toplar</span><span class="yok">LLM yok</span></div>
-
-      <div class="kart vurgu-m" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
-        <p style="font-size:14.5px;">Dil modeli <b>tek bir işte</b> kullanılıyor: metinden alan çıkarmak.
-        Gerisi <b>deterministik kod</b> — aynı girdi her zaman aynı sonucu verir.</p>
-      </div>
-    </div>
+<!-- ══════════ 05 · KARŞILAŞTIRMA ══════════ -->
+<section class="sayfa">
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">▦ KARŞILAŞTIRMALI ANALİZ</div>
   </div>
 
-  <div class="altbilgi"><span><b>Samet</b> &nbsp;Bilgi çıkarımı &nbsp;|&nbsp; <b>Eren</b> &nbsp;Ajan mimarisi</span><span class="no">05</span></div>
-</section>
-
-
-<!-- ══════════ 06 · ÖLÇÜM ══════════ -->
-<section class="sayfa turkuaz">
-  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
-  <div class="baslik"><span class="no">06</span><h2>Katmanları tek tek kapattık</h2></div>
-  <div class="spot">Beş yapılandırma, <b>aynı kodla, aynı korpusta, tek koşuda</b> ölçüldü — 1.024 ham kayıtlık ölçüm korpusu.</div>
+  <div class="baslik"><h2>Tek Katman Yetmiyor: <span class="v-mavi">Kural vs. Model vs. SVARTAL</span></h2></div>
+  <div class="spot">Aynı kod, aynı korpus, tek koşu. Üç yapılandırma da <b>ölçüldü</b> — kıyas ölçülmemiş bir sistemle değil, kendi kollarımızla yapılıyor.</div>
 
   <div class="govde">
-    <div class="kart">
-      <!-- Çubuk UZUNLUĞU yalnız makro-F1'i kodlar (ölçek 0–0,90). Halüsinasyon
-           ayrı bir ölçek olduğu için sayı olarak durur — çift eksen yok. -->
-      <table data-tablo="ablasyon">
-        <tr><th style="width:196px;">Yapılandırma</th><th>Makro-F1 &nbsp;<span style="text-transform:none;letter-spacing:0;">(ölçek 0 – 0,90)</span></th><th style="width:78px;text-align:right;">Sayısal</th><th style="width:106px;text-align:right;">Halüsinasyon</th><th style="width:78px;text-align:right;">Doluluk</th></tr>
+    <div class="kart" style="padding:22px 24px;">
+      <table>
+        <tr><th style="width:230px;">Değerlendirme Kriteri</th><th>Yalnız Dil Modeli</th><th>Yalnız Kural</th><th style="color:var(--turuncu);">SVARTAL (Tam Hiyerarşi)</th></tr>
 
-        <tr><td>Yalnız kural</td>
-            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:76.6%"></div></div><b>0,689</b></div></td>
-            <td style="text-align:right;">0,911</td><td style="text-align:right;">%0,00</td><td style="text-align:right;">%9,1</td></tr>
+        <tr><td><b>Sayısal alan doğruluğu</b></td>
+            <td><span class="dcip kotu">✕ 0,833</span></td>
+            <td><span class="dcip orta">— 0,911</span></td>
+            <td><span class="dcip iyi">✓ 0,932</span></td></tr>
 
-        <tr><td>Yalnız dil modeli</td>
-            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:51.0%"></div></div><b>0,459</b></div></td>
-            <td style="text-align:right;">0,833</td><td style="text-align:right;">%0,70</td><td style="text-align:right;">%20,2</td></tr>
+        <tr><td><b>Makro-F1</b></td>
+            <td><span class="dcip kotu">✕ 0,459</span></td>
+            <td><span class="dcip orta">— 0,689</span></td>
+            <td><span class="dcip iyi">✓ 0,827</span></td></tr>
 
-        <tr><td>Hibrit (kural + model)</td>
-            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:88.3%"></div></div><b>0,795</b></div></td>
-            <td style="text-align:right;">0,913</td><td style="text-align:right;">%0,39</td><td style="text-align:right;">%26,5</td></tr>
+        <tr><td><b>Alan doluluğu</b></td>
+            <td><span class="dcip orta">— %20,2</span></td>
+            <td><span class="dcip kotu">✕ %9,1</span></td>
+            <td><span class="dcip iyi">✓ %26,0</span></td></tr>
 
-        <tr><td>Hibrit · eleştirmen kapalı</td>
-            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:88.3%"></div></div><b>0,795</b></div></td>
-            <td style="text-align:right;">0,913</td><td style="text-align:right;color:var(--turuncu);font-weight:700;">%0,51</td><td style="text-align:right;">%26,5</td></tr>
+        <tr><td><b>Halüsinasyon oranı</b></td>
+            <td><span class="dcip kotu">✕ %0,70</span></td>
+            <td><span class="dcip iyi">✓ %0,00</span></td>
+            <td><span class="dcip iyi">✓ %0,42</span></td></tr>
 
-        <tr class="vurgu"><td>Tam hiyerarşi (bizim)</td>
-            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:91.9%;background:var(--turuncu);"></div></div><b class="turuncu">0,827</b></div></td>
-            <td style="text-align:right;">0,932</td><td style="text-align:right;">%0,42</td><td style="text-align:right;">%26,0</td></tr>
+        <tr class="vurgu"><td><b>Kampanya türünü sınıflandırma</b></td>
+            <td><span class="dcip iyi">✓ yapabilir</span></td>
+            <td><span class="dcip kotu">✕ yapamaz</span></td>
+            <td><span class="dcip iyi">✓ yapabilir</span></td></tr>
       </table>
     </div>
 
-    <div class="satir" style="margin-top:18px;">
-      <div class="kolon" style="flex:1.25;">
-        <p style="font-size:14px;">
-          <b>Birlikte 0,79.</b> Yüklem ajanı eklenince <b>0,82</b>. Son iki satırın makro-F1'i
-          <b>aynı</b> — eleştirmen kapatılınca skor hiç değişmiyor ama
-          <b class="turuncu">halüsinasyon %0,39'dan %0,51'e çıkıyor</b>.
-          Eleştirmenin işi skoru yükseltmek değil, <b>uydurmayı kesmek.</b>
-        </p>
+    <div class="satir" style="margin-top:16px;">
+      <div class="kolon serit mavi-z">
+        <b class="mavi">Okuma:</b> Kural motoru hiç uydurmaz (%0,00) ama az alan doldurur ve tür sınıflandırmasını hiç yapamaz.
+        Dil modeli çok alan doldurur, isabeti düşük. <b>Birlikte 0,79.</b> Yüklem ajanı eklenince <b>0,82</b>.
       </div>
-      <div class="kolon kart vurgu-t" style="flex:1;">
-        <div class="kart-baslik t">Ölçümün dürüstlüğü</div>
+      <div class="kolon serit turuncu-z">
+        <b class="turuncu">Dürüstlük notu:</b> Bu tablo yalnız <b>ölçülmüş</b> üç ablasyon kolunu kıyaslar.
+        Vektör-RAG taban çizgisi <b>ölçmedik</b>; ölçmediğimiz bir sistemle kıyaslama yapmıyoruz.
+      </div>
+    </div>
+  </div>
+
+  <div class="altbilgi">
+    <span>⇄ Katman Kıyaslaması &amp; Halüsinasyon Dayanımı</span>
+    <span class="sag"><span class="etiket">SAMET</span><span class="sayfa-cip">05 / 09</span></span>
+  </div>
+</section>
+
+
+<!-- ══════════ 06 · ABLASYON ══════════ -->
+<section class="sayfa">
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">⚗ BİLİMSEL DEĞERLENDİRME</div>
+  </div>
+
+  <div class="baslik"><h2>Katman Katman <span class="v">Ablasyon Analizi</span></h2></div>
+  <div class="spot">1.024 ham kayıtlık ölçüm korpusunda, her modülün sisteme katkısının deneysel ispatı.</div>
+
+  <div class="govde">
+    <div class="kart" style="padding:20px 24px;">
+      <!-- Çubuk UZUNLUĞU yalnız makro-F1'i kodlar (ölçek 0–1,0).
+           Halüsinasyon ayrı ölçek olduğu için sayı sütununda durur — çift eksen yok. -->
+      <table data-tablo="ablasyon" style="font-size:13px;">
+        <tr><th style="width:210px;">Yapılandırma</th><th>Makro-F1 &nbsp;<span style="text-transform:none;letter-spacing:0;">(ölçek 0,0 – 1,0)</span></th><th style="width:86px;text-align:right;">Sayısal</th><th style="width:100px;text-align:right;">Halüsinasyon</th><th style="width:84px;text-align:right;">Doluluk</th></tr>
+
+        <tr><td><b>Yalnız kural</b></td>
+            <td><div class="oluk"><div class="dolu " style="width:68.9%;">0,689</div></div></td>
+            <td style="text-align:right;" class="mono">0,911</td><td style="text-align:right;" class="mono yesil">%0,00</td><td style="text-align:right;" class="mono">%9,1</td></tr>
+        <tr><td><b>Yalnız dil modeli</b></td>
+            <td><div class="oluk"><div class="dolu zayif" style="width:45.9%;">0,459</div></div></td>
+            <td style="text-align:right;" class="mono">0,833</td><td style="text-align:right;" class="mono kirmizi">%0,70</td><td style="text-align:right;" class="mono">%20,2</td></tr>
+        <tr><td><b>Hibrit (kural + model)</b></td>
+            <td><div class="oluk"><div class="dolu " style="width:79.5%;">0,795</div></div></td>
+            <td style="text-align:right;" class="mono">0,913</td><td style="text-align:right;" class="mono ">%0,39</td><td style="text-align:right;" class="mono">%26,5</td></tr>
+        <tr><td><b>Hibrit · eleştirmen kapalı</b></td>
+            <td><div class="oluk"><div class="dolu " style="width:79.5%;">0,795</div></div></td>
+            <td style="text-align:right;" class="mono">0,913</td><td style="text-align:right;" class="mono kirmizi">%0,51</td><td style="text-align:right;" class="mono">%26,5</td></tr>
+        <tr class="vurgu"><td><b class="turuncu">Tam hiyerarşi (bizim)</b></td>
+            <td><div class="oluk"><div class="dolu bizim" style="width:82.7%;">0,827</div></div></td>
+            <td style="text-align:right;" class="mono">0,932</td><td style="text-align:right;" class="mono ">%0,42</td><td style="text-align:right;" class="mono">%26,0</td></tr>
+      </table>
+    </div>
+
+    <div class="satir" style="margin-top:16px;align-items:stretch;">
+      <div class="kolon serit mavi-z" style="flex:1.25;">
+        <b class="mavi">Kritik bulgu:</b> Eleştirmen ajanını kapattığımızda makro-F1 <b>hiç değişmiyor</b> (0,795 → 0,795),
+        ama <b>halüsinasyon %0,39'dan %0,51'e çıkıyor</b> — yaklaşık üçte bir artış.
+        Eleştirmenin görevi F1'i yükseltmek değil, <b>uydurmayı kesmektir.</b>
+      </div>
+      <div class="kolon kart turuncu" style="flex:1;padding:15px 17px;">
+        <div class="kart-baslik t" style="margin-bottom:9px;font-size:14px;"><span class="im">⚖</span>Ölçümün dürüstlüğü</div>
         <div class="kucuk">
           <b>Makro-F1 0,82</b> · %95 güven aralığı 0,76–0,87 · n=92.
-          Model servisi <b>bayt düzeyinde deterministik değil</b>: aynı kod, aynı girdi, iki koşu →
-          784 hücrenin 7'si oynadı. Sonuçlarımız <b>±0,01 gürültü</b> taşıyor.
+          Model servisi <b>bayt düzeyinde deterministik değil</b>: aynı kod, aynı girdi, iki koşuda
+          784 hücrenin 7'si oynadı — sonuçlar <b>±0,01 gürültü</b> taşır.
           92 örnekle tek ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
         </div>
       </div>
     </div>
   </div>
 
-  <div class="altbilgi"><span><b>Samet</b> &nbsp;Model değerlendirmesi · Metrikler ve ablasyon</span><span class="no">06</span></div>
+  <div class="altbilgi">
+    <span>▥ Deneysel Testler &amp; Metrik Doğrulama</span>
+    <span class="sag"><span class="etiket">SAMET</span><span class="sayfa-cip">06 / 09</span></span>
+  </div>
 </section>
 
 
 <!-- ══════════ 07 · ASİSTAN ══════════ -->
-<section class="sayfa turkuaz">
-  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
-  <div class="baslik"><span class="no">07</span><h2>Sayısını doğrulayamadığında susan asistan</h2></div>
-  <div class="spot">Sayısal cevaplar <b>yapısal veritabanından</b> gelir, metin aramasından değil. Denetimden geçemeyen cevap ekrana hiç çıkmaz.</div>
+<section class="sayfa">
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">▷ CANLI ARAYÜZ &amp; KANIT ZİNCİRİ</div>
+  </div>
+
+  <div class="baslik"><h2>Sayısını Doğrulayamadığında <span class="v">Susan Asistan</span></h2></div>
+  <div class="spot">Sayısal cevaplar yapısal veritabanından gelir; denetimden geçmeyen hiçbir iddia kullanıcıya sunulmaz.</div>
 
   <div class="govde satir" style="align-items:stretch;">
-    <div class="kolon" style="flex:1.12;">
-      <div class="balon-soru">“Kuveyt Türk'ün konut finansmanı kampanyalarında kâr payı oranı nedir?”</div>
-      <div class="balon-cevap">
-        <div style="font-size:15px;line-height:1.9;color:var(--orta);">
-          Azami vade: <b style="color:var(--krem);">120 ay</b><br>
-          Tahsis ücreti: <b style="color:var(--krem);">%0,50</b><br>
-          Masraf: <b style="color:var(--krem);">alınıyor</b><br>
-          Kâr payı oranı: <b class="turuncu">Belirtilmemiş</b>
+    <div class="kolon" style="flex:1;">
+      <div class="kart" style="height:100%;">
+        <div class="kart-baslik t" style="font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;">Kullanıcı sorusu</div>
+        <div class="soru-kutu">"Kuveyt Türk'ün konut finansmanı kampanyalarında kâr payı oranı nedir?"</div>
+
+        <div class="cevap-kutu">
+          <div class="cevap-satir"><span class="a">Azami Vade:</span><span class="d">120 ay</span></div>
+          <div class="cevap-satir"><span class="a">Tahsis Ücreti:</span><span class="d">%0,50</span></div>
+          <div class="cevap-satir"><span class="a">Kâr Payı Oranı:</span><span class="d yok">Belirtilmemiş</span></div>
+          <div style="margin-top:11px;padding-top:11px;border-top:1px solid var(--cizgi-2);" class="kucuk mono" style="color:var(--sonuk);">
+            Kaynak: kuveytturk.com.tr &nbsp;·&nbsp; Çekim tarihi: 24.08.2026
+          </div>
         </div>
-        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--cizgi);" class="kucuk">
-          <b>Kaynak:</b> Kuveyt Türk Katılım Bankası A.Ş. &nbsp;·&nbsp; kuveytturk.com.tr<br>
-          Çekim tarihi: 24.08.2026 &nbsp;·&nbsp; <i>Bağlayıcı teklif niteliği taşımaz.</i>
+
+        <div style="display:flex;gap:9px;margin-top:14px;flex-wrap:wrap;">
+          <span class="dcip iyi">✓ Doğrulama geçti</span>
+          <span class="dcip" style="color:var(--mavi);border-color:#BBD5EE;background:#F5FAFE;">⛓ Kaynak gösterildi</span>
+          <span class="dcip" style="color:var(--murekkep);border-color:var(--cizgi);background:#F4F6F9;">0 LLM çağrısı</span>
         </div>
-        <div style="margin-top:14px;display:flex;gap:9px;flex-wrap:wrap;">
-          <span class="rozet">✓ doğrulama geçti</span>
-          <span class="rozet m">kaynak gösterildi</span>
-          <span class="rozet o">0 LLM çağrısı</span>
+
+        <div class="serit yesil-z" style="margin-top:14px;">
+          <b>Uydurmuyor, ama bildiğini de saklamıyor.</b> Kâr payı oranı o sayfada yayımlanmamış;
+          vade ve ücret yayımlanmış — onları gösteriyor.
         </div>
       </div>
-      <p style="margin-top:16px;font-size:14.5px;">
-        <b>Uydurmuyor ama bildiğini de saklamıyor.</b> Kâr payı oranı o sayfada yayımlanmamış;
-        vade ve ücret yayımlanmış, onları gösteriyor.
-      </p>
     </div>
 
-    <div class="kolon" style="flex:1;display:flex;flex-direction:column;gap:14px;">
-      <div class="kart">
-        <div class="kart-baslik t">Sayısal doğrulama kalkanı</div>
-        <table>
-          <tr><td style="width:98px;"><b>yapısal</b></td><td>kayıtta <b>birebir</b> karşılığı olmalı</td></tr>
-          <tr><td><b>alıntı</b></td><td>cümle kaynak metinde geçmeli</td></tr>
-          <tr><td><b>sistem</b></td><td>hesaptan <b>yeniden üretilebilmeli</b></td></tr>
-          <tr><td><b>düz metin</b></td><td>sayı içeremez</td></tr>
-        </table>
-      </div>
-      <div class="kart vurgu-t" style="flex:1;display:flex;gap:20px;align-items:center;">
-        <div class="orta-rakam" style="flex:none;color:var(--turkuaz);">0/35</div>
-        <div class="kucuk">
-          meşru soruda yanlış engelleme. Asistan “muhtemelen %2 civarıdır” cümlesini
-          <b>mimari olarak kuramaz.</b>
-        </div>
+    <div class="kolon" style="flex:1.05;">
+      <div class="terminal" style="height:100%;">
+        <div class="bas"><span>&gt;_ SVARTAL KARAR İZİ</span><span class="canli">● CANLI</span></div>
+        <div><span class="et q">[ORKESTRATOR]</span> Soru: "Kuveyt Türk konut finansmanı kâr payı oranı nedir?"</div>
+        <div><span class="et r">[NIYET]</span> tekil_sorgu · banka: Kuveyt Türk · ürün: konut</div>
+        <div><span class="et s">[SQLITE]</span> SELECT ... FROM kampanyalar WHERE banka_kodu='0205'</div>
+        <div><span class="et g">[ELESTIRMEN]</span> kar_payi_orani → ham metinde karşılığı YOK</div>
+        <div><span class="et k">[KARAR]</span> Oran beyan edilmemiş; sayı üretme, alanı boş bırak</div>
+        <div><span class="et o">[CIKTI]</span> vade=120 ay | tahsis=%0,50 | oran=Belirtilmemiş</div>
+        <div class="son">Yanıt 0 ms &nbsp;|&nbsp; LLM çağrısı: 0 &nbsp;|&nbsp; Meşru soruda yanlış engelleme: 0/35</div>
       </div>
     </div>
   </div>
 
-  <div class="altbilgi"><span><b>Esra</b> &nbsp;Arayüz · Asistan ve karşılaştırma ekranları</span><span class="no">07</span></div>
+  <div class="altbilgi">
+    <span>◇ Canlı Asistan Denetimi &amp; Güvenli Yanıt Üretimi</span>
+    <span class="sag"><span class="etiket">ESRA</span><span class="sayfa-cip">07 / 09</span></span>
+  </div>
 </section>
 
 
-<!-- ══════════ 08 · SONUÇ ══════════ -->
+<!-- ══════════ 08 · SONUÇLAR ══════════ -->
 <section class="sayfa">
-  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
-  <div class="baslik"><span class="no">08</span><h2>Ölçülen sonuçlar</h2></div>
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">⚑ SONUÇLAR &amp; SINIRLAR</div>
+  </div>
+
+  <div class="baslik"><h2>Ölçülen Sonuçlar ve <span class="v-mavi">Bilinen Sınırlar</span></h2></div>
+  <div class="spot">Gerçek mühendislik olgunluğu, sınırları bilmek ve <b>dürüstçe raporlamaktır.</b></div>
 
   <div class="govde satir" style="align-items:stretch;">
-    <div class="kolon" style="flex:1.12;">
+    <div class="kolon" style="flex:1;">
       <div class="kart" style="height:100%;">
         <table data-tablo="sonuclar">
           <tr><th>Metrik</th><th style="text-align:right;">Sonuç</th><th style="text-align:right;">Hedef</th></tr>
-          <tr><td>Makro-F1 (92 örnekli altın set)</td><td style="text-align:right;font-weight:700;color:var(--turuncu);">0,82</td><td style="text-align:right;">≥ 0,78</td></tr>
-          <tr><td>Sayısal alan doğruluğu</td><td style="text-align:right;font-weight:700;color:var(--turuncu);">0,93</td><td style="text-align:right;">≥ 0,90</td></tr>
-          <tr><td>Halüsinasyon oranı</td><td style="text-align:right;font-weight:700;color:var(--turkuaz);">%0,19</td><td style="text-align:right;">≤ %3</td></tr>
-          <tr><td>Şema geçerliliği</td><td style="text-align:right;font-weight:700;color:var(--turkuaz);">1,00</td><td style="text-align:right;">1,00</td></tr>
-          <tr><td>Kalkanın yanlış engellemesi</td><td style="text-align:right;font-weight:700;color:var(--turkuaz);">0 / 35</td><td style="text-align:right;">0</td></tr>
+          <tr><td>Makro-F1 (92 örnekli altın set)</td><td style="text-align:right;" class="mono turuncu" style="font-weight:700;">0,82</td><td style="text-align:right;" class="mono" style="color:var(--sonuk);">≥ 0,78</td></tr>
+          <tr><td>Sayısal alan doğruluğu</td><td style="text-align:right;" class="mono mavi" style="font-weight:700;">0,93</td><td style="text-align:right;" class="mono" style="color:var(--sonuk);">≥ 0,90</td></tr>
+          <tr><td>Halüsinasyon oranı</td><td style="text-align:right;" class="mono yesil" style="font-weight:700;">%0,19</td><td style="text-align:right;" class="mono" style="color:var(--sonuk);">≤ %3,00</td></tr>
+          <tr><td>Şema geçerliliği</td><td style="text-align:right;" class="mono yesil" style="font-weight:700;">1,00</td><td style="text-align:right;" class="mono" style="color:var(--sonuk);">1,00</td></tr>
+          <tr><td>Kalkanın yanlış engellemesi</td><td style="text-align:right;" class="mono yesil" style="font-weight:700;">0 / 35</td><td style="text-align:right;" class="mono" style="color:var(--sonuk);">0</td></tr>
         </table>
       </div>
     </div>
 
     <div class="kolon" style="flex:1;">
-      <div class="kart cizgili" style="height:100%;">
-        <div class="kart-baslik m">Bilinen sınırlar — saklamıyoruz</div>
-        <div class="kucuk" style="line-height:1.9;">
-          • Kâr payı oranı doluluğu <b>%18</b> — çoğu banka oranı başvuru ekranında veriyor<br>
-          • Kapsam bankalar arasında dengesiz (<b>11,5×</b>) — ölçtük, rapor ettik<br>
-          • Kayıtların <b>%38'i</b> «diğer» türünde — zorlama sınıflandırma yapmıyoruz<br>
-          • Veri bir <b>anlık görüntüdür</b>; her kayıt çekim tarihini taşır<br>
-          • Ölçümler <b>±0,01</b> gürültü taşır
+      <div class="kart turuncu" style="height:100%;">
+        <div class="kart-baslik t"><span class="im">⚑</span>Bilinen Sınırlar — Şeffaf Rapor</div>
+        <div class="kucuk" style="line-height:1.95;">
+          • Kâr payı oranı doluluğu <b>%18</b> — çoğu banka oranı başvuru ekranında veriyor.<br>
+          • Kapsam bankalar arasında dengesiz (<b>11,5×</b>) — ölçtük ve raporladık.<br>
+          • Kayıtların <b>%38'i</b> «diğer» türünde — zorlama sınıflandırma yapmıyoruz.<br>
+          • Veri bir <b>anlık görüntüdür</b>; her kayıt kendi çekim tarihini taşır.<br>
+          • Ölçümler <b>±0,01</b> gürültü taşır; model servisi bayt düzeyinde deterministik değil.
+        </div>
+        <div style="margin-top:15px;padding-top:14px;border-top:1px solid #F0D8C8;display:flex;align-items:center;gap:12px;">
+          <span class="mono" style="font-size:12.5px;color:var(--murekkep);">github.com/erenkendir722/ai-agent-nlp</span>
+          <span class="dcip iyi" style="margin-left:auto;">✓ Apache-2.0 Açık Kaynak</span>
         </div>
       </div>
     </div>
   </div>
 
-  <div style="position:absolute;left:72px;right:72px;bottom:100px;padding-top:24px;border-top:1px solid var(--cizgi);display:flex;align-items:center;gap:34px;">
-    <svg viewBox="0 0 100 100" style="width:44px;height:44px;flex:none;"><use href="#marka"/></svg>
-    <div style="font-size:25px;font-weight:700;letter-spacing:-.02em;">
-      Kaynağı olmayan sayı <span class="turuncu">üretmeyen</span> bir sistem.
-    </div>
-    <div class="kucuk" style="margin-left:auto;text-align:right;">
-      Kod, veri seti, ölçüm betikleri ve her kararın gerekçesi açık kaynak<br>
-      <span class="mono" style="color:var(--krem);">github.com/erenkendir722/ai-agent-nlp</span> &nbsp;·&nbsp; Apache-2.0
+  <div class="altbilgi">
+    <span>▤ Doğrulama Metrikleri &amp; Açık Kaynak Şeffaflığı</span>
+    <span class="sag"><span class="etiket">MUHAMMED EREN</span><span class="sayfa-cip">08 / 09</span></span>
+  </div>
+</section>
+
+
+<!-- ══════════ 09 · KAPANIŞ ══════════ -->
+<section class="sayfa">
+  <div class="ustbar">
+    <div class="marka-cip"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div class="ayrac"></div>
+    <div class="alt-baslik">Katılım Finans Doğrulama Ajanı</div>
+    <div class="bolum-cip">💬 SORU &amp; CEVAP</div>
+  </div>
+
+  <div style="text-align:center;margin-top:66px;">
+    <div class="kapanis-logo"><svg viewBox="0 0 100 100"><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+    <div style="font-size:42px;font-weight:700;letter-spacing:-.025em;margin-top:26px;">Dinlediğiniz İçin Teşekkür Ederiz</div>
+    <div style="font-size:16px;color:var(--metin);margin-top:12px;">
+      Kanıtı olmayan tek bir sayı bile üretmeyen, deterministik güvenlik kalkanlı finansal dil ajanı.
     </div>
   </div>
 
-  <div class="altbilgi"><span><b>Muhammed Eren</b> &nbsp;Kapanış</span><span class="no">08</span></div>
+  <div class="satir" style="margin-top:42px;max-width:900px;margin-left:auto;margin-right:auto;">
+    <div class="kolon kart">
+      <div class="kart-baslik" style="font-size:14px;"><span class="im">⌥</span>Açık Kaynak Depo</div>
+      <div class="mono" style="font-size:13px;color:var(--murekkep);">github.com/erenkendir722/ai-agent-nlp</div>
+      <div class="kucuk" style="margin-top:8px;">Kod, veri seti, ölçüm betikleri ve her kararın gerekçesi.</div>
+    </div>
+    <div class="kolon kart yesil">
+      <div class="kart-baslik" style="font-size:14px;color:var(--yesil);"><span class="im">✓</span>Jüri Oturumu</div>
+      <div class="kucuk">Soru, teknik eleştiri ve <b>canlı test senaryolarınızı</b> yanıtlamaktan memnuniyet duyarız.</div>
+    </div>
+  </div>
+
+  <div class="altbilgi">
+    <span>⚑ TEKNOFEST 2026 · Yapay Zekâ Dil Ajanları Yarışması</span>
+    <span class="sag"><span class="etiket">SVARTAL TAKIMI</span><span class="sayfa-cip">09 / 09</span></span>
+  </div>
 </section>
 
 </body>

@@ -4,35 +4,36 @@ Slaytlar `sunum.html`'de; **bu dosya slaytta YAZMAYAN kısımdır.** Slayt dayan
 gösterir, anlatan sensin.
 
 **Bütçe:** 4 dakika ≈ 520 kelime. Aşağıdaki notlar toplam ~500 kelime.
-**Yedi içerik sayfası** → sayfa başına **~34 saniye.**
+**Yedi anlatılan sayfa** (02–08; 09 kapanış) → sayfa başına **~34 saniye.**
 
 > Prova ederken süre tut. 4 dakikayı aşan bir sunum, jüri sizi kesmek zorunda
 > kaldığında kapanış cümlesini kaybettirir — en pahalı kayıp odur.
 
 ---
 
-## 02 · SVARTAL &nbsp;— Eren &nbsp;· 25 sn
+## 02 · Problem &nbsp;— Eren &nbsp;· 35 sn
 
-> Dokuz katılım bankasının kampanya metinlerini yapısal veriye çeviriyoruz.
-> Sistemin tek kuralı var: **kaynağı olmayan hiçbir sayı üretilmez.**
-> Bunu slaytta değil, kodda kısıt olarak uyguluyoruz — kanıtı olmayan bir değer
-> üretmeye kalkan program çöker.
+> Katılım bankacılığında standart API yok. Üstelik aynı bilgi bankadan bankaya
+> başka türlü yazılıyor: şartnamenin kendi örneğinde **ilkinde sayı var, diğer
+> üçünde yok.** Sayı uyduran bir sistem son üçünde yanlış oran üretir.
 
-Rakamları tek tek okuma; jüri zaten görüyor. Yalnız **sıfırı** göster:
-sıfır ticari dış servis bağımlılığı.
+Sağdaki tabloyu göster:
 
-## 03 · Problem &nbsp;— Eren &nbsp;· 30 sn
+> Bir de şu tuzak var: en düşük oran en ucuz ürün demek değil. Manşette iyi
+> görünen teklif toplamda **4.204 TL daha pahalı.** Bu yüzden sıralamayı orana
+> göre değil, toplam maliyet fonksiyonuna göre yapıyoruz.
 
-> Ortak veri biçimi yok: ne API var, ne indirilebilir tablo. Üstelik aynı bilgi
-> bankadan bankaya başka türlü yazılıyor. Şartnamenin kendi örneği bu:
-> ilkinde sayı var, **diğer üçünde yok.** Sayı uyduran bir sistem son üçünde
-> yanlış oran üretir — ve bankacılıkta yanlış oran, eksik orandan çok daha pahalı.
+## 03 · Kapsam &nbsp;— Görkem &nbsp;· 30 sn
 
-Sağdaki tabloyu göstererek bitir:
+> Dokuz faal katılım bankasının tamamı, 979 kampanya, 1654 geçen test, sıfır
+> ticari dış servis bağımlılığı. Her kayıt **16 alanlı bir kanıt zinciri** taşır:
+> kaynak URL, dayandığı cümle, güven skoru ve hangi katmandan çıktığı.
 
-> Bir de şu var: en düşük oran en ucuz ürün demek değil. Manşette iyi görünen
-> ürün toplamda **4.204 TL pahalı.** Bu yüzden sıralamayı orana göre değil,
-> toplam geri ödemeye göre yapıyoruz.
+Dengesizliği kendin söyle, jüri sormadan:
+
+> Dağılım dengesiz — en geniş kapsam en darın **11,5 katı.** Ölçtük ve raporladık.
+> Sıralamayı bozmuyor, çünkü motor tekil ürünleri karşılaştırıyor, banka
+> ortalaması almıyor.
 
 ## 04 · Mimari &nbsp;— Eren &nbsp;· 40 sn
 
@@ -45,25 +46,18 @@ Diyagramı **soldan sağa** anlat, kutuları okuma:
 > Altta duran şerit kanıt zinciri: her değer geldiği cümleyi, adresi ve güvenini
 > yanında taşır — baştan sona.
 
-## 05 · Kanıt zinciri ve beş ajan &nbsp;— Samet + Eren &nbsp;· 40 sn
+## 05 · Karşılaştırma &nbsp;— Samet &nbsp;· 30 sn
 
-> Kural katmanı uydurma yapamaz ama “bu konut kampanyası mı” diyemez.
-> Dil modeli anlamı çözer ama sayıda zayıf. Uzlaştırıcı çelişkide sayısal alanda
-> kuralı, anlamsal alanda modeli seçer.
+> Kural motoru hiç uydurmuyor — halüsinasyon sıfır — ama az alan dolduruyor ve
+> «bu bir konut kampanyası mı» sorusunu hiç cevaplayamıyor. Dil modeli çok alan
+> dolduruyor ama isabeti düşük. **Üçüncü kolon ikisinin birleşimi.**
 
-Tablodaki iki satırı göster:
+Dürüstlük notunu atlama — jüri bunu sorar:
 
-> **“%0” bir boşluk değil, bir beyandır** — “kâr paysız” demek sıfır oran demek.
-> Bunu boş bıraktığımızda kampanya karşılaştırmadan tamamen düşüyordu.
-> Son satır da önemli: sayfa ücret bilgisi vermiyorsa **boş bırakıyoruz, uydurmuyoruz.**
+> Bu tablo yalnız **ölçtüğümüz** üç yapılandırmayı kıyaslıyor. Vektör-RAG taban
+> çizgisi kurmadık; ölçmediğimiz bir sistemle kıyaslama yapmıyoruz.
 
-
-> “Ajan” demek her adımı bir modele sormak değil. Aritmetiği ve kısıt kontrolünü
-> modele yaptırsaydık, halüsinasyon savunmasıyla kazandığımız güveni tek hamlede
-> kaybederdik. Dil modeli **tek bir işte** kullanılıyor: metinden alan çıkarmak.
-> Gerisi deterministik kod — soldaki koşum kaydında her satırda “kod” yazıyor.
-
-## 06 · Ölçüm &nbsp;— Samet &nbsp;· 40 sn
+## 06 · Ablasyon &nbsp;— Samet &nbsp;· 40 sn
 
 > Beş yapılandırmayı aynı kodla, aynı korpusta, tek koşuda ölçtük.
 > Kural tek başına sayıda iyi ama az alan doldurur. Model çok doldurur, isabeti

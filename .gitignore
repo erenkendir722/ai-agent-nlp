@@ -44,3 +44,9 @@ data/*.zip
 # Depoda tutulursa CSV düzeltildikçe bayatlar ve etiketleyen yanlış sayfaya
 # bakar — aynı "iki ayrı gerçeklik" tuzağı.
 data/gold/okuma_*.md
+
+# sunum onizleme gecicileri (tools/ disi, elle uretilir)
+docs/sunum/.p*.html
+docs/sunum/.p*.png
+docs/sunum/.bos.*
+docs/sunum/.son.*

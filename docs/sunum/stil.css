@@ -1,37 +1,35 @@
-/* SVARTAL — TEKNOFEST 2026 sunum stili · KOYU TEMA, ÜÇ VURGU
+/* SVARTAL — TEKNOFEST 2026 sunum stili · AÇIK TEMA
 
-   ══ PALET — gözle değil, ÖLÇÜLEREK seçildi ══
-   `dataviz` doğrulayıcısı, koyu zemin, `--pairs all`:
+   ══ TASARIM KAYNAĞI ══
+   Düzen, 28 Ağustos'ta beğenilen `TEKNOFEST_2026_SVARTAL_Final_Sunumu_Kusursuz.pdf`
+   şablonundan alındı: ince üst bant (marka çipi + alt başlık + bölüm rozeti),
+   beyaz kartlar, aşama rozetli boru hattı, çubuğun İÇİNE yazılan değerler,
+   monospace veri satırları, altbilgide turuncu çerçeveli sayfa çipi.
 
-       #E85D2A  turuncu   marka (logodaki «S»)
-       #2AA3AE  turkuaz   ikincil
-       #8A7BE0  mor-mavi  üçüncül
+   O PDF'in KAYNAĞI YOKTU (yalnız çıktı dosyası vardı), bu yüzden tasarım
+   burada yeniden kuruldu. Kazanç: `tests/test_sunum_sayilari.py`'deki 13
+   nöbetçi slayttaki her sayıyı ölçüm dosyasına bağlı tutmaya devam ediyor.
+   O PDF'teki teknik yanlışlar (LangGraph, GGUF, SHA256 kanıt zinciri, uydurma
+   banka dağılımı, ölçülmemiş «Klasik Vektör RAG» kolonu) burada düzeltildi.
 
-       lightness bandı ✓ · kroma tabanı ✓ · CVD ayrımı ✓ (en kötü çift
-       ΔE 9,6 deutan) · normal görüş tabanı ✓ (ΔE 17,2) · zemin kontrastı ✓
+   ══ PALET — ölçülerek seçildi ══
+   `dataviz` doğrulayıcısı, AÇIK zemin, `--pairs all`:
 
-   ELENENLER ve NEDENİ — aynı denetimden geçemedikleri için:
-     · sarı-yeşil #7FA83A — turuncuyla deuteranopide ΔE 2,5. Kırmızı-yeşil
-       renk körü bir jüri üyesi ikisini AYIRT EDEMEZ. Yeşil istendiği için
-       denendi, tam bu yüzden kullanılmadı.
-     · yeşil #21C08A — lightness 0,718; koyu zeminde bandın dışında.
-     · mor #A96BC9 + mavi #6E8CE8 birlikte — birbirine ΔE 4,8 (deutan).
-     · nötr gri #7A8494 — kroma tabanının altında, gri okuyor.
+       #1B6FC4  mavi     taban çizgisi kolları (ablasyon çubukları)
+       #E8622A  turuncu  marka · bizim yapılandırma
+       → 5/5 PASS (CVD ΔE 24,0 protan · normal görüş ΔE 34,0)
 
-   Renk eklemeden önce doğrulayıcıyı koştur:
-     node scripts/validate_palette.js "<hex,...>" --mode dark --pairs all
-
-   ══ ŞABLON ══
-   TEKNOFEST'in verdiği İÇERİK arka planı ZORUNLU DEĞİL (27 Ağu). Yalnız
-   kapak şablonun kendi görselidir; kalan sayfalar tam tuvali kullanır.
+   DURUM RENKLERİ AYRIDIR ve tek başına kullanılmaz:
+       #2E9E5B  yeşil    iyi        ✓ ikonuyla
+       #D93B3B  kırmızı  kötü       ✕ ikonuyla
+       #B4780E  kehribar kısmi      — ikonuyla
+   Bu üçlü doğrulayıcıda CVD'de ayrışmıyor (yeşil↔kırmızı ΔE 4,5 deutan);
+   kırmızı-yeşil renk körü bir jüri üyesi ayırt EDEMEZ. Bu yüzden her durum
+   çipi ikon + metin taşır — renk asla tek başına anlam taşımaz. İkonu kaldırma.
 
    ══ METİN BÜTÇESİ ══
-   4 dakikada konuşulabilecek ~520 kelime. 26 Ağustos sürümü 1.882 kelimeydi
-   — konuşmanın 3,6 katı. Sayfa başına GÖRÜNEN metin 60 kelimeyi geçmemeli.
-
-   ══ BÖLÜM RENGİ ══
-   Her sayfanın üst şeridi bölümün rengini taşır: problem turuncu, sistem
-   mor-mavi, kanıt/ölçüm turkuaz, sonuç turuncu. Renk süs değil, yapı işareti.
+   4 dakikada konuşulabilecek ~520 kelime. Sayfa başına GÖRÜNEN metin 60
+   kelimeyi geçmemeli; slayt dayanak gösterir, anlatan konuşmacıdır.
 
    Font Carlito (SIL Open Font License) `fontlar/` içinde gömülü. */
 
@@ -40,22 +38,30 @@
 @font-face { font-family: "Carlito"; src: url("fontlar/Carlito-Italic.ttf") format("truetype"); font-weight: 400; font-style: italic; }
 
 :root{
-  --zemin:#15141A;
-  --kart:#1F1E26;
-  --cizgi:#31303B;
-  --krem:#F5F4F0;
-  --orta:#C7C5D0;
-  --sonuk:#8F8D99;
+  --zemin:#F7F8FA;
+  --kart:#FFFFFF;
+  --cizgi:#E4E7EC;
+  --cizgi-2:#EEF1F5;
 
-  --turuncu:#E85D2A;
-  --turkuaz:#2AA3AE;
-  --mor:#8A7BE0;
+  --murekkep:#14171C;
+  --metin:#4A5058;
+  --sonuk:#8A9099;
+
+  --turuncu:#E8622A;
+  --mavi:#1B6FC4;
+  --yesil:#2E9E5B;
+  --kirmizi:#D93B3B;
+  --kehribar:#B4780E;
+  --mor:#7C5CD6;
+  --koyu:#171A20;
+
+  --mono:"DejaVu Sans Mono","Consolas","Menlo",monospace;
 }
 
 *{ box-sizing:border-box; margin:0; padding:0; }
 @page { size: 13.333in 7.5in; margin:0; }
 
-html,body{ background:#08080a; }
+html,body{ background:#DDE1E6; }
 body{
   font-family:"Carlito","Calibri",sans-serif;
   -webkit-font-smoothing:antialiased;
@@ -68,165 +74,218 @@ body{
   width:1280px; height:720px;
   overflow:hidden;
   page-break-after:always; break-after:page;
-  background:var(--zemin); color:var(--krem);
-  padding:74px 72px 76px;
+  background:var(--zemin); color:var(--murekkep);
+  padding:96px 46px 70px;
 }
 .sayfa:last-child{ page-break-after:auto; break-after:auto; }
-
-/* bölüm şeridi — sayfanın en üstünde, rengi bölümü söyler */
-.sayfa::before{
-  content:""; position:absolute; top:0; left:0; right:0; height:4px;
-  background:var(--bolum,var(--turuncu));
-}
-.sayfa.mor{ --bolum:var(--mor); }
-.sayfa.turkuaz{ --bolum:var(--turkuaz); }
 
 .sayfa.kapak{
   padding:0;
   background:#15141A url("arkaplan/kapak.jpg") 0 0 / 1312.3px 738.2px no-repeat;
 }
-.sayfa.kapak::before{ display:none; }
 
-/* ─────────── logo — HER SAYFADA ───────────
-   `marka/svartal-logo.png` gelene kadar SVG duruyor. Gerçek dosya konunca
-   `.logo svg` yerine <img> koymak yeter; yer ve boyut değişmez. */
-.logo{
-  position:absolute; top:28px; left:72px;
-  display:flex; align-items:center; gap:10px;
+/* ─────────── üst bant — HER SAYFADA ───────────
+   `marka/svartal-logo.png` gelene kadar SVG vekil duruyor; gerçek dosya
+   konunca `.marka-cip svg` yerine <img> koymak yeter, ölçü aynı. */
+.ustbar{
+  position:absolute; top:30px; left:46px; right:46px;
+  display:flex; align-items:center; gap:14px;
 }
-.logo svg, .logo img{ width:27px; height:27px; display:block; }
-.logo .ad{ font-size:14px; font-weight:700; letter-spacing:.17em; color:var(--krem); }
-.sayfa.kapak .logo{ display:none; }
+.marka-cip{
+  background:var(--koyu); border-radius:6px; padding:7px 13px;
+  display:flex; align-items:center; gap:9px;
+}
+.marka-cip svg, .marka-cip img{ width:15px; height:15px; display:block; }
+.marka-cip .ad{ font-size:11.5px; font-weight:700; letter-spacing:.15em; color:#fff; }
+.ustbar .ayrac{ width:1px; height:19px; background:#D3D8DE; }
+.ustbar .alt-baslik{ font-size:13.5px; font-weight:700; color:#333940; }
+.bolum-cip{
+  margin-left:auto; background:#1E2229; color:#fff;
+  border-radius:6px; padding:8px 15px;
+  font-size:11.5px; font-weight:700; letter-spacing:.07em;
+}
+.sayfa.kapak .ustbar{ display:none; }
 
 /* ─────────── başlık ─────────── */
-.baslik{ display:flex; align-items:baseline; gap:20px; }
-.baslik .no{ font-size:15px; font-weight:700; letter-spacing:.22em; color:var(--bolum,var(--turuncu)); }
-.baslik h2{ font-size:42px; font-weight:700; letter-spacing:-.022em; line-height:1.04; }
-.spot{ font-size:17px; color:var(--orta); line-height:1.45; margin-top:14px; max-width:1000px; }
-.spot b{ color:var(--krem); }
-/* icerik alani tuvali doldursun: 720 - (74 ust + 76 alt) - baslik bloku ~=412 */
-.govde{ margin-top:28px; min-height:412px; }
+.baslik h2{ font-size:37px; font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+.baslik h2 .v{ color:var(--turuncu); }
+.baslik h2 .v-mavi{ color:var(--mavi); }
+.spot{ font-size:14.5px; color:var(--metin); margin-top:9px; line-height:1.45; max-width:1080px; }
+.spot b{ color:var(--murekkep); }
+/* icerik tuvali doldursun: 720 - (96 ust + 70 alt) - baslik bloku ~=430
+   Begenilen sablonun kusuru buydu: icerik ortada bir bantta duruyor,
+   altinda ve ustunde genis bosluklar kaliyordu. */
+.govde{ margin-top:26px; min-height:430px; }
 
 /* ─────────── altbilgi ─────────── */
 .altbilgi{
-  position:absolute; left:72px; right:72px; bottom:30px;
-  display:flex; justify-content:space-between; align-items:baseline;
-  font-size:12.5px; color:var(--sonuk);
-  border-top:1px solid var(--cizgi); padding-top:12px;
+  position:absolute; left:46px; right:46px; bottom:30px;
+  display:flex; align-items:center; gap:12px;
+  font-size:12.5px; font-weight:700; color:#333940;
 }
-.altbilgi b{ color:var(--krem); font-weight:700; }
-.altbilgi .no{ font-weight:700; letter-spacing:.14em; color:var(--bolum,var(--turuncu)); }
+.altbilgi .sag{ margin-left:auto; display:flex; align-items:center; gap:16px; }
+.altbilgi .etiket{
+  font-family:var(--mono); font-size:11px; letter-spacing:.11em; color:#9AA0A8; font-weight:400;
+}
+.sayfa-cip{
+  border:1.5px solid var(--turuncu); color:var(--turuncu); border-radius:5px;
+  padding:4px 11px; font-family:var(--mono); font-size:11.5px; font-weight:700;
+}
+.sayfa.kapak .altbilgi{ display:none; }
 
 /* ─────────── kart ─────────── */
-.kart{ background:var(--kart); border-radius:10px; padding:20px 22px; }
-.kart.cizgili{ background:transparent; border:1px solid var(--cizgi); }
-.kart.vurgu{ background:rgba(232,93,42,.09); border:1.5px solid var(--turuncu); }
-.kart.vurgu-t{ background:rgba(42,163,174,.10); border:1.5px solid var(--turkuaz); }
-.kart.vurgu-m{ background:rgba(138,123,224,.10); border:1.5px solid var(--mor); }
+.kart{ background:var(--kart); border:1px solid var(--cizgi); border-radius:10px; padding:20px 22px; }
+.kart.turuncu{ border-color:#F3C4AE; background:#FFFAF7; }
+.kart.yesil{ border-color:#C2E3CE; background:#F5FBF7; }
+.kart.mavi{ border-color:#BBD5EE; background:#F6FAFE; }
 .kart-baslik{
-  font-size:12px; font-weight:700; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--bolum,var(--turuncu)); margin-bottom:11px;
+  font-size:15.5px; font-weight:700; color:var(--murekkep);
+  margin-bottom:15px; display:flex; align-items:center; gap:9px;
 }
-.kart-baslik.t{ color:var(--turkuaz); }
-.kart-baslik.m{ color:var(--mor); }
-.kart-baslik.o{ color:var(--turuncu); }
+.kart-baslik .im{ font-size:15px; }
+.kart-baslik.t{ color:var(--turuncu); }
+.kart-baslik.m{ color:var(--mavi); }
 
-.satir{ display:flex; gap:20px; }
+.satir{ display:flex; gap:18px; }
 .kolon{ flex:1; min-width:0; }
 
 /* ─────────── metin ─────────── */
-p{ font-size:15px; line-height:1.5; color:var(--orta); }
-p b{ color:var(--krem); }
-.kucuk{ font-size:13px; line-height:1.5; color:var(--sonuk); }
-.kucuk b{ color:var(--krem); }
-.turuncu{ color:var(--turuncu); }
-.turkuaz{ color:var(--turkuaz); }
-.mor{ color:var(--mor); }
+p{ font-size:13.5px; line-height:1.5; color:var(--metin); }
+p b{ color:var(--murekkep); }
+.kucuk{ font-size:12.5px; line-height:1.5; color:var(--metin); }
+.kucuk b{ color:var(--murekkep); }
+.mono{ font-family:var(--mono); }
 b,strong{ font-weight:700; }
-.mono{ font-family:"DejaVu Sans Mono","Consolas","Menlo",monospace; }
+.turuncu{ color:var(--turuncu); } .mavi{ color:var(--mavi); }
+.yesil{ color:var(--yesil); } .kirmizi{ color:var(--kirmizi); }
 
-/* ─────────── rakamlar ─────────── */
-.dev{ font-size:70px; font-weight:700; line-height:.92; letter-spacing:-.04em; color:var(--turuncu); }
-.orta-rakam{ font-size:38px; font-weight:700; line-height:1; letter-spacing:-.03em; color:var(--turuncu); }
-.rakam-etiket{ font-size:12.5px; color:var(--sonuk); margin-top:9px; line-height:1.3; }
+/* uyarı / karar şeridi */
+.serit{ border-radius:8px; padding:13px 16px; font-size:12.8px; line-height:1.5; }
+.serit.kirmizi-z{ background:#FDF4F3; border:1px solid #F1CFCB; color:var(--metin); }
+.serit.turuncu-z{ background:#FFF8F4; border:1px solid #F3D3C0; color:var(--metin); }
+.serit.yesil-z{ background:#F4FBF6; border:1px solid #C6E5D3; color:var(--metin); }
+.serit.mavi-z{ background:#F5FAFE; border:1px solid #C3DAF0; color:var(--metin); }
+.serit b{ color:var(--murekkep); }
+
+/* ─────────── ifade satırı (sayfa 02) ─────────── */
+.ifade{
+  display:flex; align-items:center;
+  background:#F8F9FB; border:1px solid var(--cizgi-2); border-radius:7px;
+  padding:11px 14px; margin-bottom:9px;
+}
+.ifade .m{ font-family:var(--mono); font-size:13.5px; color:var(--murekkep); }
+.ifade .e{ margin-left:auto; font-family:var(--mono); font-size:11.5px; font-weight:700; letter-spacing:.05em; }
+.ifade .e.var{ color:var(--turuncu); }
+.ifade .e.yok{ color:var(--kirmizi); }
+
+/* ─────────── istatistik kartı (sayfa 03) ─────────── */
+.ist{
+  flex:1; background:var(--kart); border:1px solid var(--cizgi);
+  border-top:4px solid var(--ust,var(--turuncu)); border-radius:9px; padding:17px 19px;
+}
+.ist .rakam{ font-family:var(--mono); font-size:33px; font-weight:700; color:var(--murekkep); line-height:1; letter-spacing:-.02em; }
+.ist .rakam .ek{ font-size:17px; color:var(--turuncu); }
+.ist .ad{ font-size:13.5px; font-weight:700; color:var(--murekkep); margin-top:9px; }
+.ist .aciklama{ font-size:11.8px; color:var(--sonuk); margin-top:5px; line-height:1.4; }
+
+/* alan çipleri */
+.alan-cip{
+  display:inline-block; border:1px solid var(--cizgi); background:#fff;
+  border-radius:5px; padding:5px 9px; font-size:11.5px; color:var(--metin); margin:0 5px 6px 0;
+}
+.alan-cip.v{ border-color:#F3C4AE; color:var(--turuncu); font-weight:700; }
+.alan-cip.v2{ border-color:#BBD5EE; color:var(--mavi); font-weight:700; }
+.alan-cip.v3{ border-color:#C2E3CE; color:var(--yesil); font-weight:700; }
+
+.banka-kutu{
+  border:1px solid var(--cizgi); background:#fff; border-radius:6px;
+  padding:8px 11px; font-size:12.5px; color:var(--metin);
+}
+.banka-kutu b{ color:var(--murekkep); }
+
+/* ─────────── boru hattı (sayfa 04) ─────────── */
+.hat{ display:flex; align-items:stretch; gap:0; min-height:326px; }
+.asama{
+  flex:1; background:var(--kart); border:1px solid var(--cizgi); border-radius:10px;
+  padding:18px 16px; display:flex; flex-direction:column; gap:11px; justify-content:center;
+}
+.asama .rozet{
+  align-self:flex-start; font-size:10.5px; font-weight:700; letter-spacing:.07em;
+  padding:4px 9px; border-radius:5px; border:1px solid;
+}
+.asama h3{ font-size:16.5px; font-weight:700; color:var(--murekkep); line-height:1.15; }
+.asama p{ font-size:12.8px; line-height:1.58; color:var(--metin); }
+.hat .ok{ flex:none; width:26px; align-self:center; text-align:center; color:#B9BFC7; font-size:19px; }
+
+.rz-gri{ color:#5A6069; border-color:#D5DAE0; background:#F4F6F8; }
+.rz-mor{ color:var(--mor); border-color:#D6CBF2; background:#F8F5FE; }
+.rz-yesil{ color:var(--yesil); border-color:#C2E3CE; background:#F4FBF7; }
+.rz-mavi{ color:var(--mavi); border-color:#BBD5EE; background:#F5FAFE; }
+.rz-turuncu{ color:var(--turuncu); border-color:#F3C4AE; background:#FFF8F4; }
 
 /* ─────────── tablo ─────────── */
-table{ width:100%; border-collapse:collapse; font-size:14px; }
+table{ width:100%; border-collapse:collapse; font-size:13.5px; }
 th{
-  text-align:left; font-weight:700; font-size:10.5px; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--sonuk);
-  padding:0 12px 8px 0; border-bottom:1px solid var(--cizgi);
+  text-align:left; font-weight:700; font-size:10.5px; letter-spacing:.09em;
+  text-transform:uppercase; color:#6E747C;
+  padding:0 12px 10px 0; border-bottom:1.5px solid #D9DDE3;
 }
-td{ padding:9px 12px 9px 0; border-bottom:1px solid var(--cizgi); vertical-align:top; color:var(--orta); }
-td b{ color:var(--krem); }
+td{ padding:10px 12px 10px 0; border-bottom:1px solid var(--cizgi-2); vertical-align:middle; color:var(--metin); }
+td b{ color:var(--murekkep); }
 tr:last-child td{ border-bottom:none; }
-tr.vurgu td{ color:var(--krem); font-weight:700; }
+tr.vurgu td{ background:#FFF8F4; }
 
-/* ─────────── rozet / çip ─────────── */
-.rozet{
-  display:inline-block; align-self:flex-start;
-  font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
-  padding:5px 10px; border-radius:5px;
-  background:rgba(42,163,174,.18); color:var(--turkuaz);
+/* durum çipi — İKON ZORUNLU, renk tek başına anlam taşımaz */
+.dcip{
+  display:inline-block; font-size:12px; font-weight:700;
+  padding:5px 10px; border-radius:5px; border:1px solid; white-space:nowrap;
 }
-.rozet.o{ background:rgba(232,93,42,.18); color:var(--turuncu); }
-.rozet.m{ background:rgba(138,123,224,.18); color:var(--mor); }
+.dcip.kotu{ color:var(--kirmizi); border-color:#F1CFCB; background:#FDF4F3; }
+.dcip.orta{ color:var(--kehribar); border-color:#EBDCB4; background:#FDFAF2; }
+.dcip.iyi{ color:var(--yesil); border-color:#C2E3CE; background:#F4FBF7; }
 
-.cip{ display:flex; align-items:center; gap:12px; background:var(--kart); border-radius:8px; padding:11px 14px; }
-.cip .ad{ font-size:14.5px; font-weight:700; color:var(--krem); width:104px; flex:none; }
-.cip .is{ font-size:12.5px; color:var(--sonuk); flex:1; line-height:1.35; }
-.cip .yok{
-  font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
-  color:var(--turkuaz); background:rgba(42,163,174,.16); padding:4px 8px; border-radius:4px; flex:none;
+/* ─────────── ablasyon çubuğu (sayfa 06) ─────────── */
+.oluk{ background:#EDF0F4; border-radius:4px; height:25px; }
+.dolu{
+  height:100%; border-radius:4px; background:var(--mavi);
+  display:flex; align-items:center; justify-content:flex-end; padding-right:9px;
+  font-family:var(--mono); font-size:12px; font-weight:700; color:#fff;
 }
+.dolu.bizim{ background:var(--turuncu); }
+.dolu.zayif{ background:var(--kirmizi); }
 
-/* ─────────── çubuk ─────────── */
-.oluk{ flex:1; height:20px; background:rgba(245,244,240,.07); border-radius:0 4px 4px 0; }
-.cubuk{ height:100%; background:var(--turkuaz); border-radius:0 4px 4px 0; }
+/* ─────────── terminal (sayfa 07) ─────────── */
+.terminal{
+  background:#12151A; border-radius:10px; padding:18px 20px;
+  font-family:var(--mono); font-size:12px; line-height:1.95; color:#C3CBD4;
+}
+.terminal .bas{
+  display:flex; align-items:center; gap:9px; color:#8A929B;
+  font-size:11.5px; letter-spacing:.06em; padding-bottom:11px; margin-bottom:11px;
+  border-bottom:1px solid #262B33;
+}
+.terminal .bas .canli{ margin-left:auto; color:var(--yesil); }
+.terminal .et{ font-weight:700; }
+.terminal .et.q{ color:#6FB0EE; } .terminal .et.r{ color:#B99BF0; }
+.terminal .et.s{ color:#6FB0EE; } .terminal .et.g{ color:#F0A97A; }
+.terminal .et.k{ color:#F0A97A; } .terminal .et.o{ color:#7FD3A0; }
+.terminal .son{ color:#7A828B; padding-top:11px; margin-top:9px; border-top:1px dashed #262B33; }
 
-/* ─────────── mimari diyagramı ─────────── */
-.akis{ display:flex; align-items:stretch; gap:0; min-height:332px; }
-.asama{
-  position:relative; flex:1;
-  background:var(--kart); border-radius:10px; padding:44px 14px 18px;
-  display:flex; flex-direction:column; gap:10px;
+/* ─────────── cevap kartı (sayfa 07) ─────────── */
+.soru-kutu{
+  background:#F4F6F9; border:1px solid var(--cizgi-2); border-radius:7px;
+  padding:12px 15px; font-size:14px; font-weight:700; color:var(--murekkep);
 }
-.asama.cekirdek{ background:rgba(138,123,224,.10); border:1.5px solid var(--mor); flex:1.9; }
-.asama.ajanli{ flex:1.35; }
-.asama-no{
-  position:absolute; top:17px; left:14px;
-  font-size:11px; font-weight:700; letter-spacing:.14em; color:var(--sonuk);
-}
-.asama.cekirdek .asama-no{ color:var(--mor); }
-.asama h3{ font-size:17px; font-weight:700; color:var(--krem); line-height:1.15; letter-spacing:-.01em; }
-.asama .satirlar{ font-size:12.8px; line-height:1.6; color:var(--sonuk); }
-.ok{ flex:none; width:20px; align-self:center; color:var(--mor); font-size:21px; font-weight:700; text-align:center; }
+.cevap-kutu{ border:1.5px solid var(--murekkep); border-radius:8px; padding:15px 17px; margin-top:12px; background:#fff; }
+.cevap-satir{ display:flex; align-items:baseline; font-family:var(--mono); font-size:13.5px; padding:5px 0; }
+.cevap-satir .a{ color:var(--metin); }
+.cevap-satir .d{ margin-left:auto; font-weight:700; color:var(--murekkep); }
+.cevap-satir .d.yok{ color:var(--turuncu); }
 
-.ikili{ display:flex; gap:8px; }
-.ikili .yarim{
-  flex:1; background:rgba(245,244,240,.05); border-radius:6px; padding:10px;
-  font-size:12px; line-height:1.4; color:var(--sonuk);
+/* ─────────── kapanış (sayfa 09) ─────────── */
+.kapanis-logo{
+  display:inline-flex; align-items:center; gap:13px;
+  background:#F2F3F5; border-radius:8px; padding:13px 22px;
 }
-.ikili .yarim b{ display:block; color:var(--krem); font-size:13px; margin-bottom:4px; }
-.uzlastirici{
-  background:rgba(138,123,224,.22); border-radius:6px; padding:9px;
-  font-size:12.5px; color:var(--krem); font-weight:700; text-align:center;
-}
-.ajan-mini{ font-size:12.6px; line-height:1.72; color:var(--orta); }
-
-.kanit-serit{
-  margin-top:20px; border-radius:10px; padding:16px 22px;
-  background:linear-gradient(90deg, rgba(232,93,42,.22) 0%, rgba(232,93,42,.04) 72%);
-  border-left:3px solid var(--turuncu);
-  display:flex; align-items:center; gap:20px;
-}
-.kanit-serit .ad{
-  font-size:12.5px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
-  color:var(--turuncu); flex:none; line-height:1.35;
-}
-.kanit-serit .metin{ font-size:14px; line-height:1.45; color:var(--orta); }
-.kanit-serit .metin b{ color:var(--krem); }
-
-/* ─────────── sohbet balonu ─────────── */
-.balon-soru{ background:rgba(232,93,42,.14); border-radius:10px 10px 10px 2px; padding:14px 16px; font-size:15px; color:var(--krem); }
-.balon-cevap{ background:var(--kart); border-radius:10px 10px 2px 10px; padding:16px 18px; margin-top:12px; }
+.kapanis-logo svg{ width:30px; height:30px; }
+.kapanis-logo .ad{ font-size:26px; font-weight:700; letter-spacing:.1em; color:var(--murekkep); }

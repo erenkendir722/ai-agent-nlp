@@ -1,7 +1,7 @@
 # Sunum — Svartal_Sunum.pdf
 
-**8 sayfa** (TEKNOFEST kapağı + 7 içerik), 16:9 (1280×720 ·
-13,333in × 7,5in). Kaynak `sunum.html` + `stil.css`; PDF ondan üretilir,
+**9 sayfa** (TEKNOFEST kapağı + 8 içerik), 16:9 (1280×720 ·
+13,333in × 7,5in), **açık tema**. Kaynak `sunum.html` + `stil.css`; PDF ondan üretilir,
 **elle düzenlenmez.** Konuşma metni ayrı: [`KONUSMA_METNI.md`](KONUSMA_METNI.md).
 
 ```bash
@@ -27,54 +27,58 @@ Daha önce düzen o arka planın beyaz kartına ve alt-orta çentiğine göre k�
 (x 27–1252 · y 33–686, çentik y≈550'den aşağıda x 460–830). O kısıt kalktı;
 `arkaplan/icerik.jpg` artık kullanılmıyor ama şablonun kaydı olarak duruyor.
 
-## Koyu tema — üç vurgu, ölçülerek seçildi
+## Tasarım nereden geliyor
 
-SVARTAL logosu siyah kare + turuncu «S» + mürekkep kelime işareti. Palet
-o üçlüden başladı, sonra `dataviz` doğrulayıcısından geçirildi
-(koyu zemin, `--pairs all`):
+Düzen, 28 Ağustos'ta beğenilen `TEKNOFEST_2026_SVARTAL_Final_Sunumu_Kusursuz.pdf`
+şablonundan alındı: ince üst bant (marka çipi + alt başlık + bölüm rozeti),
+beyaz kartlar, aşama rozetli boru hattı, **çubuğun içine yazılan değer**,
+monospace veri satırları, altbilgide turuncu çerçeveli sayfa çipi.
+
+**O PDF'in kaynağı yoktu** — yalnız çıktı dosyası vardı. Bu yüzden tasarım
+burada yeniden kuruldu. Kazanç: `tests/test_sunum_sayilari.py`'deki **13 nöbetçi**
+slayttaki her sayıyı ölçüm dosyasına bağlı tutmaya devam ediyor.
+
+### O şablonda düzeltilen teknik yanlışlar
+
+Tasarım alındı, **iddialar depoya karşı denetlendi.** Düzeltilenler:
+
+| Şablonda yazıyordu | Gerçek |
+|---|---|
+| «LangGraph & Ajan Mimarisi», `@state_graph.node(...)` | **LangGraph kullanılmıyor** — `requirements.txt`'te de `src/`'de de yok. Protokol 30 satır |
+| «Yerel LLM (Qwen 3.5 **GGUF**)» | GGUF yok. Çıkarım EVREN'de `Qwen/Qwen3.5-122B-A10B`, BF16 |
+| Kanıt zincirinde «**SHA256** hash» | SHA256 yalnız *kod parmak izinde* (`depolama.kod_parmak_izi`), kayıt başına değil |
+| `SELECT * FROM campaigns` | Tablo adı **`kampanyalar`** |
+| Vakıf 142 · TOM 14 · «**FUPS**/Diğer» · Dünya Katılım yok | Gerçek dokuz banka: Ziraat 219 · Kuveyt Türk 213 · Albaraka 137 · TOM 123 · Emlak 110 · T.Finans 64 · Vakıf 49 · Dünya 45 · Hayat 19 |
+| Ablasyonda «Tam Hiyerarşi %0.21» | Ablasyonun kendi değeri **%0,42**; %0,19 *eval*'den, başka koşu |
+| «**Klasik Vektör RAG** %83.3 / %0.70» kolonu | O değerler ablasyonun «Yalnız dil modeli» kolu. **Vektör-RAG taban çizgisi hiç ölçülmedi** — kolon, ölçülmüş üç kolla değiştirildi |
+| Grup başına «%100 Tam kapsam» | Kapsam **11,5× dengesiz**; şablonun kendi sonuç sayfası da bunu söylüyordu (kendi içinde çelişki) |
+
+## Palet — ölçülerek seçildi
+
+`dataviz` doğrulayıcısı, **açık** zemin, `--pairs all`:
 
 | Rol | Hex | |
 |---|---|---|
-| Zemin | `#15141A` | |
-| Metin | `#F5F4F0` | |
-| **Turuncu** | `#E85D2A` | marka · problem ve sonuç bölümleri |
-| **Turkuaz** | `#2AA3AE` | kanıt ve ölçüm bölümleri |
-| **Mor-mavi** | `#8A7BE0` | sistem/mimari bölümü |
+| **Mavi** | `#1B6FC4` | ablasyon çubukları — taban çizgisi kolları |
+| **Turuncu** | `#E8622A` | marka · bizim yapılandırma |
 
-**5/5 PASS** — lightness bandı, kroma tabanı, CVD ayrımı (en kötü çift
-ΔE 9,6 deutan), normal görüş tabanı (ΔE 17,2), zemin kontrastı.
+**5/5 PASS** (CVD ΔE 24,0 protan · normal görüş ΔE 34,0).
 
-**Elenenler ve nedeni** — hepsi denendi, hiçbiri geçemedi:
-
-| Renk | Neden elendi |
-|---|---|
-| sarı-yeşil `#7FA83A` | turuncuyla deuteranopide **ΔE 2,5** — kırmızı-yeşil renk körü bir jüri üyesi ayırt edemez |
-| yeşil `#21C08A` | lightness 0,718; koyu zeminde bandın dışında |
-| mor `#A96BC9` + mavi `#6E8CE8` | birbirine ΔE 4,8 (deutan) |
-| nötr gri `#7A8494` | kroma tabanının altında, gri okuyor |
-
-Yeşil özellikle istendi ve özellikle bu yüzden kullanılamadı — turuncuyla
-çakışması ölçüldü. Renk eklemeden önce:
+**Durum renkleri ayrıdır ve tek başına kullanılmaz:** yeşil `#2E9E5B` ✓ ·
+kırmızı `#D93B3B` ✕ · kehribar `#B4780E` —. Bu üçlü doğrulayıcıda CVD'de
+**ayrışmıyor** (yeşil↔kırmızı ΔE 4,5 deutan); kırmızı-yeşil renk körü bir jüri
+üyesi ayırt edemez. Bu yüzden **her durum çipi ikon + metin taşır.** İkonu kaldırma.
 
 ```bash
-node scripts/validate_palette.js "<hex,...>" --mode dark --pairs all
+node scripts/validate_palette.js "<hex,...>" --mode light --pairs all
 ```
-
-### Bölüm rengi bir yapı işaretidir
-
-Her sayfanın üst şeridi bölümün rengini taşır: **problem turuncu → sistem
-mor-mavi → kanıt/ölçüm turkuaz → sonuç turuncu.** Jüri renk değişiminden
-konunun değiştiğini anlar; renk süs değil.
 
 ### Logo her sayfada
 
-Sol üstte mark + «SVARTAL» kelime işareti. Yalnız mark yetmez — jüri markayı
-ilk kez görüyor, tanıması için adın yanında durması gerekir.
-
-`marka/svartal-logo.png` **henüz yok**; yerinde vekil bir SVG duruyor
-(krem kare + turuncu «S», koyu zemin için ters çevrilmiş). Gerçek dosya
-konunca her sayfadaki `<svg><use href="#marka"/></svg>` yerine
-`<img src="marka/svartal-logo.png">` yazmak yeter — yer ve boyut aynı.
+Üst bantta koyu marka çipi (mark + «SVARTAL»). `marka/svartal-logo.png`
+**henüz yok**; yerinde vekil SVG duruyor. Gerçek dosya konunca her sayfadaki
+`<use href="#marka"/>` yerine `<img src="marka/svartal-logo.png">` yazmak yeter —
+yer ve boyut aynı.
 
 ## Metin bütçesi — ölçülür, tahmin edilmez
 
@@ -103,19 +107,20 @@ Sunum **4 dakika** (şartname madde 10). Her sayfanın altbilgisinde konuşanın
 yazar — madde 8 «tüm üyelerin görev tanımları sunumda olmalı» maddesi böyle
 karşılanıyor, ayrı bir «ekip» slaydı yok. 01. sayfada dördünün rolü de yazılı.
 
-| # | Sayfa | Bölüm rengi | Konuşan |
-|---|---|---|---|
-| 01 | TEKNOFEST kapağı | — | — |
-| 02 | SVARTAL — iddia, beş rakam, ekip | turuncu | Eren |
-| 03 | Problem — dört ifade, manşet oran tuzağı | turuncu | Eren |
-| 04 | **Mimari** — altı aşamalı akış + kanıt zinciri şeridi | mor-mavi | Eren |
-| 05 | Kanıt zinciri ve beş ajan | mor-mavi | Samet + Eren |
-| 06 | **Ölçüm** — ablasyon (çubuklu tablo), dürüstlük | turkuaz | Samet |
-| 07 | Asistan — gerçek cevap, sayısal doğrulama kalkanı | turkuaz | Esra |
-| 08 | Sonuç, bilinen sınırlar, kapanış | turuncu | Eren |
+| # | Sayfa | Konuşan |
+|---|---|---|
+| 01 | TEKNOFEST kapağı | — |
+| 02 | Problem — dört ifade, manşet oran tuzağı | Eren |
+| 03 | Kapsam — dört rakam, banka dağılımı, 16 alanlı kanıt zinciri | Görkem |
+| 04 | **Mimari** — 5 katmanlı boru hattı + çekirdek ilke | Eren |
+| 05 | Karşılaştırma — kural vs. model vs. SVARTAL (üçü de ölçülmüş) | Samet |
+| 06 | **Ablasyon** — çubuklu tablo, dürüstlük kutusu | Samet |
+| 07 | Asistan — cevap kartı + karar izi konsolu | Esra |
+| 08 | Sonuçlar ve bilinen sınırlar | Eren |
+| 09 | Kapanış · soru & cevap | — |
 
-Madde 8 («tüm üyelerin görev tanımları sunumda olmalı») 02. sayfanın
-altbilgisinde dördünün rolüyle karşılanıyor; ayrı ekip slaydı yok.
+Madde 8 («tüm üyelerin görev tanımları sunumda olmalı») her sayfanın
+altbilgisindeki konuşmacı adıyla karşılanıyor.
 
 ## Anlatılmayan terim bırakmama kuralı
 

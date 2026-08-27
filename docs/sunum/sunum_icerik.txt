@@ -1,194 +1,244 @@
-Toplam sayfa: 8
+Toplam sayfa: 9
 === SAYFA 1 ===
 (bu sayfada metin yok)
 
 === SAYFA 2 ===
 SVARTAL
-SVARTAL
-Katılım Bankacılığı Finansal Metin Madenciliği ve Akıllı Karşılaştırma Sistemi
-Kaynağı olmayan sayı
-üretmeyen
-bir sistem.
-Dokuz katılım bankasının kampanya metinlerini yapısal veriye çeviriyoruz. Kanıtı olmayan bir değer üretilemez — bunu slaytta değil,
-kodda kısıt olarak
-uyguluyoruz.
-726
-işlenmiş kampanya
-9
-katılım bankası
-faal olanın tamamı
-16
-alanlı kanıt zinciri
-1636
-geçen test
-0
-ticari dış servis
-bağımlılığı
-Muhammed Eren
-Mimari ·
-Samet
-Bilgi çıkarımı ve ölçüm ·
-Görkem
-Veri toplama ·
-Esra
-Arayüz ve asistan
-02
+Katılım Finans Doğrulama Ajanı
+⚠ SEKTÖREL PROBLEM & DARBOĞAZ
+En Düşük Oran, En Ucuz Finansman
+Değildir
+Katılım bankacılığında standart API yoktur; kurumlar aynı bilgiyi farklı jargon ve gizli maliyetlerle sunar.
+📄
+Aynı Bilgi, Dört Farklı İfade
+(Şartname 5.2)
+"%2,05 kâr payı oranı"
+[SAYI VAR]
+"avantajlı kâr payı fırsatı"
+[SAYI YOK]
+"özel oranlı finansman"
+[SAYI YOK]
+"düşük maliyetli finansman"
+[SAYI YOK]
+Standart LLM tuzağı:
+Sayı içermeyen metinlerde halüsinasyonla oran uydurur. SVARTAL, kanıtı olmayan değeri
+kod seviyesinde boş bırakır
+— deneyen program çöker.
+🧮
+Maliyet Muhakemesi Tuzağı (800.000 TL · 120 Ay)
+Senaryo / Banka Teklifi
+Ek Masraf
+Toplam Geri Ödeme
+%1,87 Kâr Payı
+(manşet teklif)
++20.000 TL
+2.033.129 TL
+%1,89 Kâr Payı
+(masrafsız kampanya)
+0 TL
+2.028.925 TL
+Deterministik karar:
+Düşük oranlı teklif toplamda
+4.204 TL daha pahalıdır.
+Sıralamayı orana değil,
+toplam maliyet fonksiyonuna
+göre yapıyoruz; hesap testle sabitli.
+◔ Sektörel Darboğaz & Yanıltıcı Oran Analizi
+MUHAMMED EREN
+02 / 09
 
 === SAYFA 3 ===
 SVARTAL
-03
-Aynı bilgi, dört farklı ifade
-Katılım bankacılığında ortak veri biçimi yok: ne API var, ne indirilebilir tablo. Şartname 5.2 bunu dört ifadeyle örnekliyor.
-“%2,05 kâr payı oranı”
-“avantajlı kâr payı fırsatı”
-“özel oranlı finansman”
-“düşük maliyetli finansman”
-İlkinde sayı var, diğer üçünde yok.
-Sayı uyduran bir sistem son üçünde yanlış oran üretir.
-En düşük oran, en ucuz ürün demek değildir
-%1,87 kâr payı
-+ 20.000 TL tahsis ücreti
-2.033.129 TL
-%1,89 kâr payı
-masrafsız
-2.028.925 TL
-800.000 TL · 120 ay. Manşette iyi görünen ürün toplamda
-4.204 TL pahalı.
-Sıralamayı orana göre değil,
-toplam geri ödemeye
-göre yapıyoruz.
-Muhammed Eren
-Problem ve mimari
-03
+Katılım Finans Doğrulama Ajanı
+▤ SİSTEM KAPSAMI & VERİ HAVUZU
+Kanıtı Olmayan Tek Bir Rakam Bile
+Üretmeyen Sistem
+BDDK listesindeki faal katılım bankalarının tamamını kapsayan, açık kaynak ve
+sıfır ticari dış servis bağımlılıklı
+altyapı.
+9
+/9
+Katılım Bankası
+Faal katılım bankalarının tamamı taranıyor.
+979
+İşlenmiş Kampanya
+979 ham sayfadan çıkarılmış yapısal kayıt.
+1654
+Geçen Test
+Her değişiklikte koşan regresyon takımı.
+0
+API
+Ticari Dış Servis
+Açık ağırlıklı model + kural motoru; bağımlılık yok.
+🏛
+Taranan Bankalar & Dağılım
+N=979
+Ziraat Katılım:
+219
+Kuveyt Türk:
+213
+Albaraka Türk:
+137
+T.O.M. Katılım:
+123
+Emlak Katılım:
+110
+Türkiye Finans:
+64
+Vakıf Katılım:
+49
+Dünya Katılım:
+45
+Hayat Finans:
+19
+Dağılım
+dengesiz
+ve bunu saklamıyoruz: en geniş kapsam en darın
+11,5 katı.
+Sıralamayı bozmaz — motor tekil ürünleri karşılaştırır, banka ortalaması almaz.
+🔗
+16 Alanlı Kesintisiz Kanıt Zinciri
+✓ Şema geçerliliği 1,00
+kampanya türü
+ürün türü
+hedef kitle
+kâr payı oranı
+azami tutar
+azami vade
+taksit sayısı
+tahsis ücreti
+masraf beyanı
+masrafsız mı
+ödül miktarı
+indirim oranı
+alışveriş puanı
+kampanya avantajı
+bitiş tarihi
+kampanya koşulları
+Her alan
+kaynak URL
+,
+dayandığı cümle
+,
+güven skoru
+ve
+çıkarım katmanını
+yanında taşır. Sayfa oran veya masraf vermiyorsa sistem tahmin yürütmez,
+«Belirtilmemiş»
+bırakır.
+▣ Veri Havuzu & Şema Doğrulama Taahhüdü
+GÖRKEM
+03 / 09
 
 === SAYFA 4 ===
 SVARTAL
-04
-Mimari
-Beş katman. Her katman bir öncekinin çıktısını alır, kendi kanıtını ekler ve
-hiçbir değeri kaynağından koparmaz.
-KAYNAK
+Katılım Finans Doğrulama Ajanı
+⚙ OTONOM AJAN MİMARİSİ
+5 Katmanlı
+Hibrit Çıkarım & Ajan
+Boru Hattı
+Aritmetiği ve kısıt kontrolünü dil modeline bırakmayan,
+deterministik doğrulama katmanlı
+hibrit orkestrasyon.
+01 · KAYNAK
+Toplayıcı & Ön İşleme
 9 banka sitesi
-1.024 ham sayfa
-BDDK listesindeki faal bankaların tamamı
-›
-1
-Toplayıcı
 Selenium
-robots kapısı
-2 sn nezaket
-›
-2
-Ön işleme
-Türkçe normalizasyon
-İ/ı · “1.500,50” · â
-›
-3 · ÇEKİRDEK
-Hibrit çıkarım
-Kural
-kalıp eşleme
-uyduramaz
-Model
-Qwen3.5
-anlamı çözer
-Uzlaştırıcı — çelişkiyi çözer
-›
-4
-Beş ajan
-uygunluk · eleştirmen
-yüklem · muhakeme
-orkestratör
-5/5 · LLM yok
-›
-5
+ile taranır; robots kapısı ve 2 sn nezaket kuralı uygulanır. Türkçe normalizasyon (İ/ı, “1.500,50”).
+→
+02 · ÇIKARIM
+Kural + Dil Modeli
+Kural katmanı kalıp eşler;
+Qwen3.5-122B-A10B
+(EVREN) anlamı çözer. Uzlaştırıcı çelişkide sayısal alanda kuralı seçer.
+→
+03 · ELEŞTİRMEN
+Kanıt Doğrulama
+Modelin ürettiği her değeri
+ham metne karşı
+doğrular; kaynakta karşılığı olmayan alanı düşürür.
+→
+04 · MUHAKEME
+Deterministik Hesap
+Toplam maliyet, taksit ve vade kısıtları
+annüite formülüyle Python'da
+çözülür — dil modeline aritmetik yaptırılmaz.
+→
+05 · ÇIKTI
+Kanıtlı Veritabanı
 SQLite
-+ 3 yüzey
-tek dosya, kurulum yok
-panolar · asistan · API
-Kanıt
-zinciri
-Her değer; geldiği
-cümleyi
-, sayfa
-adresini
-,
-güven skorunu
-ve hangi
-katmandan
-çıktığını yanında taşır — baştan sona. Kanıtı olmayan değer üretilemez; kod bunu
-kısıt olarak
-uygular, deneyen program çöker.
-Muhammed Eren
-Problem ve mimari
-04
+tek dosya + REST API. Kaynak URL, alıntı cümle ve güven skoruyla izlenebilir sunulur.
+Çekirdek mühendislik ilkesi:
+Dil modeli yalnızca
+tek bir işte
+— metinden alan ve anlam çıkarmada — kullanılır.
+Beş ajanın hiçbiri dil modeli çağırmaz;
+aritmetik ve güvenlik kısıtları deterministik kodla garanti altına alınır. Hazır bir ajan çatısı kullanılmadı — protokol
+30 satır
+.
+◈ Deterministik Güvenlik Kalkanı & Ajan Akışı
+MUHAMMED EREN
+04 / 09
 
 === SAYFA 5 ===
 SVARTAL
-05
-Kanıt zinciri ve beş ajan
-Aritmetiği ve kısıt kontrolünü modele yaptırmak, halüsinasyon savunmasıyla kazandığımız güveni
-tek hamlede kaybettirir.
-Gerçek bir kayıt
-Alan
-Değer
-Katman
-Güven
-kampanya türü
-ihtiyaç finansmanı
-model
-0,80
-kâr payı oranı
-%0
-hibrit
-1,00
-azami tutar
-50.000 TL
-hibrit
-0,94
-tahsis ücreti
-Belirtilmemiş
-—
-—
-“%0” bir boşluk değil, bir beyandır
-— “kâr paysız” demek sıfır oran demek. Boş bıraktığımızda kampanya karşılaştırmadan tamamen düşüyordu.
-Son satır: sayfa ücret vermiyorsa sistem
-boş bırakır, uydurmaz.
-Uygunluk
-kampanya kime açık: tip, tutar/vade, zorunlu ürün
-LLM yok
-Eleştirmen
-her değeri ham metne karşı doğrular
-LLM yok
-Yüklem
-sayı hangi alana ait — cümlenin yükleminden
-LLM yok
-Muhakeme
-profili kısıtlara karşı çözer, maliyeti hesaplar
-LLM yok
-Orkestratör
-soruyu doğru ajana yönlendirir, izleri toplar
-LLM yok
-Dil modeli
-tek bir işte
-kullanılıyor: metinden alan çıkarmak. Gerisi
-deterministik kod
-— aynı girdi her zaman aynı sonucu verir.
-Samet
-Bilgi çıkarımı |
-Eren
-Ajan mimarisi
-05
+Katılım Finans Doğrulama Ajanı
+▦ KARŞILAŞTIRMALI ANALİZ
+Tek Katman Yetmiyor:
+Kural vs. Model vs. SVARTAL
+Aynı kod, aynı korpus, tek koşu. Üç yapılandırma da
+ölçüldü
+— kıyas ölçülmemiş bir sistemle değil, kendi kollarımızla yapılıyor.
+Değerlendirme Kriteri
+Yalnız Dil Modeli
+Yalnız Kural
+SVARTAL (Tam Hiyerarşi)
+Sayısal alan doğruluğu
+✕ 0,833
+— 0,911
+✓ 0,932
+Makro-F1
+✕ 0,459
+— 0,689
+✓ 0,827
+Alan doluluğu
+— %20,2
+✕ %9,1
+✓ %26,0
+Halüsinasyon oranı
+✕ %0,70
+✓ %0,00
+✓ %0,42
+Kampanya türünü sınıflandırma
+✓ yapabilir
+✕ yapamaz
+✓ yapabilir
+Okuma:
+Kural motoru hiç uydurmaz (%0,00) ama az alan doldurur ve tür sınıflandırmasını hiç yapamaz. Dil modeli çok alan doldurur, isabeti düşük.
+Birlikte 0,79.
+Yüklem ajanı eklenince
+0,82
+.
+Dürüstlük notu:
+Bu tablo yalnız
+ölçülmüş
+üç ablasyon kolunu kıyaslar. Vektör-RAG taban çizgisi
+ölçmedik
+; ölçmediğimiz bir sistemle kıyaslama yapmıyoruz.
+⇄ Katman Kıyaslaması & Halüsinasyon Dayanımı
+SAMET
+05 / 09
 
 === SAYFA 6 ===
 SVARTAL
-06
-Katmanları tek tek kapattık
-Beş yapılandırma,
-aynı kodla, aynı korpusta, tek koşuda
-ölçüldü — 1.024 ham kayıtlık ölçüm korpusu.
+Katılım Finans Doğrulama Ajanı
+⚗ BİLİMSEL DEĞERLENDİRME
+Katman Katman
+Ablasyon Analizi
+1.024 ham kayıtlık ölçüm korpusunda, her modülün sisteme katkısının deneysel ispatı.
 Yapılandırma
 Makro-F1
-(ölçek 0 – 0,90)
+(ölçek 0,0 – 1,0)
 Sayısal
 Halüsinasyon
 Doluluk
@@ -217,74 +267,73 @@ Tam hiyerarşi (bizim)
 0,932
 %0,42
 %26,0
-Birlikte 0,79.
-Yüklem ajanı eklenince
-0,82
-. Son iki satırın makro-F1'i
-aynı
-— eleştirmen kapatılınca skor hiç değişmiyor ama
+Kritik bulgu:
+Eleştirmen ajanını kapattığımızda makro-F1
+hiç değişmiyor
+(0,795 → 0,795), ama
 halüsinasyon %0,39'dan %0,51'e çıkıyor
-. Eleştirmenin işi skoru yükseltmek değil,
-uydurmayı kesmek.
+— yaklaşık üçte bir artış. Eleştirmenin görevi F1'i yükseltmek değil,
+uydurmayı kesmektir.
+⚖
 Ölçümün dürüstlüğü
 Makro-F1 0,82
 · %95 güven aralığı 0,76–0,87 · n=92. Model servisi
 bayt düzeyinde deterministik değil
-: aynı kod, aynı girdi, iki koşu → 784 hücrenin 7'si oynadı. Sonuçlarımız
+: aynı kod, aynı girdi, iki koşuda 784 hücrenin 7'si oynadı — sonuçlar
 ±0,01 gürültü
-taşıyor. 92 örnekle tek ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
-Samet
-Model değerlendirmesi · Metrikler ve ablasyon
-06
+taşır. 92 örnekle tek ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
+▥ Deneysel Testler & Metrik Doğrulama
+SAMET
+06 / 09
 
 === SAYFA 7 ===
 SVARTAL
-07
-Sayısını doğrulayamadığında susan asistan
-Sayısal cevaplar
-yapısal veritabanından
-gelir, metin aramasından değil. Denetimden geçemeyen cevap ekrana hiç çıkmaz.
-“Kuveyt Türk'ün konut finansmanı kampanyalarında kâr payı oranı nedir?”
-Azami vade:
+Katılım Finans Doğrulama Ajanı
+▷ CANLI ARAYÜZ & KANIT ZİNCİRİ
+Sayısını Doğrulayamadığında
+Susan Asistan
+Sayısal cevaplar yapısal veritabanından gelir; denetimden geçmeyen hiçbir iddia kullanıcıya sunulmaz.
+Kullanıcı sorusu
+"Kuveyt Türk'ün konut finansmanı kampanyalarında kâr payı oranı nedir?"
+Azami Vade:
 120 ay
-Tahsis ücreti:
+Tahsis Ücreti:
 %0,50
-Masraf:
-alınıyor
-Kâr payı oranı:
+Kâr Payı Oranı:
 Belirtilmemiş
-Kaynak:
-Kuveyt Türk Katılım Bankası A.Ş. · kuveytturk.com.tr
-Çekim tarihi: 24.08.2026 ·
-Bağlayıcı teklif niteliği taşımaz.
-✓ doğrulama geçti
-kaynak gösterildi
+Kaynak: kuveytturk.com.tr · Çekim tarihi: 24.08.2026
+✓ Doğrulama geçti
+⛓ Kaynak gösterildi
 0 LLM çağrısı
-Uydurmuyor ama bildiğini de saklamıyor.
-Kâr payı oranı o sayfada yayımlanmamış; vade ve ücret yayımlanmış, onları gösteriyor.
-Sayısal doğrulama kalkanı
-yapısal
-kayıtta
-birebir
-karşılığı olmalı
-alıntı
-cümle kaynak metinde geçmeli
-sistem
-hesaptan
-yeniden üretilebilmeli
-düz metin
-sayı içeremez
-0/35
-meşru soruda yanlış engelleme. Asistan “muhtemelen %2 civarıdır” cümlesini
-mimari olarak kuramaz.
-Esra
-Arayüz · Asistan ve karşılaştırma ekranları
-07
+Uydurmuyor, ama bildiğini de saklamıyor.
+Kâr payı oranı o sayfada yayımlanmamış; vade ve ücret yayımlanmış — onları gösteriyor.
+>_ SVARTAL KARAR İZİ
+● CANLI
+[ORKESTRATOR]
+Soru: "Kuveyt Türk konut finansmanı kâr payı oranı nedir?"
+[NIYET]
+tekil_sorgu · banka: Kuveyt Türk · ürün: konut
+[SQLITE]
+SELECT ... FROM kampanyalar WHERE banka_kodu='0205'
+[ELESTIRMEN]
+kar_payi_orani → ham metinde karşılığı YOK
+[KARAR]
+Oran beyan edilmemiş; sayı üretme, alanı boş bırak
+[CIKTI]
+vade=120 ay | tahsis=%0,50 | oran=Belirtilmemiş
+Yanıt 0 ms | LLM çağrısı: 0 | Meşru soruda yanlış engelleme: 0/35
+◇ Canlı Asistan Denetimi & Güvenli Yanıt Üretimi
+ESRA
+07 / 09
 
 === SAYFA 8 ===
 SVARTAL
-08
-Ölçülen sonuçlar
+Katılım Finans Doğrulama Ajanı
+⚑ SONUÇLAR & SINIRLAR
+Ölçülen Sonuçlar ve
+Bilinen Sınırlar
+Gerçek mühendislik olgunluğu, sınırları bilmek ve
+dürüstçe raporlamaktır.
 Metrik
 Sonuç
 Hedef
@@ -295,36 +344,53 @@ Sayısal alan doğruluğu
 0,93
 ≥ 0,90
 Halüsinasyon oranı
-%0,21
-≤ %3
+%0,19
+≤ %3,00
 Şema geçerliliği
 1,00
 1,00
 Kalkanın yanlış engellemesi
 0 / 35
 0
-Bilinen sınırlar — saklamıyoruz
+⚑
+Bilinen Sınırlar — Şeffaf Rapor
 • Kâr payı oranı doluluğu
-%19
-— çoğu banka oranı başvuru ekranında veriyor
+%18
+— çoğu banka oranı başvuru ekranında veriyor.
 • Kapsam bankalar arasında dengesiz (
-11,4×
-) — ölçtük, rapor ettik
+11,5×
+) — ölçtük ve raporladık.
 • Kayıtların
-%39'u
-«diğer» türünde — zorlama sınıflandırma yapmıyoruz
+%38'i
+«diğer» türünde — zorlama sınıflandırma yapmıyoruz.
 • Veri bir
 anlık görüntüdür
-; her kayıt çekim tarihini taşır
+; her kayıt kendi çekim tarihini taşır.
 • Ölçümler
 ±0,01
-gürültü taşır
-Kaynağı olmayan sayı
-üretmeyen
-bir sistem.
-Kod, veri seti, ölçüm betikleri ve her kararın gerekçesi açık kaynak
+gürültü taşır; model servisi bayt düzeyinde deterministik değil.
 github.com/erenkendir722/ai-agent-nlp
-· Apache-2.0
-Muhammed Eren
-Kapanış
-08
+✓ Apache-2.0 Açık Kaynak
+▤ Doğrulama Metrikleri & Açık Kaynak Şeffaflığı
+MUHAMMED EREN
+08 / 09
+
+=== SAYFA 9 ===
+SVARTAL
+Katılım Finans Doğrulama Ajanı
+💬 SORU & CEVAP
+SVARTAL
+Dinlediğiniz İçin Teşekkür Ederiz
+Kanıtı olmayan tek bir sayı bile üretmeyen, deterministik güvenlik kalkanlı finansal dil ajanı.
+⌥
+Açık Kaynak Depo
+github.com/erenkendir722/ai-agent-nlp
+Kod, veri seti, ölçüm betikleri ve her kararın gerekçesi.
+✓
+Jüri Oturumu
+Soru, teknik eleştiri ve
+canlı test senaryolarınızı
+yanıtlamaktan memnuniyet duyarız.
+⚑ TEKNOFEST 2026 · Yapay Zekâ Dil Ajanları Yarışması
+SVARTAL TAKIMI
+09 / 09
