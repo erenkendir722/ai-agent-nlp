@@ -26,6 +26,7 @@ NEDEN VAR:
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import textwrap
@@ -77,10 +78,27 @@ def test_ayni_surecte_iki_cizim_hayatta_kalir() -> None:
         """
     ).format(kok=str(KOK), sayfa=str(KOK / "app" / "Genel_Bakış.py"))
 
+    # `encoding="utf-8"` ZORUNLU — 27 Ağustos'ta ölçüldü.
+    #
+    # `text=True` tek başına çıktıyı YEREL kodlamayla çözer; Windows'ta o
+    # cp1254'tür. Alt süreç UTF-8 yazdığı için aşağıdaki karşılaştırma
+    # bozuk metinle yapılıyordu:
+    #
+    #     assert "İKİ ÇİZİM TAMAM" in "Ä°KÄ° Ã‡Ä°ZÄ°M TAMAM"
+    #
+    # Testin ASIL iddiası (`returncode == 0`, yani SIGSEGV yok) geçiyordu;
+    # düşen yalnız metin denetimiydi. Yani test, ölçmek istediği şeyi doğru
+    # ölçüyor ama Windows'ta kararsız görünüyordu.
+    #
+    # `PYTHONIOENCODING` da alt sürece geçiriliyor: çözme tarafını düzeltmek
+    # yazma tarafı yerel kodlamaya düşerse yetmez.
     sonuc = subprocess.run(
         [sys.executable, "-c", betik],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         timeout=600,
         cwd=KOK,
     )
