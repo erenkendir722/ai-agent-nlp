@@ -404,7 +404,7 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1566 test)
+make test         # testler (1581 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make chatbot-tarama # chatbot boşluk taraması (194 üretilmiş soru) [adet=N]
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
