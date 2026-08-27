@@ -338,7 +338,11 @@ def _benzersiz_ilk_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
     for banka in {k.banka_adi for k in kayitlar}:
         sozcukler = arama_anahtari(banka).split()
         if sozcukler:
-            ilk_sozcuk_bankalari.setdefault(sozcukler[0], set()).add(banka)
+            # Anahtar `_bitisik_anahtar`'dan geçer: «T.O.M.» adı korpusta
+            # noktalı, kullanıcı «TOM» yazıyor. Nokta iki tarafta da atılmazsa
+            # o banka ilk sözcüğüyle hiç çağrılamaz.
+            ilk = _bitisik_anahtar(sozcukler[0])
+            ilk_sozcuk_bankalari.setdefault(ilk, set()).add(banka)
     return {s: next(iter(b)) for s, b in ilk_sozcuk_bankalari.items() if len(b) == 1}
 
 
@@ -359,7 +363,10 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
     anahtar = arama_anahtari(soru)
     bitisik = _bitisik_anahtar(soru)
     tekil_adlar = _benzersiz_ilk_sozcukler(kayitlar)
-    sozcukler = set(anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split())
+    sozcukler = {
+        _bitisik_anahtar(sozcuk)
+        for sozcuk in anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split()
+    }
 
     eslesen: list[KampanyaKaydi] = []
     for kayit in kayitlar:
@@ -372,7 +379,7 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
         ):
             eslesen.append(kayit)
             continue
-        ilk = parcalar[0] if parcalar else ""
+        ilk = _bitisik_anahtar(parcalar[0]) if parcalar else ""
         if ilk and tekil_adlar.get(ilk) == kayit.banka_adi and ilk in sozcukler:
             eslesen.append(kayit)
     return eslesen
@@ -387,6 +394,26 @@ _BANKA_SOZCUKLERI = (
 Çoğul biçimler (`bankalar`, `bankalari`) bilerek DIŞARIDA: «masrafsız
 kampanya sunan bankalar hangileri?» tek bir kurumu adlandırmaz, korpusun
 tamamına sorar. Çoğulu içeri almak o soruyu kapsam dışına düşürüyordu."""
+
+_BANKA_MORFEMI = "bank"
+"""Kurum adının İÇİNE kaynaşmış banka morfemi: «Akbank», «Denizbank'tan».
+
+`_BANKA_SOZCUKLERI` ayrı bir SÖZCÜK arar («… Bankası'nın kâr payı kaç?»);
+tek sözcüğe kaynaşmış adlar o kapıdan kaçıyordu. 27 Ağustos'ta ölçüldü:
+
+    soru  : «Akbank ne kadar vade veriyor?»
+    cevap : «Kuveyt Türk Katılım Bankası A.Ş. — Alışveriş Puanı Kampanyası…»
+
+Korpusta Akbank YOK; sistem başka bir bankanın kaydıyla cevap veriyordu.
+`yabanci_banka_soruluyor` zaten bu hata için yazılmıştı, «Garanti Bankası»nı
+yakalıyor, «Akbank»ı kaçırıyordu — ikisinin farkı yalnız boşluktu.
+
+Morfem sözcüğün BAŞINDAYSA sayılmaz: «banka», «bankası», «bankacılık» bir
+kurumu değil bir TÜRÜ adlandırır ve o sorular korpusun tamamına sorulur.
+
+Ad listesi tutulmuyor — liste tamamlanamaz, üstelik yeni banka eklendiğinde
+yanlış tarafta kalır. Burada aranan şey morfem; karşılığı korpusta var mı
+diye yine `_bankalari_bul` bakıyor."""
 
 _BELIRTEC_SOZCUKLERI = frozenset(
     (
@@ -434,6 +461,11 @@ def yabanci_banka_soruluyor(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
     # ödülü hangi banka veriyor?» kapsam dışına düşüyordu (25 Ağu ölçümü).
     adlandirildi = False
     for i, sozcuk in enumerate(sozcukler):
+        # Morfem sözcüğe kaynaşmışsa ad odur; önündeki belirtece bakılmaz,
+        # sözcük başta da olabilir («Akbank ne kadar vade veriyor?»).
+        if _BANKA_MORFEMI in sozcuk and not sozcuk.startswith(_BANKA_MORFEMI):
+            adlandirildi = True
+            break
         if sozcuk not in _BANKA_SOZCUKLERI or i == 0:
             continue
         if sozcukler[i - 1] not in _BELIRTEC_SOZCUKLERI:
@@ -487,11 +519,21 @@ def alan_disi_soru(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
     if any(sozcuk in anahtar for sozcuk in _ALAN_SOZCUKLERI):
         return False
 
-    # Banka adları — veriden
-    for banka in {k.banka_adi for k in kayitlar}:
-        cekirdek = " ".join(arama_anahtari(banka).split()[:2])
-        if cekirdek and cekirdek in anahtar:
-            return False
+    # Banka adları — veriden, ama tespit BURADA YAPILMAZ.
+    #
+    # 27 Ağustos'ta ölçüldü: bu blok `_bankalari_bul`'un eşleştirmesini elle
+    # kopyalıyordu ve kopya geride kaldı. Sonuç, aynı soruya iki farklı cevap
+    # veren iki kapı oldu:
+    #
+    #     soru : «albarakatürk»
+    #       _bankalari_bul -> 126 kayıt (banka tanındı)
+    #       alan_disi_soru -> True      (kapsam dışı ilan edildi)
+    #
+    # Kullanıcı karşılaştırmayı aldıktan hemen sonra banka adını yazınca
+    # «bu soru sistemin kapsamı dışında» cevabı geliyordu. Eşleştirme tek
+    # yerde durur; buradaki kapı ona SORAR.
+    if _bankalari_bul(soru, kayitlar):
+        return False
 
     # Kampanya türleri ve alan etiketleri — şemadan
     for tur in KampanyaTuru:
