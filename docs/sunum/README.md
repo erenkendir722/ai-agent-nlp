@@ -1,7 +1,8 @@
 # Sunum — Svartal_Sunum.pdf
 
-**7 sayfa**, 16:9 (1280×720 · 13,333in × 7,5in). Kaynak `sunum.html` + `stil.css`;
-PDF ondan üretilir, **elle düzenlenmez.**
+**12 sayfa** (TEKNOFEST kapağı + 8 içerik + 3 yedek), 16:9 (1280×720 ·
+13,333in × 7,5in). Kaynak `sunum.html` + `stil.css`; PDF ondan üretilir,
+**elle düzenlenmez.** Konuşma metni ayrı: [`KONUSMA_METNI.md`](KONUSMA_METNI.md).
 
 ```bash
 make sunum          # sunum.html -> Svartal_Sunum.pdf
@@ -12,62 +13,58 @@ Chrome başka bir yerdeyse: `make sunum KROM="/yol/chrome"`.
 
 ---
 
-## Arka plan TEKNOFEST'in resmî şablonundan gelir
+## Şablon: yalnız KAPAK zorunlu
 
-`arkaplan/TEKNOFEST_sablon.pptx` yarışmanın verdiği şablondur. İçinde **iki
-slayt** var ve ikisi de tek bir tam sayfa görselden ibaret: yer tutucu yok,
-metin kutusu yok, tema rengi yok. Yani şablon bir tasarım değil, iki arka plan:
+`arkaplan/TEKNOFEST_sablon.pptx` yarışmanın verdiği şablon. İçinde iki slayt var
+ve ikisi de tek bir tam sayfa görselden ibaret — yer tutucu, metin kutusu, tema
+rengi yok.
 
-| Dosya | Nereden | Nerede kullanılıyor |
-|---|---|---|
-| `arkaplan/kapak.jpg` | şablonun 1. slaydı | PDF'in 1. sayfası — **üstüne hiçbir şey yazılmaz** |
-| `arkaplan/icerik.jpg` | şablonun 2. slaydı | 6 içerik sayfasının tamamı |
+**27 Ağustos'ta netleşti: içerik arka planının kullanımı ZORUNLU DEĞİL.**
+Bu yüzden yalnız kapak şablonun kendi görselidir (`arkaplan/kapak.jpg`, PPTX'teki
+kırpma birebir korunur); kalan on bir sayfa bize ait ve **tam tuval** kullanılır.
 
-Şablonun slayt boyutu 12192000×6858000 EMU = 13,333in × 7,5in — bu deponun
-`@page` boyutuyla zaten aynıydı, dönüşüm gerekmedi. Kapak görselinin yerleşimi
-(`off -1,0` · `ext 12499547×7030995`) `stil.css`'te `--kapak-en/--kapak-boy`
-olarak birebir kopyalandı; şablonun kendi kırpmasını korur.
+Daha önce düzen o arka planın beyaz kartına ve alt-orta çentiğine göre kısılmıştı
+(x 27–1252 · y 33–686, çentik y≈550'den aşağıda x 460–830). O kısıt kalktı;
+`arkaplan/icerik.jpg` artık kullanılmıyor ama şablonun kaydı olarak duruyor.
 
-**Kapak görselinde boşluk yok** — logo, başlık, 3B görsel ve bakanlık logoları
-tüm alanı dolduruyor. Bu yüzden «SVARTAL» kimliği kapağa değil, **01. içerik
-sayfasına** konuldu.
+## Koyu tema — renkler logodan
 
-### Güvenli alan — uydurma değil, ölçüm
+SVARTAL logosu siyah kare + turuncu «S» + mürekkep kelime işareti. Palet o
+üçlüden türetildi:
 
-`icerik.jpg` piksel piksel ölçüldü (1280×720 ölçeğinde):
+| Rol | Hex |
+|---|---|
+| Zemin | `#15141A` |
+| Metin | `#F5F4F0` |
+| **Vurgu** | `#E85D2A` |
+| İkincil | `#2AA3AE` |
 
-```
-beyaz kart      : x 27 → 1252   ·   y 33 → 686
-alt-orta çentik : y≈550'den aşağıda x 460 → 830 arası 3B görsel dolu
-                  (x=700'de beyaz y=607'de bitiyor)
-```
+Turuncu + turkuaz ikilisi `dataviz` doğrulayıcısından geçirildi (koyu zemin,
+2 slot): lightness bandı, kroma tabanı, CVD ayrımı (ΔE 17,7 deutan), normal görüş
+tabanı ve zemin kontrastı — **5/5 PASS**. Renk değiştirmeden önce doğrulayıcıyı
+koştur; gözle karar verme.
 
-Bu yüzden içerik `.icerik` kutusuna hapsedilir (x 68 → 1212, y 56 → 544) ve
-**altbilgi 3B görselin iki yanına** konur: konuşan solda, sayfa numarası sağda.
-Çentiğin üstünden geçen bir kutu beyaz kartın dışına taşar ve uzay zeminin
-üstünde okunmaz hâle gelir.
+## Metin bütçesi — ölçülür, tahmin edilmez
 
-**Taşma gözle denetlenmez, ölçülür.** Yöntem: her sayfa Chrome ile 1280×720
-PNG'ye alınır, **boş bir `.sayfa`** referans olarak aynı şekilde çizilir, ikisinin
-farkı «bizim koyduğumuz içerik» maskesini verir; o maskenin beyaz kart maskesi
-dışına düşen pikseli **sıfır olmalıdır.** Bu denetim 02. sayfada gerçek bir
-taşma yakaladı (166 px, sol kartın köşesi çentiğe giriyordu).
+4 dakikada konuşulabilecek kelime **~520**. Slayttaki metin bunun katıysa jüri ya
+okur ya dinler, ikisini birden yapamaz.
 
-### Renkler de şablondan örneklendi
+| | Kelime |
+|---|---|
+| 26 Ağustos sürümü (10 sayfa) | 1.882 &nbsp;— konuşmanın **3,6 katı** |
+| Şimdiki ana 9 sayfa | **1.029** |
+| Yedek sayfalar (Y1–Y3) | 372 |
 
-| | | |
-|---|---|---|
-| Kırmızı | `#CA0703` | iki arka plan görselindeki en sık kırmızı ton |
-| Lacivert | `#1F406B` | aynı görsellerin uzay zemini |
-| Mürekkep | `#17181C` | metin |
+Kesilen kanıtlar **silinmedi**, yedek sayfalara taşındı. Sunumda geçilmez;
+soru gelirse açılır. Hangi sorunun hangi yedek sayfaya düştüğü
+`KONUSMA_METNI.md` sonunda tabloyla yazılı.
 
-Önceki turuncu (`#E85D2A`) / turkuaz kimliği şablonun kırmızısının yanında
-bulanık duruyordu; vurgu rengi şablonunkiyle aynı kırmızıya çekildi.
+## Taşma denetimi — gözle değil, ölçerek
 
-Font **Carlito** (SIL Open Font License) `fontlar/` içinde gömülü durur;
-makinede kurulu olmasına gerek yok.
-
----
+Her sayfa Chrome ile 1280×720 PNG'ye alınır; sayfanın **alt ve sağ 8 pikselinde**
+zemin dışı renk varsa içerik kenara dayanmış demektir. Kapak hariç (tam sayfa
+görsel) hepsi sıfır olmalı. Bu denetim 27 Ağustos'ta şablonlu sürümde gerçek bir
+taşma yakaladı (166 px, sol kartın köşesi 3B görselin çentiğine giriyordu).
 
 ## Sayfa düzeni ve konuşan
 
@@ -77,13 +74,21 @@ karşılanıyor, ayrı bir «ekip» slaydı yok. 01. sayfada dördünün rolü d
 
 | # | Sayfa | Konuşan |
 |---|---|---|
-| — | TEKNOFEST kapağı (şablonun kendi slaydı) | — |
-| 01 | SVARTAL — iddia, sayılar, ekip ve roller | — |
-| 02 | Problem ve sistemin cevabı — beş katman, manşet oran tuzağı, üç kullanım yüzeyi | Eren |
-| 03 | Veri ve hibrit çıkarım — kapsam, toplama etiği, kanıt zinciri | Görkem · Samet |
-| 04 | **Ajan mimarisi ve ölçüm** — beş ajan, ablasyon, dürüstlük bandı | Samet |
-| 05 | Asistan, karşılaştırma ve müşteri profili — kalkan, kısıt çözme | Esra |
-| 06 | Kurum içi çalışabilirlik, sonuçlar, bilinen sınırlar, kapanış | Eren |
+| 01 | TEKNOFEST kapağı (şablonun kendi slaydı) | — |
+| 02 | SVARTAL — iddia, beş rakam, ekip ve roller | Eren |
+| 03 | Problem — dört ifade, manşet oran tuzağı | Eren |
+| 04 | **Mimari** — yedi aşamalı akış + kanıt zinciri şeridi | Eren |
+| 05 | Hibrit çıkarım — kural / model / uzlaştırıcı, gerçek kayıt | Samet |
+| 06 | Ajanlar — beşi de dil modeli kullanmaz | Eren |
+| 07 | **Ölçüm** — ablasyon (çubuklu tablo), dürüstlük bandı | Samet |
+| 08 | Asistan — gerçek cevap, sayısal doğrulama kalkanı | Esra |
+| 09 | Sonuç, bilinen sınırlar, kapanış | Eren |
+| Y1 | *Yedek* — veri ve toplama etiği | Görkem |
+| Y2 | *Yedek* — müşteri profili ve karşılaştırma | Esra |
+| Y3 | *Yedek* — kurum içi çalışabilirlik ve lisans | Eren |
+
+Madde 8 («tüm üyelerin görev tanımları sunumda olmalı») 02. sayfanın altbilgisinde
+dördünün rolüyle karşılanıyor; ayrı ekip slaydı yok.
 
 ## Anlatılmayan terim bırakmama kuralı
 

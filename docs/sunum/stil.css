@@ -1,30 +1,23 @@
-/* SVARTAL — TEKNOFEST 2026 sunum stili.
+/* SVARTAL — TEKNOFEST 2026 sunum stili · KOYU TEMA
 
-   ARKA PLAN RESMÎ ŞABLONDAN GELİR — uydurulmuş değil, ölçülmüştür.
-   `arkaplan/TEKNOFEST_sablon.pptx` içindeki iki slaydın ikisi de tek bir tam
-   sayfa görselden ibaret: yer tutucu yok, metin kutusu yok, tema rengi yok.
-   Görseller `arkaplan/kapak.jpg` (slayt 1) ve `arkaplan/icerik.jpg` (slayt 2)
-   olarak çıkarıldı; yerleşimleri PPTX'teki `a:xfrm` değerlerinden birebir
-   kopyalandı (aşağıda `--kapak-*`).
+   RENKLER LOGODAN GELİR, uydurma değil: SVARTAL logosu siyah kare + turuncu
+   «S» + mürekkep kelime işareti. Palet o üçlüden türetildi.
 
-   Şablonun slayt boyutu 12192000×6858000 EMU = 13,333in × 7,5in — bu depodaki
-   `@page` boyutunun zaten aynısıydı, dönüşüm gerekmedi. 1920×1080 görsel
-   1280×720 CSS pikseline 1,5× oturur.
+   Turuncu + turkuaz ikilisi `dataviz` doğrulayıcısından geçirildi
+   (koyu zemin, 2 slot): lightness bandı, kroma tabanı, CVD ayrımı
+   (ΔE 17,7 deutan), normal görüş tabanı ve zemin kontrastı — 5/5 PASS.
+   Yerine başka renk koymadan önce doğrulayıcıyı koştur.
 
-   GÜVENLİ ALAN — `icerik.jpg` piksel piksel ölçüldü (1280×720 ölçeğinde):
+   ŞABLON NOTU (27 Ağu): TEKNOFEST'in verdiği içerik arka planının kullanımı
+   ZORUNLU DEĞİL. Yalnız KAPAK şablonun kendi görselidir (`arkaplan/kapak.jpg`);
+   kalan sekiz sayfa bize ait, tam tuval kullanılabilir. Daha önce buradaki
+   düzen o arka planın beyaz kartına ve alt-orta çentiğine göre kısılmıştı —
+   o kısıt kalktı.
 
-       beyaz kart      : x 27 → 1252   ·   y 33 → 686
-       alt-orta çentik : y≈550'den aşağıda x 460 → 830 arası 3B görsel dolu
-                         (x=700'de beyaz y=607'de bitiyor)
-
-   Bu yüzden içerik `--ic-*` kutusuna hapsedilir (tam genişlik, y 56 → 544) ve
-   altbilgi görselin İKİ YANINA konur: konuşan solda (x 68 → 438), sayfa no
-   sağda. Çentiğin üstünden geçen bir kutu, çizgi ya da metin koyma — beyaz
-   kartın dışına taşar ve uzay zeminin üstünde okunmaz hâle gelir.
-
-   RENKLER DE ŞABLONDAN ÖRNEKLENDİ: kırmızı `#CA0703` ve lacivert `#1F406B`,
-   iki arka plan görselindeki en sık geçen tonlar. Eski turuncu/turkuaz kimliği
-   şablonun kırmızısının yanında bulanık duruyordu.
+   METİN BÜTÇESİ — ölçüldü: eski sürüm 1.882 kelime taşıyordu, 4 dakikada
+   konuşulabilecek olan ~520. Yani slayt konuşmanın 3,6 KATI metindi; jüri ya
+   okur ya dinler. Sayfa başına GÖRÜNEN metin ~60 kelimeyi geçmemeli.
+   Kesilen kanıtlar yedek sayfalara taşındı, silinmedi.
 
    Font Carlito (SIL Open Font License) `fontlar/` içinde gömülü. */
 
@@ -33,30 +26,24 @@
 @font-face { font-family: "Carlito"; src: url("fontlar/Carlito-Italic.ttf") format("truetype"); font-weight: 400; font-style: italic; }
 
 :root{
-  /* şablondan örneklenmiş */
-  --kirmizi:#CA0703;
-  --kirmizi-koyu:#9E0502;
-  --lacivert:#1F406B;
-  --lacivert-acik:#8FA8C6;
-
-  --murekkep:#17181C;
-  --gri:#5C6069;
-  --acik-gri:#8A8F99;
-  --kart:#F1F3F6;
-  --kart-cizgi:#E0E3E9;
-
-  /* kapak görselinin PPTX'teki yerleşimi: off -1,0 · ext 12499547×7030995 EMU */
-  --kapak-en:1312.3px;
-  --kapak-boy:738.2px;
+  --zemin:#15141A;
+  --kart:#212027;
+  --kart-koyu:#1B1A21;
+  --cizgi:#2E2D35;
+  --krem:#F5F4F0;
+  --sonuk:#9A98A2;
+  --orta:#C9C7D0;
+  --turuncu:#E85D2A;
+  --turkuaz:#2AA3AE;
 }
 
 *{ box-sizing:border-box; margin:0; padding:0; }
 
 @page { size: 13.333in 7.5in; margin:0; }
 
-html,body{ background:#888; }
+html,body{ background:#0b0b0e; }
 body{
-  font-family:"Carlito", "Calibri", sans-serif;
+  font-family:"Carlito","Calibri",sans-serif;
   -webkit-font-smoothing:antialiased;
   font-variant-numeric: lining-nums tabular-nums;
 }
@@ -66,99 +53,161 @@ body{
   position:relative;
   width:1280px; height:720px;
   overflow:hidden;
-  page-break-after:always;
-  break-after:page;
-  color:var(--murekkep);
-  background:#fff url("arkaplan/icerik.jpg") 0 0 / 1280px 720px no-repeat;
+  page-break-after:always; break-after:page;
+  background:var(--zemin); color:var(--krem);
+  padding:56px 70px 74px;
 }
 .sayfa:last-child{ page-break-after:auto; break-after:auto; }
 
-/* Kapak şablonun kendi slaydıdır: üstüne hiçbir şey yazılmaz, yeri de yok. */
+/* Kapak: TEKNOFEST'in kendi slaydı. PPTX'teki yerleşim birebir korundu
+   (off -1,0 · ext 12499547×7030995 EMU). Üstüne hiçbir şey yazılmaz. */
 .sayfa.kapak{
-  background-image:url("arkaplan/kapak.jpg");
-  background-size:var(--kapak-en) var(--kapak-boy);
-}
-
-/* --- güvenli içerik kutusu --- */
-.icerik{
-  position:absolute;
-  left:68px; top:56px;
-  width:1144px; height:488px;
-  display:flex; flex-direction:column;
+  padding:0;
+  background:#15141A url("arkaplan/kapak.jpg") 0 0 / 1312.3px 738.2px no-repeat;
 }
 
 /* --- başlık --- */
-.baslik{ display:flex; align-items:baseline; gap:15px; margin-bottom:3px; }
-.baslik .no{ font-size:23px; font-weight:700; color:var(--kirmizi); letter-spacing:.02em; }
-.baslik h2{ font-size:27px; font-weight:700; letter-spacing:-.012em; }
-.spot{ font-size:13.4px; color:var(--gri); margin-bottom:15px; line-height:1.4; max-width:1090px; }
+.baslik{ display:flex; align-items:baseline; gap:18px; }
+.baslik .no{ font-size:20px; font-weight:700; color:var(--turuncu); letter-spacing:.14em; }
+.baslik h2{ font-size:40px; font-weight:700; letter-spacing:-.018em; line-height:1.05; }
+.kural{ height:3px; width:46px; background:var(--turuncu); margin:14px 0 0; }
+.spot{
+  font-size:17px; color:var(--orta); line-height:1.45;
+  margin-top:18px; max-width:960px;
+}
+.spot b{ color:var(--krem); }
 
-/* --- altbilgi: 3B görselin İKİ YANINDA, çentiğin dışında --- */
+/* --- gövde --- */
+.govde{ margin-top:30px; }
+
+/* --- altbilgi --- */
 .altbilgi{
-  position:absolute; left:68px; bottom:50px;
-  width:370px; font-size:11px; color:var(--gri); line-height:1.35;
+  position:absolute; left:70px; right:70px; bottom:30px;
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-size:12.5px; color:var(--sonuk);
+  border-top:1px solid var(--cizgi); padding-top:12px;
 }
-.altbilgi::before{
-  content:""; display:block; width:30px; height:2px;
-  background:var(--kirmizi); margin-bottom:7px;
-}
-.altbilgi b{ color:var(--murekkep); font-weight:700; }
-.sayfa-no{
-  position:absolute; right:68px; bottom:50px;
-  font-size:11px; font-weight:700; color:var(--acik-gri); letter-spacing:.08em;
-}
+.altbilgi b{ color:var(--krem); font-weight:700; }
+.altbilgi .no{ font-weight:700; letter-spacing:.12em; }
 
-/* --- kartlar --- */
-.kart{
-  background:var(--kart); border:1px solid var(--kart-cizgi);
-  border-radius:5px; padding:12px 14px;
-}
-.kart.koyu{ background:var(--lacivert); border-color:var(--lacivert); color:#fff; }
-.kart.kirmizi{ background:var(--kirmizi); border-color:var(--kirmizi); color:#fff; }
+/* --- kart --- */
+.kart{ background:var(--kart); border-radius:8px; padding:20px 22px; }
+.kart.cerceve{ background:transparent; border:1px solid var(--cizgi); }
+.kart.vurgu{ background:transparent; border:1.5px solid var(--turuncu); }
 .kart-baslik{
-  font-size:11.2px; font-weight:700; letter-spacing:.055em;
-  text-transform:uppercase; color:var(--kirmizi); margin-bottom:7px;
+  font-size:12.5px; font-weight:700; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--turuncu); margin-bottom:11px;
 }
-.koyu .kart-baslik{ color:var(--lacivert-acik); }
-.kirmizi .kart-baslik{ color:rgba(255,255,255,.8); }
+.kart-baslik.mavi{ color:var(--turkuaz); }
 
 /* --- ızgara --- */
-.satir{ display:flex; gap:13px; }
+.satir{ display:flex; gap:20px; }
 .kolon{ flex:1; min-width:0; }
 
 /* --- metin --- */
-p{ font-size:13px; line-height:1.46; }
-.kucuk{ font-size:11.4px; line-height:1.42; color:var(--gri); }
-.koyu .kucuk, .kirmizi .kucuk{ color:rgba(255,255,255,.85); }
-.koyu .kucuk b, .kirmizi .kucuk b{ color:#fff; }
-.kirmizi-yazi{ color:var(--kirmizi); }
-.lacivert-yazi{ color:var(--lacivert); }
+p{ font-size:15px; line-height:1.5; color:var(--orta); }
+p b, li b{ color:var(--krem); }
+.kucuk{ font-size:13px; line-height:1.45; color:var(--sonuk); }
+.kucuk b{ color:var(--krem); }
+.turuncu{ color:var(--turuncu); }
+.turkuaz{ color:var(--turkuaz); }
 b,strong{ font-weight:700; }
 .mono{ font-family:"DejaVu Sans Mono","Consolas","Menlo",monospace; }
 
+/* --- rakamlar --- */
+.dev{ font-size:74px; font-weight:700; color:var(--turuncu); line-height:.92; letter-spacing:-.035em; }
+.orta-rakam{ font-size:40px; font-weight:700; color:var(--turuncu); line-height:1; letter-spacing:-.03em; }
+.rakam-etiket{ font-size:13px; color:var(--sonuk); margin-top:9px; line-height:1.3; }
+
 /* --- tablo --- */
-table{ width:100%; border-collapse:collapse; font-size:11.3px; }
+table{ width:100%; border-collapse:collapse; font-size:14px; }
 th{
-  text-align:left; font-weight:700; font-size:9.9px; letter-spacing:.06em;
-  text-transform:uppercase; color:var(--gri);
-  padding:0 8px 5px 0; border-bottom:1px solid var(--kart-cizgi);
+  text-align:left; font-weight:700; font-size:11px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--sonuk);
+  padding:0 12px 8px 0; border-bottom:1px solid var(--cizgi);
 }
-.koyu th{ color:var(--lacivert-acik); border-bottom-color:rgba(255,255,255,.25); }
-td{
-  padding:var(--td-pad, 5px) 8px var(--td-pad, 5px) 0;
-  border-bottom:1px solid var(--kart-cizgi); vertical-align:top; line-height:1.33;
-}
-.koyu td{ border-bottom-color:rgba(255,255,255,.2); }
+td{ padding:9px 12px 9px 0; border-bottom:1px solid var(--cizgi); vertical-align:top; color:var(--orta); }
+td b{ color:var(--krem); }
 tr:last-child td{ border-bottom:none; }
-tr.vurgu td{ background:rgba(202,7,3,.08); font-weight:700; }
+tr.vurgu td{ color:var(--krem); font-weight:700; }
 
-/* --- istatistik --- */
-.rakam{ font-size:34px; font-weight:700; color:var(--kirmizi); line-height:1; letter-spacing:-.02em; }
-.rakam-kucuk{ font-size:25px; font-weight:700; color:var(--kirmizi); line-height:1; }
+/* --- rozet --- */
+.rozet{
+  display:inline-block; align-self:flex-start; font-size:11px; font-weight:700; letter-spacing:.07em;
+  text-transform:uppercase; padding:4px 9px; border-radius:4px;
+  background:rgba(42,163,174,.16); color:var(--turkuaz);
+}
+.rozet.turuncu{ background:rgba(232,93,42,.16); color:var(--turuncu); }
 
-/* --- yoğun sayfa: taşmayı engelle --- */
-.sayfa.yogun .kucuk{ font-size:10.8px; line-height:1.36; }
-.sayfa.yogun .kart{ padding:10px 12px; }
-.sayfa.yogun .kart-baslik{ font-size:10.6px; margin-bottom:6px; }
-.sayfa.yogun table{ font-size:10.7px; }
-.sayfa.yogun .spot{ margin-bottom:11px; }
+/* --- ablasyon çubukları (grafik slaydı) --- */
+.cubuk-satir{ display:flex; align-items:center; gap:12px; margin-bottom:11px; }
+.cubuk-etiket{ width:180px; flex:none; font-size:13px; color:var(--orta); text-align:right; line-height:1.2; }
+.cubuk-satir.bizim .cubuk-etiket{ color:var(--krem); font-weight:700; }
+.oluk{ flex:1; height:20px; background:rgba(245,244,240,.07); border-radius:0 4px 4px 0; }
+.cubuk{ height:100%; background:var(--turkuaz); border-radius:0 4px 4px 0; }
+.cubuk-satir.bizim .cubuk{ background:var(--turuncu); }
+.cubuk-deger{ width:50px; flex:none; font-size:13px; font-weight:700; color:var(--krem); }
+.cubuk-satir.bizim .cubuk-deger{ color:var(--turuncu); }
+
+/* --- yedek sayfa ayracı --- */
+.sayfa.yedek .baslik .no{ color:var(--sonuk); }
+.yedek-etiket{
+  position:absolute; top:56px; right:70px;
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--sonuk);
+}
+
+/* ================= MİMARİ DİYAGRAMI (sayfa 04) =================
+   SVG değil HTML/CSS: PDF'te birebir aynı basılır, metin seçilebilir kalır
+   ve sayı değişince tek satır düzeltilir. Yedi aşama soldan sağa; altında
+   bütün aşamaların içinden geçen KANIT ZİNCİRİ şeridi. */
+
+.akis{ display:flex; align-items:stretch; gap:0; min-height:346px; }
+.asama{
+  position:relative;
+  background:var(--kart); border-radius:9px; padding:44px 15px 18px;
+  display:flex; flex-direction:column; gap:10px; justify-content:center;
+}
+.asama.vurgu{ background:transparent; border:1.5px solid var(--turuncu); }
+.asama-no{
+  position:absolute; top:18px; left:15px;
+  font-size:11.5px; font-weight:700; letter-spacing:.12em; color:var(--turuncu);
+}
+.asama.vurgu .asama-no{ color:var(--turuncu); }
+.asama h3{ font-size:17.5px; font-weight:700; color:var(--krem); letter-spacing:-.01em; line-height:1.15; }
+.asama .satirlar{ font-size:13.2px; line-height:1.62; color:var(--sonuk); }
+.asama .satirlar b{ color:var(--orta); font-weight:400; }
+
+/* aşamalar arası ok */
+.ok{
+  flex:none; width:16px; align-self:center;
+  color:var(--turuncu); font-size:20px; font-weight:700; text-align:center;
+}
+
+/* hibrit çıkarımın içindeki iki katman */
+.ikili{ display:flex; gap:7px; }
+.ikili .yarim{
+  flex:1; background:var(--kart); border-radius:6px; padding:11px 11px;
+  font-size:12.4px; line-height:1.4; color:var(--sonuk);
+}
+.ikili .yarim b{ display:block; color:var(--krem); font-size:13.5px; margin-bottom:4px; }
+.uzlastirici{
+  background:rgba(232,93,42,.14); border-radius:5px; padding:7px 9px;
+  font-size:13px; color:var(--krem); font-weight:700; text-align:center;
+}
+
+/* ajan listesi */
+.ajanlar{ font-size:13.6px; line-height:1.85; color:var(--orta); }
+
+/* kanıt zinciri şeridi */
+.kanit-serit{
+  margin-top:26px; border-radius:8px; padding:14px 20px;
+  background:linear-gradient(90deg, rgba(232,93,42,.20) 0%, rgba(232,93,42,.07) 100%);
+  border-left:3px solid var(--turuncu);
+  display:flex; align-items:center; gap:18px;
+}
+.kanit-serit .ad{
+  font-size:12.5px; font-weight:700; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--turuncu); flex:none;
+}
+.kanit-serit .metin{ font-size:14px; line-height:1.45; color:var(--orta); }
+.kanit-serit .metin b{ color:var(--krem); }
