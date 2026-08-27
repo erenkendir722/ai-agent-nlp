@@ -1451,6 +1451,49 @@ KAPSAM_UST_SINIRI = 5
 """Ölçüt hiçbir kayıtta yokken kaç kayıt listelenir — bkz. `_kapsam_cevabi`."""
 
 
+def kayit_sirala(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
+    """Kayıtları ÜRÜN ALAKASI → bilgilendiricilik → doluluk sırasına dizer.
+
+    İki çağıranı var ve ikisi de aynı sırayı istiyor: ölçüt hiçbir kayıtta
+    yokken gösterilen kapsam (`_kapsam_cevabi`) ve metinsel cevabın yapısal
+    eki (`_kosul_cevabi`). Kopya tutulmaz.
+    """
+    etiket = sorulan_urun(soru)
+
+    def _anahtar(kayit: KampanyaKaydi) -> tuple[int, int, float]:
+        alaka = (
+            1
+            if etiket and urun_etiketi_uyar(etiket, None, kayit.urun_turu, "")
+            else 0
+        )
+        n = sum(getattr(kayit, a, None) is not None for a in _GOSTERILECEK_ALANLAR)
+        return (alaka, n, kayit.doluluk_orani)
+
+    return sorted(kayitlar, key=_anahtar, reverse=True)
+
+
+def kayit_satirlari(kayitlar: list[KampanyaKaydi]) -> list[str]:
+    """Her kaydı «ürün — alan: değer · alan: değer» satırına çevirir.
+
+    Sayılar kayıtların kendi sütunlarından geldiği için bu satırlar YAPISAL
+    parçaya girer; kalkan onları kayıtlara karşı doğrular.
+    """
+    satirlar: list[str] = []
+    for kayit in kayitlar:
+        tur = tur_etiketi(kayit.urun_turu or kayit.kampanya_turu) or "Kampanya"
+        alanlar = [
+            f"{alan_etiketi(a)}: {alan_goster(a, d, kayit.birim(a))}"
+            for a in _GOSTERILECEK_ALANLAR
+            if (d := getattr(kayit, a, None)) is not None
+        ]
+        if kayit.masrafsiz_mi is not None:
+            alanlar.append(f"Masraf: {'alınmıyor' if kayit.masrafsiz_mi else 'alınıyor'}")
+        satirlar.append(
+            f"- **{tur}** — " + (" · ".join(alanlar) if alanlar else "sayısal bilgi yok")
+        )
+    return satirlar
+
+
 def _kapsam_cevabi(
     soru: str, kayitlar: list[KampanyaKaydi], eksik_olcutler: list[str]
 ) -> Cevap:
@@ -1472,34 +1515,9 @@ def _kapsam_cevabi(
     Finansmanı» geçer, «Arsa Finansmanı» geçmez. Ürün sorulmamışsa bu
     basamak herkes için eşittir ve sıra bilgilendiriciliğe düşer.
     """
-    etiket = sorulan_urun(soru)
-
-    def _bilgi_sayisi(kayit: KampanyaKaydi) -> tuple[int, int, float]:
-        alaka = (
-            1
-            if etiket and urun_etiketi_uyar(etiket, None, kayit.urun_turu, "")
-            else 0
-        )
-        n = sum(getattr(kayit, a, None) is not None for a in _GOSTERILECEK_ALANLAR)
-        return (alaka, n, kayit.doluluk_orani)
-
-    sirali = sorted(kayitlar, key=_bilgi_sayisi, reverse=True)
-    gosterilen = sirali[:KAPSAM_UST_SINIRI]
+    gosterilen = kayit_sirala(soru, kayitlar)[:KAPSAM_UST_SINIRI]
     banka = gosterilen[0].banka_adi
-
-    satirlar = [f"**{banka}** — sorunuza uyan kayıtlar:\n"]
-    for kayit in gosterilen:
-        tur = tur_etiketi(kayit.urun_turu or kayit.kampanya_turu) or "Kampanya"
-        alanlar = [
-            f"{alan_etiketi(a)}: {alan_goster(a, d, kayit.birim(a))}"
-            for a in _GOSTERILECEK_ALANLAR
-            if (d := getattr(kayit, a, None)) is not None
-        ]
-        if kayit.masrafsiz_mi is not None:
-            alanlar.append(f"Masraf: {'alınmıyor' if kayit.masrafsiz_mi else 'alınıyor'}")
-        satirlar.append(
-            f"- **{tur}** — " + (" · ".join(alanlar) if alanlar else "sayısal bilgi yok")
-        )
+    satirlar = [f"**{banka}** — sorunuza uyan kayıtlar:\n", *kayit_satirlari(gosterilen)]
 
     hesap = {"taranan_kayit": float(len(kayitlar))}
     beyan = (
@@ -2543,8 +2561,31 @@ def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # Aramayı yalnız bu sorunun kapsadığı kampanyalarla sınırla
     secili_idler = [k.kampanya_id for k in kayitlar]
 
+    # KAMPANYA BAŞINA TEK ALINTI (28 Ağustos, ölçüldü).
+    #
+    #     soru  : «kuveyttürk araba finansmanı»
+    #     cevap : üç alıntı — ÜÇÜ DE `arac-finansmani` sayfasından
+    #
+    # `vektor_ara` en benzer üç PARAGRAFI getiriyor ve bir sayfanın üç
+    # paragrafı, üç ayrı sayfanın birer paragrafından kolayca daha benzer
+    # çıkıyor. Sonuç «3 kaynak» görünen tek kayıttı: kaynakçada aynı adres
+    # üç kez. Kullanıcı bankanın o üründe tek sayfası olduğunu sanıyordu —
+    # oysa soruya uyan 14 kayıt vardı.
+    #
+    # Havuz genişletilip kampanya başına İLK paragraf alınıyor: sıra
+    # benzerliğe göre olduğu için alınan, o kampanyanın en alakalı parçası.
+    # Aday bulunamazsa (hepsi aynı kampanyadan) liste kendiliğinden kısalır.
     try:
-        arama_sonuclari = vektor_ara(sorgu=soru, limit=3, kampanya_idleri=secili_idler)
+        havuz = vektor_ara(sorgu=soru, limit=15, kampanya_idleri=secili_idler)
+        gorulen: set[str] = set()
+        arama_sonuclari = []
+        for aday in havuz:
+            if aday["kampanya_id"] in gorulen:
+                continue
+            gorulen.add(aday["kampanya_id"])
+            arama_sonuclari.append(aday)
+            if len(arama_sonuclari) == 3:
+                break
     except IndeksYok as e:
         # Kurulum eksiği — bağlantı sorunu değil. Ayrı mesaj veriliyor ki
         # "ağ mı bozuk, indeks mi yok" diye aranmasın.
@@ -2614,11 +2655,51 @@ def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             kaynak.banka_adi = f"[{i}] {kaynak.banka_adi}"
             kaynaklar.append(kaynak)
 
+    # BİLİNEN ALAN SAKLANMAZ — metinsel cevabın yapısal eki (28 Ağustos).
+    #
+    #     soru  : «kuveyttürk araba finansmanı»
+    #     cevap : üç pazarlama paragrafı, TEK BİR SAYI YOK
+    #
+    # Ölçüldü: soruya uyan 14 kaydın 12'sinde vade, tahsis ücreti ve azami
+    # tutar DOLU, ikisinde kâr payı oranı bile var. Cevap hiçbirini
+    # göstermiyordu — «48 aya varan vade» yalnız alıntı metninin içinde
+    # geçiyordu, oysa `vade_ay_max` o kayıtta yapısal olarak duruyor.
+    #
+    # Bu, `_tekil_cevap`'taki kusurun kardeşiydi: orada tek kayda
+    # indirgeniyordu, burada bilinen alanlar saklanıyordu. Aynı doktrin,
+    # aynı çözüm — sıralama ve gösterim `kayit_sirala`/`kayit_satirlari`
+    # ile paylaşılıyor, ikinci bir biçim yazılmadı.
+    #
+    # EK YALNIZ GÖSTERECEK ŞEY VARSA yazılır: alanı boş kayıtlardan oluşan
+    # bir liste, cevaba gürültüden başka bir şey katmaz.
+    yapisal = [
+        k for k in kayit_sirala(soru, kayitlar)
+        if any(getattr(k, a, None) is not None for a in _GOSTERILECEK_ALANLAR)
+    ][:KAPSAM_UST_SINIRI]
+    if yapisal:
+        parcalar.append(
+            CevapParcasi(
+                "\n**Bu kapsamdaki kayıtların yapısal verileri:**\n"
+                + "\n".join(kayit_satirlari(yapisal)),
+                Koken.YAPISAL,
+            )
+        )
+
+    kullanilan = [
+        k for k in kayitlar
+        if k.kampanya_id in {s["kampanya_id"] for s in arama_sonuclari}
+    ]
+    # Yapısal ekteki sayılar kalkanda bu kayıtlara karşı doğrulanır; ek
+    # kayıtlar listeye girmezse kendi verimiz «uydurma» sayılırdı.
+    for kayit in yapisal:
+        if kayit not in kullanilan:
+            kullanilan.append(kayit)
+
     return Cevap(
         parcalar=parcalar,
         niyet=Niyet.KOSUL_SORGUSU,
         kaynaklar=kaynaklar,
-        kullanilan_kayitlar=[k for k in kayitlar if k.kampanya_id in [s["kampanya_id"] for s in arama_sonuclari]],
+        kullanilan_kayitlar=kullanilan,
     )
 
 

@@ -469,3 +469,73 @@ def test_tek_kayitta_kapsam_beyani_yazilmaz() -> None:
     kayitlar = [_banka("tek", vade_ay_max=120, doluluk_orani=0.4)]
     cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
     assert "kaydın tamamında" not in cevap.metin
+
+
+# ---------------------------------------------------------------------------
+# RAG KOLU — 28 Ağustos
+#
+#     soru  : «kuveyttürk araba finansmanı»
+#     cevap : üç alıntı, ÜÇÜ DE aynı sayfadan; tek bir sayı yok
+#
+# `vektor_ara` en benzer üç PARAGRAFI getiriyor ve bir sayfanın üç paragrafı,
+# üç ayrı sayfanın birer paragrafından kolayca daha benzer çıkıyor. Ayrıca
+# soruya uyan 14 kaydın 12'sinde vade/tahsis/tutar DOLUYDU ve hiçbiri
+# gösterilmiyordu.
+
+
+def test_ayni_kampanyadan_iki_alinti_gelmez(monkeypatch) -> None:
+    """Kampanya başına tek alıntı — kaynakçada aynı adres tekrarlanmaz."""
+    from src.rag import chatbot as cb
+
+    kayitlar = [
+        _banka("bir", urun_turu="Araç Finansmanı", vade_ay_max=48, doluluk_orani=0.5),
+        _banka("iki", urun_turu="Dijital Araç Finansmanı", vade_ay_max=48,
+               doluluk_orani=0.4),
+    ]
+    # Aynı kampanyanın üç paragrafı en tepede: eski kod üçünü de alırdı.
+    havuz = [
+        {"kampanya_id": "bir", "banka_adi": "K Katılım Bankası A.Ş.", "metin": "p1"},
+        {"kampanya_id": "bir", "banka_adi": "K Katılım Bankası A.Ş.", "metin": "p2"},
+        {"kampanya_id": "bir", "banka_adi": "K Katılım Bankası A.Ş.", "metin": "p3"},
+        {"kampanya_id": "iki", "banka_adi": "K Katılım Bankası A.Ş.", "metin": "p4"},
+    ]
+    monkeypatch.setattr(cb, "vektor_ara", lambda **_: havuz)
+
+    cevap = cb._kosul_cevabi("K Katılım taşıt finansmanı", kayitlar)
+    adresler = [k.url for k in cevap.kaynaklar]
+    assert len(adresler) == len(set(adresler)), f"kaynak yinelenmiş: {adresler}"
+
+
+def test_metinsel_cevap_yapisal_alanlari_da_gosterir(monkeypatch) -> None:
+    """Bilinen alan saklanmaz: alıntının yanına yapısal veri de yazılır."""
+    from src.rag import chatbot as cb
+
+    kayitlar = [
+        _banka("bir", urun_turu="Araç Finansmanı", vade_ay_max=48,
+               finansman_tutari_max=400_000.0, doluluk_orani=0.5),
+    ]
+    monkeypatch.setattr(
+        cb, "vektor_ara",
+        lambda **_: [{"kampanya_id": "bir", "banka_adi": "K Katılım Bankası A.Ş.",
+                      "metin": "pazarlama metni"}],
+    )
+
+    cevap = cb._kosul_cevabi("K Katılım taşıt finansmanı", kayitlar)
+    assert "48 ay" in cevap.metin, cevap.metin
+    assert "400.000" in cevap.metin, cevap.metin
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
+
+
+def test_gosterecek_alan_yoksa_yapisal_ek_yazilmaz(monkeypatch) -> None:
+    """Boş kayıtlardan oluşan bir liste cevaba gürültüden başka bir şey katmaz."""
+    from src.rag import chatbot as cb
+
+    kayitlar = [_banka("bos", urun_turu="Araç Finansmanı", doluluk_orani=0.1)]
+    monkeypatch.setattr(
+        cb, "vektor_ara",
+        lambda **_: [{"kampanya_id": "bos", "banka_adi": "K Katılım Bankası A.Ş.",
+                      "metin": "metin"}],
+    )
+
+    cevap = cb._kosul_cevabi("K Katılım taşıt finansmanı", kayitlar)
+    assert "yapısal verileri" not in cevap.metin
