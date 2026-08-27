@@ -436,6 +436,25 @@ ait tek bir dayanak var mı?** Sözlük veriden türer (banka adları
 kayıtlardan, tür ve alan adları şemadan), yani yeni banka eklendiğinde
 denetim kendiliğinden genişler.
 
+Aynı boşluğun **kampanya** tarafı 28 Ağustos'ta kapandı
+([ADR 026](kararlar/026-kampanya-konusu.md), `src/rag/konu.py`):
+
+```
+soru  : «TOM Katılım'ın AKARYAKIT kampanyasında ne kadar iade var?»
+cevap : A101 meyve-sebze kampanyası — Ödül miktarı: 250 TL
+doğru : akaryakıt kampanyası — 500 TL   (aynı bankada, aynı kümede)
+```
+
+Banka · ürün · segment süzgeçlerinin üçü de şemada tanımlı **sonlu** kümeler
+üzerinde çalışır; kampanyanın konusu sonlu değildir — korpusla birlikte yeni
+marka, sektör, iş birliği gelir. O yüzden dördüncü süzgecin sözlüğü
+korpusun kendisidir: kampanya adı (adresin son dilimi + ürün türü)
+sözcüklere ayrılır, ayırt edicilik `ln(N/eşleşen)` ile ölçülür ve kampanya
+adlarının %3'ünden fazlasında geçen sözcük konu sayılmaz. Soru sözcükleri
+**artıktır**: banka · ürün · ölçüt · segment ayrıştırıcılarının çözdüğü her
+şey düşer, kalanı dilbilgisi kapıları eler. Nöbetçi: `make chatbot-tarama`
+patoloji **P9 — yanlış kampanya** (süzgeç kapatıldığında 49 bulgu verir).
+
 Niyet yönlendirici bilinçli olarak kural tabanlıdır: karar 4 sınıflı ve kelime
 örüntüsüyle güvenilir biçimde çözülüyor. Her LLM çağrısı 4B modelde ~10 saniye;
 bunu yönlendirmede harcamak yerine cevabın doğruluğunda kullanmak daha doğru.

@@ -26,6 +26,7 @@ Aranan patolojiler:
     P6  gerçekten kapsam dışı soru içeri sızdı
     P7  reddedilebilir iddia reddedilmedi («500 ay vade veriyor mu?»)
     P8  tanım sorusu tanınmadı
+    P9  doğru banka, YANLIŞ KAMPANYA — soruda adlandırılan konu kaynakta yok
 
 AĞ KULLANIR: koşul sorguları RAG'a gider, RAG gömme için EVREN'e. Bu yüzden
 `tests/` altında değil `eval/` altında — `make test` ağsız kalmak zorunda.
@@ -36,7 +37,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 
 from src.ajanlar.orkestrator import Orkestrator
 from src.depolama import KampanyaKaydi, tum_kayitlar
@@ -45,7 +46,17 @@ from src.rag.chatbot import (
     _OLCUT_ETIKETLERI,
     _URUN_ANAHTARLARI,
     Niyet,
+    _cozulmus_sozcukler,
     _sorulan_olcut,
+    cekimli_fiil_mi,
+    niteleyen_fiil_mi,
+)
+from src.rag.konu import (
+    ayni_kok,
+    eslesen_kampanyalar,
+    kayit_sozcukleri,
+    konu_dagarcigi,
+    konu_tavani,
 )
 from src.schema import SEGMENT_ORNEKLERI
 
@@ -68,6 +79,77 @@ SISTEM_SORULARI = (
     "hangi modeli kullaniyorsunuz",
     "kaynak gosteriyor musunuz",
 )
+
+
+KONU_ORNEGI = 3
+"""Banka başına kaç konu sorulur — her konu iki yazım biçiminde sorulur.
+
+Üç konu × iki yazım × dokuz banka = 54 soru; elle yazılan setin (31)
+neredeyse iki katı, ve hiçbiri elle yazılmadan."""
+
+
+def konu_sozcukleri_banka_basina(
+    kayitlar: list[KampanyaKaydi],
+) -> dict[str, list[str]]:
+    """Banka -> o bankanın kampanyalarını ADLANDIRAN konu sözcükleri.
+
+    Sözcükler korpustan çıkar, elle yazılmaz — «akaryakıt», «restoran»,
+    «market» diye bir liste tutmak, korpus tazelendiğinde geride kalacak bir
+    liste tutmaktı. Süzgeç `rag.konu`'nunkiyle AYNI olmak zorunda: tarama,
+    chatbot'un konu sözcüğü saydığı sözcüklerle sormalı, yoksa bulduğu şey
+    chatbot'un kusuru değil taramanın kendi tutarsızlığı olur.
+
+    Sıra bankadaki YAYGINLIKTAN gelir: aynı konuyu birden çok kampanyada
+    işleyen sözcük daha temsilîdir ve «20varan» gibi tek kayıtlık kırıntılar
+    listeye girmez.
+    """
+    dagarcik = konu_dagarcigi(kayitlar)
+    tavan = konu_tavani(len(kayitlar))
+    cozulmus = _cozulmus_sozcukler(kayitlar)
+
+    banka_sozcukleri: dict[str, Counter[str]] = defaultdict(Counter)
+    for kayit in kayitlar:
+        for sozcuk in kayit_sozcukleri(kayit):
+            if len(eslesen_kampanyalar(sozcuk, dagarcik)) > tavan:
+                continue  # kampanyayı değil kampanyacılığı adlandırıyor
+            if niteleyen_fiil_mi(sozcuk) or cekimli_fiil_mi(sozcuk):
+                continue
+            if any(ayni_kok(sozcuk, bilinen) for bilinen in cozulmus):
+                continue  # banka · ürün · ölçüt: başka bir ayrıştırıcının işi
+            banka_sozcukleri[kayit.banka_adi][sozcuk] += 1
+
+    secilen: dict[str, list[str]] = {}
+    for banka, sayac in banka_sozcukleri.items():
+        konular: list[str] = []
+        for sozcuk, _ in sorted(sayac.items(), key=lambda p: (-p[1], p[0])):
+            # «world» ile «worldpuan» aynı konuyu sorar; iki soru bir soru
+            # kadar şey ölçer. Ayrım yine `ayni_kok` — üçüncü bir ölçü yok.
+            if any(ayni_kok(sozcuk, onceki) for onceki in konular):
+                continue
+            konular.append(sozcuk)
+            if len(konular) == KONU_ORNEGI:
+                break
+        secilen[banka] = konular
+    return secilen
+
+
+def konu_kaynakta_var_mi(
+    konu: str, kayitlar: list[KampanyaKaydi], kaynaklar: list[str]
+) -> bool:
+    """Cevabın gösterdiği kampanyalar sorulan KONUYU taşıyor mu?
+
+    Ölçüt kaynağın adresidir, cevabın metni değil: «250 TL» doğru bir sayı
+    olabilir ve yine de yanlış kampanyanın sayısı olabilir — 28 Ağustos'ta
+    ölçülen kusur tam olarak buydu.
+    """
+    adres_kayit = {k.kaynak_url: k for k in kayitlar}
+    gosterilen = [adres_kayit[u] for u in kaynaklar if u in adres_kayit]
+    if not gosterilen:
+        return True  # kaynaksız cevap (kibar ret, tanım) bu denetimin dışında
+    return all(
+        any(ayni_kok(konu, sozcuk) for sozcuk in kayit_sozcukleri(kayit))
+        for kayit in gosterilen
+    )
 
 
 def sorulari_uret(kayitlar: list[KampanyaKaydi]) -> list[tuple[str, dict]]:
@@ -99,6 +181,15 @@ def sorulari_uret(kayitlar: list[KampanyaKaydi]) -> list[tuple[str, dict]]:
         ekle(f"{etiket} sunan bankalar hangileri")
         for urun in urunler:
             ekle(f"{urun} kampanyalarinda en iyi {etiket} hangi bankada", olcut=alan)
+
+    # KAMPANYA KONUSU — soru bir kampanyayı ürün sınıfıyla değil KONUSUYLA
+    # gösteriyor. Bu kuşağın tamamı korpustan üretilir (bkz. ADR 026).
+    for banka, konular in sorted(konu_sozcukleri_banka_basina(kayitlar).items()):
+        cekirdek = " ".join(arama_anahtari(banka).split()[:2])
+        for konu in konular:
+            ekle(f"{cekirdek} {konu} kampanyasinda ne kadar odul var",
+                 banka=banka, konu=konu)
+            ekle(f"{cekirdek}'in {konu} kampanyasi var mi", banka=banka, konu=konu)
 
     for segment in SEGMENT_ORNEKLERI:
         ekle(f"{arama_anahtari(segment)} musterilere ozel kampanya var mi")
@@ -158,6 +249,17 @@ def tara(adet: int | None = None) -> tuple[Counter[str], dict[str, list[str]], i
         beklenen_banka = beklenti.get("banka")
         if beklenen_banka and bankalar and bankalar != {beklenen_banka}:
             bulgu("P3 yanlis banka", soru, f"{sorted(bankalar)} != {beklenen_banka}")
+            continue
+
+        beklenen_konu = beklenti.get("konu")
+        if beklenen_konu and not konu_kaynakta_var_mi(
+            str(beklenen_konu), kayitlar, [k.url for k in cevap.kaynaklar]
+        ):
+            bulgu(
+                "P9 yanlis kampanya",
+                soru,
+                ", ".join(k.url.rsplit("/", 1)[-1][:60] for k in cevap.kaynaklar[:2]),
+            )
             continue
 
         beklenen_olcut = beklenti.get("olcut")

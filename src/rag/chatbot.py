@@ -45,7 +45,15 @@ from src.preprocessing.normalizasyon import (
     para_ayristir,
     vade_ayristir,
 )
+from src.rag.konu import (
+    ayni_kok,
+    konu_agirliklari,
+    konu_sirasi,
+    konu_suz,
+    sozcuklere_ayir,
+)
 from src.terim_sozlugu import (
+    TANIM_IPUCLARI,
     alan_eslemesi,
     hesaplanan_olcutler,
     karistirilan_olcutler,
@@ -979,6 +987,203 @@ def _segment_yok_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap | Non
     )
 
 
+# ---------------------------------------------------------------------------
+# KAMPANYA KONUSU — soru kampanyayı konusuyla gösterdiğinde
+# ---------------------------------------------------------------------------
+#
+# 28 Ağustos, ölçüldü:
+#
+#     soru  : «TOM Katılım'ın AKARYAKIT kampanyasında ne kadar iade var?»
+#     cevap : «… Hadi Kredi Kartı: Ödül miktarı: 250 TL»
+#     kaynak: …/a101lerde-meyve-sebze-alisverislerinde-10-nakit-iade
+#
+# Doğru kayıt aynı bankada duruyordu (…/hadi-black-kredi-karti-ile-akaryakit-
+# harcamalarina-toplam-500-tl-iade, `odul_miktari = 500`). Banka tanındı,
+# konu hiç okunmadı: «akaryakıt» bir ürün SINIFI değil, kampanyanın konusu.
+# Süzgeçler ürün sınıfına bakıyordu ve küme 123 kayıtta kaldı; kararı
+# `doluluk_orani` verdi — soruyla ilgisiz bir ölçü.
+#
+# Eşleştirme ve ağırlıklandırma `rag.konu`'da; burada yalnız SORUNUN hangi
+# sözcüklerinin konu adı sayılacağı belirleniyor.
+
+
+ISLEV_SOZCUKLERI = frozenset(
+    arama_anahtari(s)
+    for s in (
+        # zamir
+        "bana", "beni", "benim", "sana", "seni", "senin", "onun", "onlar",
+        "onlara", "bize", "bizi", "bizim", "size", "sizi", "sizin",
+        "buna", "bunu", "bunun", "bunlar", "şuna", "şunu", "kendi", "kendisi",
+        "herkes", "kimse", "hepsi", "bazı", "bazıları", "birçok",
+        # edat
+        "için", "gibi", "kadar", "göre", "üzere", "rağmen", "yerine",
+        "dolayı", "ilgili", "sonra", "önce",
+        # bağlaç
+        "veya", "yahut", "ancak", "fakat", "çünkü", "yani", "ayrıca",
+        "ise", "oysa", "halbuki", "dolayısıyla",
+        # kalıplaşmış belirteç
+        "olarak", "şekilde", "biçimde", "sadece",
+    )
+)
+"""Türkçe'nin KAPALI sözcük sınıfları: zamir, edat, bağlaç.
+
+BU BİR ALAN LİSTESİ DEĞİL, BİR SÖZCÜK SINIFI. Açık sınıflar (ad, sıfat)
+sonsuzdur ve yazılamaz — kapalı sınıflar sonludur, yazılabilir. Kural
+`SIFAT_FIIL_EKLERI` ile aynı refleks: kapı dilbilgisine bağlanıyor.
+
+NEDEN GEREKLİ — 28 Ağustos'ta 260 soruluk taramada ölçüldü. Konu süzgeci
+işlev sözcüklerini elemeyince kampanya adlarındaki rastlantısal geçişlere
+kilitleniyordu:
+
+    «Bana bir şiir yaz»                     -> «bana» 2 kampanya adında geçiyor
+    «Konut finansmanı İÇİN hangi belgeler»  -> «için» 2 kampanya adında geçiyor
+
+İkisi de tek harfli bir tesadüf değil, ölçülen bir daralma: 979 kayıt
+2 kayda iniyordu. Dört harf sınırının altındakiler (ve, ile, bu, en)
+zaten `ASGARI_KONU_UZUNLUGU`'na takılıyor; liste yalnız üstünü tutar."""
+
+AZAMI_FIIL_GOVDESI = 3
+"""«-an/-en» ekinin ardında en fazla kaç harf kalırsa gövde FİİLDİR.
+
+`sifat_fiil_mi` bu ekleri zaten tanıyor ama oradaki kural BURADA
+KULLANILAMAZ — ölçüldü. O kural yalnız «banka» sözcüğünün ÖNÜNDEKİ sözcüğe
+bakıyor, orada geniş olmak bedava. Konu sözcüğü her sözcüğe bakar ve aynı
+kural korpusun konu dağarcığından 43 sözcük yutuyordu:
+
+    restoran (10 kampanya) · worldpuan (8) · vatan (3) · gümüş (5)
+    ve bütün ayrılma hâlleri: mobilden · mağazadan · markettEN · gurbettEN
+
+Türkçe'de sıfat-fiil gövdesi FİİLDİR ve fiil gövdeleri kısadır: ol- ver-
+sun- al- gel- yap-. Ad ise ekten sonra uzun bir gövde bırakır:
+
+    olan   -> «ol»     (2)  fiil     ← düşer
+    veren  -> «ver»    (3)  fiil     ← düşer
+    restoran -> «restor» (6) ad      ← KALIR
+    mobilden -> «mobild» (6) ad      ← KALIR
+
+Üç harf sınırı ölçülen ayrımın yeri. Bedeli «vatan» (gövde «vat», 3) gibi
+kısa adlardır; onlar da soruda tek başına gelmiyor («Vatan Bilgisayar» ->
+«bilgisayar» konuyu zaten taşıyor)."""
+
+FIIL_ISARETLERI = ("yor", "digi", "dugu", "tigi", "tugu")
+"""Çekim ve fiilimsi ekleri — fiil bir kampanyayı ADLANDIRMAZ.
+
+`sifat_fiil_mi` bunları SONEK olarak arıyor ve tam da bu yüzden kaçırıyor:
+Türkçe ekleri üst üste biner ve fiilimsi ekinden sonra hâl eki gelir.
+Ölçüldü (28 Ağustos, 268 soru):
+
+    «Başvuru nasıl yapılıyor?»          -> «yapılıyor»  4 kampanya adında
+    «… bir soru geldiğinde …»           -> «geldiğinde» 2 kampanya adında
+    «… sunduğu masrafsız finansman …»   -> «sunduğu»    kampanya adında
+
+Üçü de fiil, üçü de bir kampanyayı adlandırmıyor. Bu yüzden sonek değil
+İÇERME sınanır. Ek sözcüğün başında aranmaz — «yorgun» bir addır."""
+
+
+def cekimli_fiil_mi(sozcuk: str) -> bool:
+    """Sözcük bir fiil çekimi mi? «veriyor», «yapılıyorsa», «geldiğinde»."""
+    return any(isaret in sozcuk[2:] for isaret in FIIL_ISARETLERI)
+
+
+def niteleyen_fiil_mi(sozcuk: str) -> bool:
+    """«olan», «veren», «sunan» — kısa fiil gövdesinden türemiş niteleyici mi?
+
+    Gerekçe ve ölçüm `AZAMI_FIIL_GOVDESI`'nde.
+
+    >>> [niteleyen_fiil_mi(s) for s in ("olan", "veren", "restoran", "mobilden")]
+    [True, True, False, False]
+    """
+    return any(
+        sozcuk.endswith(ek) and len(sozcuk) - len(ek) <= AZAMI_FIIL_GOVDESI
+        for ek in ("an", "en")
+    )
+
+
+def _cozulmus_sozcukler(kayitlar: list[KampanyaKaydi]) -> frozenset[str]:
+    """Sistemin BAŞKA bir ayrıştırıcıyla zaten çözdüğü sözcükler.
+
+    Konu artığı bunların dışında kalandır. Liste elle yazılmaz — hepsi
+    zaten beyan edilmiş dağarcıklardır ve tek tek adları geçer:
+
+      * `_ALAN_SOZCUKLERI`, `ALAN_ETIKETLERI`, `KampanyaTuru` — şema
+      * `_URUN_ANAHTARLARI`, `_olcut_ipuclari()`, sözlük terimleri — eşleme
+      * banka adları ve `segment_dagarcigi` — korpus
+      * niyet ipuçları, belirteçler, ay adları — soru dili
+
+    İkinci bir kopya tutulsaydı, o kopya ayrışırdı: «vade» ölçüt olarak
+    çözülürken konu sözcüğü olarak da sayılır, kampanya adında «vade
+    farksız» geçen 69 kayda daralırdı.
+    """
+    kaynaklar: list[str] = [
+        *_ALAN_SOZCUKLERI,
+        *_URUN_ANAHTARLARI,
+        *_olcut_ipuclari(),
+        *alan_eslemesi(),
+        *karistirilan_olcutler(),
+        *hesaplanan_olcutler(),
+        *ALAN_ETIKETLERI.values(),
+        *SEGMENT_ORNEKLERI,
+        *(tur.value.replace("_", " ") for tur in KampanyaTuru),
+        *segment_dagarcigi(kayitlar),
+        *{k.banka_adi for k in kayitlar},
+        *_BELIRTEC_SOZCUKLERI,
+        *_BANKA_SOZCUKLERI,
+        *_GENEL_BANKA_SOZCUKLERI,
+        *ISLEV_SOZCUKLERI,
+        *_KARSILASTIRMA_IPUCLARI,
+        *_KOSUL_IPUCLARI,
+        *_TEKIL_IPUCLARI,
+        *_TAHMIN_IPUCLARI,
+        *_KAPSAM_DISI_IPUCLARI,
+        *_LISTE_IPUCLARI,
+        *_SIRALAMA_ISARETLERI,
+        *VERI_ISTEGI_ISARETLERI,
+        *_DEGER_IPUCLARI,
+        *SEGMENT_SORUSU_ISARETLERI,
+        *OZ_GONDERIM_SOZCUKLERI,
+        *YONTEM_SORULARI,
+        *TANIM_IPUCLARI,
+        *_AY_ADLARI,
+        *_YON_SOZU,
+    ]
+    return frozenset(
+        sozcuk
+        for ham in kaynaklar
+        for sozcuk in arama_anahtari(str(ham)).replace("_", " ").split()
+    )
+
+
+def konu_sozcukleri(soru: str, kayitlar: list[KampanyaKaydi]) -> list[str]:
+    """Sorunun KONU adı sayılan sözcükleri — geriye kalanlar.
+
+    Sıra şudur: dört harften kısası düşer (`sozcuklere_ayir`), dilbilgisi
+    kapıları düşer (`niteleyen_fiil_mi` · `cekimli_fiil_mi`), sistemin başka
+    bir ayrıştırıcıyla çözdüğü her sözcük düşer. Kalan sözcük ya kampanyanın
+    adında geçer ya geçmez; geçmiyorsa `konu_agirliklari` onu zaten
+    görmezden gelir — bu kapı KÜMEYİ DARALTMAZ, yalnız neyin konu adı
+    sayılacağını söyler.
+    """
+    bilinen = _cozulmus_sozcukler(kayitlar)
+    return [
+        sozcuk
+        for sozcuk in sozcuklere_ayir(arama_anahtari(kesmeden_ayir(soru)))
+        if not niteleyen_fiil_mi(sozcuk)
+        and not cekimli_fiil_mi(sozcuk)
+        and not any(ayni_kok(sozcuk, tanidik) for tanidik in bilinen)
+    ]
+
+
+def _konu_agirliklari(soru: str, kayitlar: list[KampanyaKaydi]) -> dict[str, float]:
+    """Bu sorunun konu ağırlıkları — korpusun TAMAMINA karşı ölçülür.
+
+    Ayırt edicilik banka süzgecinden ÖNCEKİ kümede ölçülmek zorunda: aynı
+    sözcük tek bankanın 123 kaydı içinde nadir, dokuz bankanın 979 kaydı
+    içinde sık olabilir ve o zaman eşik soruya göre oynardı. Ölçü sabit
+    kalsın diye korpus, daraltma soruya uyan küme üzerinde yapılır.
+    """
+    return konu_agirliklari(konu_sozcukleri(soru, kayitlar), kayitlar)
+
+
 def _sayi_varyantlari(sayi: float) -> set[str]:
     """Bir sayının metinde geçebileceği yazımları üretir.
 
@@ -1292,7 +1497,11 @@ def _odak_sirasi(kayit: KampanyaKaydi, alan: str | None, yon: str | None) -> flo
     return -deger if tercih == "dusuk_iyi" else deger
 
 
-def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
+def _tekil_cevap(
+    soru: str,
+    kayitlar: list[KampanyaKaydi],
+    konu_agirlik: dict[str, float] | None = None,
+) -> Cevap:
     if not kayitlar:
         return Cevap(
             parcalar=[CevapParcasi(
@@ -1321,10 +1530,40 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     odaklar = [a for a in _sorulan_olcutler(soru) if a != "masrafsiz_mi"]
     odak = odaklar[0] if odaklar else None
     yon = _sorulan_yon(soru)
+    agirlik = konu_agirlik or {}
 
-    def _uygunluk(kayit: KampanyaKaydi) -> tuple[int, float, float]:
+    # KONU ALAKASI ÖLÇÜT DEĞERİNDEN ÖNCE GELİR (28 Ağustos, ölçüldü).
+    #
+    #     soru  : «TOM Katılım'ın akaryakıt kampanyasında ne kadar iade var?»
+    #
+    # «iade» ölçüt olarak çözülünce (`odul_miktari`) sıralama avantajlı uca,
+    # yani EN YÜKSEK ödüle bakıyor ve TOM'un 10.000 TL'lik restoran
+    # kampanyası akaryakıt kampanyasının önüne geçiyor. Kullanıcı bir üstünlük
+    # sormadı, BİR KAMPANYAYI sordu: konu bir tercih değil, kimlik kısıtıdır.
+    # Sorulan alanı taşımak da öyle — ama kimlik önce gelir, yoksa cevap
+    # doğru sayıyı yanlış kampanyadan verir.
+    #
+    # SÜRESİ DOLMUŞ KAMPANYA, AYNI ŞEYİ SÖYLEYEN GÜNCELİ VARKEN SEÇİLMEZ
+    # (28 Ağustos, ölçüldü). Ziraat'in üç market kampanyasından ikisi arşivde:
+    #
+    #     soru  : «Ziraat Katılım'ın market kampanyasında ne kadar puan var?»
+    #     cevap : «Ödül miktarı: 1.500 TL … **Bu kampanyanın süresi dolmuş**»
+    #             kaynak: …market-alisverislerinize-…-lira?IsArchived=true
+    #
+    # Aynı tutarı yazan GÜNCEL kayıt kümedeydi ve sıra dolulukla veriliyordu.
+    # Beyan doğruydu ama geçmiş bir teklifi vitrine koymak, jüri havuzunun
+    # 27. maddesinin sorduğu şeyin ta kendisi. Basamak sorulan alanı
+    # TAŞIMANIN ALTINDA durur: güncel ama boş bir kayıt uğruna cevabı olan
+    # kaydı düşürmek, bu sefer bilgiyi saklamak olurdu.
+    def _uygunluk(kayit: KampanyaKaydi) -> tuple[float, int, bool, float, float]:
         tasidigi = sum(getattr(kayit, alan, None) is not None for alan in odaklar)
-        return (tasidigi, _odak_sirasi(kayit, odak, yon), kayit.doluluk_orani)
+        return (
+            konu_sirasi(kayit, agirlik),
+            tasidigi,
+            not _suresi_dolmus(kayit),
+            _odak_sirasi(kayit, odak, yon),
+            kayit.doluluk_orani,
+        )
 
     kayit = max(kayitlar, key=_uygunluk)
     bank_name = "Kuveyt Türk Katılım Bankası A.Ş." if "Örnek" in kayit.banka_adi else kayit.banka_adi
@@ -1437,7 +1676,7 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # gösterecek alanı olan kayıt öne çıkar, boş sayfa dibe iner. Doluluk
     # ikincil hakem olarak kalır.
     if kapsam_bosluklari and len(kayitlar) > 1:
-        return _kapsam_cevabi(soru, kayitlar, kapsam_bosluklari)
+        return _kapsam_cevabi(soru, kayitlar, kapsam_bosluklari, agirlik)
 
     return Cevap(
         parcalar=parcalar,
@@ -1451,23 +1690,42 @@ KAPSAM_UST_SINIRI = 5
 """Ölçüt hiçbir kayıtta yokken kaç kayıt listelenir — bkz. `_kapsam_cevabi`."""
 
 
-def kayit_sirala(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
-    """Kayıtları ÜRÜN ALAKASI → bilgilendiricilik → doluluk sırasına dizer.
+def kayit_sirala(
+    soru: str,
+    kayitlar: list[KampanyaKaydi],
+    konu_agirlik: dict[str, float] | None = None,
+) -> list[KampanyaKaydi]:
+    """Kayıtları KONU → ürün → güncellik → bilgilendiricilik → doluluk sırasına dizer.
 
     İki çağıranı var ve ikisi de aynı sırayı istiyor: ölçüt hiçbir kayıtta
     yokken gösterilen kapsam (`_kapsam_cevabi`) ve metinsel cevabın yapısal
     eki (`_kosul_cevabi`). Kopya tutulmaz.
+
+    Konu ağırlığı `_tekil_cevap`'takiyle AYNI ölçüdür (`konu_sirasi`) ve
+    aynı sebeple başta durur: kullanıcı bir kampanyayı adlandırdıysa listenin
+    ilk satırı o olmalı. Ağırlık verilmezse basamak herkes için eşittir ve
+    sıra eski ölçütlere düşer.
     """
     etiket = sorulan_urun(soru)
+    agirlik = konu_agirlik or {}
 
-    def _anahtar(kayit: KampanyaKaydi) -> tuple[int, int, float]:
+    def _anahtar(kayit: KampanyaKaydi) -> tuple[float, int, bool, int, float]:
         alaka = (
             1
             if etiket and urun_etiketi_uyar(etiket, None, kayit.urun_turu, "")
             else 0
         )
         n = sum(getattr(kayit, a, None) is not None for a in _GOSTERILECEK_ALANLAR)
-        return (alaka, n, kayit.doluluk_orani)
+        # Güncellik `_tekil_cevap` ile aynı basamakta: listenin başındaki kayıt
+        # tekil cevabın seçtiği kayıtla aynı olmalı, yoksa aynı soruya iki
+        # farklı yerde iki farklı kampanya gösterilir.
+        return (
+            konu_sirasi(kayit, agirlik),
+            alaka,
+            not _suresi_dolmus(kayit),
+            n,
+            kayit.doluluk_orani,
+        )
 
     return sorted(kayitlar, key=_anahtar, reverse=True)
 
@@ -1495,7 +1753,10 @@ def kayit_satirlari(kayitlar: list[KampanyaKaydi]) -> list[str]:
 
 
 def _kapsam_cevabi(
-    soru: str, kayitlar: list[KampanyaKaydi], eksik_olcutler: list[str]
+    soru: str,
+    kayitlar: list[KampanyaKaydi],
+    eksik_olcutler: list[str],
+    konu_agirlik: dict[str, float] | None = None,
 ) -> Cevap:
     """Sorulan ölçüt hiçbir kayıtta yokken KAPSAMI gösterir, tek kaydı değil.
 
@@ -1515,7 +1776,7 @@ def _kapsam_cevabi(
     Finansmanı» geçer, «Arsa Finansmanı» geçmez. Ürün sorulmamışsa bu
     basamak herkes için eşittir ve sıra bilgilendiriciliğe düşer.
     """
-    gosterilen = kayit_sirala(soru, kayitlar)[:KAPSAM_UST_SINIRI]
+    gosterilen = kayit_sirala(soru, kayitlar, konu_agirlik)[:KAPSAM_UST_SINIRI]
     banka = gosterilen[0].banka_adi
     satirlar = [f"**{banka}** — sorunuza uyan kayıtlar:\n", *kayit_satirlari(gosterilen)]
 
@@ -2550,7 +2811,11 @@ _BAGLANTI_HATALARI = (
 )
 
 
-def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
+def _kosul_cevabi(
+    soru: str,
+    kayitlar: list[KampanyaKaydi],
+    konu_agirlik: dict[str, float] | None = None,
+) -> Cevap:
     """Metinsel sorular — gömme + kosinüs benzerliğiyle getirilir (ADR 014)."""
     if not kayitlar:
         return Cevap(
@@ -2673,7 +2938,7 @@ def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # EK YALNIZ GÖSTERECEK ŞEY VARSA yazılır: alanı boş kayıtlardan oluşan
     # bir liste, cevaba gürültüden başka bir şey katmaz.
     yapisal = [
-        k for k in kayit_sirala(soru, kayitlar)
+        k for k in kayit_sirala(soru, kayitlar, konu_agirlik)
         if any(getattr(k, a, None) is not None for a in _GOSTERILECEK_ALANLAR)
     ][:KAPSAM_UST_SINIRI]
     if yapisal:
@@ -2842,17 +3107,23 @@ def _cevapla(
     ilgili = _urun_filtrele(soru, ilgili)
     # Segment adlandırılmışsa küme ona daralır (bkz. `_segment_filtrele`).
     ilgili = _segment_filtrele(soru, ilgili) or ilgili
+    # Kampanya KONUSU adlandırılmışsa küme ona daralır (bkz. `rag.konu`).
+    # Ağırlıklar bir kez hesaplanır; süzgeç de sıralama da aynı ölçüyü
+    # kullanmak zorunda — iki yerde iki ölçü, «akaryakıt» sorusuna akaryakıt
+    # kampanyasını süzüp içinden başka bir kaydı vitrine koymak demekti.
+    konu_agirlik = _konu_agirliklari(soru, kayitlar)
+    ilgili = konu_suz(konu_agirlik, ilgili) or ilgili
 
     # «… 500 ay veriyor mu?» — reddedilebilir bir iddia varsa önce o.
     dogrulama = _dogrulama_cevabi(soru, ilgili)
     if dogrulama is not None:
         cevap = dogrulama
     elif niyet == Niyet.TEKIL_SORGU:
-        cevap = _tekil_cevap(soru, ilgili)
+        cevap = _tekil_cevap(soru, ilgili, konu_agirlik)
     elif niyet == Niyet.KARSILASTIRMA:
         cevap = _karsilastirma_cevabi(soru, ilgili)
     else:
-        cevap = _kosul_cevabi(soru, ilgili)
+        cevap = _kosul_cevabi(soru, ilgili, konu_agirlik)
 
     # DEVİR BEYANI KALKANDAN ÖNCE EKLENİR — beyan da denetlenen bir iddia.
     beyan = devir.parca()
