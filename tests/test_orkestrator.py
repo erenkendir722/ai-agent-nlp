@@ -20,12 +20,12 @@ from src.ajanlar.orkestrator import (
 from src.schema import Alan, HedefKitle, Kampanya, UygunlukKosullari
 
 
-def _kampanya(ad="Test Bankası", *, oran=1.89, uygunluk=None) -> Kampanya:
+def _kampanya(ad="Test Bankası", *, oran=1.89, uygunluk=None, url=None) -> Kampanya:
     return Kampanya(
         banka_adi=ad,
         banka_kodu="0299",
         kampanya_id=f"0299-{ad}",
-        kaynak_url=f"https://{ad}.test",
+        kaynak_url=url or f"https://{ad}.test",
         cekim_tarihi=datetime(2026, 8, 14),
         kar_payi_orani=(
             Alan(deger=oran, ham_ifade=f"%{oran}", guven=0.9, yontem="kural")
@@ -386,3 +386,65 @@ def test_urun_suzgeci_bosaltirsa_uydurmaz(ork) -> None:
     cevap, _ = ork.calistir(SORU, kampanyalar=[_kart("Kartçı", 0.5)])
     assert "bulunamadı" in cevap.metin
     assert not cevap.kaynaklar
+
+
+# ---------------------------------------------------------------------------
+# Profil kolunda BANKA SÜZGECİ (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+#     soru  : «Albaraka'dan 1.000.000 TL konut finansmanı, 120 ay vade»
+#     cevap : dokuz bankanın 18 kampanyası, toplam maliyete göre sıralı
+#
+# Adlandırılan banka cevapta hiç dikkate alınmıyordu. Ürün süzgeci profil
+# koluna 27 Ağustos'ta eklenmişti; bankanınki hiç yoktu.
+
+
+def _profil_bankalari(ork: Orkestrator, soru: str, kampanyalar) -> set[str]:
+    cevap, _ = ork.calistir(soru, kampanyalar)
+    return {k.banka_adi for k in cevap.kaynaklar}
+
+
+def test_profil_kolunda_adlandirilan_banka_suzulur(ork) -> None:
+    kampanyalar = [_kampanya("Albaraka Türk Katılım Bankası A.Ş."),
+                   _kampanya("Ziraat Katılım Bankası A.Ş.")]
+    bulunan = _profil_bankalari(ork, "Albaraka 800.000 TL 120 ay", kampanyalar)
+    assert bulunan == {"Albaraka Türk Katılım Bankası A.Ş."}
+
+
+def test_profil_kolunda_kesme_ekli_banka_da_suzulur(ork) -> None:
+    """«Albaraka'dan …» — kesme eki eşleştirmeyi düşürmemeli."""
+    kampanyalar = [_kampanya("Albaraka Türk Katılım Bankası A.Ş."),
+                   _kampanya("Ziraat Katılım Bankası A.Ş.")]
+    bulunan = _profil_bankalari(ork, "Albaraka'dan 800.000 TL 120 ay", kampanyalar)
+    assert bulunan == {"Albaraka Türk Katılım Bankası A.Ş."}
+
+
+def test_banka_adlandirilmazsa_kume_daralmaz(ork) -> None:
+    """Süzgeç yalnız ADLANDIRILMIŞ bankada daraltır; yoksa korpus tamdır."""
+    kampanyalar = [_kampanya("Albaraka Türk Katılım Bankası A.Ş."),
+                   _kampanya("Ziraat Katılım Bankası A.Ş.")]
+    bulunan = _profil_bankalari(ork, "800.000 TL 120 ay", kampanyalar)
+    assert len(bulunan) == 2
+
+
+def test_banka_suzgeci_urun_suzgecinden_once_kosar(ork) -> None:
+    """Sıra tersine dönerse SORULMAYAN bankalar cevaba girer.
+
+    Ürün önce koşsaydı, ad kümesi ürüne göre daralmış olurdu: Albaraka'nın
+    konut kaydı yoksa «albaraka» hiçbir ada eşleşmez, banka süzgeci boş
+    döner ve DOKUZ bankanın tamamı geri gelirdi.
+    """
+    from src.ajanlar.orkestrator import _banka_suz, _urun_suz
+
+    kampanyalar = [
+        # Sorulan banka — ama KONUT kaydı yok.
+        _kampanya("Albaraka Türk Katılım Bankası A.Ş.", url="https://a.test/tasit"),
+        # Sorulmayan banka — konut kaydı var.
+        _kampanya("Ziraat Katılım Bankası A.Ş.", url="https://z.test/konut"),
+    ]
+    soru = "Albaraka konut finansmanı 800.000 TL 120 ay"
+
+    assert _urun_suz(soru, _banka_suz(soru, kampanyalar)) == []
+    # Ters sıra sorulmayan bankayı geri veriyor — testin ayırt ettiği şey bu.
+    ters = _banka_suz(soru, _urun_suz(soru, kampanyalar))
+    assert [k.banka_adi for k in ters] == ["Ziraat Katılım Bankası A.Ş."]

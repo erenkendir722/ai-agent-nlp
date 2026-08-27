@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.openapi.docs import get_swagger_ui_html
@@ -22,6 +23,9 @@ from pydantic import BaseModel, Field
 from src.comparison.karsilastirma import Agirliklar, Kriter, sirala, uyarilar
 from src.depolama import kampanyalari_getir, tum_kayitlar
 from src.schema import Kampanya
+
+if TYPE_CHECKING:  # chatbot yığınını API açılışında değil, istek anında yükle
+    from src.rag.baglam import SohbetBaglami
 
 STATIK = Path(__file__).resolve().parent / "statik"
 """Swagger UI varlıkları — YEREL. Ayrıntı `_ozel_docs` yorumunda."""
@@ -85,6 +89,18 @@ class CikarimIstegi(BaseModel):
 
 class SoruIstegi(BaseModel):
     soru: str = Field(min_length=3)
+    baglam: dict[str, object] | None = None
+    """ÇOK TURLU SOHBET — istemcinin bir önceki cevaptan aldığı `baglam`.
+
+    API DURUM TUTMAZ. Oturum kimliği verip bağlamı sunucuda saklamak,
+    ölçeklendiğinde paylaşılan durum ve temizlik işi demek; burada bağlam
+    istemcide durur ve her istekte geri gönderilir. Sunucu iki koşum
+    arasında hiçbir şey hatırlamadığı için `/ask` idempotent kalır — aynı
+    (soru, bağlam) çifti aynı cevabı verir.
+
+    Alan serbest sözlük DEĞİL: `SohbetBaglami` alanlarına birebir çevrilir,
+    tanınmayan anahtar reddedilir (bkz. `_baglam_coz`).
+    """
 
 
 @uygulama.get("/saglik", tags=["sistem"])
@@ -163,6 +179,43 @@ def compare(
     }
 
 
+def _baglam_coz(ham: dict[str, object] | None) -> "SohbetBaglami | None":
+    """İstemciden gelen sözlüğü `SohbetBaglami`'ye çevirir.
+
+    Tanınmayan anahtar SESSİZCE ATILMAZ, `400` döner: yazım hatası yüzünden
+    devrolmayan bir yuva, kullanıcıya «sistem beni unuttu» diye görünür ve
+    sebebi hiçbir yere yazılmaz.
+    """
+    from dataclasses import fields
+
+    from src.rag.baglam import SohbetBaglami
+
+    if not ham:
+        return None
+    izinli = {a.name for a in fields(SohbetBaglami)}
+    bilinmeyen = set(ham) - izinli
+    if bilinmeyen:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Bilinmeyen bağlam alanı: {', '.join(sorted(bilinmeyen))}",
+        )
+    veri = dict(ham)
+    if "bankalar" in veri:
+        veri["bankalar"] = tuple(veri["bankalar"] or ())
+    return SohbetBaglami(**veri)
+
+
+def _baglam_sozluk(baglam: "SohbetBaglami | None") -> dict[str, object] | None:
+    """Cevaba konan bağlam — istemci bir sonraki istekte aynen geri gönderir."""
+    from dataclasses import asdict
+
+    if baglam is None:
+        return None
+    sozluk = asdict(baglam)
+    sozluk["bankalar"] = list(baglam.bankalar)
+    return sozluk
+
+
 @uygulama.post("/ask", tags=["chatbot"])
 def ask(istek: SoruIstegi) -> dict[str, object]:
     """Kaynak gösteren, sayısal doğrulamadan geçmiş cevap — ajan izleriyle.
@@ -184,9 +237,14 @@ def ask(istek: SoruIstegi) -> dict[str, object]:
     """
     from src.ajanlar.orkestrator import Orkestrator
 
-    cevap, defter = Orkestrator().calistir(istek.soru)
+    cevap, defter = Orkestrator().calistir(
+        istek.soru, baglam=_baglam_coz(istek.baglam)
+    )
     return {
         "soru": istek.soru,
+        # ÇOK TURLU SOHBET: istemci bunu saklar ve sonraki `/ask` isteğinde
+        # `baglam` alanına aynen koyar. Sunucu tarafında oturum yok.
+        "baglam": _baglam_sozluk(cevap.baglam),
         "niyet": cevap.niyet.value,
         "cevap": cevap.metin,
         "uyarilar": cevap.uyarilar,

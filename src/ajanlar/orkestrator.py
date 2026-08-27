@@ -32,9 +32,11 @@ from src.rag.chatbot import (
     kalkandan_gecir,
     niyet_belirle,
     sayi_goster,
+    sorulan_bankalar,
     sorulan_urun,
     urun_etiketi_uyar,
 )
+from src.rag.baglam import Devir, SohbetBaglami, baglam_guncelle, soruyu_tamamla
 from src.rag.chatbot import sor as chatbot_sor
 from src.schema import HedefKitle, Kampanya
 
@@ -326,6 +328,32 @@ def _profil_cevabi(
     )
 
 
+def _banka_suz(soru: str, kampanyalar: list[Kampanya]) -> list[Kampanya]:
+    """Soruda banka adlandırılmışsa kampanyaları ona daraltır.
+
+    NEDEN VAR — 27 Ağustos'ta ölçüldü (çok turlu sohbet bunu görünür kıldı):
+
+        soru  : «Albaraka'dan 1.000.000 TL konut finansmanı, 120 ay vade»
+        cevap : dokuz bankanın 18 kampanyası, toplam maliyete göre sıralı
+
+    Adlandırılan banka cevapta hiç dikkate alınmıyordu. Ürün süzgeci profil
+    koluna eklenmişti (`_urun_suz`), bankanınki hiç yoktu.
+
+    Eşleştirme `rag.chatbot`'tan gelir (`sorulan_bankalar`); iki kolda iki
+    eşleştirici tutulmaz — yazım hatası toleransı, benzersiz sözcük kapısı ve
+    «hangi banka» ayrımı burada da kendiliğinden geçerlidir.
+
+    BANKA SÜZGECİ ÜRÜNDEN ÖNCE koşar. Sonra koşsaydı ad kümesi ürün süzgeci
+    tarafından daraltılmış olurdu: «Albaraka konut» sorusunda Albaraka'nın
+    konut kaydı yoksa Albaraka ad kümesinden düşer, süzgeç hiçbir şey bulamaz
+    ve DOKUZ bankanın tamamını geri verirdi — yani sorulmayan bankalar.
+    """
+    adlar = set(sorulan_bankalar(soru, (k.banka_adi for k in kampanyalar)))
+    if not adlar:
+        return kampanyalar
+    return [k for k in kampanyalar if k.banka_adi in adlar]
+
+
 def _urun_suz(soru: str, kampanyalar: list[Kampanya]) -> list[Kampanya]:
     """Soruda ürün adlandırılmışsa kampanyaları ona daraltır.
 
@@ -384,6 +412,7 @@ class Orkestrator:
         kampanyalar: list[Kampanya] | None = None,
         *,
         kayitlar: list[KampanyaKaydi] | None = None,
+        baglam: SohbetBaglami | None = None,
     ) -> tuple[Cevap, IzDefteri]:
         """Tek giriş noktası. `(cevap, iz_defteri)` döner.
 
@@ -398,20 +427,42 @@ class Orkestrator:
         Arayüz ikisini de geçirebilir: Streamlit her etkileşimde betiği baştan
         koşturduğu için, sayfanın önbelleğindeki listeyi tekrar okutmak
         1.024 kaydı ve ~12 MB ham metni boşuna diskten çekmek olurdu.
+
+        `baglam` ÇOK TURLU SOHBETİ açar (bkz. `src/rag/baglam.py`). Devir
+        YÖNLENDİRMEDEN ÖNCE uygulanır ve sebebi ölçüldü (27 Ağustos):
+
+            tur 1: «1.000.000 TL konut finansmanı istiyorum»
+                     -> «Uygunluk değerlendirmesi için eksik: vade»
+            tur 2: «120 ay vade»
+                     -> Kuveyt Türk, Alışveriş Puanı Kampanyası      ✗
+
+        Yani SİSTEM SORUYU KENDİ SORUYOR, CEVABINI KULLANAMIYOR: niyet ham
+        soruya bakılarak çözüldüğü için «120 ay vade» muhakeme ajanına hiç
+        ulaşmıyor, tutar yuvası boş kaldığı için profil kurulamıyordu.
         """
         defter = IzDefteri()
+        devir = self._devir(soru, baglam, kayitlar)
 
         with iz_tut(self.ad, llm=False, girdi=soru[:80]) as iz:
-            niyet = self.niyet_coz(soru)
+            niyet = self.niyet_coz(devir.soru)
             iz.cikti_ozeti = niyet
-            iz.karar_gerekcesi = self._yonlendirme_gerekcesi(soru, niyet)
+            iz.karar_gerekcesi = self._yonlendirme_gerekcesi(devir.soru, niyet)
+            if devir.var_mi():
+                iz.karar_gerekcesi += (
+                    " · devralınan yuva: "
+                    + ", ".join(etiket for etiket, _ in devir.yuvalar)
+                )
         defter.ekle(iz)
 
         if niyet != PROFIL_SORGUSU:
-            cevap, chatbot_izi = self._chatbot_yolu(soru, kayitlar)
+            # HAM SORU geçiriliyor, devir değil: `chatbot.sor` aynı devri
+            # kendi kapılarından SONRA uygular (kapsam kalkanı ham soruya
+            # çalışmak zorunda) ve beyanı kendi kalkanından geçirir.
+            cevap, chatbot_izi = self._chatbot_yolu(soru, kayitlar, baglam)
             defter.ekle(chatbot_izi)
             return cevap, defter
 
+        soru = devir.soru
         profil, eksikler = self._profil_izi(soru, defter)
         if profil is None:
             # KÖKEN `SISTEM`, `DUZ` DEĞİL — kalkan bu hatayı kuruluşta yakaladı.
@@ -423,28 +474,40 @@ class Orkestrator:
             # Bu sayılar bir veri iddiası değil, arayüz metnindeki örnekler —
             # ama denetimsiz de bırakılmıyorlar: hiçbir parça `DENETIMSIZ`
             # kalmadığı için `eval`'deki denetimsiz parça oranı sıfır kalır.
-            return (
-                Cevap(
-                    parcalar=[
-                        CevapParcasi(
-                            "Uygunluk değerlendirmesi için şu bilgiler eksik: "
-                            + ", ".join(eksikler)
-                            + ".\n\nÖrnek: *\"Maaş müşterisi, 800.000 TL konut "
-                            "finansmanı, 10 yıl vade\"*",
-                            Koken.SISTEM,
-                            hesap={
-                                # `profil_ayristir`'ın ürettiği ipuçlarındaki
-                                # örnek değerler + örnek cümledeki tutar.
-                                "ornek_tutar": 800_000.0,
-                                "ornek_vade_ay": 120.0,
-                                "ornek_vade_yil": 10.0,
-                            },
-                        )
-                    ],
-                    niyet=Niyet.KOSUL_SORGUSU,
-                ),
-                defter,
+            eksik_cevap = Cevap(
+                parcalar=[
+                    CevapParcasi(
+                        "Uygunluk değerlendirmesi için şu bilgiler eksik: "
+                        + ", ".join(eksikler)
+                        + ".\n\nÖrnek: *\"Maaş müşterisi, 800.000 TL konut "
+                        "finansmanı, 10 yıl vade\"*",
+                        Koken.SISTEM,
+                        hesap={
+                            # `profil_ayristir`'ın ürettiği ipuçlarındaki
+                            # örnek değerler + örnek cümledeki tutar.
+                            "ornek_tutar": 800_000.0,
+                            "ornek_vade_ay": 120.0,
+                            "ornek_vade_yil": 10.0,
+                        },
+                    )
+                ],
+                niyet=Niyet.KOSUL_SORGUSU,
             )
+            # EKSİK BİLGİ DALI DA KALKANDAN GEÇER. İki sebep: devir beyanı
+            # devralınan TUTARI yazabiliyor (sayı taşıyan bir iddia), ve bu
+            # daldaki örnek değerler («800.000 TL … 10 yıl») bugüne dek hiç
+            # denetlenmemişti — `hesap` doğru kuruluysa kalkan sessiz kalır.
+            self._beyan_ekle(eksik_cevap, devir)
+            eksik_cevap = self._kalkandan_gecir(eksik_cevap, defter)
+            eksik_cevap.baglam = baglam_guncelle(
+                soru,
+                eksik_cevap,
+                baglam,
+                profil_kipi=True,
+                tutar=para_ayristir(soru, birim_zorunlu=True),
+                vade_ay=vade_ayristir(soru),
+            )
+            return eksik_cevap, defter
 
         if kampanyalar is None:
             from src.depolama import kampanyalari_oku
@@ -461,7 +524,11 @@ class Orkestrator:
         #
         # Süzgeç kümeyi boşaltırsa sonuç boş kalır ve cevap «uygun kampanya
         # bulunamadı» der — sorulmayan ürünle doldurmaktan doğrudur.
-        kampanyalar = _urun_suz(soru, kampanyalar)
+        #
+        # BANKA SÜZGECİ 27 Ağustos'ta eklendi ve aynı gerekçeyle ÖNCE koşar
+        # (bkz. `_banka_suz`).
+        kampanyalar = _urun_suz(soru, _banka_suz(soru, kampanyalar))
+
 
         sonuclar, muhakeme_izi = self.muhakeme.calistir((profil, kampanyalar))
         defter.ekle(muhakeme_izi)
@@ -486,7 +553,17 @@ class Orkestrator:
         #
         # `kullanilan_kayitlar` boş: bu cevapta YAPISAL parça yok, tamamı
         # SISTEM kökenli (gerekçesi `_profil_cevabi` docstring'inde).
-        return self._kalkandan_gecir(cevap, defter), defter
+        self._beyan_ekle(cevap, devir)
+        cevap = self._kalkandan_gecir(cevap, defter)
+        cevap.baglam = baglam_guncelle(
+            soru,
+            cevap,
+            baglam,
+            profil_kipi=True,
+            tutar=profil.tutar,
+            vade_ay=profil.vade_ay,
+        )
+        return cevap, defter
 
     @staticmethod
     def _kalkandan_gecir(cevap: Cevap, defter: IzDefteri) -> Cevap:
@@ -540,8 +617,32 @@ class Orkestrator:
         return f"{bulunan} + müşteri ipucu → muhakeme ajanı (eksik bilgi sorulacak)"
 
     @staticmethod
+    def _devir(
+        soru: str,
+        baglam: SohbetBaglami | None,
+        kayitlar: list[KampanyaKaydi] | None,
+    ) -> Devir:
+        """Yuva devri. Bağlam boşken korpus OKUNMAZ — tek turlu yol eskisi gibi."""
+        if baglam is None or baglam.bos_mu():
+            return Devir(soru)
+        if kayitlar is None:
+            from src.depolama import tum_kayitlar
+
+            kayitlar = tum_kayitlar()
+        return soruyu_tamamla(soru, baglam, kayitlar)
+
+    @staticmethod
+    def _beyan_ekle(cevap: Cevap, devir: Devir) -> None:
+        """Devir beyanını cevaba ekler — KALKANDAN ÖNCE çağrılmalıdır."""
+        beyan = devir.parca()
+        if beyan is not None:
+            cevap.parcalar.append(beyan)
+
+    @staticmethod
     def _chatbot_yolu(
-        soru: str, kayitlar: list[KampanyaKaydi] | None = None
+        soru: str,
+        kayitlar: list[KampanyaKaydi] | None = None,
+        baglam: SohbetBaglami | None = None,
     ) -> tuple[Cevap, AjanIzi]:
         """Chatbot kolu. Kalkan `chatbot.sor`'un İÇİNDE uygulanır, burada değil.
 
@@ -549,7 +650,7 @@ class Orkestrator:
         elinde tutuyorsa aynı listeyi iki kez diskten çekmenin anlamı yok.
         """
         with iz_tut("cevap", llm=False, girdi=soru[:80]) as iz:
-            cevap = chatbot_sor(soru, kayitlar)
+            cevap = chatbot_sor(soru, kayitlar, baglam=baglam)
             iz.cikti_ozeti = cevap.niyet.value
             iz.karar_gerekcesi = (
                 f"Sayısal doğrulama kalkanı: "

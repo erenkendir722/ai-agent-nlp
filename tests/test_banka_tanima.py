@@ -260,3 +260,52 @@ def test_tur_adlandiran_sozcuk_banka_sayilmaz(korpus) -> None:
     assert tek_banka, "test kurgusu bozuk"
     for soru in ("hangi banka daha avantajlı", "katılım bankacılığı nedir"):
         assert _bankalari_bul(soru, tek_banka) == [], soru
+
+
+# ---------------------------------------------------------------------------
+# KESME EKİ — «Albaraka'dan», «Kuveyt Türk'ün» (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# `arama_anahtari` kesmeyi SİLER ve tokenizasyon için doğrusu odur («TL'ye»
+# tek belirteçtir). Ama özel ad eşleştirmesinde kesme, adı kendi ekinden
+# ayıran işaretin ta kendisidir. `_bankalari_bul` bunu biliyordu ve
+# `anahtar.replace("'", " ")` yazıyordu — ama `anahtar` zaten kesmesizdi,
+# yani satır ÖLÜYDÜ:
+#
+#     «Albaraka'dan 1.000.000 TL konut finansmanı»  -> HİÇBİR banka eşleşmedi
+#
+# Profil kolu adlandırılan bankayı yok sayıp dokuz bankayı sıralıyordu.
+
+
+def _ekli_yazimlar(banka_adi: str, tekil_ilk: bool) -> list[str]:
+    """Bankanın kesme ekli biçimleri — ADDAN türetilir, ezberlenmez."""
+    parcalar = arama_anahtari(banka_adi).split()
+    govdeler = [" ".join(parcalar[:2])]
+    if tekil_ilk:
+        govdeler.append(parcalar[0].replace(".", ""))
+    return [f"{govde}'{ek}" for govde in govdeler for ek in ("dan", "nin", "un", "a")]
+
+
+@pytest.mark.parametrize(
+    ("banka", "yazim"),
+    [
+        (banka, yazim)
+        for banka in BANKA_ADLARI
+        for yazim in _ekli_yazimlar(banka, _tekil_ilk_sozcuk(banka))
+    ],
+)
+def test_kesme_ekli_yazim_dogru_bankayi_bulur(korpus, banka: str, yazim: str) -> None:
+    bulunan = {k.banka_adi for k in _bankalari_bul(f"{yazim} kâr payı oranı ne", korpus)}
+    assert bulunan == {banka}, f"{yazim!r} -> {bulunan}"
+
+
+def test_kesme_ayrimi_ek_serbestligi_getirmez(korpus) -> None:
+    """Kesme bir SINIRDIR, baş bağlama değil.
+
+    Eki serbest bırakmak (`terim_gecer` gibi) daha kolay olurdu ama
+    «emlakçı»yı Türkiye Emlak'a bağlardı — `YAKINLIK_ESIGI` bu eşleşmeyi
+    ölçerek dışarıda bırakmıştı (0,833). Kesme kullanıcının kendi koyduğu
+    sınırdır; ek serbestliği bizim tahminimiz olurdu.
+    """
+    assert _bankalari_bul("emlakçı kredisi var mı", korpus) == []
+    assert _bankalari_bul("ziraatçilik hakkında", korpus) == []

@@ -323,3 +323,63 @@ def test_sorulan_alan_hicbir_kayitta_yoksa_belirtilmemis_yazilir() -> None:
 
     assert "Kâr payı oranı: **Belirtilmemiş**" in cevap.metin
     assert cevap.dogrulama_gecti
+
+
+# ---------------------------------------------------------------------------
+# Tekil cevap: taşıyanlar arasında SIRA — sorulan ölçütün avantajlı ucu
+# ---------------------------------------------------------------------------
+#
+# 27 Ağustos'ta ölçüldü:
+#
+#     soru  : «Albaraka … 120 ay vade»
+#     cevap : «Albaraka Türk — Diğer: … Azami vade: 6 ay»
+#
+# «Sorulan alanı taşıyan kayıt öncelikli» kuralı vardı ama TAŞIYANLAR
+# ARASINDA sıra yoktu; karar dolulukla veriliyordu ve doluluk sorudan
+# bağımsız bir ölçü. Vadeyi soran kullanıcıya bankanın EN KISA vadesi
+# gösterilebiliyordu.
+
+
+def test_tekil_cevap_sorulan_olcutun_avantajli_ucunu_secer() -> None:
+    """Yön `ALAN_YONLERI`'nden gelir — karşılaştırma motoruyla AYNI kaynak."""
+    kayitlar = [
+        _banka("kisa", vade_ay_max=6, kar_payi_orani=1.0,
+               finansman_tutari_max=150_000.0, doluluk_orani=0.9),
+        _banka("uzun", vade_ay_max=120, doluluk_orani=0.2),
+    ]
+    assert "120 ay" in sor("K Katılım vade", kayitlar).metin
+
+
+def test_tekil_cevap_kullanicinin_belirttigi_yonu_dinler() -> None:
+    """Kullanıcı ucu söylediyse avantajlı uç değil, SÖYLENEN uç geçerlidir."""
+    kayitlar = [
+        _banka("kisa", vade_ay_max=6, doluluk_orani=0.2),
+        _banka("uzun", vade_ay_max=120, doluluk_orani=0.9),
+    ]
+    assert "6 ay" in sor("K Katılım en kısa vade", kayitlar).metin
+
+
+def test_tekil_cevap_kapsam_disi_kaydi_one_almaz() -> None:
+    """ADR 020 kapısı sıralamada da geçerli — kart promosyonunun %0'ı.
+
+    Karşılaştırmanın dışladığı kaydı tekil cevabın vitrine koyması,
+    kullanıcının aynı soruya iki farklı yerde iki farklı cevap alması
+    demekti.
+    """
+    kayitlar = [
+        _banka("kart", kampanya_turu="kart", kar_payi_orani=0.0, doluluk_orani=0.9),
+        _banka("finansman", kampanya_turu="konut_finansmani",
+               kar_payi_orani=2.87, doluluk_orani=0.2),
+    ]
+    assert "2,87" in sor("K Katılım kâr payı oranı", kayitlar).metin
+
+
+def test_yon_beyan_edilmemis_alanda_siralama_yapilmaz() -> None:
+    """Yön uydurulmaz: beyan yoksa karar eski ölçüte, dolulukla, kalır."""
+    from src.comparison.karsilastirma import ALAN_YONLERI
+    from src.rag.chatbot import _odak_sirasi
+
+    kayit = _banka("x", vade_ay_max=60)
+    assert "taksit_sayisi" not in ALAN_YONLERI
+    assert _odak_sirasi(kayit, "taksit_sayisi", None) == float("-inf")  # alan boş
+    assert _odak_sirasi(kayit, None, None) == float("-inf")  # ölçüt sorulmadı

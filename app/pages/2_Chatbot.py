@@ -17,7 +17,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.ajanlar.orkestrator import Orkestrator # noqa: E402
 from src.depolama import tum_kayitlar # noqa: E402
-from src.rag.chatbot import YASAL_UYARI, Niyet # noqa: E402
+from src.rag.chatbot import YASAL_UYARI, Niyet, sayi_goster # noqa: E402
+from src.rag.chatbot import _OLCUT_ETIKETLERI as OLCUT_ETIKETLERI # noqa: E402
 from app.ui_utils import inject_custom_css, ortak_kenar, uyarilari_goster # noqa: E402
 
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
@@ -55,6 +56,16 @@ ORNEK_SORULAR = [
 ]
 KALKAN_ORNEGI = "Kampanya koşulları neler?"
 
+# ÇOK TURLU SOHBET — bir önceki turun çözülmüş yuvaları (bkz. `src/rag/baglam.py`).
+#
+# `SohbetBaglami` MODÜL DÜZEYİNDE tanımlı, bu sayfada değil. Sebebi CLAUDE.md'de
+# yazılı: sayfa betiği her çizimde baştan koştuğu için burada tanımlanan bir
+# sınıf her koşuda YENİ nesne olur, `st.session_state`'teki örnek eski sınıftan
+# geldiği için biriken durum sessizce sıfırlanırdı — tam da hafızanın kaybolması
+# demek olurdu.
+if "baglam" not in st.session_state:
+  st.session_state.baglam = None
+
 with st.sidebar:
   st.header("Örnek sorular")
   for ornek in ORNEK_SORULAR:
@@ -63,6 +74,31 @@ with st.sidebar:
   if st.button("Kalkan gösterimi: " + KALKAN_ORNEGI, use_container_width=True):
     st.session_state.bekleyen_soru = KALKAN_ORNEGI
   st.caption("Son düğme, sistemin kendini nasıl frenlediğini gösterir.")
+
+  st.divider()
+  st.header("Sohbet bağlamı")
+  baglam = st.session_state.baglam
+  if baglam is None or baglam.bos_mu():
+    st.caption("Bağlam boş — ilk soru bekleniyor.")
+  else:
+    if baglam.bankalar:
+      st.caption("Banka: " + ", ".join(baglam.bankalar))
+    if baglam.urun:
+      st.caption(f"Ürün: {baglam.urun}")
+    if baglam.olcut:
+      st.caption(f"Ölçüt: {OLCUT_ETIKETLERI.get(baglam.olcut, baglam.olcut)}")
+    if baglam.tutar:
+      st.caption(f"Tutar: {sayi_goster(baglam.tutar)} TL")
+    if baglam.vade_ay:
+      st.caption(f"Vade: {baglam.vade_ay} ay")
+  if st.button("Sohbeti sıfırla", use_container_width=True):
+    st.session_state.gecmis = []
+    st.session_state.baglam = None
+    st.rerun()
+  st.caption(
+    "Takip sorusu boş yuvaları buradan doldurur; soruda yazılan her zaman "
+    "kazanır. Devralınan yuva cevabın altında beyan edilir."
+  )
 
   st.divider()
   st.header("Mimari")
@@ -162,7 +198,9 @@ if soru:
         # 800.000 TL, 10 yıl vade» sorusu muhakeme ajanına hiç gitmiyor,
         # `tekil_sorgu`ya düşüp müşterinin kısıtlarını yok sayıyordu.
         # `kayitlar` geçiriliyor ki chatbot aynı listeyi yeniden okumasın.
-        cevap, iz_defteri = Orkestrator().calistir(soru, kayitlar=kayitlar)
+        cevap, iz_defteri = Orkestrator().calistir(
+          soru, kayitlar=kayitlar, baglam=st.session_state.baglam
+        )
         gecen_sure = time.time() - baslangic
       except ConnectionError as e:
         # Yerleşik ConnectionError — Ollama/vektör yolu kapalıyken yakalanır.
@@ -234,4 +272,7 @@ if soru:
 """
       st.code(curl_cmd, language="bash")
 
+  # BAĞLAM CEVAPTAN ALINIR, sorudan değil: devredilecek banka adı kullanıcının
+  # yazdığı metinde değil, cevabın kullandığı kayıtlarda duruyor.
+  st.session_state.baglam = cevap.baglam
   st.session_state.gecmis.append({"soru": soru, "cevap": cevap, "gecen_sure": gecen_sure})

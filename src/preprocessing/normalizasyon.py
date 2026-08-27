@@ -85,6 +85,37 @@ def arama_anahtari(metin: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+def kesmeden_ayir(metin: str) -> str:
+    """Kesme işaretini BOŞLUĞA çevirir — özel adı kendi ekinden ayırmak için.
+
+    `arama_anahtari` kesmeyi SİLER ve tokenizasyon için doğrusu odur:
+    «TL'ye» tek bir belirteçtir. Ama ÖZEL AD eşleştirmesinde tersi gerekir —
+    kesme, Türkçe'de özel adı ekinden ayıran işaretin ta kendisidir:
+
+        «Albaraka'dan»  -> arama_anahtari -> «albarakadan»   ← eşleşmez
+                        -> kesmeden_ayir  -> «albaraka dan»  ← «albaraka» eşleşir
+
+    27 Ağustos'ta ölçüldü: `chatbot._bankalari_bul` sözcük kümesini kurarken
+    `anahtar.replace("'", " ")` yazıyordu, yani niyet buydu — ama `anahtar`
+    zaten `arama_anahtari`'ndan geçmiş ve kesme silinmişti. Satır ÖLÜYDÜ ve
+    «Albaraka'dan 1.000.000 TL konut finansmanı» sorusu HİÇBİR bankaya
+    eşleşmiyordu.
+
+    Ekin serbest bırakılması (`terim_gecer` gibi baş bağlama) bu iş için
+    yanlış olurdu: «emlakçı» o zaman Türkiye Emlak'a eşleşirdi ve bu, yakınlık
+    eşiğinin ölçerek dışarıda bıraktığı bir eşleşme (bkz. `YAKINLIK_ESIGI`).
+    Kesme bir tahmin değil, kullanıcının kendi koyduğu sınırdır.
+
+    ÇIKARIM YOLU BU FONKSİYONU ÇAĞIRMAZ; yalnız eşleştirme kullanır.
+
+    >>> kesmeden_ayir("Albaraka'dan")
+    'Albaraka dan'
+    """
+    for isaret in _KESME_ISARETLERI:
+        metin = metin.replace(isaret, " ")
+    return metin
+
+
 def bosluk_duzelt(metin: str) -> str:
     """Görünmez karakterleri temizler, boşlukları teke indirir, satırları korur."""
     metin = metin.replace(" ", " ").replace("​", "")
@@ -741,6 +772,7 @@ __all__ = [
     "arama_anahtari",
     "birim_belirle",
     "bosluk_duzelt",
+    "kesmeden_ayir",
     "masrafsiz_mi",
     "olumsuzlanmis_mi",
     "oran_ayristir",

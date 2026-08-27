@@ -492,3 +492,63 @@ class TestOlcutKapsami:
         oran_uyarisi = next(m for m in uyarilar(kayitlar) if "Kâr payı" in m.baslik)
         assert "finansman kampanyasında belirtilmemiş" in oran_uyarisi.detay
         assert "vade farksız" in oran_uyarisi.detay
+
+
+# ---------------------------------------------------------------------------
+# ALAN_YONLERI — «hangi uç avantajlı» tek yerde beyan edilir (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# Bu bilgi İKİ yerde ayrı yazılıydı: `_SIRALAMA_ALANLARI` ve
+# `avantaj_skorla`'nın bileşen tanımları. Bugün aynı şeyi söylüyorlardı ama
+# ayrışmaları için tek bir düzeltmenin tek yere yazılması yetiyordu — ve
+# ayrıştıklarında sıralama ile skor birbirinin tersini gösterirdi. Üçüncü
+# tüketici chatbot'un tekil cevabı (`_odak_sirasi`).
+
+
+def test_siralama_yonleri_tek_kaynaktan_turer() -> None:
+    from src.comparison.karsilastirma import ALAN_YONLERI, _SIRALAMA_ALANLARI
+
+    for alan, yon in _SIRALAMA_ALANLARI.values():
+        assert ALAN_YONLERI[alan] == yon, alan
+
+
+def test_skor_bilesenleri_yon_beyan_etmez() -> None:
+    """`avantaj_skorla` yön yazmaz, `ALAN_YONLERI`'nden okur.
+
+    Kaynak metninde yön dizgesi geçerse ikinci bir beyan doğmuş demektir.
+    """
+    import inspect
+
+    from src.comparison.karsilastirma import avantaj_skorla
+
+    govde = inspect.getsource(avantaj_skorla)
+    assert '"dusuk_iyi"' not in govde and '"yuksek_iyi"' not in govde
+
+
+def test_chatbot_olcutlerinin_hepsi_yon_beyan_eder() -> None:
+    """Chatbot'un kıyasladığı her sayısal alanın yönü BEYAN EDİLMİŞ olmalı.
+
+    Beyan yoksa `_odak_sirasi` sıralama yapmaz ve tekil cevap sessizce eski
+    davranışa (doluluk) düşer — yani yeni bir ölçüt eklendiğinde kusur
+    görünmez olurdu. `masrafsiz_mi` mantıksal alandır, sıralanmaz.
+    """
+    from src.comparison.karsilastirma import ALAN_YONLERI
+    from src.rag.chatbot import OLCUT_ALANLARI
+
+    eksik = {a for a in OLCUT_ALANLARI if a != "masrafsiz_mi"} - set(ALAN_YONLERI)
+    assert not eksik, f"yönü beyan edilmemiş ölçüt: {eksik}"
+
+
+def test_yon_sozcukleri_karsilastirma_yonleriyle_ortusur() -> None:
+    """`_sorulan_yon` KÖKÜ («yuksek»), `Yon` ise «yuksek_iyi» döndürür.
+
+    `_odak_sirasi` ikisini `f"{yon}_iyi"` ile bağlıyor. Bu test o bağı
+    kilitler: sözcük kümesi değişirse çeviri sessizce `None` üretir ve
+    kullanıcının belirttiği yön yok sayılırdı.
+    """
+    from typing import get_args
+
+    from src.comparison.karsilastirma import Yon
+    from src.rag.chatbot import _YON_SOZU
+
+    assert {f"{kok}_iyi" for kok in _YON_SOZU} == set(get_args(Yon))

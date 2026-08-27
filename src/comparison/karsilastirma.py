@@ -51,12 +51,35 @@ KRITER_ETIKETLERI: dict[Kriter, str] = {
     Kriter.EN_AVANTAJLI: "En Avantajlı Kampanya",
 }
 
-# Sıralama kriteri -> (alan, yön)
+ALAN_YONLERI: dict[str, Yon] = {
+    "kar_payi_orani": "dusuk_iyi",
+    "tahsis_ucreti": "dusuk_iyi",
+    "vade_ay_max": "yuksek_iyi",
+    "odul_miktari": "yuksek_iyi",
+    "finansman_tutari_max": "yuksek_iyi",
+}
+"""Bir alanın HANGİ UCU müşterinin lehinedir — TEK BEYAN YERİ.
+
+Bu bilgi 27 Ağustos'a kadar İKİ yerde ayrı ayrı yazılıydı: `_SIRALAMA_ALANLARI`
+ve `avantaj_skorla`'daki bileşen tanımları. İkisi bugün aynı şeyi söylüyordu,
+ama ayrışmaları için tek bir düzeltmenin tek yere yazılması yetiyordu — ve
+ayrıştıklarında sıralama ile skor birbirinin tersini gösterirdi.
+
+Üçüncü tüketici chatbot'un tekil cevabı: «vade nedir?» sorusunda hangi kaydın
+vitrine çıkacağını da bu yön belirliyor (`_tekil_cevap`). O da buradan okur;
+dördüncü bir liste yazılmaz."""
+
+
+# Sıralama kriteri -> alan. Yön `ALAN_YONLERI`'nden TÜRER.
+_KRITER_ALANLARI: dict[Kriter, str] = {
+    Kriter.EN_DUSUK_KAR_PAYI: "kar_payi_orani",
+    Kriter.EN_YUKSEK_ODUL: "odul_miktari",
+    Kriter.EN_UZUN_VADE: "vade_ay_max",
+    Kriter.EN_DUSUK_MASRAF: "tahsis_ucreti",
+}
+
 _SIRALAMA_ALANLARI: dict[Kriter, tuple[str, Yon]] = {
-    Kriter.EN_DUSUK_KAR_PAYI: ("kar_payi_orani", "dusuk_iyi"),
-    Kriter.EN_YUKSEK_ODUL: ("odul_miktari", "yuksek_iyi"),
-    Kriter.EN_UZUN_VADE: ("vade_ay_max", "yuksek_iyi"),
-    Kriter.EN_DUSUK_MASRAF: ("tahsis_ucreti", "dusuk_iyi"),
+    kriter: (alan, ALAN_YONLERI[alan]) for kriter, alan in _KRITER_ALANLARI.items()
 }
 
 
@@ -269,11 +292,15 @@ def avantaj_skorla(
         return []
 
     a = (agirliklar or Agirliklar()).normalize()
-    bilesen_tanimlari = (
-        ("kar_payi", "kar_payi_orani", "dusuk_iyi", a.kar_payi),
-        ("masraf", "tahsis_ucreti", "dusuk_iyi", a.masraf),
-        ("vade", "vade_ay_max", "yuksek_iyi", a.vade),
-        ("odul", "odul_miktari", "yuksek_iyi", a.odul),
+    # Yön `ALAN_YONLERI`'nden okunur; burada yalnız AĞIRLIK vardır.
+    bilesen_tanimlari = tuple(
+        (ad, alan, ALAN_YONLERI[alan], agirlik)
+        for ad, alan, agirlik in (
+            ("kar_payi", "kar_payi_orani", a.kar_payi),
+            ("masraf", "tahsis_ucreti", a.masraf),
+            ("vade", "vade_ay_max", a.vade),
+            ("odul", "odul_miktari", a.odul),
+        )
     )
 
     normalize_edilmis: dict[str, list[float | None]] = {}
@@ -713,6 +740,7 @@ def vade_tavsiyesi(
 
 
 __all__ = [
+    "ALAN_YONLERI",
     "KRITER_ETIKETLERI",
     "VADE_IZGARASI",
     "Agirliklar",

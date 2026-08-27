@@ -1,10 +1,13 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 26.08.2026 18:21 · `make eval`_
+_Otomatik üretildi: 27.08.2026 16:18 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> ✅ **Güncel.** Çıkarım 26.08.2026 17:54'de `hibrit` yapılandırmasıyla koştu (1023 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> **BAYAT — bu sayıları sunuma kopyalamayın.**
+> Çıkarım 26.08.2026 17:54'de koştu; çıkarım kodu o tarihten sonra değişti (e2e7423991d16e91 → f33faa847651b5aa).
+> Kayıtlı koşu: `hibrit` yapılandırması, 1023 kayıt.
+> Düzeltmek için: `make extract && make eval`.
 
 ## Veri kapsamı
 
@@ -16,12 +19,12 @@ _Otomatik üretildi: 26.08.2026 18:21 · `make eval`_
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Şema geçerliliği | 1.00 | 1,00 | ✅ |
-| **Halüsinasyon oranı** | %0.45 | ≤ %3 | ✅ |
+| Şema geçerliliği | 1.00 | 1,00 | hedefte |
+| **Halüsinasyon oranı** | %0.45 | ≤ %3 | hedefte |
 | Alan doluluğu | %25.2 | — | — |
 | Ortalama güven | 0.794 | — | — |
-| **Kalkan yanlış blok oranı** | %0.0 | %0 | ✅ |
-| Denetimsiz cevap parçası | %0.0 | %0 | ✅ |
+| **Kalkan yanlış blok oranı** | %0.0 | %0 | hedefte |
+| Denetimsiz cevap parçası | %0.0 | %0 | hedefte |
 
 ## Sayısal doğrulama kalkanı (köken tipli)
 
@@ -33,12 +36,12 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | Parça kökeni | Sayı | Doğrulama ölçütü |
 |---|---|---|
 | `yapisal` | 21 | yapısal kayıtta birebir karşılığı olmalı |
-| `alinti` | 38 | kaynak metnin alt dizesi + sayıları alıntının içinde |
+| `alinti` | 44 | kaynak metnin alt dizesi + sayıları alıntının içinde |
 | `sistem` | 8 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
 | `duz` | 24 | sayı içeremez (yapıcıda denetlenir) |
 | `denetimsiz` | 0 | **miras yol — atlanır ama sayılır** |
 
-> ✅ **Meşru soruların hiçbiri engellenmedi.** 18 Ağustos ölçümünde bu oran %14,3'tü (35 meşru sorunun 5'i): bankanın kendi metnindeki sayılar — bir vaka **6698 sayılı KVKK kanun numarası** — yapısal alanda karşılığı olmadığı için «uydurma» sayılıyordu. Kalkan gevşetilmedi; parçaların kökeni bildirildi ve alıntılar KAYNAĞINA karşı denetlenir oldu. Aynı değişiklik, hesap bölümündeki kör noktayı da kapattı (skor ve ağırlıklar artık yeniden üretiliyor).
+> **Meşru soruların hiçbiri engellenmedi.** 18 Ağustos ölçümünde bu oran %14,3'tü (35 meşru sorunun 5'i): bankanın kendi metnindeki sayılar — bir vaka **6698 sayılı KVKK kanun numarası** — yapısal alanda karşılığı olmadığı için «uydurma» sayılıyordu. Kalkan gevşetilmedi; parçaların kökeni bildirildi ve alıntılar KAYNAĞINA karşı denetlenir oldu. Aynı değişiklik, hesap bölümündeki kör noktayı da kapattı (skor ve ağırlıklar artık yeniden üretiliyor).
 
 ## Yöntem dağılımı (ablasyonun temeli)
 
@@ -88,13 +91,13 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
-| Sayısal alan doğruluğu | 0.930 | ≥ 0,90 | ✅ |
+| Sayısal alan doğruluğu | 0.930 | ≥ 0,90 | hedefte |
 | Metinsel alan doğruluğu | ölçülmedi | ≥ 0,78 | — |
-| **Makro-F1** | 0.818 _(%95 GA: 0.750–0.866)_ | ≥ 0,78 | ✅ |
+| **Makro-F1** | 0.818 _(%95 GA: 0.750–0.866)_ | ≥ 0,78 | hedefte |
 
 > Metinsel alanlar altın sette etiketlenmiyor (ADR 008): yalnız LLM katmanından geliyorlar ve birebir string karşılaştırmasıyla ölçülemezler.
 
-> 📏 **Güven aralığı 98 örnek üzerinden önyükleme (bootstrap) ile hesaplandı** — kayıtlar yerine konarak 400 kez yeniden örneklendi. Aralık genişse sebebi modelin kararsızlığı değil, altın setin küçüklüğüdür. **Sunumda makro-F1 tek başına değil, aralığıyla ve örnek sayısıyla söylenmelidir** — aynı disiplin H-02'de etiketleyici uyumu için de uygulandı.
+> **Güven aralığı 98 örnek üzerinden önyükleme (bootstrap) ile hesaplandı** — kayıtlar yerine konarak 400 kez yeniden örneklendi. Aralık genişse sebebi modelin kararsızlığı değil, altın setin küçüklüğüdür. **Sunumda makro-F1 tek başına değil, aralığıyla ve örnek sayısıyla söylenmelidir** — aynı disiplin H-02'de etiketleyici uyumu için de uygulandı.
 
 ### Alan bazlı doğruluk ve F1
 
@@ -121,6 +124,6 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | `kampanya_bitis` | 28 | 0.949 | 0.714 | 0.862 | 0.893 | **0.877** | 25/4/3 |
 | `kampanya_kosullari` | 0 | — | — | ölçülmedi | ölçülmedi | **ölçülmedi** | 0/0/0 |
 
-> ⚠️ = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem boş olması gereken hücrelere değer yazıyor (yanlış pozitif); önce kesinliği düzeltmek gerekir.
+> = doğruluk «hep boş» tabanının altında. Bu alanlarda sistem boş olması gereken hücrelere değer yazıyor (yanlış pozitif); önce kesinliği düzeltmek gerekir.
 
 > **DP/YP/YN** — doğru pozitif / yanlış pozitif / yanlış negatif. Yanlış değer hem YP hem YN sayılır: uydurulmuş bir değerdir ve aynı anda doğru cevap kaçırılmıştır.

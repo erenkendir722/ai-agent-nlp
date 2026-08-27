@@ -82,6 +82,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Depolama | `src/depolama.py` |
 | Karşılaştırma | `src/comparison/karsilastirma.py` |
 | Chatbot + kalkan | `src/rag/chatbot.py` |
+| Çok turlu sohbet (yuva devri) | `src/rag/baglam.py` |
 | RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
 | Tetikleyici · dinleyici · keşif | `src/izleme/{tetikleyici,dinleyici,kesif}.py` |
@@ -243,6 +244,51 @@ sözlüğündeki «ev» (konut) «ters çEVrilir» içinde bulunuyor ve «Python
 nasıl ters çevrilir?» sorusu üç kaynakla konut kampanyası dökümü alıyordu.
 Üç harf ve altı tam sözcük aranır, yoksa «ev» «evrak»ı da yakalar.
 
+**Eşleştirme ve yön TEK KAYNAKTAN okunur (ADR 023, 27 Ağu).** Üç kopya
+temizlendi, üçü de aynı deseni tekrarlıyordu:
+
+* **Banka eşleştirmesi tip bağımsızdır** — `chatbot.sorulan_bankalar(soru,
+  banka_adlari)`. `_bankalari_bul` (kayıt) ve orkestratördeki `_banka_suz`
+  (kampanya) onun sarmalayıcısı. Profil kolunda banka süzgeci YOKTU: «Albaraka'dan
+  1.000.000 TL konut» dokuz bankayı sıralıyordu. **Banka süzgeci üründen ÖNCE
+  koşar** — sonra koşarsa ad kümesi ürünle daralır ve sorulmayan bankalar geri gelir.
+* **«Hangi uç avantajlı» yalnız `karsilastirma.ALAN_YONLERI`'nde beyan edilir.**
+  Sıralama, avantaj skoru ve chatbot'un tekil cevabı oradan okur. Yön hiçbir
+  kaynakta yoksa (kullanıcı da söylememişse) SIRALAMA YAPILMAZ — uydurulmuş bir
+  yön, sessizce yanlış kaydı vitrine koymaktır. Tekil cevap sıralamayla aynı
+  yönü kullanmak zorunda: «en uzun vadeyi kim veriyor?» ile «Albaraka'nın vadesi
+  ne?» aynı kaydı göstermeli. ADR 020'nin kapsam kapısı da sıralamaya uygulanır.
+* **Kesme işareti özel adı EKİNDEN ayırır** (`normalizasyon.kesmeden_ayir`).
+  `arama_anahtari` kesmeyi siler — tokenizasyon için doğrusu odur — ve
+  `_bankalari_bul`'un `anahtar.replace("'", " ")` satırı bu yüzden ÖLÜYDÜ:
+  «Albaraka'dan» hiçbir bankaya eşleşmiyordu. Çözüm **ek serbestliği DEĞİL**:
+  baş bağlayıp sonu serbest bırakmak «emlakçı»yı Türkiye Emlak'a bağlardı ve
+  `YAKINLIK_ESIGI` o eşleşmeyi ölçerek dışarıda bırakmıştı.
+
+**Sohbet hafızası YUVA DEVRİDİR, sohbet geçmişi değil (ADR 022, 27 Ağu).**
+Chatbot deterministik: cevabı üreten şey kod, doldurulacak bir istem yok.
+Önceki turları bir dil modeline vermenin karşılığı yok; karşılığı olan şey
+anafora çözümü — önceki turda ÇÖZÜLMÜŞ varlıkları (banka · ürün · ölçüt · yön ·
+tutar · vade) sonraki turun BOŞ yuvalarına taşımak. Devir metne yazılır, çünkü
+soruyu okuyan on ayrıştırıcının hepsi metni okuyor; hangi yuvanın boş olduğuna
+ayrıştırıcının KENDİSİ karar verir (`_bankalari_bul`), ikinci bir kopya yok.
+
+Ölçülen kusur şuydu: «1.000.000 TL konut» → sistem «vade eksik» diye SORUYOR,
+gelen «120 ay vade» cevabı muhakeme ajanına hiç ulaşmıyordu. **Bir arayüzün
+kullanıcıya soru sorması, o cevabın gideceği yuvanın var olduğunu taahhüt
+etmektir.**
+
+Dört kısıt gevşetilmez: devir yalnız BOŞ yuvaya (soruda yazılan kazanır) ·
+kapsam kapıları HAM soruya çalışır, devir sonradan (yoksa alakasız soru banka
+devralıp kapsam içi sayılır) · tutar/vade yalnız PROFİL KİPİNDE devrolur ·
+devralınan her yuva cevapta beyan edilir ve beyan kalkandan geçer. Ayrıca
+**korpusa sorulan soru hiçbir yuva devralmaz** ve **yön yalnız ölçütle
+birlikte devrolur** — ikisi de ölçülmüş hatanın karşılığı: devir bir yuvayı
+DOLDURUR, sorunun ŞEKLİNİ değiştirmez.
+
+`make eval` tek turlu koşuyor; bağlamsız çağrı birebir eski cevabı verir ve
+bunu bir nöbetçi denetliyor (`test_baglamsiz_cagri_davranisi_degistirmez`).
+
 **Sessiz yutma yasak.** Gömme hatası da, arama hatası da fırlatılır. Bu kural
 bedava öğrenilmedi: `embed_text` sıfır vektörü, `vektor_ara` boş liste
 döndürdüğü için RAG dört gün hiç çalışmadan çalışıyor göründü. Sıfır vektörü de
@@ -325,7 +371,7 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1442 test)
+make test         # testler (1536 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)

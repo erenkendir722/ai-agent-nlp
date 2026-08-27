@@ -19,16 +19,19 @@ from __future__ import annotations
 import json
 import logging
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
 from enum import StrEnum
 from difflib import get_close_matches
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
 import httpx as _httpx
 import openai as _openai
 
 from src.comparison.karsilastirma import (
+    ALAN_YONLERI,
     OLCUT_KAPSAMI,
     Agirliklar,
     avantaj_skorla,
@@ -36,7 +39,7 @@ from src.comparison.karsilastirma import (
     uyarilar,
 )
 from src.depolama import KampanyaKaydi, tum_kayitlar
-from src.preprocessing.normalizasyon import arama_anahtari
+from src.preprocessing.normalizasyon import arama_anahtari, kesmeden_ayir
 from src.terim_sozlugu import (
     alan_eslemesi,
     hesaplanan_olcutler,
@@ -55,6 +58,9 @@ from src.schema import (
     tur_etiketi,
 )
 from src.vektor_db import IndeksYok, vektor_ara
+
+if TYPE_CHECKING:  # `baglam` bu modülü içe aktarır — halka koşum anında kurulmaz
+    from src.rag.baglam import Devir, SohbetBaglami
 
 log = logging.getLogger(__name__)
 
@@ -167,6 +173,13 @@ class Cevap:
     uyarilar: list[str] = field(default_factory=list)
     dogrulama_gecti: bool = True
     reddedilen_sayilar: list[str] = field(default_factory=list)
+    baglam: "SohbetBaglami | None" = None
+    """Bu turdan SONRAKİ sohbet bağlamı — çağıranın saklayıp bir sonraki
+    `sor()` çağrısına geri vereceği yuvalar (bkz. `src/rag/baglam.py`).
+
+    Cevaba bağlı duruyor, çünkü bağlamı kuran şey sorunun kendisi değil
+    CEVABIN kullandığı kayıtlar: «en yüksek kâr payını hangi banka
+    veriyor?» sorusunda banka adı geçmez, cevapta geçer."""
 
     def __init__(
         self,
@@ -178,6 +191,7 @@ class Cevap:
         dogrulama_gecti: bool = True,
         reddedilen_sayilar: list[str] | None = None,
         *,
+        baglam: "SohbetBaglami | None" = None,
         metin: str | None = None,
         dogrulanacak_metin: str | None = None,
     ) -> None:
@@ -204,6 +218,7 @@ class Cevap:
         self.reddedilen_sayilar = (
             reddedilen_sayilar if reddedilen_sayilar is not None else []
         )
+        self.baglam = baglam
 
     @property
     def metin(self) -> str:
@@ -346,7 +361,19 @@ def _bitisik_anahtar(metin: str) -> str:
     return arama_anahtari(metin).replace(".", "").replace(" ", "")
 
 
-def _benzersiz_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
+def _sozcuklere_ayir(soru: str) -> list[str]:
+    """Sorunun eşleştirilebilir sözcükleri — KESME EKİ AYRILMIŞ olarak.
+
+    `kesmeden_ayir` NORMALİZASYONDAN ÖNCE çağrılır; sırası tersine dönerse
+    kesme zaten silinmiş olur ve ek özel ada yapışık kalır. Buradaki satır
+    eskiden `anahtar.replace("'", " ")` idi ve tam olarak bu yüzden ÖLÜYDÜ —
+    «Albaraka'dan» hiçbir bankaya eşleşmiyordu (bkz. `kesmeden_ayir`).
+    """
+    temiz = kesmeden_ayir(soru).replace("?", " ").replace(",", " ")
+    return arama_anahtari(temiz).split()
+
+
+def _benzersiz_sozcukler(banka_adlari: Iterable[str]) -> dict[str, str]:
     """Adında TEK bir bankaya ait sözcükler: sözcük -> banka.
 
     «albaraka», «ziraat», «vakif» tek bir kurumu işaret eder; «turkiye» ise
@@ -372,7 +399,7 @@ def _benzersiz_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
     kilitlenirdi.
     """
     sozcuk_bankalari: dict[str, set[str]] = {}
-    for banka in {k.banka_adi for k in kayitlar}:
+    for banka in set(banka_adlari):
         for sozcuk in arama_anahtari(banka).split():
             # Anahtar `_bitisik_anahtar`'dan geçer: «T.O.M.» adı korpusta
             # noktalı, kullanıcı «TOM» yazıyor. Nokta iki tarafta da atılmazsa
@@ -384,7 +411,7 @@ def _benzersiz_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
     return {s: next(iter(b)) for s, b in sozcuk_bankalari.items() if len(b) == 1}
 
 
-def _benzersiz_ikililer(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
+def _benzersiz_ikililer(banka_adlari: Iterable[str]) -> dict[str, str]:
     """Adında TEK bir bankaya ait KOMŞU SÖZCÜK İKİLİLERİ: bitişik anahtar -> banka.
 
     Çekirdek (ilk iki sözcük) adın başını yakalar; kullanıcı ortasından da
@@ -396,7 +423,7 @@ def _benzersiz_ikililer(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
     bankası» dokuzunda geçtiği için benzersizlik kapısını geçemiyor.
     """
     ikili_bankalari: dict[str, set[str]] = {}
-    for banka in {k.banka_adi for k in kayitlar}:
+    for banka in set(banka_adlari):
         parcalar = arama_anahtari(banka).split()
         for once, sonra in zip(parcalar, parcalar[1:], strict=False):
             if _GENEL_BANKA_SOZCUKLERI.issuperset({once, sonra}):
@@ -449,8 +476,17 @@ def _yakin_banka(
     return None
 
 
-def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
-    """Sorudaki banka adlarını kayıtlarla eşler.
+def sorulan_bankalar(soru: str, banka_adlari: Iterable[str]) -> list[str]:
+    """Soruda adlandırılan banka ADLARI — kayıt tipinden bağımsız.
+
+    DIŞA AÇIK, çünkü profil kolu (`ajanlar.orkestrator`) da aynı ayrımı
+    yapmak zorunda ve orada elde `KampanyaKaydi` değil `Kampanya` var.
+    Eşleştirmeyi ikinci kez yazmak bu depoda ölçülmüş bir hata: 27 Ağustos'ta
+    `alan_disi_soru` kopyası geride kaldı ve aynı soruya iki kapı iki farklı
+    cevap verdi. `sorulan_urun`/`urun_etiketi_uyar` de aynı sebeple dışa açık.
+
+    Eşleştirmenin banka adından başka hiçbir alana bakmaması bu ayrımı
+    mümkün kılıyor: girdi bir ad kümesi, çıktı eşleşen adlar.
 
     İKİ ÖLÇÜT — ölçülmüş hata (25 Ağustos, S-10):
         Eskiden yalnız «ilk iki sözcük» aranıyordu (`albaraka turk`). Ama
@@ -463,40 +499,41 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
         «turkiye» iki bankaya ait olduğu için tek başına eşleşmez; orada
         ikinci sözcük gerekir. Böylece kolaylık, karışıklık pahasına gelmiyor.
     """
+    adlar = list(dict.fromkeys(ad for ad in banka_adlari if ad))
     anahtar = arama_anahtari(soru)
     bitisik = _bitisik_anahtar(soru)
-    tekil_adlar = _benzersiz_sozcukler(kayitlar)
-    tekil_ikililer = _benzersiz_ikililer(kayitlar)
+    tekil_adlar = _benzersiz_sozcukler(adlar)
+    tekil_ikililer = _benzersiz_ikililer(adlar)
     sozcukler = {
         _bitisik_anahtar(sozcuk)
-        for sozcuk in anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split()
+        for sozcuk in _sozcuklere_ayir(soru)
     }
 
-    eslesen: list[KampanyaKaydi] = []
-    for kayit in kayitlar:
-        banka_anahtari = arama_anahtari(kayit.banka_adi)
+    eslesen: list[str] = []
+    for banka_adi in adlar:
+        banka_anahtari = arama_anahtari(banka_adi)
         parcalar = banka_anahtari.split()
         cekirdek = " ".join(parcalar[:2])
         # İki yazım da kabul: «kuveyt türk» ve «kuveyttürk» (bkz. `_bitisik_anahtar`).
         if cekirdek and (
             cekirdek in anahtar or _bitisik_anahtar(cekirdek) in bitisik
         ):
-            eslesen.append(kayit)
+            eslesen.append(banka_adi)
             continue
         # Adın ORTASINDAN tutan benzersiz ikili: «emlak katılım», «emlakkatılım».
         if any(
             ikili in bitisik
             for ikili, banka in tekil_ikililer.items()
-            if banka == kayit.banka_adi
+            if banka == banka_adi
         ):
-            eslesen.append(kayit)
+            eslesen.append(banka_adi)
             continue
         if any(
-            tekil_adlar.get(_bitisik_anahtar(parca)) == kayit.banka_adi
+            tekil_adlar.get(_bitisik_anahtar(parca)) == banka_adi
             and _bitisik_anahtar(parca) in sozcukler
             for parca in parcalar
         ):
-            eslesen.append(kayit)
+            eslesen.append(banka_adi)
 
     if eslesen:
         return eslesen
@@ -504,7 +541,7 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
     # YAZIM HATASI — «albraka», «kuvet türk». Yalnız burada, yani kesin
     # eşleşme hiç bulunamadığında denenir (bkz. `_yakin_banka`).
     anahtar_banka: dict[str, str] = {**tekil_adlar, **tekil_ikililer}
-    for kayit_adi in {k.banka_adi for k in kayitlar}:
+    for kayit_adi in adlar:
         anahtar_banka[_bitisik_anahtar(" ".join(arama_anahtari(kayit_adi).split()[:2]))] = kayit_adi
 
     # BELİRTEÇ SÖZCÜKLERİ YAKINLIĞA GİRMEZ.
@@ -515,7 +552,7 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
     # hatası yok. `_BELIRTEC_SOZCUKLERI` bu ayrımı zaten tutuyor.
     parcali = [
         sozcuk
-        for sozcuk in anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split()
+        for sozcuk in _sozcuklere_ayir(soru)
         if sozcuk not in _BELIRTEC_SOZCUKLERI and sozcuk not in _GENEL_BANKA_SOZCUKLERI
     ]
     tekil_sozcukler = [_bitisik_anahtar(sozcuk) for sozcuk in parcali]
@@ -525,9 +562,13 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
     ]
 
     yakin_ad = _yakin_banka(tekil_sozcukler, anahtar_banka)
-    if yakin_ad is None:
-        return []
-    return [k for k in kayitlar if k.banka_adi == yakin_ad]
+    return [] if yakin_ad is None else [yakin_ad]
+
+
+def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
+    """Sorudaki banka adlarını KAYITLARLA eşler — `sorulan_bankalar`'ın sarmalayıcısı."""
+    adlar = set(sorulan_bankalar(soru, (k.banka_adi for k in kayitlar)))
+    return [k for k in kayitlar if k.banka_adi in adlar]
 
 
 _GENEL_BANKA_SOZCUKLERI = frozenset(
@@ -1117,6 +1158,58 @@ def _suresi_dolmus(kayit: KampanyaKaydi, bugun: date | None = None) -> bool:
     return bitis is not None and bitis < (bugun or date.today())
 
 
+def _siralanabilir(kayit: KampanyaKaydi, alan: str) -> bool:
+    """Bu kaydın bu alanı SIRALAMAYA girebilir mi?
+
+    Dolu olmak yetmez, KAPSAMDA da olmalı (ADR 020): bir kart taksit
+    promosyonunun `%0`'ı teknik olarak dolu bir hücredir ama bir finansman
+    maliyeti değildir. Kapı `olcut_kapsaminda`'dır — sıralama, karşılaştırma
+    ve tekil cevap aynı kapıdan geçer, kopya tutulmaz.
+
+    Kapı YALNIZ SIRALAMAYA uygulanır, kaydın seçilebilirliğine değil:
+    «sorulan alanı taşıyan kayıt önceliklidir» kuralı (jüri havuzu 1. madde)
+    kapsamdan bağımsız durur, yoksa `kampanya_turu` boş olan bir kaydın
+    yazdığı oran hiç görünmez olurdu.
+    """
+    return getattr(kayit, alan, None) is not None and olcut_kapsaminda(kayit, alan)
+
+
+def _odak_sirasi(kayit: KampanyaKaydi, alan: str | None, yon: str | None) -> float:
+    """Sorulan ölçütün değeri, AVANTAJLI UÇ BÜYÜK olacak biçimde.
+
+    NEDEN VAR — 27 Ağustos'ta ölçüldü:
+
+        soru  : «Albaraka … 120 ay vade»
+        cevap : «Albaraka Türk — Diğer: … Azami vade: 6 ay»
+
+    Kayıt yalnız DOLULUĞA göre seçiliyordu; doluluk sorudan bağımsız bir ölçü.
+    Sorulan alanı taşıyan kayıt tercih ediliyordu (jüri havuzu 1. madde) ama
+    taşıyanlar arasında sıra yoktu, yani vadeyi soran kullanıcıya bankanın EN
+    KISA vadesi gösterilebiliyordu.
+
+    Yön İKİ KAYNAKTAN gelir ve ikisi de zaten var:
+
+      * Kullanıcı söylediyse ondan — «en düşük kâr payı» (`_sorulan_yon`).
+      * Söylemediyse `ALAN_YONLERI`'nden: karşılaştırma motorunun hangi ucu
+        avantajlı saydığı bilgisi. Tekil cevabın sıralamayla aynı yönü
+        kullanması bir tutarlılık şartı — «en uzun vadeyi kim veriyor?»
+        cevabıyla «Albaraka'nın vadesi ne?» cevabı aynı kaydı göstermeli.
+
+    Yön hiçbir kaynakta beyan edilmemişse SIRALAMA YAPILMAZ (0.0 döner) ve
+    karar eski ölçüte, dolulukla, bırakılır. Uydurulmuş bir yön, sessizce
+    yanlış kaydı vitrine koymak olurdu.
+    """
+    if alan is None or not _siralanabilir(kayit, alan):
+        return float("-inf")
+    # `_sorulan_yon` KÖKÜ döndürür («yuksek»), `Yon` ise «yuksek_iyi». İkisi
+    # `test_yon_sozcukleri_karsilastirma_yonleriyle_ortusur` ile kilitli.
+    tercih = f"{yon}_iyi" if yon else ALAN_YONLERI.get(alan)
+    if tercih is None:
+        return 0.0
+    deger = float(getattr(kayit, alan))
+    return -deger if tercih == "dusuk_iyi" else deger
+
+
 def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     if not kayitlar:
         return Cevap(
@@ -1144,10 +1237,12 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # `_sorulan_olcut` tek bir alan döndürür (sıralamada odak odur); burada
     # hepsi gerekir, yoksa ikisinden birini taşıyan kayıt yeterli sanılır.
     odaklar = [a for a in _sorulan_olcutler(soru) if a != "masrafsiz_mi"]
+    odak = odaklar[0] if odaklar else None
+    yon = _sorulan_yon(soru)
 
-    def _uygunluk(kayit: KampanyaKaydi) -> tuple[int, float]:
+    def _uygunluk(kayit: KampanyaKaydi) -> tuple[int, float, float]:
         tasidigi = sum(getattr(kayit, alan, None) is not None for alan in odaklar)
-        return (tasidigi, kayit.doluluk_orani)
+        return (tasidigi, _odak_sirasi(kayit, odak, yon), kayit.doluluk_orani)
 
     kayit = max(kayitlar, key=_uygunluk)
     bank_name = "Kuveyt Türk Katılım Bankası A.Ş." if "Örnek" in kayit.banka_adi else kayit.banka_adi
@@ -2251,9 +2346,44 @@ def _kosul_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
 # ---------------------------------------------------------------------------
 
 
-def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
-    """Chatbot'un tek giriş noktası."""
+def sor(
+    soru: str,
+    kayitlar: list[KampanyaKaydi] | None = None,
+    *,
+    baglam: "SohbetBaglami | None" = None,
+) -> Cevap:
+    """Chatbot'un tek giriş noktası.
+
+    `baglam` verilirse ÇOK TURLU sohbet açılır: önceki turun çözülmüş
+    yuvaları bu sorunun BOŞ yuvalarına devredilir, devredilen her yuva
+    cevapta beyan edilir ve bir sonraki tur için yeni bağlam `cevap.baglam`
+    alanında döner. Ayrıntı ve gerekçe: `src/rag/baglam.py`.
+
+    Verilmezse davranış BİREBİR eskisidir. `make eval` bu parametreyi hiç
+    kullanmıyor — tek turlu koşuyor, dolayısıyla ölçülen sayılar değişmez.
+    """
+    # HALKA KIRICI İÇE AKTARIM: `baglam` bu modülün ayrıştırıcılarına dayanır
+    # (ikinci bir kopya yazmamak için), dolayısıyla modül düzeyinde içe
+    # alınamaz. Tek yer burası — `_cevapla` devri hazır alıyor.
+    from src.rag.baglam import baglam_guncelle, soruyu_tamamla
+
     kayitlar = tum_kayitlar() if kayitlar is None else kayitlar
+    devir = soruyu_tamamla(soru, baglam, kayitlar)
+    cevap = _cevapla(soru, kayitlar, devir)
+    cevap.baglam = baglam_guncelle(devir.soru, cevap, baglam)
+    return cevap
+
+
+def _cevapla(
+    soru: str, kayitlar: list[KampanyaKaydi], devir: "Devir"
+) -> Cevap:
+    """Kapsam kapıları, yönlendirme, cevap üretimi ve kalkan.
+
+    `devir` YUVA DEVRİNİ taşır ama burada HEMEN uygulanmaz: önce kapsam
+    kapıları HAM soruya çalışır. Sıra tersine dönseydi bağlam kalkanı
+    delerdi — «Python'da liste nasıl ters çevrilir?» sorusu önceki turdan
+    banka devralıp kapsam içi sayılırdı (bkz. `baglam.py`, kural 2).
+    """
     niyet = niyet_belirle(soru)
 
     # TANIM SORULUYORSA kampanya değil, sözlük dönmeli. Kapsam kapısından
@@ -2327,6 +2457,12 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     if segment_yok is not None:
         return segment_yok
 
+    # --- YUVA DEVRİ --- Bütün kapsam kapıları ham soruya çalıştı; soru
+    # meşru ve cevaplanabilir. Boş yuvalar ancak buradan sonra doldurulur.
+    if devir.var_mi():
+        soru = devir.soru
+        niyet = niyet_belirle(soru)
+
     ilgili = _bankalari_bul(soru, kayitlar) or kayitlar
     ilgili = _urun_filtrele(soru, ilgili)
     # Segment adlandırılmışsa küme ona daralır (bkz. `_segment_filtrele`).
@@ -2342,6 +2478,11 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
         cevap = _karsilastirma_cevabi(soru, ilgili)
     else:
         cevap = _kosul_cevabi(soru, ilgili)
+
+    # DEVİR BEYANI KALKANDAN ÖNCE EKLENİR — beyan da denetlenen bir iddia.
+    beyan = devir.parca()
+    if beyan is not None:
+        cevap.parcalar.append(beyan)
 
     # --- KÖKEN TİPLİ SAYISAL DOĞRULAMA KALKANI ---
     gecti, reddedilen = kalkandan_gecir(cevap, cevap.kullanilan_kayitlar)
@@ -2375,4 +2516,5 @@ __all__ = [
     "niyet_belirle",
     "sayisal_dogrulama",
     "sor",
+    "sorulan_bankalar",
 ]

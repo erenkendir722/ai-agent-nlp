@@ -387,6 +387,28 @@ Kullanıcı sorusu
 yapısal veriden gelir.* Metin arama yalnız *"kampanya koşulları neler?"* gibi
 metinsel sorulara hizmet eder.
 
+### Çok turlu sohbet — yuva devri
+
+Takip sorusu, önceki turda **çözülmüş** varlıkları (banka · ürün · ölçüt ·
+yön · tutar · vade) kendi **boş** yuvalarına devralır
+([ADR 022](kararlar/022-sohbet-baglami.md), `src/rag/baglam.py`):
+
+```
+tur 1  «Albaraka en yüksek kâr payı oranı ne?»   → Albaraka, aylık %2,87
+tur 2  «120 ay vade»                             → hâlâ Albaraka
+tur 3  «peki Kuveyt Türk?»                       → banka değişir, ölçüt kalır
+```
+
+Bu bir sohbet geçmişi değil, **anafora çözümüdür**: cevabı üreten şey kod
+olduğu için doldurulacak bir istem yok. Dört kısıt gevşetilmez — devir yalnız
+boş yuvaya (soruda yazılan kazanır) · kapsam kapıları **ham** soruya çalışır,
+devir sonradan · tutar ve vade yalnız profil kipinde devrolur · devralınan her
+yuva cevapta beyan edilir ve beyan kalkandan geçer.
+
+Kazancın en somutu profil kolunda: sistem *«vade eksik»* diye sorduğunda gelen
+cevap artık o yuvaya oturuyor. Öncesinde sistem soruyu soruyor, cevabını
+kullanamıyordu.
+
 ### Dayanak denetimi — kalkanın göremediği hata
 
 Kalkan *"bu sayı kayıtta var mı?"* diye sorar. Sormadığı bir soru vardı:
