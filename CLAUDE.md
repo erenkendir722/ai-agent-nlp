@@ -201,6 +201,22 @@ beşinde kâr payı verisinin TAMAMI bu türdendi. Kapı
 chatbot aynı kapıdan geçer — kopya tutma. Kapsam dışı kayıt SİLİNMEZ, yalnız
 sıralamadan düşer. Ayrıntı: [ADR 020](docs/kararlar/020-olcut-kapsami.md).
 
+**Sayı BİRİMİNE bağlanır — `para_ayristir` metnin ilk sayısını almaz.**
+Eski kod «metinde TL geçiyor mu?» diye sorup ilk sayıyı alıyordu; ikisi
+arasında bağ yoktu. «120 ay vadeli 1.000.000 TL konut finansmanı» → **120 TL**.
+Profil ekranı bunu «120 TL · 120 ay» diye çözüp 357 kampanyayı uygun buluyordu.
+`_AY_DESENI` vadeyi ilk günden birimine bağlıyordu; tutar bağlanmamıştı.
+Çarpan sözcüğü de bağlıdır: «bin» artık metnin herhangi bir yerinden değil,
+sayının yanından okunur.
+
+**Müşteri tipi eksikse SORULMAZ, tutar ve vade eksikse sorulur.** Ayrım
+tahmin edilenin sonuca ne yaptığıdır: tutar ve vade taksit ile toplam maliyet
+formülüne girer, uydurulan değer cevaptaki her sayıyı yanlışlar. Müşteri tipi
+hiçbir hesaba girmez, yalnız süzer — bilinmiyorken süzmemek dürüst olanıdır ve
+cevapta «müşteri tipi belirtilmedi» diye yazılır. Bu olmadan şartname jürisinin
+soru havuzundaki «120 ay vadeli 1.000.000 TL konut finansmanı için en düşük kâr
+payı oranını hangi banka sunuyor?» sorusuna cevap değil soru dönüyordu.
+
 **Terim eşleştirmesi ALT DİZE değil, sözcük başıdır.** `chatbot.terim_gecer`
 baştan bağlar, sonu serbest bırakır — Türkçe eklemeli olduğu için «vade»
 «vadesi»ni bulmalı. Alt dize araması sessizce yanlış eşleşiyordu: ürün

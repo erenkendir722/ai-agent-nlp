@@ -274,3 +274,52 @@ def test_reddedilen_sayi_cevaba_yazilmaz(tek_banka) -> None:
 def test_emin_olunmayan_iddia_reddedilmez(tek_banka, soru: str) -> None:
     """Emin olunmayan yerde susulur — «Hayır» yalnız tavan aşıldığında."""
     assert not sor(soru, tek_banka).metin.startswith("**Hayır.**")
+
+
+# ---------------------------------------------------------------------------
+# Tekil cevap: sorulan alanı taşıyan kayıt, yoksa «Belirtilmemiş» (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# Jüri havuzu 1. madde: «Kuveyt Türk'ün konut finansmanı kâr payı oranı ve
+# maksimum vade süresi nedir?» Kayıt «en dolu» olana göre seçiliyordu —
+# doluluk sorudan bağımsız bir ölçü. Seçilen kaydın oranı boştu ve satır hiç
+# yazılmıyordu; kullanıcı sorduğu şeyin cevabını göremiyordu.
+
+
+def _banka(kimlik: str, **alanlar: object) -> KampanyaKaydi:
+    return _kayit(kimlik, banka_adi="K Katılım Bankası A.Ş.", **alanlar)
+
+
+def test_sorulan_alani_tasiyan_kayit_secilir() -> None:
+    """En dolu kayıt değil, SORULANI taşıyan kayıt."""
+    kayitlar = [
+        # daha dolu ama oranı yok
+        _banka("dolu", vade_ay_max=120, finansman_tutari_max=5_000_000.0,
+               odul_miktari=1_000.0, doluluk_orani=0.9),
+        _banka("oranli", kar_payi_orani=1.89, vade_ay_max=60, doluluk_orani=0.4),
+    ]
+    cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
+    assert "1,89" in cevap.metin, cevap.metin
+
+
+def test_iki_olcut_sorulunca_ikisini_tasiyan_secilir() -> None:
+    """«Kâr payı oranı VE maksimum vade» — biri yeterli sayılmamalı."""
+    kayitlar = [
+        _banka("yalniz_vade", vade_ay_max=120, doluluk_orani=0.9),
+        _banka("ikisi", kar_payi_orani=1.89, vade_ay_max=60, doluluk_orani=0.3),
+    ]
+    cevap = sor("K Katılım kâr payı oranı ve maksimum vade süresi nedir", kayitlar)
+    assert "1,89" in cevap.metin and "60 ay" in cevap.metin, cevap.metin
+
+
+def test_sorulan_alan_hicbir_kayitta_yoksa_belirtilmemis_yazilir() -> None:
+    """Sessizce atlamak, soruyu anlamamış görünmektir.
+
+    Jüri havuzu 26. madde: «açıkça yazmıyorsa sistem tahminde bulunuyor mu
+    yoksa Belirtilmemiş mi diyor?» — cevabın ekranda görünmesi gerekiyor.
+    """
+    kayitlar = [_banka("oransiz", vade_ay_max=120, doluluk_orani=0.9)]
+    cevap = sor("K Katılım kâr payı oranı kaç", kayitlar)
+
+    assert "Kâr payı oranı: **Belirtilmemiş**" in cevap.metin
+    assert cevap.dogrulama_gecti

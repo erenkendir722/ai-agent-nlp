@@ -226,3 +226,37 @@ def test_tur_adlandiran_soru_yabanci_sayilmaz(korpus, soru: str) -> None:
     düşer — «En yüksek ödülü hangi banka veriyor?» bir zamanlar düşüyordu.
     """
     assert not yabanci_banka_soruluyor(soru, korpus)
+
+
+# ---------------------------------------------------------------------------
+# Adın ORTASINDAN tutan yazımlar (27 Ağustos, jüri havuzu 5. madde)
+# ---------------------------------------------------------------------------
+#
+#     soru  : «Emlak Katılım'ın konut finansmanı kâr payı oranı nedir?»
+#     cevap : «Türkiye Finans Katılım Bankası A.Ş. — Konut Finansmanı …»
+#
+# Korpustaki ad «Türkiye Emlak Katılım Bankası A.Ş.»; çekirdek «turkiye emlak»,
+# ilk sözcük «turkiye» ve o İKİ bankaya ait. Kullanıcının söylediği «emlak»
+# hiçbir kapıdan geçmiyor, yedek devreye girip BAŞKA bankanın verisini
+# sunuyordu — `yabanci_banka_soruluyor`'un önlemeye çalıştığı hatanın aynısı.
+
+
+@pytest.mark.parametrize(
+    "yazim",
+    ["Emlak Katılım", "emlak katılım", "emlakkatılım", "emlak katılımın oranı"],
+)
+def test_adin_ortasindan_tutan_yazim_eslesir(korpus, yazim: str) -> None:
+    bulunan = {k.banka_adi for k in _bankalari_bul(yazim, korpus)}
+    assert bulunan == {"Türkiye Emlak Katılım Bankası A.Ş."}, sorted(bulunan)
+
+
+def test_tur_adlandiran_sozcuk_banka_sayilmaz(korpus) -> None:
+    """«katılım», «bankası», «finans» bir kurumu değil türü adlandırır.
+
+    Benzersizlik kapısı bugünkü korpusta zaten eliyor; küme tek bankaya
+    süzüldüğünde eleme kalmadığı için ayrıca yazılı bir kapı var.
+    """
+    tek_banka = [k for k in korpus if k.banka_adi.startswith("Vakıf")]
+    assert tek_banka, "test kurgusu bozuk"
+    for soru in ("hangi banka daha avantajlı", "katılım bankacılığı nedir"):
+        assert _bankalari_bul(soru, tek_banka) == [], soru

@@ -326,3 +326,43 @@ def test_vade_ustu_sinir():
     )
     alan = alanlar.get("vade_ay_max")
     assert alan is None or not alan.var_mi
+
+
+class TestTutarBirimeBagli:
+    """Sayı PARA BİRİMİNE bağlı olmalı — 27 Ağustos, jüri havuzu 9. madde.
+
+    Eski kod «metinde TL geçiyor mu?» diye sorup metnin İLK sayısını alıyordu;
+    ikisi arasında hiçbir bağ yoktu:
+
+        «120 ay vadeli 1.000.000 TL konut finansmanı»  ->  120 TL
+
+    Profil ekranı bunu «mevcut_musteri · 120 TL · 120 ay» diye çözüyor ve
+    357 kampanyayı uygun buluyordu; sorulan 1.000.000 TL hiç görülmedi.
+    """
+
+    @pytest.mark.parametrize(
+        ("metin", "beklenen"),
+        [
+            ("120 ay vadeli 1.000.000 TL konut finansmanı", 1_000_000.0),
+            ("36 ay vade, 250.000 TL tutar", 250_000.0),
+            ("12 taksitte 5.000 TL harcama", 5_000.0),
+            # çarpan sözcüğü de sayıya BİTİŞİK olmalı
+            ("1,5 milyon TL", 1_500_000.0),
+            ("36 ay, bin TL'lik harcama", 1_000.0),
+            # eski kod buradaki «bin»i 36'ya uygulayıp 36.000 üretiyordu
+            ("36 ay vadeli 250.000 TL, bin TL hediye", 250_000.0),
+        ],
+    )
+    def test_birime_bagli_sayi_secilir(self, metin: str, beklenen: float) -> None:
+        assert para_ayristir(metin) == pytest.approx(beklenen)
+
+    def test_birimsiz_sayi_tutar_sayilmaz(self) -> None:
+        assert para_ayristir("120 ay vadeli konut finansmanı") is None
+
+    def test_ciplak_birim_deger_uretmez(self) -> None:
+        """«TL cinsinden» bir tutar beyan etmez."""
+        assert para_ayristir("TL cinsinden ödeme") is None
+
+    def test_birim_zorunlu_degilken_ilk_sayi_alinir(self) -> None:
+        """Çıpa yoksa bağlanacak bir şey de yok — eski davranış korunur."""
+        assert para_ayristir("50.000", birim_zorunlu=False) == 50_000.0

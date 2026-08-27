@@ -42,7 +42,15 @@ from src.schema import AYLIK_KAR_PAYI_UST_SINIRI, HedefKitle, Kampanya
 class MusteriProfili:
     """Banka çalışanının önündeki müşteri."""
 
-    musteri_tipi: HedefKitle
+    musteri_tipi: HedefKitle | None
+    """`None` = BELİRTİLMEMİŞ; müşteri tipi kısıtı uygulanmaz.
+
+    Tahmin DEĞİLDİR, beyandır: tip bilinmediğinde onu «yeni müşteri» saymak
+    kampanyaları sessizce eler. Tutar ve vade aynı şeyi yapamaz — onlar
+    taksit ve toplam maliyet hesabına girer, uydurulmuş bir değer her sayıyı
+    yanlışlar. Müşteri tipi hiçbir hesaba girmez, yalnız SÜZER; bilinmiyorken
+    süzmemek dürüst olanıdır ve cevapta ayrıca yazılır.
+    """
     tutar: float
     vade_ay: int
     mevcut_urunler: list[str] = field(default_factory=list)
@@ -53,8 +61,9 @@ class MusteriProfili:
     öğrenciye önermemek için ad ayrıca tutulur."""
 
     def ozet(self) -> str:
+        tip = self.musteri_tipi.value if self.musteri_tipi else "müşteri tipi belirtilmedi"
         return (
-            f"{self.musteri_tipi.value} · {self.tutar:,.0f} TL · {self.vade_ay} ay"
+            f"{tip} · {self.tutar:,.0f} TL · {self.vade_ay} ay"
         ).replace(",", ".")
 
 
@@ -120,6 +129,8 @@ class MuhakemeAjani:
         kosul = kampanya.uygunluk
         if kosul is None or not kosul.musteri_tipi:
             return None  # kısıt yok = herkese açık
+        if profil.musteri_tipi is None:
+            return None  # tip belirtilmedi = bu kısıt uygulanmaz
 
         hedefler = set(kosul.musteri_tipi)
         if HedefKitle.TUM_MUSTERILER in hedefler or profil.musteri_tipi in hedefler:

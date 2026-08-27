@@ -335,24 +335,65 @@ def _bitisik_anahtar(metin: str) -> str:
     return arama_anahtari(metin).replace(".", "").replace(" ", "")
 
 
-def _benzersiz_ilk_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
-    """İlk sözcüğü TEK bir bankaya ait olan adları döndürür: sözcük -> banka.
+def _benzersiz_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
+    """Adında TEK bir bankaya ait sözcükler: sözcük -> banka.
 
     «albaraka», «ziraat», «vakif» tek bir kurumu işaret eder; «turkiye» ise
     ikisini birden (Türkiye Emlak, Türkiye Finans) — o yüzden dışarıda kalır.
     Ayrım veriden türer, elle yazılmaz: yeni bir banka eklendiğinde
     benzersizlik kendiliğinden yeniden hesaplanır.
+
+    İLK SÖZCÜKLE SINIRLI DEĞİL (27 Ağustos, jüri havuzu 5. madde):
+
+        soru  : «Emlak Katılım'ın konut finansmanı kâr payı oranı nedir?»
+        cevap : «Türkiye Finans Katılım Bankası A.Ş. — Konut Finansmanı …»
+
+        Korpustaki ad «Türkiye Emlak Katılım Bankası A.Ş.»; çekirdek «turkiye
+        emlak», ilk sözcük «turkiye» ve o ikiye ait. Kullanıcının söylediği
+        «emlak» hiçbir kapıdan geçmiyor, yedek devreye girip BAŞKA bankanın
+        verisini sunuyordu.
+
+    Bugünkü korpusta bu, listeye tam olarak «emlak» sözcüğünü ekler: «türk»,
+    «finans», «katılım», «bankası» birden çok banka adında geçtiği için
+    benzersizlik kapısını zaten geçemiyor. Yine de tür adlandıran sözcükler
+    ayrıca elenir — dokuz banka bire düşerse («tek bankalık süzülmüş küme»)
+    «bankası» benzersiz hâle gelir ve «hangi banka?» sorusu o bankaya
+    kilitlenirdi.
     """
-    ilk_sozcuk_bankalari: dict[str, set[str]] = {}
+    sozcuk_bankalari: dict[str, set[str]] = {}
     for banka in {k.banka_adi for k in kayitlar}:
-        sozcukler = arama_anahtari(banka).split()
-        if sozcukler:
+        for sozcuk in arama_anahtari(banka).split():
             # Anahtar `_bitisik_anahtar`'dan geçer: «T.O.M.» adı korpusta
             # noktalı, kullanıcı «TOM» yazıyor. Nokta iki tarafta da atılmazsa
-            # o banka ilk sözcüğüyle hiç çağrılamaz.
-            ilk = _bitisik_anahtar(sozcukler[0])
-            ilk_sozcuk_bankalari.setdefault(ilk, set()).add(banka)
-    return {s: next(iter(b)) for s, b in ilk_sozcuk_bankalari.items() if len(b) == 1}
+            # o banka o sözcükle hiç çağrılamaz.
+            anahtar = _bitisik_anahtar(sozcuk)
+            if len(anahtar) < 3 or anahtar in _GENEL_BANKA_SOZCUKLERI:
+                continue
+            sozcuk_bankalari.setdefault(anahtar, set()).add(banka)
+    return {s: next(iter(b)) for s, b in sozcuk_bankalari.items() if len(b) == 1}
+
+
+def _benzersiz_ikililer(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
+    """Adında TEK bir bankaya ait KOMŞU SÖZCÜK İKİLİLERİ: bitişik anahtar -> banka.
+
+    Çekirdek (ilk iki sözcük) adın başını yakalar; kullanıcı ortasından da
+    tutabiliyor. «Türkiye Emlak Katılım Bankası A.Ş.» için «emlak katılım»
+    ikilisi tek bir bankaya ait ve insanlar bankayı böyle anıyor.
+
+    Bugünkü korpusta bu, listeye tam olarak «emlak katilim» ikilisini ekler:
+    «türk katılım» iki bankada, «finans katılım» iki bankada, «katılım
+    bankası» dokuzunda geçtiği için benzersizlik kapısını geçemiyor.
+    """
+    ikili_bankalari: dict[str, set[str]] = {}
+    for banka in {k.banka_adi for k in kayitlar}:
+        parcalar = arama_anahtari(banka).split()
+        for once, sonra in zip(parcalar, parcalar[1:], strict=False):
+            if _GENEL_BANKA_SOZCUKLERI.issuperset({once, sonra}):
+                continue  # «katılım bankası» bir kurumu adlandırmaz
+            ikili_bankalari.setdefault(
+                _bitisik_anahtar(f"{once} {sonra}"), set()
+            ).add(banka)
+    return {s: next(iter(b)) for s, b in ikili_bankalari.items() if len(b) == 1}
 
 
 def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
@@ -371,7 +412,8 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
     """
     anahtar = arama_anahtari(soru)
     bitisik = _bitisik_anahtar(soru)
-    tekil_adlar = _benzersiz_ilk_sozcukler(kayitlar)
+    tekil_adlar = _benzersiz_sozcukler(kayitlar)
+    tekil_ikililer = _benzersiz_ikililer(kayitlar)
     sozcukler = {
         _bitisik_anahtar(sozcuk)
         for sozcuk in anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split()
@@ -388,11 +430,30 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
         ):
             eslesen.append(kayit)
             continue
-        ilk = _bitisik_anahtar(parcalar[0]) if parcalar else ""
-        if ilk and tekil_adlar.get(ilk) == kayit.banka_adi and ilk in sozcukler:
+        # Adın ORTASINDAN tutan benzersiz ikili: «emlak katılım», «emlakkatılım».
+        if any(
+            ikili in bitisik
+            for ikili, banka in tekil_ikililer.items()
+            if banka == kayit.banka_adi
+        ):
+            eslesen.append(kayit)
+            continue
+        if any(
+            tekil_adlar.get(_bitisik_anahtar(parca)) == kayit.banka_adi
+            and _bitisik_anahtar(parca) in sozcukler
+            for parca in parcalar
+        ):
             eslesen.append(kayit)
     return eslesen
 
+
+_GENEL_BANKA_SOZCUKLERI = frozenset(
+    {"banka", "bankasi", "bankalar", "bankalari", "katilim", "finans", "turk"}
+)
+"""Bir KURUMU değil, TÜRÜ adlandıran sözcükler — benzersiz olsalar bile
+banka adı sayılmazlar. Bugünkü korpusta çoğu zaten birden çok bankada geçiyor
+ve benzersizlik kapısını geçemiyor; liste, küme tek bankaya süzüldüğünde
+«bankası» sözcüğünün benzersiz görünmesine karşı duruyor."""
 
 _BANKA_SOZCUKLERI = (
     "bankasi", "bankasinin", "bankasindaki", "bankasinda",
@@ -600,16 +661,33 @@ tamamını eliyor, cevap «karşılaştırma için en az iki bankanın kaydı
 gerekiyor» oluyordu. Aynı sebeple `mevduat` -> `katilma`."""
 
 
-def _urun_filtrele(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
+def sorulan_urun(soru: str) -> str | None:
+    """Soru bir ÜRÜN SINIFI adlandırıyor mu? Adlandırıyorsa aranacak etiket.
+
+    Dışa açık, çünkü profil kolu (`ajanlar.orkestrator`) da aynı ayrımı
+    yapmak zorunda ve eşleştirme iki yerde tutulmaz — 27 Ağustos'ta banka
+    eşleştirmesinin kopyalanmasından çıkan kusur bunun bedeliydi.
+    """
     anahtar = arama_anahtari(soru)
     for sozcuk, etiket in _URUN_ANAHTARLARI.items():
         if terim_gecer(anahtar, sozcuk):
-            suzulmus = [
-                k for k in kayitlar
-                if etiket in arama_anahtari(f"{k.kampanya_turu or ''} {k.urun_turu or ''} {k.kaynak_url}")
-            ]
-            return suzulmus
-    return kayitlar
+            return etiket
+    return None
+
+
+def urun_etiketi_uyar(etiket: str, tur: str | None, urun: str | None, url: str) -> bool:
+    """Kayıt bu ürün etiketine uyuyor mu? Tür, ürün ve URL dilimine bakılır."""
+    return etiket in arama_anahtari(f"{tur or ''} {urun or ''} {url}")
+
+
+def _urun_filtrele(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
+    etiket = sorulan_urun(soru)
+    if etiket is None:
+        return kayitlar
+    return [
+        k for k in kayitlar
+        if urun_etiketi_uyar(etiket, k.kampanya_turu, k.urun_turu, k.kaynak_url)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -857,7 +935,28 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             niyet=Niyet.TEKIL_SORGU,
         )
 
-    kayit = max(kayitlar, key=lambda k: k.doluluk_orani)
+    # SORULAN ALANI TAŞIYAN KAYIT ÖNCELİKLİ (27 Ağustos, jüri havuzu 1. madde).
+    #
+    #     soru  : «Kuveyt Türk'ün konut finansmanı kâr payı oranı ve maksimum
+    #              vade süresi nedir?»
+    #     cevap : «… — Azami vade: 120 ay · Tahsis ücreti: %0,50»
+    #
+    # Kayıt «en dolu» olana göre seçiliyordu; doluluk sorudan bağımsız bir
+    # ölçü. Seçilen kaydın kâr payı oranı boştu, yani sorulan iki şeyden biri
+    # cevapta hiç yoktu — üstelik oranı YAZAN kayıt aynı bankada duruyordu.
+    #
+    # Sorulan alanı taşıyan kayıt yoksa eski davranışa dönülür: o zaman bilgi
+    # gerçekten yok demektir ve en dolu kayıt hâlâ en iyi vitrindir.
+    # Soru BİRDEN ÇOK ölçüt sorabilir: «kâr payı oranı VE maksimum vade».
+    # `_sorulan_olcut` tek bir alan döndürür (sıralamada odak odur); burada
+    # hepsi gerekir, yoksa ikisinden birini taşıyan kayıt yeterli sanılır.
+    odaklar = [a for a in _sorulan_olcutler(soru) if a != "masrafsiz_mi"]
+
+    def _uygunluk(kayit: KampanyaKaydi) -> tuple[int, float]:
+        tasidigi = sum(getattr(kayit, alan, None) is not None for alan in odaklar)
+        return (tasidigi, kayit.doluluk_orani)
+
+    kayit = max(kayitlar, key=_uygunluk)
     bank_name = "Kuveyt Türk Katılım Bankası A.Ş." if "Örnek" in kayit.banka_adi else kayit.banka_adi
     # `.title()` KULLANMA: Türkçe'de sessizce bozar (bkz. schema.ALAN_ETIKETLERI).
     tur = tur_etiketi(kayit.urun_turu or kayit.kampanya_turu) or "Kampanya"
@@ -876,7 +975,23 @@ def _tekil_cevap(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         satirlar.append(f"- Masraf: {'alınmıyor' if kayit.masrafsiz_mi else 'alınıyor'}")
         bulunan += 1
 
-    if bulunan == 0:
+    # SORULAN AMA OLMAYAN ALAN, SESSİZCE ATLANMAZ (27 Ağustos, jüri havuzu
+    # 1. ve 26. madde).
+    #
+    #     soru  : «Kuveyt Türk'ün konut finansmanı kâr payı oranı ve maksimum
+    #              vade süresi nedir?»
+    #     cevap : «- Azami vade: 120 ay …»   ← oran satırı hiç yok
+    #
+    # Kuveyt Türk'ün dokuz konut kaydının hiçbirinde oran yok; yani sistem
+    # doğru davranıyordu ama bunu SÖYLEMİYORDU. Kullanıcı sorduğu şeyin
+    # cevabını göremeyince sistemin soruyu anlamadığını sanıyor. Jüri
+    # havuzunun 26. maddesi tam bunu soruyor: «açıkça yazmıyorsa sistem
+    # tahminde bulunuyor mu yoksa Belirtilmemiş mi diyor?»
+    for alan in odaklar:
+        if getattr(kayit, alan, None) is None:
+            satirlar.append(f"- {alan_etiketi(alan)}: **Belirtilmemiş**")
+
+    if bulunan == 0 and not odaklar:
         satirlar.append("- Bu kampanya için sayısal bilgi **Belirtilmemiş**.")
 
     # Tüm satırlar yapısal alanlardan geliyor: tek YAPISAL parça yeterli.
@@ -913,6 +1028,20 @@ _OLCUT_IPUCLARI: tuple[tuple[str, tuple[str, ...]], ...] = (
                               "finansman tutari", "limit")),
     ("kar_payi_orani", ("kar payi", "oran", "faiz")),
 )
+
+
+def _sorulan_olcutler(soru: str) -> list[str]:
+    """Soruda geçen BÜTÜN ölçütler — `_sorulan_olcut` bunların ilkidir.
+
+    «Kâr payı oranı ve maksimum vade süresi nedir?» iki şey soruyor; tek alan
+    döndürmek, ikisinden birini taşıyan kaydı yeterli saymaya yol açıyordu.
+    """
+    anahtar = arama_anahtari(soru)
+    return [
+        alan
+        for alan, ipuclari in _OLCUT_IPUCLARI
+        if any(ipucu in anahtar for ipucu in ipuclari)
+    ]
 
 
 def _sorulan_olcut(soru: str) -> str | None:

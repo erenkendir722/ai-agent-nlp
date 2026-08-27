@@ -31,6 +31,9 @@ from src.rag.chatbot import (
     Niyet,
     kalkandan_gecir,
     niyet_belirle,
+    sayi_goster,
+    sorulan_urun,
+    urun_etiketi_uyar,
 )
 from src.rag.chatbot import sor as chatbot_sor
 from src.schema import HedefKitle, Kampanya
@@ -88,13 +91,22 @@ def profil_ayristir(soru: str) -> tuple[MusteriProfili | None, list[str]]:
             if ad in anahtar:
                 tip, segment = HedefKitle.SEGMENT, ad
                 break
-    if tip is None:
-        eksikler.append("müşteri tipi (yeni / mevcut / maaş / emekli)")
-
+    # MÜŞTERİ TİPİ EKSİKSE SORULMAZ (27 Ağustos, jüri havuzu 9. madde).
+    #
+    #     soru  : «120 ay vadeli 1.000.000 TL konut finansmanı için en düşük
+    #              kâr payı oranını hangi katılım bankası sunuyor?»
+    #     cevap : «Uygunluk değerlendirmesi için şu bilgiler eksik: müşteri
+    #              tipi…»
+    #
+    # Soru bir SIRALAMA sorusu; «ben uygun muyum?» diye sormuyor. Tipi
+    # bilmeden de cevaplanabilir, çünkü tip hiçbir hesaba girmez — yalnız
+    # süzer. Tutar ve vade öyle değil: ikisi de taksit ve toplam maliyet
+    # formülüne girer, uydurulan bir değer cevaptaki HER sayıyı yanlışlar.
+    # O ikisi hâlâ sorulur; ayrım, tahmin edilenin sonuca ne yaptığıdır.
     if eksikler:
         return None, eksikler
 
-    assert tutar is not None and vade is not None and tip is not None
+    assert tutar is not None and vade is not None
     return (
         MusteriProfili(musteri_tipi=tip, tutar=tutar, vade_ay=vade, segment=segment),
         [],
@@ -134,7 +146,9 @@ def profil_sorgusu_mu(soru: str) -> bool:
 
 
 def _profil_cevabi(
-    profil: MusteriProfili, sonuclar: list[UygunlukSonucu]
+    profil: MusteriProfili,
+    sonuclar: list[UygunlukSonucu],
+    kampanyalar: list[Kampanya] | None = None,
 ) -> Cevap:
     """Uygunluk sonuçlarını gerekçeli metne çevirir — KÖKEN TİPLİ parçalarla.
 
@@ -162,6 +176,7 @@ def _profil_cevabi(
     """
     uygunlar = [s for s in sonuclar if s.uygun_mu]
     elenenler = [s for s in sonuclar if not s.uygun_mu]
+    kimlik_kampanya = {k.kampanya_id: k for k in (kampanyalar or [])}
 
     # Müşterinin kendi girdisi her parçada geçebilir (profil özeti) — ortak taban.
     profil_hesabi = {"talep_tutar": profil.tutar, "talep_vade": float(profil.vade_ay)}
@@ -254,6 +269,21 @@ def _profil_cevabi(
         maliyet_hesabi[f"sira_{sira}"] = float(sira)
 
         if sonuc.maliyet:
+            # ORAN DA YAZILIR (27 Ağustos, jüri havuzu 9. madde).
+            #
+            # «En düşük kâr payı oranını hangi banka sunuyor?» sorusuna cevap
+            # yalnız taksit ve toplam geri ödeme veriyordu. Sıralamayı toplam
+            # maliyete göre yapmak DOĞRUDUR — sunumun 02. sayfası bunu
+            # savunuyor — ama sorulan sayıyı hiç yazmamak, soruyu
+            # yanıtlamamaktır. İkisi birden gösterilir; kullanıcı manşet oranla
+            # gerçek maliyetin ayrıştığını da görür.
+            oran = getattr(kimlik_kampanya.get(sonuc.kampanya_id), "kar_payi_orani", None)
+            if oran is not None and oran.deger is not None:
+                maliyet_satirlari.append(
+                    f"   - Kâr payı oranı: aylık %{sayi_goster(float(oran.deger))}"
+                )
+                maliyet_hesabi[f"oran_{sira}"] = float(oran.deger)
+
             aylik = f"{sonuc.maliyet['aylik_taksit']:,.0f}".replace(",", ".")
             toplam = f"{sonuc.maliyet['toplam_geri_odeme']:,.0f}".replace(",", ".")
             maliyet_satirlari.append(f"   - Aylık taksit: {aylik} TL")
@@ -277,13 +307,54 @@ def _profil_cevabi(
     if engel is not None:
         parcalar.append(engel)
 
+    # (kimlik_kampanya yukarıda kuruldu — kaynakça da, oran satırı da onu kullanır.)
+    # KAYNAK URL'İ BOŞ GEÇİLMEZ (27 Ağustos).
+    #
+    # `UygunlukSonucu` yalnız `kampanya_id` ve `banka_adi` taşıyor; URL ve
+    # çekim tarihi `Kampanya` nesnesinde duruyor ve buraya hiç geçirilmiyordu.
+    # Sonuç, kaynakçanın beş satırının da adresinin BOŞ olmasıydı:
+    #
+    #     Türkiye Finans Katılım Bankası A.Ş.  |  (adres yok)
+    #
+    # Projenin merkez iddiası «kanıtsız değer üretilemez»; jüri aylık taksit
+    # ve toplam geri ödemeyi görüp kaynağa tıklayamıyorsa iddia orada kırılır.
+    # Chatbot yolu bunu `_kaynakca` ile doğru yapıyordu, profil yolu yapmıyordu.
     return Cevap(
         parcalar=parcalar,
         niyet=Niyet.KOSUL_SORGUSU,
-        kaynaklar=[
-            Kaynakca(banka_adi=s.banka_adi, url="", cekim_tarihi="")
-            for s in uygunlar[:5]
-        ],
+        kaynaklar=[_profil_kaynagi(s, kimlik_kampanya) for s in uygunlar[:5]],
+    )
+
+
+def _urun_suz(soru: str, kampanyalar: list[Kampanya]) -> list[Kampanya]:
+    """Soruda ürün adlandırılmışsa kampanyaları ona daraltır.
+
+    Eşleştirme `rag.chatbot`'tan gelir; iki kolda iki sözlük tutulmaz.
+    """
+    etiket = sorulan_urun(soru)
+    if etiket is None:
+        return kampanyalar
+    return [
+        k for k in kampanyalar
+        if urun_etiketi_uyar(
+            etiket, k.kampanya_turu.deger, k.urun_turu.deger, k.kaynak_url
+        )
+    ]
+
+
+def _profil_kaynagi(
+    sonuc: UygunlukSonucu, kimlik_kampanya: dict[str, Kampanya]
+) -> Kaynakca:
+    """Uygunluk sonucunu kaynakçaya çevirir — adresiyle birlikte."""
+    kampanya = kimlik_kampanya.get(sonuc.kampanya_id)
+    if kampanya is None:
+        return Kaynakca(banka_adi=sonuc.banka_adi, url="", cekim_tarihi="")
+    return Kaynakca(
+        banka_adi=sonuc.banka_adi,
+        url=kampanya.kaynak_url,
+        cekim_tarihi=kampanya.cekim_tarihi.strftime("%d.%m.%Y")
+        if kampanya.cekim_tarihi
+        else "",
     )
 
 
@@ -380,11 +451,23 @@ class Orkestrator:
 
             kampanyalar = list(kampanyalari_oku())
 
+        # ÜRÜN SÜZGECİ PROFİL KOLUNDA DA İŞLER (27 Ağustos).
+        #
+        # Jüri havuzu 9. madde: «120 ay vadeli 1.000.000 TL KONUT FİNANSMANI
+        # için en düşük kâr payı oranını hangi banka sunuyor?» Süzgeç yalnız
+        # chatbot kolundaydı; profil kolu 357 kampanyanın tamamını sıralıyor
+        # ve listenin başına kart, döviz, hızlı finansman kampanyaları
+        # koyuyordu. Sorulan ürün cevapta hiç dikkate alınmıyordu.
+        #
+        # Süzgeç kümeyi boşaltırsa sonuç boş kalır ve cevap «uygun kampanya
+        # bulunamadı» der — sorulmayan ürünle doldurmaktan doğrudur.
+        kampanyalar = _urun_suz(soru, kampanyalar)
+
         sonuclar, muhakeme_izi = self.muhakeme.calistir((profil, kampanyalar))
         defter.ekle(muhakeme_izi)
 
         with iz_tut("cevap", llm=False, girdi=f"{len(sonuclar)} sonuç") as iz:
-            cevap = _profil_cevabi(profil, sonuclar)
+            cevap = _profil_cevabi(profil, sonuclar, kampanyalar)
             uygun = sum(1 for s in sonuclar if s.uygun_mu)
             iz.cikti_ozeti = f"{uygun} uygun kampanya sunuldu"
             iz.karar_gerekcesi = "Gerekçeler ve maliyetler kaynaklarıyla yazıldı"

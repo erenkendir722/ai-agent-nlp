@@ -231,10 +231,13 @@ def oran_ayristir(parca: str) -> float | None:
 # Para tutarı
 # ---------------------------------------------------------------------------
 
-_CARPANLAR = (
-    (re.compile(r"\bmilyar\b", re.IGNORECASE), 1_000_000_000),
-    (re.compile(r"\bmilyon\b", re.IGNORECASE), 1_000_000),
-    (re.compile(r"\bbin\b", re.IGNORECASE), 1_000),
+_CARPAN_SOZLERI = {"milyar": 1_000_000_000, "milyon": 1_000_000, "bin": 1_000}
+"""Çarpan sözcüğü -> değeri. Tek kaynak: hem serbest tarama hem birim
+bağlama aynı sözlükten okur."""
+
+_CARPANLAR = tuple(
+    (re.compile(rf"\b{soz}\b", re.IGNORECASE), carpan)
+    for soz, carpan in _CARPAN_SOZLERI.items()
 )
 # Dikkat: "50.000TL" yazımı gerçek metinlerde sık geçer. `\bTL\b` bunu KAÇIRIR,
 # çünkü rakam ile 'T' arasında sözcük sınırı yoktur. Bu yüzden başta sözcük
@@ -248,8 +251,35 @@ _PARA_BIRIMI = re.compile(
 )
 
 
+_TUTAR_DESENI = re.compile(
+    rf"(?:(\d[\d.,\s]*\d|\d)\s*)?({'|'.join(_CARPAN_SOZLERI)})?\s*"
+    rf"(?:₺|{_HARF_ONCESI_YOK}TL\b|{_HARF_ONCESI_YOK}TRY\b"
+    rf"|T[üu]rk\s+Liras[ıi]\b|lira\b)",
+    re.IGNORECASE,
+)
+"""Sayıyı PARA BİRİMİNE BAĞLAYAN desen — birim zorunluyken kullanılır.
+
+NEDEN VAR (27 Ağustos, jüri soru havuzu 9. madde):
+    Eski kod «metinde TL geçiyor mu?» diye sorup sonra metnin İLK sayısını
+    alıyordu. İkisi arasında hiçbir bağ yoktu:
+
+        «120 ay vadeli 1.000.000 TL konut finansmanı»
+          -> TL var  ✓        -> ilk sayı 120  -> tutar 120 TL
+
+    Profil ekranı bunu «mevcut_musteri · 120 TL · 120 ay» diye çözüyor ve
+    357 kampanyayı uygun buluyordu; sorulan 1.000.000 TL hiç görülmedi.
+    Aynı hata çarpanda da vardı: «bin» sözcüğü metnin HERHANGİ bir yerinde
+    geçtiğinde tabana uygulanıyordu.
+
+    `_AY_DESENI` vadeyi ilk günden birimine bağlıyordu; tutar bağlanmamıştı.
+"""
+
+
 def para_ayristir(parca: str, birim_zorunlu: bool = True) -> float | None:
     """TL tutarını float'a çevirir. Çarpan sözcüklerini uygular.
+
+    `birim_zorunlu` iken sayı BİRİME BAĞLI olmalıdır: metnin başka bir yerinde
+    duran sayı (vade, taksit sayısı, tarih) tutar sayılmaz.
 
     >>> para_ayristir("500 TL")
     500.0
@@ -261,16 +291,32 @@ def para_ayristir(parca: str, birim_zorunlu: bool = True) -> float | None:
     1500000.0
     >>> para_ayristir("500 bin Türk Lirası")
     500000.0
+    >>> para_ayristir("120 ay vadeli 1.000.000 TL konut finansmanı")
+    1000000.0
+    >>> para_ayristir("36 ay, bin TL'lik harcama")
+    1000.0
     """
     if not parca:
         return None
-    if birim_zorunlu and not _PARA_BIRIMI.search(parca):
+
+    if birim_zorunlu:
+        for eslesme in _TUTAR_DESENI.finditer(parca):
+            sayi, carpan_sozu = eslesme.group(1), eslesme.group(2)
+            if sayi is None and carpan_sozu is None:
+                continue  # çıplak «TL» — bağlanacak bir değer yok
+            # «bin TL» sayısızdır ve BİN TL demektir; taban 1 alınır.
+            taban = sayi_ayristir(sayi) if sayi is not None else 1.0
+            if taban is None:
+                continue
+            if carpan_sozu is not None:
+                taban *= _CARPAN_SOZLERI[carpan_sozu.lower()]
+            return taban
         return None
 
+    # Birim aranmıyorsa bağlanacak bir çıpa da yok: ilk sayı + metindeki çarpan.
     taban = sayi_ayristir(parca)
     if taban is None:
         return None
-
     for desen, carpan in _CARPANLAR:
         if desen.search(parca):
             return taban * carpan

@@ -82,15 +82,42 @@ def test_segment_adi_okunur():
     [
         ("maaş müşterisi 800.000 TL istiyor", "vade"),
         ("maaş müşterisi 120 ay vade istiyor", "tutar"),
-        ("800.000 TL, 120 ay", "müşteri tipi"),
     ],
 )
-def test_eksik_bilgi_tahmin_edilmez(soru, beklenen_eksik):
+def test_hesaba_giren_bilgi_tahmin_edilmez(soru, beklenen_eksik):
     """Varsayılan bir tutar veya vade koymak, taksitten toplam maliyete kadar
     her sayıyı sessizce yanlışlardı."""
     profil, eksikler = profil_ayristir(soru)
     assert profil is None
     assert any(beklenen_eksik in e for e in eksikler)
+
+
+def test_musteri_tipi_eksikse_sorulmaz():
+    """Tip hiçbir HESABA girmez, yalnız süzer — bilinmiyorken süzülmez.
+
+    27 Ağustos, jüri havuzu 9. madde: «120 ay vadeli 1.000.000 TL konut
+    finansmanı için en düşük kâr payı oranını hangi katılım bankası sunuyor?»
+    bir SIRALAMA sorusudur, «ben uygun muyum?» değil. Tip sorulunca cevap
+    yerine soru dönüyordu.
+    """
+    profil, eksikler = profil_ayristir("1.000.000 TL, 120 ay")
+    assert profil is not None
+    assert eksikler == []
+    assert profil.musteri_tipi is None
+    assert "belirtilmedi" in profil.ozet()
+
+
+def test_belirtilmemis_tip_kampanyayi_elemez():
+    """Tip belirtilmediğinde müşteri tipi kısıtı UYGULANMAZ."""
+    from src.ajanlar.muhakeme import MuhakemeAjani
+
+    profil = MusteriProfili(musteri_tipi=None, tutar=100_000.0, vade_ay=12)
+    kampanya = _kampanya(
+        uygunluk=UygunlukKosullari(musteri_tipi=[HedefKitle.YENI_MUSTERI])
+    )
+
+    sonuc = MuhakemeAjani().degerlendir(profil, kampanya)
+    assert "musteri_tipi" not in [g.kural for g in sonuc.engelleyenler()]
 
 
 # ---------------------------------------------------------------------------
@@ -286,3 +313,76 @@ def test_ilk_bankanin_sayisi_sonuncusu_tarafindan_ezilmez(ork):
     cevap, _ = ork.calistir("maaş müşterisi 800.000 TL 120 ay", kampanyalar)
     assert "125.000" not in cevap.reddedilen_sayilar
     assert "36" not in cevap.reddedilen_sayilar
+
+
+# ---------------------------------------------------------------------------
+# Profil kolu: ürün süzgeci, kaynak adresi, sorulan oran (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# Jüri havuzu 9. madde bu üç eksiği birden gösterdi:
+#
+#     «120 ay vadeli 1.000.000 TL KONUT FİNANSMANI için en düşük kâr payı
+#      oranını hangi katılım bankası sunuyor?»
+#
+#   * ürün süzgeci yalnız chatbot kolundaydı -> 357 kampanya sıralanıyor,
+#     listenin başında kart ve döviz kampanyaları duruyordu
+#   * kaynakçanın beş satırının da ADRESİ boştu
+#   * sıralama toplam maliyete göre doğruydu ama sorulan ORAN hiç yazılmıyordu
+
+
+def _konut(ad: str, oran: float) -> Kampanya:
+    kampanya = _kampanya(ad, oran=oran)
+    return kampanya.model_copy(
+        update={
+            "kampanya_turu": Alan(
+                deger="konut_finansmani", ham_ifade="konut", guven=0.9, yontem="kural"
+            )
+        }
+    )
+
+
+def _kart(ad: str, oran: float) -> Kampanya:
+    kampanya = _kampanya(ad, oran=oran)
+    return kampanya.model_copy(
+        update={
+            "kampanya_turu": Alan(
+                deger="kart", ham_ifade="kart", guven=0.9, yontem="kural"
+            )
+        }
+    )
+
+
+SORU = "1.000.000 TL, 120 ay konut finansmanı için en düşük kâr payı oranı"
+
+
+def test_profil_kolunda_urun_suzgeci_isler(ork) -> None:
+    kampanyalar = [_konut("Konutçu", 1.89), _kart("Kartçı", 0.5)]
+    cevap, _ = ork.calistir(SORU, kampanyalar=kampanyalar)
+
+    assert "Konutçu" in cevap.metin
+    assert "Kartçı" not in cevap.metin, "sorulmayan ürün cevaba girmiş"
+
+
+def test_profil_kaynakcasi_adres_tasir(ork) -> None:
+    cevap, _ = ork.calistir(SORU, kampanyalar=[_konut("Konutçu", 1.89)])
+
+    assert cevap.kaynaklar, "kaynakça boş"
+    for kaynak in cevap.kaynaklar:
+        assert kaynak.url, f"{kaynak.banka_adi} kaynağının adresi boş"
+        assert kaynak.cekim_tarihi, f"{kaynak.banka_adi} çekim tarihi boş"
+
+
+def test_profil_cevabi_sorulan_orani_yazar(ork) -> None:
+    """Sıralama toplam maliyete göre yapılır ama ORAN da gösterilir."""
+    cevap, _ = ork.calistir(SORU, kampanyalar=[_konut("Konutçu", 1.89)])
+
+    assert "Kâr payı oranı: aylık %1,89" in cevap.metin
+    assert "Toplam geri ödeme" in cevap.metin
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
+
+
+def test_urun_suzgeci_bosaltirsa_uydurmaz(ork) -> None:
+    """Sorulan ürüne ait kampanya yoksa başka ürünle doldurulmaz."""
+    cevap, _ = ork.calistir(SORU, kampanyalar=[_kart("Kartçı", 0.5)])
+    assert "bulunamadı" in cevap.metin
+    assert not cevap.kaynaklar
