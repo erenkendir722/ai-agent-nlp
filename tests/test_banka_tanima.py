@@ -195,10 +195,12 @@ def test_korpusta_olmayan_banka_baskasinin_verisiyle_cevaplanmaz(
     cevap = sor(soru, korpus)
     assert cevap.niyet is Niyet.KAPSAM_DISI
     assert not cevap.kaynaklar
-    for banka in BANKA_ADLARI:
-        assert banka not in cevap.metin.split("Veri setinde bulunan")[0], (
-            f"{soru!r} cevabında {banka} verisi sunulmuş"
-        )
+    # Kapsadığımız bankaların adı cevapta GEÇER (kullanıcıya listelenir);
+    # geçmemesi gereken şey onların VERİSİDİR — kaynakça boş, sayı yok.
+    assert "katılım bankası değil" in cevap.metin
+    assert not any(ch.isdigit() for ch in cevap.metin), (
+        f"{soru!r} cevabında sayısal veri sunulmuş"
+    )
 
 
 @pytest.mark.parametrize(("banka", "yazim"), _tum_varyantlar())

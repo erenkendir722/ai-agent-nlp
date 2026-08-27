@@ -48,6 +48,10 @@ def _kayit(kimlik: str, **alanlar: object) -> KampanyaKaydi:
         "ham_metin": "",
         "ortalama_guven": 0.8,
         "doluluk_orani": 0.5,
+        # Kâr payı sıralaması yalnız FİNANSMAN kampanyalarını kıyaslar
+        # (`karsilastirma.OLCUT_KAPSAMI`); bu testler sıralama mekaniğini
+        # ölçüyor, ürün sınıfını değil.
+        "kampanya_turu": "ihtiyac_finansmani",
     }
     return KampanyaKaydi(**{**varsayilan, **alanlar})  # type: ignore[arg-type]
 
@@ -251,7 +255,7 @@ class TestUyariBicimi:
         ]
         oran_uyarisi = next(m for m in uyarilar(kayitlar) if "Kâr payı" in m.baslik)
 
-        assert "Hiçbir kampanyada belirtilmemiş" in oran_uyarisi.detay
+        assert "Hiçbirinin finansman kampanyasında belirtilmemiş" in oran_uyarisi.detay
         assert "Katılım Bankası A.Ş." not in oran_uyarisi.detay
 
     def test_bir_iki_banka_eksikse_adlari_yazilir(self) -> None:
@@ -403,3 +407,88 @@ class TestVadeTavsiyesi:
     def test_referans_banka_limitini_asiyorsa_tavsiye_yok(self) -> None:
         secenekler = vade_duyarliligi(800_000, 2.05, referans_vade=120, vade_ay_max=60)
         assert vade_tavsiyesi(secenekler, 120) is None
+
+
+class TestOlcutKapsami:
+    """Ürün sınıfı ortak tabanın ikinci yarısı (ADR 020).
+
+    27 Ağustos'ta 931 kayıtta ölçüldü: `kar_payi_orani` dolu 119 kaydın 110'u
+    kart / alışveriş / «diğer» kampanyalarından geliyor ve neredeyse hepsi
+    sıfır. Bir kart taksit promosyonunun sıfırı ile bir ihtiyaç finansmanının
+    aylık %2,87'si aynı min-maks ölçeğine sokulunca her karşılaştırma aynı
+    cümleyle bitiyordu: «Kâr payı oranı açısından iki banka EŞİT: aylık %0».
+    """
+
+    def test_kart_kampanyasinin_sifiri_orani_kiyaslamaz(self) -> None:
+        kayitlar = [
+            _kayit("kart", kar_payi_orani=0.0, kampanya_turu="kart"),
+            _kayit("finansman", kar_payi_orani=2.87, kampanya_turu="ihtiyac_finansmani"),
+        ]
+        # Kart kaydı «en ucuz» diye başa geçmez; değeri yokmuş gibi sona gider.
+        assert _sira(kayitlar, Kriter.EN_DUSUK_KAR_PAYI) == ["finansman", "kart"]
+
+    def test_finansman_kampanyasinin_sifiri_gecerlidir(self) -> None:
+        """ADR 012 korunuyor: «vade farksız» finansmanda 0,0 gerçek bir beyandır.
+
+        Kapı ürün sınıfına bakar, değerin kendisine değil. Togg %0 ve Albaraka
+        «vade farksız destek» kampanyaları gerçek sıfır kâr paylı FİNANSMAN
+        teklifleridir ve sıralamayı kazanmaları doğrudur.
+        """
+        kayitlar = [
+            _kayit("sifirli", kar_payi_orani=0.0, kampanya_turu="tasit_finansmani"),
+            _kayit("oranli", kar_payi_orani=2.87, kampanya_turu="ihtiyac_finansmani"),
+        ]
+        assert _sira(kayitlar, Kriter.EN_DUSUK_KAR_PAYI) == ["sifirli", "oranli"]
+
+    def test_yatirim_urunu_kar_payi_kiyaslamaz(self) -> None:
+        """Katılma hesabı GETİRİSİ finansman maliyeti değildir.
+
+        Türkiye Finans Günlük Hesap sayfasından gelen %11 bir yıllık getiri
+        hücresiydi; «en yüksek kâr payı» sıralamasında o çıkıyordu.
+        """
+        kayitlar = [
+            _kayit("mevduat", kar_payi_orani=11.0, kampanya_turu="yatirim_urunu"),
+            _kayit("finansman", kar_payi_orani=4.82, kampanya_turu="ihtiyac_finansmani"),
+        ]
+        assert _sira(kayitlar, Kriter.EN_DUSUK_KAR_PAYI) == ["finansman", "mevduat"]
+
+    def test_turu_belirsiz_kayit_kapsam_disidir(self) -> None:
+        """«diğer» sınıflandırılamadı demektir; finansman saymak varsayım olurdu."""
+        kayitlar = [
+            _kayit("belirsiz", kar_payi_orani=0.0, kampanya_turu="diger"),
+            _kayit("finansman", kar_payi_orani=3.5, kampanya_turu="konut_finansmani"),
+        ]
+        assert _sira(kayitlar, Kriter.EN_DUSUK_KAR_PAYI) == ["finansman", "belirsiz"]
+
+    @pytest.mark.parametrize(
+        ("kriter", "alan", "deger"),
+        [
+            (Kriter.EN_UZUN_VADE, "vade_ay_max", 120),
+            (Kriter.EN_YUKSEK_ODUL, "odul_miktari", 5000.0),
+        ],
+    )
+    def test_kapisiz_olcutler_her_turde_siralanir(self, kriter, alan, deger) -> None:
+        """Vade ve ödül ürün sınıfından bağımsız okunur — kapı yalnız kâr payında."""
+        kayitlar = [
+            _kayit("kart", kampanya_turu="kart", **{alan: deger}),
+            _kayit("finansman", kampanya_turu="ihtiyac_finansmani", **{alan: deger / 2}),
+        ]
+        assert _sira(kayitlar, kriter)[0] == "kart"
+
+    def test_kapsam_disi_kayit_silinmez(self) -> None:
+        """Sıralamadan düşmek listeden düşmek değildir — kanıt yerinde durur."""
+        kayitlar = [
+            _kayit("kart", kar_payi_orani=0.0, kampanya_turu="kart"),
+            _kayit("finansman", kar_payi_orani=2.87, kampanya_turu="ihtiyac_finansmani"),
+        ]
+        assert len(sirala(kayitlar, Kriter.EN_DUSUK_KAR_PAYI)) == 2
+
+    def test_kapsam_disi_kalinca_uyari_cikar(self) -> None:
+        """Sessiz daraltma yok: kullanıcı neden kıyaslanmadığını görmeli."""
+        kayitlar = [
+            _kayit("a", banka_adi="A Bankası", kar_payi_orani=0.0, kampanya_turu="kart"),
+            _kayit("b", banka_adi="B Bankası", kar_payi_orani=0.0, kampanya_turu="alisveris_puani"),
+        ]
+        oran_uyarisi = next(m for m in uyarilar(kayitlar) if "Kâr payı" in m.baslik)
+        assert "finansman kampanyasında belirtilmemiş" in oran_uyarisi.detay
+        assert "vade farksız" in oran_uyarisi.detay

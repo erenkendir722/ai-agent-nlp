@@ -1,0 +1,69 @@
+================================================================================
+TEKNOFEST 2026 - YAPAY ZEKA DİL AJANLARI YARIŞMASI (2. SENARYO)
+JÜRİ VE TEST DEĞERLENDİRME SORULARI HAVUZU
+================================================================================
+
+Bu soru seti; Teknik Şartname'de yer alan değerlendirme kriterleri (%20 Fonksiyonellik,
+%20 Teknik İmplementasyon, %20 On-Premise, %30 Model Başarısı ve Anlamlandırma, 
+%10 Yenilikçilik) ve temsilî senaryolar dikkate alınarak hazırlanmıştır.
+
+--------------------------------------------------------------------------------
+KATEGORİ 1: TEKİL BANKA VE PARAMETRE SORGULAMA (FİNANSAL BİLGİ ÇIKARIMI)
+--------------------------------------------------------------------------------
+1. Kuveyt Türk'ün güncel konut finansmanı kâr payı oranı ve maksimum vade süresi nedir?
+2. Türkiye Finans'ın yeni müşterilere özel sunduğu "Hoş Geldin Finansmanı"nda dosya masrafı veya tahsis ücreti var mı?
+3. Vakıf Katılım'ın taşıt finansmanı kampanyasında ekspertiz ve kasko masrafları banka tarafından karşılanıyor mu?
+4. Albaraka Türk'ün son kredi kartı kampanyasındaki minimum harcama şartı ve kazanılacak alışveriş puanı (Worldpuan/Bonus vb.) ne kadardır?
+5. Emlak Katılım'ın kentsel dönüşüm / konut finansmanı için belirlediği güncel kâr payı oranı nedir?
+6. Ziraat Katılım'ın dijitalden müşteri olanlara sunduğu masrafsız finansman tutarı tavanı kaç TL'dir?
+7. X Katılım Bankası'nın sunduğu ihtiyaç finansmanında tahsis ücreti binde kaç olarak yansıtılmaktadır?
+8. Y Bankası'nın kampanyasındaki peşinat oranı ve taksit erteleme (ör. 3 ay ertelemeli) imkânı bulunuyor mu?
+
+--------------------------------------------------------------------------------
+KATEGORİ 2: ÇAPRAZ KARŞILAŞTIRMA VE SIRALAMA SORULARI (BENCHMARK & RANKING)
+--------------------------------------------------------------------------------
+9. 120 ay vadeli 1.000.000 TL konut finansmanı için en düşük kâr payı oranını hangi katılım bankası sunuyor?
+10. Yeni müşteri kazanım kampanyalarında nakit promosyon ve puan avantajı açısından Emlak Katılım mı, Ziraat Katılım mı daha avantajlı?
+11. Dosya masrafı ve tahsis ücreti almayan ihtiyaç finansmanı kampanyalarını en avantajlıdan en dezavantajlıya doğru sıralar mısın?
+12. 48 ay vade imkânı sunan taşıt finansmanı kampanyalarında en düşük toplam finansman maliyetini hangi banka sağlıyor?
+13. Kart kampanyalarında tek seferde 5.000 TL harcamaya en yüksek puan/ödül veren ilk 3 katılım bankası hangisidir?
+14. Katılma hesaplarında (kâr payı havuzunda) 3 aylık ve 1 yıllık vadelerde en yüksek kâr paylaşım oranını vadeden bankalar hangileridir?
+15. A Bankası (%1,89 oran, 120 ay, 50.000 TL masrafsızlık) ile C Bankası (%1,87 oran, 96 ay, 5.000 TL hediye çeki) karşılaştırıldığında hangi açılardan birbirlerine üstünlük sağlarlar?
+
+--------------------------------------------------------------------------------
+KATEGORİ 3: TERMİNOLOJİ, SEMANTİK EŞLEME VE FORMAT NORMALİZASYONU
+--------------------------------------------------------------------------------
+16. "En düşük faizli ihtiyaç kredisi veren katılım bankası hangisi?" 
+    -> (Beklenti: "Katılım bankacılığında faiz yerine kâr payı oranı, kredi yerine finansman kullanılır..." düzeltmesiyle doğru veriyi getirmesi)
+17. Metinlerde "%2.05", "% 2,05", "2.05%" veya "yüzde iki virgül sıfır beş" şeklinde geçen kâr payı oranlarını standart tek bir formatta filtreleyebiliyor musun?
+18. "Masrafsız finansman" tamlamasını dosya masrafı, tahsis ücreti ve ekspertiz muafiyeti bazında nasıl ayrıştırıyorsun?
+19. "Finansman maliyeti" ile "kâr payı oranı" arasındaki farkı metinden nasıl çıkarıyorsun ve toplam geri ödemeyi hesaplayabiliyor musun?
+20. "Katılım Fonu" ve "Kâr-Zarar Ortaklığı" içeren yatırım ürünleri arasındaki kâr paylaşım rasyosunu metinden doğru parse edebiliyor musun?
+
+--------------------------------------------------------------------------------
+KATEGORİ 4: HEDEF KİTLE, SEGMENTASYON VE KOŞUL FİLTRELEME
+--------------------------------------------------------------------------------
+21. Sadece maaş müşterilerine özel tanımlanmış avantajlı finansman kampanyaları nelerdir?
+22. Mobil şube/dijital kanallar üzerinden ilk defa görüntülü görüşmeyle müşteri olanlara sağlanan ek ayrıcalıklar hangileridir?
+23. KOBİ, esnaf ve tüzel segment müşterilerine özel sunulan faizsiz/kâr payı indirimli ticari finansman paketleri hangileridir?
+24. Belirli bir meslek grubuna (ör. sağlık çalışanları, öğretmenler, kamu personeli) özel ek indirim sunan aktif bir kampanya var mı?
+25. Sadece belirli sektörlerdeki (ör. akaryakıt, market, beyaz eşya) harcamalarda taksit/puan avantajı sunan kart kampanyaları nelerdir?
+
+--------------------------------------------------------------------------------
+KATEGORİ 5: SINIR DURUMLAR (EDGE CASES), HALÜSİNASYON VE SAĞLAMLIK (ROBUSTNESS)
+--------------------------------------------------------------------------------
+26. Bir kampanya metninde masraf veya tahsis ücreti açıkça yazmıyorsa, sistem tahminde bulunuyor mu yoksa "Belirtilmemiş" mi diyor?
+27. Kampanya süresi dolmuş (örneğin geçerlilik tarihi 2025'te bitmiş) metinleri güncel teklif olarak sunuyor musun?
+28. BDDK resmi listesinde yer almayan konvansiyonel bir bankanın (ör. Garanti BBVA, Akbank) kampanyasını sorduğumda sistem kapsam dışı uyarısı veriyor mu?
+29. Bir bankanın kampanya metninde aynı anda çelişkili iki bilgi yer alıyorsa (ör. başlıkta %1.79, detayda %1.99) chatbot bu durumu nasıl raporluyor?
+30. "En iyi banka hangisi?" gibi subjektif bir soru geldiğinde yanlı davranmadan finansal kriterlere göre objektif kırılım sunabiliyor mu?
+31. Metinde net sayısal değer yerine "piyasa koşullarına göre belirlenecektir" gibi muğlak ifadeler geçtiğinde bunu yapılandırılmış veriye nasıl aktarıyorsun?
+
+--------------------------------------------------------------------------------
+KATEGORİ 6: TEKNİK MİMARİ VE YÖNETSEL SORGULAR (JÜRİ PANELİ SÖZLÜ SORULARI)
+--------------------------------------------------------------------------------
+32. RAG mimarinizde chunking (metin bölme) stratejisini finansal tablolar ve dipnotları kaybetmeyecek şekilde nasıl optimize ettiniz?
+33. Sistemin On-Premise ortamda çalışabilirliğini nasıl garanti ediyorsunuz? Harici bir API'ye (OpenAI, Anthropic vb.) bağımlılık var mı?
+34. Web scraping / veri toplama hattında BDDK katılım bankalarının dinamik JS ile yüklenen kampanya sayfalarını nasıl parse ettiniz?
+35. Bilgi çıkarımı (Information Extraction) aşamasında Named Entity Recognition (NER), RegEx veya LLM tabanlı Structured Output yöntemlerinden hangilerini kullandınız?
+================================================================================

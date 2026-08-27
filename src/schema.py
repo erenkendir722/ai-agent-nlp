@@ -83,8 +83,22 @@ class HedefKitle(StrEnum):
     YENI_MUSTERI = "yeni_musteri"
     MEVCUT_MUSTERI = "mevcut_musteri"
     MAAS_MUSTERISI = "maas_musterisi"
-    SEGMENT = "segment"  # öğrenci, emekli, KOBİ, kadın girişimci vb.
+    SEGMENT = "segment"  # bkz. SEGMENT_ORNEKLERI
     TUM_MUSTERILER = "tum_musteriler"
+
+
+SEGMENT_ORNEKLERI: tuple[str, ...] = (
+    "öğrenci", "emekli", "KOBİ", "kadın girişimci", "genç", "esnaf", "çiftçi",
+)
+"""`HedefKitle.SEGMENT` altına düşen müşteri kesimleri.
+
+Enum'da tek bir değer (`segment`) var çünkü sınıflandırma için ayrım gerekmiyor;
+ama bu sözcükler KULLANICININ ağzında geçiyor: «öğrencilere özel ne var?»
+Chatbot'un alan sözlüğü (`rag.chatbot._ALAN_SOZCUKLERI`) buradan besleniyor.
+
+Yorum satırıyken yarısı sözlükte vardı, yarısı yoktu: «emekli» tanınıyor,
+«öğrenci» tanınmıyordu ve «öğrencilere özel ne var?» kapsam dışı sayılıyordu
+(27 Ağustos taraması). İki yerde iki liste tutmanın bedeli buydu."""
 
 
 class BankaDurumu(StrEnum):

@@ -65,6 +65,10 @@ def _kayit(**alanlar: object) -> KampanyaKaydi:
         "ham_metin": "",
         "ortalama_guven": 0.0,
         "doluluk_orani": 0.0,
+        # Kâr payı sıralaması yalnız FİNANSMAN kampanyalarını kıyaslar
+        # (`karsilastirma.OLCUT_KAPSAMI`); bu testler sıralama mekaniğini
+        # ölçüyor, ürün sınıfını değil.
+        "kampanya_turu": "ihtiyac_finansmani",
     }
     return KampanyaKaydi(**{**varsayilan, **alanlar})  # type: ignore[arg-type]
 

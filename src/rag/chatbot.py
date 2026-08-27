@@ -20,15 +20,23 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
+from functools import lru_cache
 
 import httpx as _httpx
 import openai as _openai
 
-from src.comparison.karsilastirma import Agirliklar, avantaj_skorla, uyarilar
+from src.comparison.karsilastirma import (
+    OLCUT_KAPSAMI,
+    Agirliklar,
+    avantaj_skorla,
+    olcut_kapsaminda,
+    uyarilar,
+)
 from src.depolama import KampanyaKaydi, tum_kayitlar
 from src.preprocessing.normalizasyon import arama_anahtari
 from src.schema import (
     ALAN_ETIKETLERI,
+    SEGMENT_ORNEKLERI,
     BIRIM_GOSTERIMLERI,
     SAYISAL_ALANLAR,
     Birim,
@@ -50,6 +58,7 @@ class Niyet(StrEnum):
     TEKIL_SORGU = "tekil_sorgu"
     KARSILASTIRMA = "karsilastirma"
     KOSUL_SORGUSU = "kosul_sorgusu"
+    KORPUS_SORGUSU = "korpus_sorgusu"
     KAPSAM_DISI = "kapsam_disi"
 
 
@@ -491,10 +500,39 @@ _ALAN_SOZCUKLERI = frozenset(
         "vade", "taksit", "tahsis", "masraf", "ucret", "odul", "indirim",
         "puan", "hesap", "kart", "basvuru", "kosul", "avantaj", "urun",
         "musteri", "faiz", "kredi", "murabaha", "leasing", "katilma",
-        "tutar", "limit", "oran", "promosyon", "segment", "emekli",
+        "tutar", "limit", "oran", "promosyon", "segment",
+        # Müşteri kesimleri ŞEMADAN gelir; burada ikinci bir liste tutulmaz.
+        *SEGMENT_ORNEKLERI,
     )
 )
 """Alan sözlüğü. Sabit liste DEĞİL, çekirdek — geri kalanı veriden türer."""
+
+
+@lru_cache(maxsize=512)
+def _terim_deseni(terim: str) -> re.Pattern[str]:
+    kalip = re.escape(terim)
+    # Üç harf ve altı TAM SÖZCÜK aranır. «ev» için baş bağlaması yetmiyor:
+    # «evrak», «evet», «evli» hâlâ konut sorusu sayılırdı.
+    return re.compile(rf"\b{kalip}\b" if len(terim) <= 3 else rf"\b{kalip}")
+
+
+def terim_gecer(anahtar: str, terim: str) -> bool:
+    """Terim soruda SÖZCÜK BAŞINDA geçiyor mu?
+
+    NEDEN VAR — 27 Ağustos taramasında ölçüldü. Alt dize araması Türkçe'de
+    sessizce yanlış eşleşiyor: `_URUN_ANAHTARLARI`'ndaki «ev» (konut)
+    sözcüğü «ters çEVrilir» içinde bulunuyordu ve
+
+        soru  : «Python'da liste nasıl ters çevrilir?»
+        cevap : üç kampanya kaynağıyla KONUT kampanyası dökümü
+
+    Kapsam dışı olması gereken soru, kapsam içi sayılıyordu.
+
+    Sözcüğün SONU serbest bırakılır, çünkü Türkçe eklemeli bir dildir:
+    «vade» «vadesi»ni, «banka» «bankası»nı, «kart» «kartlarınız»ı bulmalı.
+    Bağlanan yalnız BAŞTIR — ek alan sözcük eşleşir, içine gömülen eşleşmez.
+    """
+    return _terim_deseni(terim).search(anahtar) is not None
 
 
 def alan_disi_soru(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
@@ -516,7 +554,7 @@ def alan_disi_soru(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
     """
     anahtar = arama_anahtari(soru)
 
-    if any(sozcuk in anahtar for sozcuk in _ALAN_SOZCUKLERI):
+    if any(terim_gecer(anahtar, sozcuk) for sozcuk in _ALAN_SOZCUKLERI):
         return False
 
     # Banka adları — veriden, ama tespit BURADA YAPILMAZ.
@@ -537,28 +575,35 @@ def alan_disi_soru(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
 
     # Kampanya türleri ve alan etiketleri — şemadan
     for tur in KampanyaTuru:
-        if arama_anahtari(tur.value.replace("_", " ")) in anahtar:
+        if terim_gecer(anahtar, arama_anahtari(tur.value.replace("_", " "))):
             return False
     for etiket in ALAN_ETIKETLERI.values():
-        if arama_anahtari(etiket) in anahtar:
+        if terim_gecer(anahtar, arama_anahtari(etiket)):
             return False
 
     # Ürün anahtarları — mevcut sözlükten
-    return all(a not in anahtar for a in _URUN_ANAHTARLARI)
+    return not any(terim_gecer(anahtar, a) for a in _URUN_ANAHTARLARI)
 
 
 _URUN_ANAHTARLARI = {
     "konut": "konut", "ev": "konut", "mortgage": "konut",
     "tasit": "tasit", "arac": "tasit", "araba": "tasit", "otomobil": "tasit",
-    "ihtiyac": "ihtiyac", "kredi karti": "kredi_karti", "kart": "kredi_karti",
+    "ihtiyac": "ihtiyac", "kredi karti": "kart", "kart": "kart",
     "katilma hesabi": "katilma", "mevduat": "katilma", "altin": "altin",
 }
+"""Soru sözcüğü -> kayıtta aranacak etiket (`kampanya_turu` · URL dilimi).
+
+Etiketin veride BİR KARŞILIĞI OLMALI. 27 Ağustos taramasında ölçüldü:
+«kart» sözcüğü `kredi_karti` etiketine bakıyordu, oysa `KampanyaTuru` değeri
+`kart` ve hiçbir URL'de `kredi_karti` geçmiyor — süzgeç 264 kaydın
+tamamını eliyor, cevap «karşılaştırma için en az iki bankanın kaydı
+gerekiyor» oluyordu. Aynı sebeple `mevduat` -> `katilma`."""
 
 
 def _urun_filtrele(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKaydi]:
     anahtar = arama_anahtari(soru)
     for sozcuk, etiket in _URUN_ANAHTARLARI.items():
-        if sozcuk in anahtar:
+        if terim_gecer(anahtar, sozcuk):
             suzulmus = [
                 k for k in kayitlar
                 if etiket in arama_anahtari(f"{k.kampanya_turu or ''} {k.urun_turu or ''} {k.kaynak_url}")
@@ -955,6 +1000,84 @@ _SIRALAMA_ISARETLERI = (
 )
 
 
+_SORU_EKLERI = frozenset({"mi", "mu", "midir", "mudur", "miyim", "muyum"})
+"""«… veriyor mu?» — evet/hayır soru eki. `arama_anahtari` ı→i, ü→u yaptığı
+için «mı» ve «mü» burada ayrıca yazılmaz."""
+
+
+def _evet_hayir_sorusu(soru: str) -> bool:
+    anahtar = arama_anahtari(soru).replace("?", " ")
+    return any(sozcuk in _SORU_EKLERI for sozcuk in anahtar.split())
+
+
+def _dogrulama_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap | None:
+    """«X bankası 500 ay vade veriyor mu?» — HAYIR diyebilmek.
+
+    NEDEN VAR — 27 Ağustos taraması, jüri sorusu kümesi:
+
+        soru  : «Kuveyt Türk 500 ay vade veriyor mu?»
+        cevap : «Kuveyt Türk … — Azami vade: 48 ay …»   ← rastgele bir kayıt
+
+    Sistem soruyu hiç yanıtlamıyordu. Uydurma da yapmıyordu, ama jüri
+    halüsinasyon yemi attığında görmek istediği şey sessiz bir kayıt dökümü
+    değil, açık bir REDDİR. Sistemin merkez iddiası «kanıtsız değer
+    üretilmez»; bunun görünür yüzü «veride olmayan değer onaylanmaz»dır.
+
+    YALNIZ ÜST SINIR REDDEDİLİR. «1 milyar TL veriyor mu?» sorusunda «milyar»
+    çözümlenmiyor ve sayı 1 olarak okunuyor; alt sınırdan da reddetseydik
+    cevap doğru kelimeyle yanlış gerekçe verirdi. Üstten reddetmek güvenli,
+    çünkü abartılmış iddia bu yönde gelir. Diğer her durumda None dönüp
+    olağan cevaba bırakılır — emin olunmayan yerde susmak.
+
+    SORULAN SAYI CEVABA YAZILMAZ. Kayıtta karşılığı olmadığı için kalkan onu
+    zaten reddederdi; ayrıca uydurma bir sayıyı tekrar etmek onu meşru
+    gösterir.
+    """
+    if not _evet_hayir_sorusu(soru):
+        return None
+
+    alan = _sorulan_olcut(soru)
+    if alan is None or alan == "masrafsiz_mi":
+        return None
+
+    adaylar = [
+        k for k in kayitlar
+        if getattr(k, alan, None) is not None and olcut_kapsaminda(k, alan)
+    ]
+    if not adaylar:
+        return None
+
+    en_yuksek = max(adaylar, key=lambda k: getattr(k, alan))
+    tavan = getattr(en_yuksek, alan)
+    if not any(deger > tavan for _, deger in _metindeki_sayilar(soru)):
+        return None
+
+    etiket = _OLCUT_ETIKETLERI[alan]
+    kapsam = {k.banka_adi for k in adaylar}
+    # Tek bankaya süzülmüşse adı bir kez yazılır; «X kampanyalarında … (X)»
+    # aynı adı iki kez okutuyordu.
+    if len(kapsam) == 1:
+        govde = (
+            f"**{en_yuksek.banka_adi}** kampanyalarında en yüksek "
+            f"**{etiket}** değeri {alan_goster(alan, tavan, en_yuksek.birim(alan))}."
+        )
+    else:
+        govde = (
+            f"Veri setinde en yüksek **{etiket}** değeri "
+            f"{alan_goster(alan, tavan, en_yuksek.birim(alan))} "
+            f"(**{en_yuksek.banka_adi}**)."
+        )
+    return Cevap(
+        parcalar=[
+            CevapParcasi("**Hayır.** Sorduğunuz değerde bir kampanya yok.", Koken.DUZ),
+            CevapParcasi(govde, Koken.YAPISAL),
+        ],
+        niyet=Niyet.TEKIL_SORGU,
+        kaynaklar=[_kaynakca(en_yuksek)],
+        kullanilan_kayitlar=[en_yuksek],
+    )
+
+
 def _liste_sorusu_mu(soru: str) -> bool:
     anahtar = arama_anahtari(soru)
     if not any(ipucu in anahtar for ipucu in _LISTE_IPUCLARI):
@@ -1026,9 +1149,120 @@ def _liste_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     )
 
 
+def _urun_notu(kayit: KampanyaKaydi, alan: str) -> str:
+    """Kapsamı olan ölçütte değerin HANGİ ÜRÜNDEN geldiğini yazar.
+
+    NEDEN — «Kâr payı oranı açısından iki banka EŞİT: aylık %0» cümlesi
+    doğru olduğunda bile okunmuyordu. Sıfır, kâr payı alınmayan gerçek bir
+    finansman kampanyasından geliyor (Togg %0, Albaraka vade farksız); ama
+    kullanıcı bunu göremediği için cevabı bozuk sanıyordu.
+
+    Yalnız `OLCUT_KAPSAMI`'nda kapısı olan alanlarda yazılır: ürün sınıfının
+    anlamı değiştirdiği ölçüt odur. Vadeye ya da ödüle tür yazmak satırı
+    uzatır, hiçbir belirsizliği gidermez.
+    """
+    if alan not in OLCUT_KAPSAMI:
+        return ""
+    etiket = tur_etiketi(kayit.kampanya_turu)
+    return f" ({etiket})" if etiket else ""
+
+
+_KORPUS_DESENLERI = tuple(
+    re.compile(desen)
+    for desen in (
+        # Sayım: «kaç» ile korpus nesnesi YAN YANA olmalı.
+        r"\bkac( tane| adet)? (kampanya|banka|kayit|veri)",
+        # Kapsam ve tazelik
+        r"\bveri set",
+        r"\b(veri|veriler|kayitlar)[a-z]* ne zaman",
+        r"\bne zaman (toplandi|cekildi|guncellendi)",
+        r"\bhangi bankalari (topluyor|tariyor|kapsiyor)",
+        r"\b(neleri|nereyi) kapsiyor",
+        r"\bkapsaminiz",
+    )
+)
+"""VERİ SETİNİN KENDİSİ hakkındaki sorular.
+
+27 Ağustos taramasında ölçüldü: «Kaç kampanya var?» sorusuna sistem rastgele
+tek bir Kuveyt Türk kampanyasının alan dökümünü veriyordu. Jürinin en olası
+ilk sorusu budur ve cevabı korpusta hazır duruyordu — sorulmuyordu.
+
+DESEN, ANAHTAR SÖZCÜK DEĞİL: «kaç» tek başına yetmez, korpus nesnesiyle yan
+yana olmalı. Yoksa «Bu kampanyada kaç taksit var?» de veri seti sorusu
+sayılır ve kullanıcı kampanya yerine korpus istatistiği alırdı."""
+
+
+def _korpus_sorusu_mu(soru: str) -> bool:
+    anahtar = arama_anahtari(soru)
+    return any(desen.search(anahtar) for desen in _KORPUS_DESENLERI)
+
+
+def _korpus_cevabi(kayitlar: list[KampanyaKaydi]) -> Cevap:
+    """Veri setinin kapsamı — kayıtlardan SAYILARAK üretilir.
+
+    Sayılar hiçbir kaydın alanı değil, bizim toplamımız; bu yüzden köken
+    `SISTEM` ve her sayı `hesap` girdilerinden yeniden üretilebiliyor
+    (bkz. `_sistem_dogrula`). Elle yazılmış bir toplam burada yakalanır.
+
+    Tarih «26 Ağustos 2026» biçiminde yazılır, «26.08.2026» değil: kalkan
+    noktalı biçimi tek bir sayı (26082026) olarak okur ve hiçbir girdiden
+    üretilemediği için cevabı bloklar.
+    """
+    if not kayitlar:
+        return Cevap(
+            parcalar=[CevapParcasi("Veri setinde kayıt bulunmuyor.", Koken.DUZ)],
+            niyet=Niyet.KORPUS_SORGUSU,
+        )
+
+    banka_sayilari: dict[str, int] = {}
+    for kayit in kayitlar:
+        banka_sayilari[kayit.banka_adi] = banka_sayilari.get(kayit.banka_adi, 0) + 1
+
+    tarihler = [k.cekim_tarihi for k in kayitlar if k.cekim_tarihi]
+    son = max(tarihler) if tarihler else None
+
+    hesap: dict[str, float] = {
+        "kampanya": float(len(kayitlar)),
+        "banka": float(len(banka_sayilari)),
+    }
+    for ad, adet in banka_sayilari.items():
+        hesap[f"adet_{ad}"] = float(adet)
+
+    satirlar = [
+        f"Veri setinde **{len(kayitlar)}** kampanya kaydı ve "
+        f"**{len(banka_sayilari)}** katılım bankası var.",
+        "",
+    ]
+    satirlar += [
+        f"- **{ad}** — {adet} kampanya"
+        for ad, adet in sorted(banka_sayilari.items())
+    ]
+    if son is not None:
+        hesap["gun"] = float(son.day)
+        hesap["yil"] = float(son.year)
+        satirlar += ["", f"Son çekim: {son.day} {_AY_ADLARI[son.month]} {son.year}."]
+
+    return Cevap(
+        parcalar=[CevapParcasi("\n".join(satirlar), Koken.SISTEM, hesap=hesap)],
+        niyet=Niyet.KORPUS_SORGUSU,
+    )
+
+
+_AY_ADLARI = {
+    1: "Ocak", 2: "Şubat", 3: "Mart", 4: "Nisan", 5: "Mayıs", 6: "Haziran",
+    7: "Temmuz", 8: "Ağustos", 9: "Eylül", 10: "Ekim", 11: "Kasım", 12: "Aralık",
+}
+"""Ay adları — tarih NOKTALI yazılamıyor, gerekçesi `_korpus_cevabi`'nde."""
+
+
 def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # Liste sorusu sıralama DEĞİL; biçimi ayrı (bkz. `_liste_sorusu_mu`).
-    if kayitlar and _liste_sorusu_mu(soru):
+    #
+    # Boş küme de buraya girer: ürün süzgeci hiçbir kayıt bırakmadıysa doğru
+    # cevap «bu ürüne ait kampanya yok»tur. «En az iki bankanın kaydı
+    # gerekiyor» demek kullanıcıya sistemin eksikliğini anlatır, oysa sorulan
+    # ürün veri setinde gerçekten yok.
+    if _liste_sorusu_mu(soru):
         return _liste_cevabi(soru, kayitlar)
 
     if len(kayitlar) < 2:
@@ -1093,9 +1327,23 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
 
     olcut_satirlari: list[str] = []
     for etiket, alan, yon, kalip in olcutler:
-        adaylar = [k for k in kayitlar if getattr(k, alan) is not None]
+        dolu = [k for k in kayitlar if getattr(k, alan) is not None]
+        # Motorla AYNI kapı: kart taksit promosyonunun «vade farksız» sıfırı
+        # bir finansman oranı değildir (`karsilastirma.OLCUT_KAPSAMI`).
+        adaylar = [k for k in dolu if olcut_kapsaminda(k, alan)]
         if not adaylar:
-            olcut_satirlari.append(f"- **{etiket}** açısından karşılaştırma yapılamıyor: bu bilgi hiçbir kampanyada belirtilmemiş.")
+            # Değer VAR ama kapsam dışıysa sebebi söylenir; «hiç belirtilmemiş»
+            # demek yanlış olurdu, kullanıcı kampanya sayfasında oranı görüyor.
+            sebep = (
+                "bu bankaların finansman kampanyalarında belirtilmemiş "
+                "(kart ve alışveriş kampanyalarındaki «vade farksız» sıfırları "
+                "finansman oranı sayılmaz)"
+                if dolu
+                else "bu bilgi hiçbir kampanyada belirtilmemiş"
+            )
+            olcut_satirlari.append(
+                f"- **{etiket}** açısından karşılaştırma yapılamıyor: {sebep}."
+            )
             continue
 
         # Sorulan uç avantajlı uçtan farklıysa soru kazanır (bkz. `_sorulan_yon`).
@@ -1108,6 +1356,7 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             satir = (
                 f"- **{etiket}** açısından **{kazanan.banka_adi}** daha avantajlıdır, "
                 f"çünkü {kalip.format(alan_goster(alan, deger, kazanan.birim(alan)))}"
+                f"{_urun_notu(kazanan, alan)}"
             )
         else:
             # «Daha avantajlıdır» YAZILMAZ: kullanıcı dezavantajlı ucu sordu,
@@ -1116,6 +1365,7 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
                 f"- **{etiket}** en {_YON_SOZU[istenen]} olan banka "
                 f"**{kazanan.banka_adi}**: "
                 f"{alan_goster(alan, deger, kazanan.birim(alan))}"
+                f"{_urun_notu(kazanan, alan)}"
             )
 
         # İKİ BANKA KIYASINDA KAYBEDENİN DEĞERİ DE YAZILIR (26 Ağustos).
@@ -1148,10 +1398,19 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
                     f"- **{etiket}** açısından iki banka EŞİT: "
                     f"{alan_goster(alan, deger, kazanan.birim(alan))}"
                 )
+                # Beraberliğin HANGİ ÜRÜNDE olduğu yalnız kapısı olan
+                # ölçütte yazılır; vadede «— A, B» eklemek satırı boşuna
+                # uzatır, iki bankanın adı zaten cümlenin öznesi.
+                if _urun_notu(kazanan, alan):
+                    satir += (
+                        f" — **{kazanan.banka_adi}**{_urun_notu(kazanan, alan)}, "
+                        f"**{rakip.banka_adi}**{_urun_notu(rakip, alan)}"
+                    )
             else:
                 satir += (
                     f"; **{rakip.banka_adi}** için bu değer "
                     f"{alan_goster(alan, rakip_deger, rakip.birim(alan))}"
+                    f"{_urun_notu(rakip, alan)}"
                 )
 
         olcut_satirlari.append(satir + ".")
@@ -1353,6 +1612,14 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     kayitlar = tum_kayitlar() if kayitlar is None else kayitlar
     niyet = niyet_belirle(soru)
 
+    # VERİ SETİNİN KENDİSİ soruluyorsa kayıt dökümü değil, kapsam dönmeli.
+    # Kapsam kapısından ÖNCE: «Veriler ne zaman toplandı?» sorusu hiçbir alan
+    # sözcüğü taşımıyor ve kapıda kapsam dışı ilan ediliyordu, oysa jürinin
+    # ilk soracağı şeylerden biri. Desen korpus nesnesine bağlı olduğu için
+    # kapı burada gevşemiyor (bkz. `_KORPUS_DESENLERI`).
+    if _korpus_sorusu_mu(soru):
+        return _korpus_cevabi(kayitlar)
+
     # Alan dışı mı? Yasak listesi yerine DAYANAK aranıyor — gerekçe
     # `alan_disi_soru`'nun notunda.
     if niyet == Niyet.KAPSAM_DISI or alan_disi_soru(soru, kayitlar):
@@ -1376,12 +1643,14 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
         bankalar = _bilinen_bankalar(kayitlar)
         return Cevap(
             parcalar=[CevapParcasi(
-                "Sorduğunuz banka veri setinde bulunmuyor, bu yüzden onun "
-                "hakkında bilgi veremem — başka bir bankanın verisini onun "
-                "yerine sunmam yanıltıcı olurdu.",
+                "Sorduğunuz banka bir **katılım bankası değil**; bu sistem "
+                "yalnızca Türkiye'de faaliyet gösteren katılım bankalarının "
+                "kampanyalarını kapsıyor. Mevduat bankalarının ürünleri "
+                "kapsam dışında — başka bir bankanın verisini onun yerine "
+                "sunmam yanıltıcı olurdu.",
                 Koken.DUZ,
             ), CevapParcasi(
-                "Veri setinde bulunan katılım bankaları: " + ", ".join(bankalar),
+                "Kapsadığım katılım bankaları: " + ", ".join(bankalar),
                 Koken.DUZ,
             )],
             niyet=Niyet.KAPSAM_DISI,
@@ -1390,7 +1659,11 @@ def sor(soru: str, kayitlar: list[KampanyaKaydi] | None = None) -> Cevap:
     ilgili = _bankalari_bul(soru, kayitlar) or kayitlar
     ilgili = _urun_filtrele(soru, ilgili)
 
-    if niyet == Niyet.TEKIL_SORGU:
+    # «… 500 ay veriyor mu?» — reddedilebilir bir iddia varsa önce o.
+    dogrulama = _dogrulama_cevabi(soru, ilgili)
+    if dogrulama is not None:
+        cevap = dogrulama
+    elif niyet == Niyet.TEKIL_SORGU:
         cevap = _tekil_cevap(soru, ilgili)
     elif niyet == Niyet.KARSILASTIRMA:
         cevap = _karsilastirma_cevabi(soru, ilgili)

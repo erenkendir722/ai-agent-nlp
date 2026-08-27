@@ -22,7 +22,13 @@ from enum import StrEnum
 from typing import Literal
 
 from src.depolama import KampanyaKaydi
-from src.schema import ALAN_BOYUTLARI, Birim, alan_etiketi, tur_etiketi
+from src.schema import (
+    ALAN_BOYUTLARI,
+    Birim,
+    KampanyaTuru,
+    alan_etiketi,
+    tur_etiketi,
+)
 
 Yon = Literal["dusuk_iyi", "yuksek_iyi"]
 
@@ -78,6 +84,71 @@ class Senaryo:
     vade_ay: int
 
 
+FINANSMAN_TURLERI = frozenset({
+    KampanyaTuru.FINANSMAN,
+    KampanyaTuru.IHTIYAC_FINANSMANI,
+    KampanyaTuru.KONUT_FINANSMANI,
+    KampanyaTuru.TASIT_FINANSMANI,
+})
+"""Kâr payının MALİYET olduğu türler — finansman satın alınıyor."""
+
+
+OLCUT_KAPSAMI: dict[str, frozenset[KampanyaTuru]] = {
+    "kar_payi_orani": FINANSMAN_TURLERI,
+}
+"""Bir ölçütün ANLAMLI olduğu kampanya türleri. Ortak tabanın ikinci yarısı.
+
+NEDEN GEREKLİ (27 Ağustos, 931 kayıtta ölçüldü):
+    `Senaryo` birim karışıklığını çözüyordu; bu ürün sınıfı karışıklığını
+    çözüyor. `kar_payi_orani` dolu 119 kaydın **110'u** kart, alışveriş ve
+    «diğer» kampanyalarından geliyor ve neredeyse hepsi sıfır:
+
+        «TROY kredi kartlarınız ile 1.000-100.000 TL sağlık harcamalarınıza
+         vade farksız 6 taksit»                        -> kar_payi_orani = 0
+
+    Bu değer o kampanya için YANLIŞ DEĞİL — vade farksız taksitte kâr payı
+    gerçekten sıfırdır. Yanlış olan, bir kart taksit promosyonunun sıfırını
+    bir ihtiyaç finansmanının aylık %2,87'siyle aynı min-maks ölçeğine
+    sokmaktı. Sonuç, her karşılaştırmanın aynı cümleyle bitmesiydi:
+
+        «Kâr payı oranı açısından iki banka EŞİT: aylık %0»
+
+    Dokuz bankanın beşinde (Dünya, Hayat Finans, Türkiye Emlak, Vakıf,
+    Ziraat) kâr payı verisinin TAMAMI bu türden geliyordu; o bankalar
+    finansman oranı hiç yayımlamamışken «%0 kâr payı» sunuyor görünüyordu.
+
+    Kapsam dışı kalan kayıt SİLİNMEZ, sıralamadan düşer: `Alan` kanıtıyla
+    yerinde durur, tekil sorguda kendi kaynağıyla gösterilir. Düşen tek şey
+    ONU BAŞKA ÜRÜNLE KIYASLAMA iddiasıdır.
+
+YAN ETKİ — `yatirim_urunu` da düşer, ki doğrusu odur: Türkiye Finans Günlük
+Hesap sayfasından gelen `11.0` bir katılma hesabı GETİRİSİDİR, finansman
+maliyeti değil. Sıralamada «en yüksek kâr payı» diye o çıkıyordu.
+
+Karar: `docs/kararlar/020-olcut-kapsami.md`."""
+
+
+def olcut_kapsaminda(kayit: KampanyaKaydi, alan_adi: str) -> bool:
+    """Bu kaydın bu alanı KARŞILAŞTIRMAYA girebilir mi?
+
+    Kapsam tanımlanmamış alanlar her kayıtta geçerlidir — vade, ödül ve
+    finansman tutarı ürün sınıfından bağımsız okunur.
+
+    Türü BELİRSİZ kayıt (`kampanya_turu` boş) kapsam dışıdır: türü bilinmeyen
+    bir kaydı finansman sayıp sıralamaya sokmak, bilmediğimiz şeyi varsaymak
+    olurdu.
+    """
+    kapsam = OLCUT_KAPSAMI.get(alan_adi)
+    if kapsam is None:
+        return True
+    if not kayit.kampanya_turu:
+        return False
+    try:
+        return KampanyaTuru(kayit.kampanya_turu) in kapsam
+    except ValueError:
+        return False
+
+
 def ortak_tabana_indir(
     kayit: KampanyaKaydi, alan_adi: str, senaryo: Senaryo | None
 ) -> float | None:
@@ -93,6 +164,11 @@ def ortak_tabana_indir(
     """
     deger = getattr(kayit, alan_adi, None)
     if deger is None:
+        return None
+
+    # Ürün sınıfı da ortak tabanın parçası: kart taksit promosyonunun sıfırı
+    # ile ihtiyaç finansmanının oranı aynı ölçeğe girmez (bkz. `OLCUT_KAPSAMI`).
+    if not olcut_kapsaminda(kayit, alan_adi):
         return None
 
     izinli = ALAN_BOYUTLARI.get(alan_adi)
@@ -381,18 +457,28 @@ def uyarilar(kayitlar: list[KampanyaKaydi]) -> list[Uyari]:
             "karşılaştırılamaz; toplam maliyet üzerinden değerlendirin.",
         ))
 
-    eksik_oran = sorted({k.banka_adi for k in kayitlar if k.kar_payi_orani is None})
+    # KIYASLANABİLİR oranı olan banka: değeri var VE finansman kampanyasından
+    # geliyor. Eskiden yalnız `is None` bakılıyordu; kart taksit
+    # promosyonundan gelen sıfırlar «oran var» sayılıyor ve bu uyarı hiç
+    # çıkmıyordu (bkz. `OLCUT_KAPSAMI`).
     tum_bankalar = {k.banka_adi for k in kayitlar}
+    oran_veren = {
+        k.banka_adi
+        for k in kayitlar
+        if ortak_tabana_indir(k, "kar_payi_orani", None) is not None
+    }
+    eksik_oran = sorted(tum_bankalar - oran_veren)
     if eksik_oran:
         if len(eksik_oran) == len(tum_bankalar):
-            nerede = "Hiçbir kampanyada belirtilmemiş"
+            nerede = "Hiçbirinin finansman kampanyasında belirtilmemiş"
         elif len(eksik_oran) <= 2:
-            nerede = f"{' ve '.join(eksik_oran)} kampanyasında belirtilmemiş"
+            nerede = f"{' ve '.join(eksik_oran)} için finansman kampanyasında belirtilmemiş"
         else:
-            nerede = f"{len(eksik_oran)} bankanın kampanyasında belirtilmemiş"
+            nerede = f"{len(eksik_oran)} bankanın finansman kampanyasında belirtilmemiş"
         mesajlar.append(Uyari(
             "Kâr payı oranı eksik",
-            f"{nerede}. Sıralamada bu alan nötr sayıldı.",
+            f"{nerede}. Kart ve alışveriş kampanyalarındaki «vade farksız» "
+            "sıfırları finansman oranı sayılmaz; sıralamada bu alan nötr kaldı.",
         ))
 
     turler = {k.kampanya_turu for k in kayitlar if k.kampanya_turu}

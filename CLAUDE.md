@@ -190,6 +190,24 @@ import'unda getirdiği için sonradan kurmak hiçbir şey değiştirmez. Bu sat�
 `make test`'i komple çökertti. Nöbetçi: `tests/test_arayuz_pyarrow_ayirici.py`.
 Ayrıntı: [`docs/ARAYUZ_INCELEME.md`](docs/ARAYUZ_INCELEME.md) — «Ortam».
 
+**Kâr payı karşılaştırması YALNIZ finansman kampanyalarını kıyaslar (27 Ağu).**
+`kar_payi_orani` dolu 119 kaydın 110'u kart/alışveriş/«diğer» kampanyalarından
+geliyor ve neredeyse hepsi sıfır — «vade farksız 6 taksit» promosyonları. O
+sıfır ADR 012'ye göre doğrudur; yanlış olan onu bir ihtiyaç finansmanının
+aylık %2,87'siyle aynı min-maks ölçeğine sokmaktı. Sonuç, hangi iki banka
+sorulursa sorulsun aynı cümleydi: «iki banka EŞİT: aylık %0». Dokuz bankanın
+beşinde kâr payı verisinin TAMAMI bu türdendi. Kapı
+`comparison.karsilastirma.OLCUT_KAPSAMI`'nda; `sirala`, `avantaj_skorla` ve
+chatbot aynı kapıdan geçer — kopya tutma. Kapsam dışı kayıt SİLİNMEZ, yalnız
+sıralamadan düşer. Ayrıntı: [ADR 020](docs/kararlar/020-olcut-kapsami.md).
+
+**Terim eşleştirmesi ALT DİZE değil, sözcük başıdır.** `chatbot.terim_gecer`
+baştan bağlar, sonu serbest bırakır — Türkçe eklemeli olduğu için «vade»
+«vadesi»ni bulmalı. Alt dize araması sessizce yanlış eşleşiyordu: ürün
+sözlüğündeki «ev» (konut) «ters çEVrilir» içinde bulunuyor ve «Python'da liste
+nasıl ters çevrilir?» sorusu üç kaynakla konut kampanyası dökümü alıyordu.
+Üç harf ve altı tam sözcük aranır, yoksa «ev» «evrak»ı da yakalar.
+
 **Sessiz yutma yasak.** Gömme hatası da, arama hatası da fırlatılır. Bu kural
 bedava öğrenilmedi: `embed_text` sıfır vektörü, `vektor_ara` boş liste
 döndürdüğü için RAG dört gün hiç çalışmadan çalışıyor göründü. Sıfır vektörü de
