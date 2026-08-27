@@ -402,7 +402,7 @@ def inject_custom_css():
             border-left: 3px solid rgba(0, 168, 107, 0.55);
             padding: 2px 0 2px 14px;
             margin: -4px 0 18px 0;
-            color: #A8A8B3;
+            color: #C4C4CE;
             font-size: 0.95rem;
             line-height: 1.55;
             letter-spacing: 0.1px;
@@ -424,13 +424,21 @@ def inject_custom_css():
             box-shadow: 0 4px 14px rgba(0,0,0,0.35);
         }
         .kl-kart-ad { font-size: 1.02rem; font-weight: 600; color: #F0F0F4; }
-        .kl-kart-alt { font-size: 0.86rem; color: #9A9AA5; margin-top: 3px; line-height: 1.5; }
+        .kl-kart-alt { font-size: 0.86rem; color: #B4B4BE; margin-top: 3px; line-height: 1.5; }
         .kl-kart-etiket {
-            font-size: 0.74rem; color: #8A8A95; text-transform: uppercase;
+            font-size: 0.74rem; color: #AFAFB8; text-transform: uppercase;
             letter-spacing: 0.6px; margin-bottom: 2px;
         }
         .kl-kart-deger { font-size: 1.16rem; font-weight: 650; color: #FFFFFF; }
-        .kl-kart-deger.yok { font-size: 0.92rem; font-weight: 500; color: #8A8A95; }
+        .kl-kart-deger.yok { font-size: 0.92rem; font-weight: 500; color: #AFAFB8; }
+
+        /* KONTRAST — projeksiyonda okunurluk (27 Agu incelemesi, madde 8).
+           Streamlit'in kendi `st.caption` grisi #808495 civari: koyu zeminde
+           ~3.4:1 kontrast veriyor, WCAG AA kucuk metin icin 4.5:1 istiyor.
+           Salonda isik varken «Son veri cekimi» satiri okunmuyordu. */
+        [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {
+            color: #ADADB8 !important;
+        }
         .kl-rozet {
             display: inline-block; font-size: 0.72rem; font-weight: 600;
             padding: 2px 9px; border-radius: 20px; margin-left: 8px;

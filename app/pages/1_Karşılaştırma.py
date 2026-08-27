@@ -75,11 +75,45 @@ with f1:
 
 with f2:
   bankalar = sorted({k.banka_adi for k in kayitlar})
+
+  # VARSAYILAN BANKA SECILI GELIR (27 Agu incelemesi, madde 5).
+  #
+  # «(Secilmedi)» ile aciliyordu: kullanici once bir banka secmeden
+  # «Biz vs Onlar» bolumu hic cizilmiyor, ekranin yarisi bos duruyordu. Bir
+  # bankacilik aracinda «kendi bankam» bos baslamaz.
+  #
+  # Hangisi? EN COK KAMPANYASI OLAN — demoda en dolu ekrani veren, elle
+  # secilmis degil veriden turetilmis. Kullanici degistirebilir; «(Secilmedi)»
+  # secenegi listede kaldi.
+  _sayim: dict[str, int] = {}
+  for _k in kayitlar:
+    _sayim[_k.banka_adi] = _sayim.get(_k.banka_adi, 0) + 1
+  _varsayilan = max(bankalar, key=lambda b: _sayim.get(b, 0))
+
   c_biz, c_onlar = st.columns([1, 2])
   with c_biz:
-    benim_bankam = st.selectbox("Benim Bankam (Biz)", ["(Seçilmedi)"] + bankalar)
+    _secenekler = ["(Seçilmedi)", *bankalar]
+    benim_bankam = st.selectbox(
+      "Benim Bankam (Biz)",
+      _secenekler,
+      index=_secenekler.index(_varsayilan),
+      format_func=format_bank_name,
+      help="Karşılaştırma bu bankanın gözünden yapılır. En çok kampanyası "
+           "olan banka önceden seçildi; değiştirebilirsiniz.",
+    )
   with c_onlar:
-    secili_bankalar = st.multiselect("Rakip Seti (Onlar)", bankalar, default=bankalar)
+    # KESIK ETIKET DUZELTMESI (madde 6): secim kutusu tam yasal unvani
+    # gosteriyordu («Albaraka Turk Katilim Ba…»), etiketler tasip okunmaz
+    # oluyordu. `format_bank_name` kayit defterindeki kisa adi verir; deger
+    # yine tam unvandir, yalniz GOSTERIM kisalir.
+    _rakipler = [b for b in bankalar if b != benim_bankam]
+    secili_bankalar = st.multiselect(
+      "Rakip Seti (Onlar)",
+      bankalar,
+      default=_rakipler,
+      format_func=format_bank_name,
+      help="Kendi bankanız listeden çıkarıldı; karşılaştırmaya ayrıca katılır.",
+    )
 
 st.markdown("<br>", unsafe_allow_html=True)
 with st.expander("Gelişmiş Filtreler (Piyasa Özeti)", expanded=False):
@@ -170,10 +204,35 @@ if not suzulmus:
 with st.sidebar:
   st.header("Skor ağırlıkları")
   st.caption("«En avantajlı» sıralamasını siz belirlersiniz.")
-  a_kar = st.slider("Kâr payı oranı", 0.0, 1.0, 0.40, 0.05)
-  a_masraf = st.slider("Masraf", 0.0, 1.0, 0.25, 0.05)
-  a_vade = st.slider("Vade", 0.0, 1.0, 0.20, 0.05)
-  a_odul = st.slider("Ödül", 0.0, 1.0, 0.15, 0.05)
+
+  # HAZIR PROFILLER (27 Agu incelemesi, madde 7).
+  #
+  # Dort kaydirici vardi ve ilk bakista yalniz biri goruluyordu; digerlerinin
+  # varligi kaydirmadan anlasilmiyordu. Ustelik demo sirasinda «simdi fiyata
+  # agirlik verelim» demek dort kaydiriciyi elle oynatmak demekti.
+  #
+  # Profiller kaydiricilarin YERINE GECMEZ, onlari KURAR: tiklandiginda
+  # degerler yazilir ve kaydiricilar guncel degeri gosterir. Kullanici
+  # oradan ince ayar yapmaya devam edebilir.
+  ONAYAR = {
+    "Dengeli": (0.40, 0.25, 0.20, 0.15),
+    "Fiyat odaklı": (0.70, 0.20, 0.05, 0.05),
+    "Masraf odaklı": (0.20, 0.60, 0.10, 0.10),
+    "Vade odaklı": (0.20, 0.10, 0.60, 0.10),
+  }
+  _p1, _p2 = st.columns(2)
+  for _i, (_ad, _degerler) in enumerate(ONAYAR.items()):
+    if (_p1 if _i % 2 == 0 else _p2).button(_ad, key=f"ks_onayar_{_ad}", use_container_width=True):
+      for _anahtar, _deger in zip(
+        ("ks_a_kar", "ks_a_masraf", "ks_a_vade", "ks_a_odul"), _degerler, strict=True
+      ):
+        st.session_state[_anahtar] = _deger
+      st.rerun()
+
+  a_kar = st.slider("Kâr payı oranı", 0.0, 1.0, 0.40, 0.05, key="ks_a_kar")
+  a_masraf = st.slider("Masraf", 0.0, 1.0, 0.25, 0.05, key="ks_a_masraf")
+  a_vade = st.slider("Vade", 0.0, 1.0, 0.20, 0.05, key="ks_a_vade")
+  a_odul = st.slider("Ödül", 0.0, 1.0, 0.15, 0.05, key="ks_a_odul")
   agirliklar = Agirliklar(a_kar, a_masraf, a_vade, a_odul)
   st.caption(f"Toplam {agirliklar.toplam():.2f} — otomatik dengelenir.")
 

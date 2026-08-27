@@ -34,6 +34,8 @@ import streamlit as st  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from datetime import date # noqa: E402
+
 from src.collector.toplayici import bankalari_yukle # noqa: E402
 from src.depolama import istatistikler # noqa: E402
 from src.schema import BankaDurumu # noqa: E402
@@ -58,6 +60,11 @@ st.set_page_config(
 inject_custom_css()
 ortak_kenar()
 sayfa_gezinme()
+
+
+def _asdate(deger):
+  """`kampanya_bitis` kayıtta date ya da datetime olabilir; ikisi de gelir."""
+  return deger.date() if hasattr(deger, "date") else deger
 
 
 @st.cache_data(ttl=60)
@@ -86,25 +93,6 @@ st.markdown(
 # Sıra DEMO SIRASINI izler (`ortak_kenar` içindeki metinle aynı), alfabetik ya
 # da dosya numarasına göre değil: jüri önünde ekranlar bu sırayla geziliyor.
 
-HIZLI_MENU = [
-  ("Banka Profili", "pages/5_Banka_Profili.py"),
-  ("Karşılaştırma", "pages/1_Karşılaştırma.py"),
-  ("Müşteri Profili", "pages/0_Müşteri_Profili.py"),
-  ("Chatbot", "pages/2_Chatbot.py"),
-  ("Metin Analizi", "pages/3_Metin_Analizi.py"),
-  ("Boru Hattı", "pages/4_Boru_Hattı.py"),
-]
-
-# Alti dugme TAM GENISLIKTE iki satirdi ve ekranin ustunu kaplıyordu; bu
-# duzen sayfanin en onemli seyinin gezinme oldugunu soyluyor. Degil — en
-# onemli sey rakamlar. Menu tek satirda, dar sutunlarda, sagi bos.
-_menu_sutunlari = st.columns([1, 1, 1, 1, 1, 1, 2.4])
-for _sutun, (_etiket, _sayfa) in zip(_menu_sutunlari, HIZLI_MENU, strict=False):
-  if _sutun.button(_etiket, key=f"gb_menu_{_sayfa}", use_container_width=True):
-    st.switch_page(_sayfa)
-
-st.divider()
-
 # `st.status` KALDIRILDI: tamamlanmış durum kutusu ekranda KALICI duruyor ve
 # «grafikler oluşturuluyor» diye bitmiş bir işi anlatmaya devam ediyordu.
 # Yükleme bitince yer tutan kutu bilgi değil gürültüdür.
@@ -112,20 +100,123 @@ kayitlar = kayitlari_yukle()
 ozet = _ozet()
 bankalar = _bankalar()
 
+# HIZLI MENU KALDIRILDI, YERINE VERIDEN TUREYEN AKSIYON (27 Agu incelemesi).
+#
+# Menu sol kenar cubugunun BIREBIR KOPYASIYDI: ayni alti sayfa, ayni sira,
+# ayni etiket. Ikinci bir kopya gezinmeyi kolaylastirmaz — hangisinin dogru
+# oldugunu sorgulatir ve ekranin ustunde bedava yer kaplar.
+#
+# Yerine gecen sey bir menu DEGIL: bugun bakilmasi gereken seyi VERIDEN
+# hesaplayip oraya goturuyor. Sayilar sabit yazilmadi; korpus degisince
+# kartlar da degisir. Sayfa adi tasiyan tek sey hedef dugmesidir.
+
+_bugun = date.today()
+_yakinda_bitenler = [
+  k for k in kayitlar
+  if k.kampanya_bitis and 0 <= (_asdate(k.kampanya_bitis) - _bugun).days <= 7
+]
+_oranli = [k for k in kayitlar if k.kar_payi_orani is not None]
+
+st.markdown("**Bugün önerilen aksiyon**")
+_a1, _a2, _a3 = st.columns(3)
+
+with _a1:
+  with st.container(border=True):
+    if _yakinda_bitenler:
+      st.markdown(
+        f'<div class="kl-kart-ad">{len(_yakinda_bitenler)} kampanya bu hafta bitiyor</div>'
+        '<div class="kl-kart-alt">Süresi dolmadan rakip teklifini kontrol edin.</div>',
+        unsafe_allow_html=True,
+      )
+    else:
+      st.markdown(
+        '<div class="kl-kart-ad">Bu hafta biten kampanya yok</div>'
+        '<div class="kl-kart-alt">Bitiş tarihlerini banka bazında görün.</div>',
+        unsafe_allow_html=True,
+      )
+    if st.button("Banka Profili", key="gb_aksiyon_biten", use_container_width=True):
+      st.switch_page("pages/5_Banka_Profili.py")
+
+with _a2:
+  with st.container(border=True):
+    st.markdown(
+      f'<div class="kl-kart-ad">{len(_oranli)} kampanyada kâr payı oranı var</div>'
+      '<div class="kl-kart-alt">Sıralanabilir olanlar bunlar; kalanında oran '
+      "kaynakta yayımlanmamış.</div>",
+      unsafe_allow_html=True,
+    )
+    if st.button("Karşılaştırma", key="gb_aksiyon_kiyas", use_container_width=True):
+      st.switch_page("pages/1_Karşılaştırma.py")
+
+with _a3:
+  with st.container(border=True):
+    st.markdown(
+      f'<div class="kl-kart-ad">Önünüzdeki müşteriye teklif hazırlayın</div>'
+      f'<div class="kl-kart-alt">{ozet["kampanya_sayisi"]} kampanya tutar, vade ve '
+      "segment kısıtlarıyla süzülür.</div>",
+      unsafe_allow_html=True,
+    )
+    if st.button("Müşteri Profili", key="gb_aksiyon_teklif", use_container_width=True):
+      st.switch_page("pages/0_Müşteri_Profili.py")
+
+st.divider()
+
+
 # ---------------------------------------------------------------------------
 # Üst göstergeler
 # ---------------------------------------------------------------------------
 
 s1, s2, s3, s4, s5 = st.columns(5)
 
-s1.metric("Kampanya", ozet["kampanya_sayisi"])
-s2.metric("Banka (veri toplanan)", ozet["banka_sayisi"])
-s3.metric("Kayıt defterindeki banka", len(bankalar))
-s4.metric("Ortalama alan doluluğu", f"%{ozet['ortalama_doluluk'] * 100:.0f}")
-s5.metric("Ortalama güven", f"{ozet['ortalama_guven']:.2f}")
+# HER OLCU KENDINI ACIKLAR (27 Agu incelemesi, madde 2).
+#
+# «Ortalama guven 0,79» bir juri uyesine hicbir sey soylemez — neyin
+# ortalamasi, neye gore guven? Sistemin en ozgun iddiasi seffaflik oldugu
+# icin, olcunun kendisinin acik olmamasi iddiayi zayiflatiyordu. Aciklamalar
+# hesabin TANIMINI veriyor, ovgu degil.
+_faal_sayisi = sum(1 for b in bankalar if b.durum == BankaDurumu.FAAL)
+
+s1.metric(
+  "Kampanya", ozet["kampanya_sayisi"],
+  help="Dokuz bankanın kampanya sayfalarından toplanıp yapısal alanlara "
+       "çıkarılmış kayıt sayısı. Yinelenen ve içeriksiz sayfalar ayıklandı.",
+)
+s2.metric(
+  "Banka (veri toplanan)", ozet["banka_sayisi"],
+  help="Kampanya kaydı bulunan banka sayısı. Faaliyetteki katılım "
+       f"bankalarının tamamı ({_faal_sayisi}) tarandı.",
+)
+s3.metric(
+  "Kayıt defterindeki banka", len(bankalar),
+  help=f"BDDK listesinin tamamı: {_faal_sayisi} faal banka ile henüz "
+       f"faaliyete geçmemiş {len(bankalar) - _faal_sayisi} banka. "
+       "Faaliyete geçmemiş bankaların sitesinde kampanya yoktur; "
+       "aradaki fark bir veri eksikliği değildir.",
+)
+s4.metric(
+  "Ortalama alan doluluğu", f"%{ozet['ortalama_doluluk'] * 100:.0f}",
+  help="Bir kampanyada çıkarılabilen alanların kaçta kaçı gerçekten dolu — "
+       "kayıt başına hesaplanıp ortalaması alınır. Düşük olması çıkarım "
+       "zaafı değil, bankaların kampanya sayfasında az bilgi yayımlaması: "
+       "kâr payı oranı çoğu bankada başvuru ekranının arkasında.",
+)
+s5.metric(
+  "Ortalama güven", f"{ozet['ortalama_guven']:.2f}",
+  help="Yalnız DOLU alanların güven skorlarının ortalaması (0–1). Her alan "
+       "hangi katmandan geldiğini taşır: kural eşleşmesi mi, dil modeli mi, "
+       "ikisinin uzlaşması mı. Boş alanlar bu ortalamaya girmez — girseydi "
+       "veri azlığı güven düşüklüğü gibi görünürdü.",
+)
 
 son = ozet["son_guncelleme"]
-st.caption(f"Son veri çekimi: **{son:%d.%m.%Y %H:%M}**" if son else "Son çekim bilinmiyor")
+st.caption(
+  f"Son veri çekimi: **{son:%d.%m.%Y %H:%M}** · "
+  f"Kayıt defterindeki {len(bankalar)} bankanın {_faal_sayisi}'i faal; "
+  f"kalan {len(bankalar) - _faal_sayisi}'i henüz faaliyete geçmedi "
+  "ve kampanya yayımlamıyor."
+  if son
+  else "Son çekim bilinmiyor"
+)
 
 st.divider()
 
@@ -178,8 +269,34 @@ with tab_piyasa:
     capraz = pd.crosstab(tablo["Banka"], tablo["Tür"])
     if not capraz.empty:
       dinamik_yukseklik_isi = max(380, len(capraz) * 35)
-      isi = px.imshow(capraz, text_auto=True, aspect="auto", color_continuous_scale="Viridis")
-      isi.update_layout(height=dinamik_yukseklik_isi, margin={"l": 0, "r": 0, "t": 10, "b": 0}, template="plotly_dark")
+      # RENK SKALASI VE LEGEND (27 Agu incelemesi, madde 4).
+      #
+      # Viridis'te SIFIR koyu mor: dolu bir hucre gibi goruluyor ve gozun
+      # «burada bir sey var» demesine yol aciyordu. Oysa sifir bilgi tasir —
+      # o banka o turde kampanya YAYIMLAMAMIS. Simdi sifir zeminle ayni
+      # notr gri, renk yalniz gercek farki tasiyor.
+      #
+      # Legend `r: 0` marjiyle kirpiliyordu; renk cubugu icin yer ayrildi.
+      _notr_yesil = [
+        [0.00, "#2A2A32"],
+        [0.001, "#123D30"],
+        [0.35, "#127050"],
+        [1.00, "#00C77E"],
+      ]
+      isi = px.imshow(
+        capraz, text_auto=True, aspect="auto", color_continuous_scale=_notr_yesil
+      )
+      isi.update_layout(
+        height=dinamik_yukseklik_isi,
+        margin={"l": 0, "r": 8, "t": 10, "b": 0},
+        template="plotly_dark",
+        coloraxis_colorbar={
+          "title": {"text": "Kampanya", "side": "right"},
+          "thickness": 12,
+          "len": 0.92,
+          "outlinewidth": 0,
+        },
+      )
       isi.update_xaxes(tickangle=-45)
       isi.update_traces(
         hovertemplate="Banka: <b>%{y}</b><br>Tür: %{x}<br>Adet: %{z}<extra></extra>"
