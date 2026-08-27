@@ -29,7 +29,7 @@ from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili  # noqa: E402
 from src.depolama import kampanyalari_oku  # noqa: E402
 from src.rag.chatbot import YASAL_UYARI  # noqa: E402
 from src.schema import HedefKitle  # noqa: E402
-from app.ui_utils import inject_custom_css, ortak_kenar  # noqa: E402
+from app.ui_utils import format_hedef_kitle, inject_custom_css, ortak_kenar  # noqa: E402
 
 st.set_page_config(page_title="Müşteri Profili", page_icon="", layout="wide")
 inject_custom_css()
@@ -37,10 +37,23 @@ ortak_kenar()
 
 st.title("Müşteri Profiline Göre Uygunluk")
 
+# NE YAPTIĞIMIZI İLK EKRANDA SÖYLE (27 Ağustos).
+#
+# Sayfaya giren kişi önce bir yükleme kutusu, sonra büyük bir uyarı, sonra üç
+# sayı görüyordu; ne yaptığımızı anlatan cümle yukarıda kalıp kayboluyordu.
+# Şerit `Genel Bakış` sayfasındakiyle aynı `kl-serit` sınıfını kullanır —
+# ekranlar arası tek görsel dil.
+st.markdown(
+    '<div class="kl-serit">Önünüzdeki müşteriyi tanımlayın; hangi rakip '
+    "kampanyanın <b>gerçekten uygulanabilir</b> olduğunu, hangisinin neden "
+    "elendiğini ve toplam maliyeti görün.</div>",
+    unsafe_allow_html=True,
+)
 st.caption(
     "Kampanya listesi değil, **kısıt çözümü**: müşteri tipi, tutar, vade ve "
     "mevcut ürünler birlikte değerlendirilir. Sıralama **manşet orana değil, "
-    "toplam maliyete** göre yapılır."
+    "toplam maliyete** göre yapılır. Kısıt çözümü ve taksit hesabı "
+    "**deterministik koddur**; bu ekranda hiçbir aşamada dil modeli çalışmaz."
 )
 
 
@@ -50,10 +63,12 @@ def _kampanyalar():
 
 
 try:
-    with st.status("Sistem verileri hazırlanıyor...", expanded=False) as status:
-        st.write("Orkestratör veritabanını tarıyor...")
+    # `st.status` DEĞİL: tamamlanmış durum kutusu ekranda KALICI duruyordu ve
+    # «grafikler oluşturuluyor» diyordu — bu sayfada grafik yok. Yükleme bittikten
+    # sonra ekranda yer tutan bir kutu bilgi değil gürültüdür. `st.spinner`
+    # bitince kaybolur; veri zaten önbelleklendiği için ikinci çizimde hiç görünmez.
+    with st.spinner("Kampanya verisi okunuyor…"):
         kampanyalar = _kampanyalar()
-        status.update(label="Veriler yüklendi ve grafikler oluşturuluyor!", state="complete", expanded=False)
 except Exception as e:
     st.error("Yerel veritabanına ulaşılamadı veya tablo bulunamadı.")
     if st.session_state.get("dev_mode", False):
@@ -66,49 +81,51 @@ if not kampanyalar:
     st.info("Görüntülenecek kampanya verisi bulunamadı. Önce `make crawl` ve `make extract` çalıştırın.")
     st.stop()
 
-MUSTERI_TIPI_ETIKETLERI = {
-    HedefKitle.YENI_MUSTERI: "Yeni müşteri",
-    HedefKitle.MEVCUT_MUSTERI: "Mevcut müşteri",
-    HedefKitle.MAAS_MUSTERISI: "Maaş müşterisi",
-    HedefKitle.SEGMENT: "Segment (emekli / öğrenci / KOBİ)",
-    HedefKitle.TUM_MUSTERILER: "Belirtilmemiş",
-}
-
 # ---------------------------------------------------------------------------
-# Girdi
+# Girdi — ANA ALANIN ÜSTÜNDE (27 Ağustos)
 # ---------------------------------------------------------------------------
+#
+# Form eskiden kenar çubuğundaydı ve `ortak_kenar()` marka bloğunu ÖNCE
+# yazdığı için en alta düşüyordu: sayfanın tek etkileşimli parçası, dizüstü
+# ekranında kaydırmadan görünmüyordu. Yukarı alındı — giren kişi ilk bakışta
+# hem ne yaptığımızı hem neyi değiştirebileceğini görüyor.
 
-with st.sidebar:
-    st.header("Müşteri bilgileri")
+MUSTERI_TIPI_SECENEKLERI = [
+    HedefKitle.MAAS_MUSTERISI,
+    HedefKitle.YENI_MUSTERI,
+    HedefKitle.MEVCUT_MUSTERI,
+    HedefKitle.SEGMENT,
+    HedefKitle.TUM_MUSTERILER,
+]
 
-    tip = st.selectbox(
+with st.container(border=True):
+    st.markdown("**Müşteri bilgileri**")
+    s1, s2, s3, s4 = st.columns([2, 2, 1, 3])
+
+    tip = s1.selectbox(
         "Müşteri tipi",
-        options=list(MUSTERI_TIPI_ETIKETLERI),
-        format_func=lambda h: MUSTERI_TIPI_ETIKETLERI[h],
-        index=2,
+        options=MUSTERI_TIPI_SECENEKLERI,
+        format_func=format_hedef_kitle,
     )
-    segment = None
-    if tip == HedefKitle.SEGMENT:
-        segment = st.text_input("Segment adı", value="emekli")
-
-    tutar = st.number_input(
+    tutar = s2.number_input(
         "Finansman tutarı (TL)", min_value=1_000, max_value=50_000_000,
         value=800_000, step=50_000,
     )
-    vade = st.number_input(
+    vade = s3.number_input(
         "Vade (ay)", min_value=1, max_value=360, value=120, step=12
     )
-    mevcut_urunler = st.multiselect(
+    mevcut_urunler = s4.multiselect(
         "Müşterinin mevcut ürünleri",
         options=["maaş hesabı", "kredi kartı", "katılma hesabı", "sigorta", "otomatik ödeme"],
+        placeholder="Varsa seçin",
         help="Zorunlu ürün koşulu olan kampanyalar bunlara göre değerlendirilir.",
     )
 
-    st.divider()
-    st.caption(
-        "Kısıt çözümü ve taksit hesabı **deterministik koddur**; bu ekranda "
-        "hiçbir aşamada dil modeli çalışmaz."
-    )
+    # Segment adı yalnız gerektiğinde çıkar; her zaman duran boş bir kutu
+    # kullanıcıya «burayı doldurmalı mıyım» diye sordururdu.
+    segment = None
+    if tip == HedefKitle.SEGMENT:
+        segment = s1.text_input("Segment adı", value="emekli")
 
 profil = MusteriProfili(
     musteri_tipi=tip,
@@ -129,6 +146,34 @@ kayit_dizini = {k.kampanya_id: k for k in kampanyalar}
 
 dogrulanmamis = sum(1 for s in uygunlar if s.veri_eksik)
 toplam_uygun = len(uygunlar)
+maliyetli = sum(1 for s in uygunlar if s.maliyet)
+
+# ÖLÇÜLER ÖNCE, UYARI SONRA (27 Ağustos). Uyarı en üstteydi ve ekranın en
+# büyük ögesiydi; kullanıcı daha ne baktığını bilmeden bir kusur listesi
+# okuyordu. Önce sonuç, sonra sonucun sınırı.
+ust1, ust2, ust3 = st.columns(3)
+ust1.metric(
+    "Uygun kampanya", toplam_uygun,
+    help="Seçilen müşteri profili (vade, tutar, segment) kısıtlarına uyan toplam kampanya sayısı.",
+)
+ust2.metric(
+    "Elenen", len(elenenler),
+    help="Kısıtlara uymadığı için kural motoru tarafından elenen kampanyalar.",
+)
+ust3.metric(
+    "Maliyeti hesaplanan", maliyetli,
+    help="Kâr payı ve masraf verisi eksiksiz olup toplam geri ödemesi hesaplanabilenler.",
+)
+
+# «Maliyeti hesaplanan: 4» sıradan üçüncü bir sayı gibi duruyordu; oysa
+# sayfanın asıl sınırı bu. «Toplam maliyete göre sıralı» iddiası yalnız o
+# kayıtlar için geçerli, kalanlar maliyetsiz sıralanıyor. Söylemek zorundayız.
+if toplam_uygun and maliyetli < toplam_uygun:
+    ust3.caption(
+        f"{toplam_uygun} uygun kampanyanın {maliyetli} tanesi. "
+        "Maliyet sıralaması yalnız bunları kapsar."
+    )
+
 if toplam_uygun > 0 and dogrulanmamis > 0:
     # «1024 / 1024 kampanyada doğrulanamadı» tuhaf okunuyordu: hepsi
     # doğrulanamadıysa oran vermek bilgi taşımaz, «hiçbirinde» taşır.
@@ -145,11 +190,6 @@ if toplam_uygun > 0 and dogrulanmamis > 0:
     )
 elif uygunlar:
     st.toast("Kısıt çözümü tamam — tüm koşullar değerlendirildi.")
-
-ust1, ust2, ust3 = st.columns(3)
-ust1.metric("Uygun kampanya", len(uygunlar), help="Seçilen müşteri profili (vade, tutar, segment) kısıtlarına uyan toplam kampanya sayısı.")
-ust2.metric("Elenen", len(elenenler), help="Kısıtlara uymadığı için kural motoru tarafından elenen kampanyalar.")
-ust3.metric("Maliyeti hesaplanan", sum(1 for s in uygunlar if s.maliyet), help="Kâr payı ve masraf verisi eksiksiz olup toplam geri ödemesi hesaplanabilenler.")
 
 # ---------------------------------------------------------------------------
 # Uygun kampanyalar
@@ -183,8 +223,22 @@ for sira, sonuc in enumerate(uygunlar[:15], 1):
             deger.metric("Toplam geri ödeme", "Belirtilmemiş")
             deger.caption("Kâr payı oranı yok ya da makul aralık dışında.")
 
-        for gerekce in sonuc.gerekceler:
-            st.markdown(str(gerekce))
+        # TEKRAR EDEN CÜMLE KISALTILDI (27 Ağustos).
+        #
+        # Kısıt verisi olmayan kayıtta gerekçe her seferinde aynı uzun cümle
+        # oluyordu: «Uygun — Uygunluk kısıtı bu kayıtta yok — kampanya
+        # metninde belirtilmemiş ya da çıkarılamamış olabilir; kısıtlar
+        # doğrulanmadı.» 331 kartın 302'sinde birebir aynı. Üstelik aynı bilgi
+        # sayfanın başındaki uyarıda toplu hâlde zaten yazıyor; kart başına
+        # tekrar etmek listeyi okunmaz yapıyordu.
+        #
+        # Gerçekten DEĞERLENDİRİLMİŞ bir kısıt varsa gerekçe tam hâliyle
+        # gösterilir — asıl bilgi orada.
+        if sonuc.veri_eksik:
+            st.caption("Kısıt bilgisi bu kayıtta yok; koşullar doğrulanmadı.")
+        else:
+            for gerekce in sonuc.gerekceler:
+                st.markdown(str(gerekce))
 
         # KANIT ZİNCİRİ: sayının hangi cümleden geldiği tek tıkla görünür.
         if kampanya is not None and kampanya.kar_payi_orani.var_mi:
