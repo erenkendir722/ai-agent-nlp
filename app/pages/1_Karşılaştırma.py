@@ -22,7 +22,9 @@ from src.comparison.karsilastirma import ( # noqa: E402
   KRITER_ETIKETLERI,
   Agirliklar,
   Kriter,
+  Senaryo,
   avantaj_skorla,
+  ortak_tabana_indir,
   sirala,
   toplam_maliyet,
   vade_duyarliligi,
@@ -530,7 +532,13 @@ if not sirali:
   st.info("Karşılaştırılacak kampanya yok.")
 else:
   # Kampanya Seçimi
-  kampanya_secenekleri = {f"{format_bank_name(k.banka_adi)} - {format_kategori(k.urun_turu or k.kampanya_turu)}": k for k in sirali}
+  kampanya_secenekleri = {}
+  for k in sirali:
+    isim = f"{format_bank_name(k.banka_adi)} - {format_kategori(k.urun_turu or k.kampanya_turu)}"
+    # Aynı isimde birden fazla kampanya varsa, kâr payı olan (üstte çıkan) ezilmesin
+    if isim not in kampanya_secenekleri:
+      kampanya_secenekleri[isim] = k
+      
   secilen_adlar = st.multiselect(
     "Karşılaştırmak istediğiniz kampanyaları seçin (En fazla 3)",
     options=list(kampanya_secenekleri.keys()),
@@ -577,13 +585,38 @@ else:
           maliyet_sonuclari.append(float('inf'))
           continue
         
-        # Limitleri geçti, hesapla
-        tahsis = float(kayit.tahsis_ucreti) if (kayit.tahsis_ucreti and kayit.tahsis_ucreti != "Belirtilmemiş") else 0.0
+        # TAHSİS ÜCRETİ ORTAK TABANA İNDİRİLİR (27 Ağustos).
+        #
+        # Alan HEM TL HEM YÜZDE taşıyor; ham değer doğrudan `toplam_maliyet`e
+        # verilirse yüzde, lira sanılıp toplama eklenir. Ölçüldü: `tahsis_ucreti`
+        # dolu 41 kaydın 40'ı (%98) yüzde birimli.
+        #
+        #     %0,5 tahsis · 500.000 TL finansman
+        #       gerçek  : 2.500 TL
+        #       hatalı  :     0,50 TL      → 5.000 kat sapma
+        #
+        # `ortak_tabana_indir` bu işi zaten yapıyor ve kullanıcıdan aldığımız
+        # anapara + vade tam olarak bir `Senaryo`. Birim çözülemezse `None`
+        # döner — o zaman sıfır varsaymak yerine DURUMU SÖYLERİZ; sessizce
+        # eksik masrafla hesaplanan bir «en uygun» yanıltıcıdır.
+        senaryo = Senaryo(anapara=float(ortak_anapara), vade_ay=int(ortak_vade))
+        tahsis = ortak_tabana_indir(kayit, "tahsis_ucreti", senaryo)
+        tahsis_cozulemedi = kayit.tahsis_ucreti is not None and tahsis is None
+        tahsis = tahsis or 0.0
+
         sonuc = toplam_maliyet(ortak_anapara, float(kayit.kar_payi_orani), int(ortak_vade), tahsis)
         maliyet_sonuclari.append(sonuc['toplam_geri_odeme'])
         
         st.metric("Aylık Taksit", f"{sonuc['aylik_taksit']:,.2f} TL".replace(",", "."))
         st.metric("Toplam Geri Ödeme", f"{sonuc['toplam_geri_odeme']:,.2f} TL".replace(",", "."))
+
+        if tahsis_cozulemedi:
+          st.caption(
+            "Tahsis ücretinin birimi çözülemedi; toplama **dâhil edilmedi**. "
+            "Gerçek maliyet buradakinden yüksek olabilir."
+          )
+        elif tahsis:
+          st.caption(f"Tahsis ücreti dâhil: {tahsis:,.0f} TL".replace(",", "."))
         
         # Görsel Maliyet Dağılımı (Plotly Donut)
         df_donut = pd.DataFrame({
@@ -593,7 +626,7 @@ else:
         fig = px.pie(df_donut, values='Tutar', names='Kategori', hole=0.6, 
                color_discrete_sequence=['#1f77b4', '#aec7e8', '#ff7f0e'])
         fig.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=150)
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key=f"donut_karsilastirma_{i}")
         
     # Kazananı Vurgulama
     gecerli_maliyetler = [m for m in maliyet_sonuclari if m != float('inf')]
@@ -601,9 +634,29 @@ else:
       en_dusuk_maliyet = min(gecerli_maliyetler)
       for i, ad in enumerate(secilen_adlar):
         if maliyet_sonuclari[i] == en_dusuk_maliyet:
+          kazanan = kampanya_secenekleri[ad]
           with cols[i]:
-            st.success("**En Uygun Seçenek**")
-            st.caption("Düşük kâr payı illüzyonuna düşmediniz; gizli masraflar dâhil cebinizden çıkacak en düşük tutar.")
+            st.success("**En uygun seçenek**")
+            st.caption(
+              "Manşet orana değil, tahsis ücreti dâhil TOPLAM geri ödemeye göre. "
+              "Düşük kâr payı her zaman düşük maliyet demek değildir."
+            )
+
+            # DEVAM YOLU — karşılaştırma bir cevap verir, sonrası boşluktu.
+            # Kullanıcı «peki bu banka nasıl bir kurum» ya da «kaynağı nerede»
+            # diye sorduğunda gidecek yeri yoktu.
+            if st.button(
+              "Devam et — banka detayına git",
+              key=f"kars_devam_{i}",
+              type="primary",
+              use_container_width=True,
+            ):
+              # Anahtar, Banka Profili'ndeki `st.selectbox`'ın KEY'i ile aynı.
+              st.session_state["bp_secili_banka"] = kazanan.banka_adi
+              st.switch_page("pages/5_Banka_Profili.py")
+
+            st.markdown(f"[Kampanyanın kaynak sayfası]({kazanan.kaynak_url})")
+            st.caption(f"{kazanan.cekim_tarihi:%d.%m.%Y} tarihinde alınmıştır")
 
     # -----------------------------------------------------------------------
     # Vade duyarlılığı — karar desteği
