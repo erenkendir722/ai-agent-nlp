@@ -44,7 +44,13 @@ from src.collector.toplayici import (  # noqa: E402
   topla,
 )
 from src.depolama import VERITABANI_URL  # noqa: E402
-from src.izleme import Tetikleyici, hedefleri_oku, tazelik_denetle  # noqa: E402
+from src.izleme import (  # noqa: E402
+  Tetikleyici,
+  hedefleri_oku,
+  kesif_kos,
+  kesif_taban_oku,
+  tazelik_denetle,
+)
 from src.izleme.dinleyici import taban_oku  # noqa: E402
 from src.extraction.saglayici import (  # noqa: E402
   EVREN_MODEL,
@@ -62,10 +68,12 @@ from app.akis import (  # noqa: E402
 from app.boru_durumu import (  # noqa: E402
   AZAMI_GUNLUK_GECMISI,
   CikarimDurumu,
+  KesifDurumu,
   TazelikDurumu,
   ToplamaDurumu,
   acik_kartlari_kapat,
   cikarim_olaylarini_isle,
+  kesif_olaylarini_isle,
   tazelik_kartlarini_kapat,
   tazelik_olaylarini_isle,
   toplama_olaylarini_isle,
@@ -110,6 +118,7 @@ st.session_state.setdefault("bh_is_turu", "")
 st.session_state.setdefault("bh_toplama_ozet", None)
 st.session_state.setdefault("bh_cikarim_ozet", None)
 st.session_state.setdefault("bh_tazelik_ozet", None)
+st.session_state.setdefault("bh_kesif_ozet", None)
 st.session_state.setdefault("bh_oturum_urlleri", [])
 
 
@@ -238,6 +247,11 @@ def _bekleyen_isi_devral() -> bool:
     while (kalan := olaylari_cek(is_)):
       cikarim_olaylarini_isle(durum, kalan)
     _isi_bitir("bh_cikarim_ozet")
+  elif tur == "kesif":
+    durum = _durum_al("bh_kesif_durum", KesifDurumu)
+    while (kalan := olaylari_cek(is_)):
+      kesif_olaylarini_isle(durum, kalan)
+    _isi_bitir("bh_kesif_ozet")
   elif tur == "tazelik":
     durum = _durum_al("bh_tazelik_durum", TazelikDurumu)
     while (kalan := olaylari_cek(is_)):
@@ -260,7 +274,7 @@ MESGUL = bool(st.session_state.bh_is and st.session_state.bh_is.calisiyor_mu())
 # ---------------------------------------------------------------------------
 
 sekme_toplama, sekme_cikarim, sekme_tazelik = st.tabs(
-  ["1 · Veri Toplama", "2 · Çıkarım", "3 · Veri Tazeliği"]
+  ["1 · Veri Toplama", "2 · Çıkarım", "3 · Veri Denetimi"]
 )
 
 
@@ -737,9 +751,226 @@ with sekme_cikarim:
     _cikarim_ciz(c_durum, None, akiyor=False, gecen=0.0)
 
 
-# === SEKME 3 — VERİ TAZELİĞİ (G-17) ========================================
+# === SEKME 3 — VERİ DENETİMİ (A: keşif G-19 · B: tazelik G-17) =============
 
 with sekme_tazelik:
+  # ---------------------------------------------------------------------
+  # A) YENİ KAMPANYA KEŞFİ (G-19) — «elimizde OLMAYAN kampanya çıktı mı?»
+  # ---------------------------------------------------------------------
+  st.subheader("A · Yeni Kampanya Keşfi")
+  st.markdown(
+    "Bankanın kampanya **listesi** yeniden keşfedilir ve envanterimizle "
+    "karşılaştırılır: **listede olup elimizde olmayan** kampanya var mı?"
+  )
+  st.caption(
+    "Aşağıdaki B bölümü farklı bir soruyu cevaplar — elimizdekiler bayatladı "
+    "mı. Keşif onu göremez, çünkü envanterde olmayan bir kampanyanın adresi "
+    "hiç bilinmez. Detay sayfası ÇEKİLMEZ: yalnız liste keşfi koşar."
+  )
+
+  kesif_taban = kesif_taban_oku()
+  kesif_bankalar = _kaziyicili_bankalar()
+  ka1, ka2 = st.columns([1.4, 1])
+  with ka1:
+    k_tum = [kod for kod, _ in kesif_bankalar]
+    k_adlar = dict(kesif_bankalar)
+    st.session_state.setdefault("bh_k_bankalar", k_tum)
+    st.markdown("**Bankalar**")
+    kb1, kb2 = st.columns(2)
+    if kb1.button(
+      f"Tümünü seç ({len(k_tum)})", disabled=MESGUL,
+      use_container_width=True, key="bh_k_hepsi",
+    ):
+      st.session_state.bh_k_bankalar = k_tum
+    if kb2.button(
+      "Temizle", disabled=MESGUL, use_container_width=True, key="bh_k_temizle"
+    ):
+      st.session_state.bh_k_bankalar = []
+    k_secili = st.multiselect(
+      "Bankalar", options=k_tum,
+      format_func=lambda kod: k_adlar.get(kod, kod),
+      key="bh_k_bankalar", disabled=MESGUL,
+      label_visibility="collapsed", placeholder="Banka seçin…",
+    )
+    st.caption(f"{len(k_secili)} / {len(k_tum)} banka seçili")
+  with ka2:
+    st.metric("Keşif tabanı", f"{len(kesif_taban)} banka")
+    st.caption(
+      "İlk keşif taban çizgisi kurar; «kaldırılmış» iddiası ikinci koşudan "
+      "itibaren anlamlıdır."
+    )
+
+  # SÜRE ÖLÇÜLENDİR: Hayat Finans 9 sn, Albaraka 81 sn (27 Ağu, gerçek koşu).
+  st.caption(
+    f"Seçili **{len(k_secili)} banka** · ölçülen keşif süresi banka başına "
+    "**9–81 sn** (liste uzunluğuna göre) · robots kapısı ve nezaket kuralı "
+    "keşifte de işler · yazma hedefi `data/izleme/kesif.json`."
+  )
+
+  kd1, kd2, _ = st.columns([1, 1, 3])
+  k_basla = kd1.button(
+    "Keşfi Başlat", type="primary", disabled=MESGUL or not k_secili,
+    use_container_width=True, key="bh_k_basla",
+  )
+  k_iptal = kd2.button(
+    "İptal", disabled=not (MESGUL and st.session_state.bh_is_turu == "kesif"),
+    use_container_width=True, key="bh_k_iptal",
+  )
+
+  if not k_secili:
+    st.warning("En az bir banka seçin.")
+  if MESGUL and st.session_state.bh_is_turu != "kesif":
+    st.info("Şu an başka bir koşu sürüyor — aynı anda tek iş çalışır.")
+
+  if k_iptal and st.session_state.bh_is is not None:
+    st.session_state.bh_is.iptal_et()
+    st.toast("İptal istendi — açık banka bitince duracak.")
+
+  if k_basla:
+    st.session_state.bh_kesif_ozet = None
+    st.session_state["bh_kesif_durum"] = KesifDurumu()
+    k_hedefler = [b for b in bankalari_yukle() if b.kod in k_secili]
+
+    def _kesif_isi(is_, *, bankalar=k_hedefler):
+      """İŞÇİ PARÇACIĞI — burada hiçbir `st.*` çağrılmaz."""
+      return kesif_kos(
+        bankalar, gorunmez=True, ilerleme=is_.bildir, iptal=is_.iptal_edildi_mi
+      )
+
+    st.session_state.bh_is = baslat("kesif", _kesif_isi)
+    st.session_state.bh_is_turu = "kesif"
+    st.rerun()
+
+  k_durum = _durum_al("bh_kesif_durum", KesifDurumu)
+
+  def _kesif_ciz(durum: KesifDurumu, *, akiyor: bool, gecen: float) -> None:
+    ku = st.columns(4)
+    ku[0].metric(
+      "YENİ kampanya", durum.yeni,
+      help="Listede olup envanterimizde olmayan adres. Asıl hedef bu sayı.",
+    )
+    ku[1].metric("Listede bulunan", durum.bulunan)
+    ku[2].metric(
+      "Kaldırılmış", durum.kaldirilmis,
+      help="Önceki keşifte olup bu koşuda listede çıkmayan.",
+    )
+    ku[3].metric("Geçen süre", f"{gecen:.0f} sn")
+    st.markdown(
+      ilerleme_cubugu(durum.biten, durum.toplam, akiyor=akiyor),
+      unsafe_allow_html=True,
+    )
+    st.markdown(banka_izgarasi(list(durum.bankalar.values())), unsafe_allow_html=True)
+    _gunluk_ciz(durum.olaylar, anahtar="bh_k_gunluk")
+
+  if MESGUL and st.session_state.bh_is_turu == "kesif":
+
+    @st.fragment(run_every=0.4)
+    def _canli_kesif() -> None:
+      is_ = st.session_state.bh_is
+      if is_ is None:
+        return
+      durum = _durum_al("bh_kesif_durum", KesifDurumu)
+      kesif_olaylarini_isle(durum, olaylari_cek(is_))
+      if not is_.calisiyor_mu():
+        _bekleyen_isi_devral()
+        st.rerun(scope="app")
+      _kesif_ciz(durum, akiyor=True, gecen=is_.gecen_sure())
+
+    _canli_kesif()
+
+  elif st.session_state.bh_kesif_ozet:
+    k_paket = st.session_state.bh_kesif_ozet
+    k_ozet = k_paket["sonuc"]
+    _kesif_ciz(k_durum, akiyor=False, gecen=k_paket["sure"])
+    _hata_kutusu(k_paket)
+
+    if k_ozet is not None:
+      if k_ozet.iptal_edildi:
+        st.warning(
+          "Keşif İPTAL edildi — sayılar kesildiği ana kadarkidir. "
+          "Keşfedilen bankalar taban çizgisine yazıldı."
+        )
+      if k_ozet.toplam_yeni:
+        st.warning(
+          f"**{k_ozet.toplam_yeni} kampanya listede var ama elimizde yok.** "
+          "Toplamak için Sekme 1'den ilgili bankaları koşun — keşif kendi "
+          "başına veri çekmez."
+        )
+        st.dataframe(
+          pd.DataFrame(
+            [
+              {"Banka": format_bank_name(s.banka_adi), "Yeni kampanya adresi": url}
+              for s in k_ozet.sonuclar
+              for url in s.yeni
+            ]
+          ),
+          use_container_width=True, hide_index=True,
+        )
+      else:
+        st.success(
+          "**Listede elimizde olmayan kampanya yok.** Envanter, bankaların "
+          "güncel kampanya listeleriyle örtüşüyor."
+        )
+
+      if k_ozet.taban_kuruldu_mu:
+        st.info(
+          "**Keşif tabanı kuruldu.** «Kaldırılmış» iddiası bu koşuda anlamlı "
+          "değil: karşılaştırılacak önceki keşif yoktu."
+        )
+
+      k_satir = [
+        {
+          "Banka": format_bank_name(s.banka_adi),
+          "Listede": s.bulunan,
+          "YENİ": len(s.yeni),
+          "Kaldırılmış": len(s.kaldirilmis),
+          "Süre (sn)": round(s.sure),
+          "Hata": s.hata[:40] if s.hata else "",
+        }
+        for s in k_ozet.sonuclar
+      ]
+      if k_satir:
+        st.markdown("**Banka bazında**")
+        st.dataframe(pd.DataFrame(k_satir), use_container_width=True, hide_index=True)
+
+      kaldirilanlar = [
+        (format_bank_name(s.banka_adi), u)
+        for s in k_ozet.sonuclar
+        for u in s.kaldirilmis
+      ]
+      if kaldirilanlar:
+        with st.expander(f"Listeden düşenler ({len(kaldirilanlar)})"):
+          st.caption(
+            "Önceki keşifte görünüp bu koşuda görünmeyen adresler. «Süresi "
+            "geçti» anlamına GELMEZ: arşive taşınmış ya da o turda kaçırılmış "
+            "olabilir."
+          )
+          st.dataframe(
+            pd.DataFrame(kaldirilanlar, columns=["Banka", "Kaynak"]),
+            use_container_width=True, hide_index=True,
+          )
+
+      gorunmeyen = sum(s.envanterde_gorunmeyen for s in k_ozet.sonuclar)
+      if gorunmeyen:
+        with st.expander(f"Envanterde olup listede görünmeyen ({gorunmeyen}) — bilgi"):
+          st.caption(
+            "Bu sayı «kaldırıldı» DEĞİLDİR ve öyle raporlanmaz. Ölçüldü "
+            "(27 Ağu): `data/raw` yalnız kampanya detaylarından ibaret değil — "
+            "Albaraka'nın 136 kaydının 88'i ürün sayfası ve `kampanya_urlleri()` "
+            "onları tasarımı gereği hiç döndürmüyor. Bu yüzden «kaldırılmış» "
+            "yönü envantere değil, ÖNCEKİ KEŞFE karşı hesaplanır."
+          )
+      st.caption(f"Keşif tabanı: `{k_ozet.taban_dosyasi}`")
+  else:
+    _kesif_ciz(k_durum, akiyor=False, gecen=0.0)
+
+  st.divider()
+
+  # ---------------------------------------------------------------------
+  # B) VERİ TAZELİĞİ (G-17) — «elimizdekiler bayatladı mı?»  DEĞİŞMEDİ
+  # ---------------------------------------------------------------------
+  st.subheader("B · Elimizdekiler Güncel mi")
+
   tetikleyici = Tetikleyici()
   taban = taban_oku()
 

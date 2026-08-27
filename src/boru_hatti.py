@@ -662,6 +662,65 @@ def komut_tazelik(args: argparse.Namespace) -> int:
     return 0
 
 
+def komut_kesif(args: argparse.Namespace) -> int:
+    """Yeni kampanya keşfi (G-19) — listede olup elimizde olmayan var mı?
+
+    YALNIZ liste keşfi koşar; detay sayfası çekilmez, hiçbir kayıt yazılmaz.
+    `data/raw` ve `data/katilim.db` bu komuttan etkilenmez.
+    """
+    from src.izleme import kesif_kos
+
+    bankalar = bankalari_yukle()
+    if args.banka:
+        bankalar = [b for b in bankalar if b.kod in args.banka or b.kisa_ad in args.banka]
+        if not bankalar:
+            log.error("Eşleşen banka yok: %s", args.banka)
+            return 1
+
+    ozet = kesif_kos(
+        bankalar,
+        gorunmez=not args.gorunur,
+        ilerleme=_kesif_ilerlemesi,
+    )
+
+    print()
+    print("=" * 64)
+    print(f"  Keşfedilen banka     : {len(ozet.sonuclar)}")
+    print(f"  Listede bulunan adres: {ozet.toplam_bulunan}")
+    print(f"  YENİ (elimizde yok)  : {ozet.toplam_yeni}")
+    print(f"  Kaldırılmış          : {ozet.toplam_kaldirilmis}")
+    print(f"  Hatalı banka         : {ozet.hatali_banka}")
+    print(f"  Süre                 : {ozet.sure:.0f} sn")
+    print("-" * 64)
+    for sonuc in ozet.sonuclar:
+        if sonuc.hata:
+            print(f"  {sonuc.banka_adi[:18]:18} HATA: {sonuc.hata[:38]}")
+            continue
+        print(
+            f"  {sonuc.banka_adi[:18]:18} bulunan={sonuc.bulunan:3} "
+            f"yeni={len(sonuc.yeni):3} kaldirilmis={len(sonuc.kaldirilmis):3} "
+            f"({sonuc.sure:.0f} sn)"
+        )
+        for url in sonuc.yeni[:5]:
+            print(f"      + {url}")
+        if len(sonuc.yeni) > 5:
+            print(f"      ... +{len(sonuc.yeni) - 5} tane daha")
+    print("=" * 64)
+    if ozet.taban_kuruldu_mu:
+        print("  BİLGİ: İlk keşif — kaldırılmış iddiası bu koşuda anlamlı değil.")
+    if ozet.toplam_yeni:
+        print("  DİKKAT: Yeni kampanya bulundu — toplamak için `make crawl`.")
+    else:
+        print("  Listede elimizde olmayan kampanya yok.")
+    return 0
+
+
+def _kesif_ilerlemesi(olay: object) -> None:
+    """Keşif olaylarını terminale tek satır hâlinde basar."""
+    if getattr(olay, "asama", "") == "banka_basladi":
+        log.info("  %s: liste keşfediliyor...", getattr(olay, "banka_adi", ""))
+
+
 def _tazelik_ilerlemesi(olay: object) -> None:
     """Tazelik olaylarını terminale tek satır hâlinde basar."""
     sonuc = getattr(olay, "sonuc", "")
@@ -748,6 +807,15 @@ def ayristirici_kur() -> argparse.ArgumentParser:
         "--demo", action="store_true", help="data/demo_raw adreslerini yokla"
     )
     p_tazelik.set_defaults(islev=komut_tazelik)
+
+    p_kesif = altlar.add_parser(
+        "kesif", help="listede olup elimizde olmayan kampanya var mı (G-19)"
+    )
+    p_kesif.add_argument("--banka", nargs="*", default=[], help="yalnız bu banka kodları")
+    p_kesif.add_argument(
+        "--gorunur", action="store_true", help="tarayıcıyı görünür koştur (hata ayıklama)"
+    )
+    p_kesif.set_defaults(islev=komut_kesif)
 
     return ap
 

@@ -84,7 +84,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Chatbot + kalkan | `src/rag/chatbot.py` |
 | RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
-| Tetikleyici · dinleyici (G-17) | `src/izleme/{tetikleyici,dinleyici}.py` |
+| Tetikleyici · dinleyici · keşif | `src/izleme/{tetikleyici,dinleyici,kesif}.py` |
 | Canlı boru hattı sayfası | `app/pages/4_Boru_Hattı.py` · `app/akis.py` · `app/boru_durumu.py` · `app/is_yurutucu.py` |
 
 Ayrıntı: [`docs/MIMARI.md`](docs/MIMARI.md) · Güncel ölçüm: [`docs/SONUCLAR.md`](docs/SONUCLAR.md) ·
@@ -166,6 +166,17 @@ yüzden taban çizgisi **dinleyicinin kendi yolundan** kurulur (ilk koşu
 değişiklik iddia etmez) · özet **bütün boşlukları atar**, çünkü Albaraka aynı
 sayfayı tek boşluk farkıyla iki biçimde veriyor ve dakikada bir yanlış alarm
 üretiyordu. Ayrıntı: `docs/kararlar/018-tetikleyici-dinleyici.md`.
+
+**Keşif diff'inin iki yönü AYRI tabana bakar (27 Ağu).** `src/izleme/kesif.py`
+«listede olup elimizde olmayan kampanya var mı» sorusunu cevaplar — tazelik
+dinleyicisi bunu yapısal olarak göremez. **YENİ** envantere (`data/raw`) karşı,
+**KALDIRILMIŞ** ise ÖNCEKİ KEŞFE karşı hesaplanır. Sebebi ölçüldü: envanter
+kampanya detayından ibaret değil — Albaraka'nın 136 kaydının 88'i ürün sayfası
+ve `kampanya_urlleri()` onları hiç döndürmüyor; envantere karşı diff her koşuda
+88 sahte «kaldırıldı» üretiyordu. YENİ yönü bu kirlilikten etkilenmez, envanter
+fazlalığı o kümeyi yalnız küçültür. Sitemap ucuz kademe olarak denendi ve
+reddedildi: kapsama 9 bankada %0–%100 arasında oynuyor. Ayrıntı:
+`docs/kararlar/019-yeni-kampanya-kesfi.md`.
 
 **PyArrow ayırıcısı `system` olmalı — `ARROW_DEFAULT_MEMORY_POOL`.**
 PyArrow 25 macOS/arm64'te varsayılan `mimalloc` ile, thread yeniden
@@ -259,8 +270,9 @@ make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka, RAG indeksi kurulu mu
 make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
+make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1064 test)
+make test         # testler (1107 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)

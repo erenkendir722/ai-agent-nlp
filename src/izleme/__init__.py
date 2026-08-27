@@ -3,7 +3,11 @@
 İki parça, bilerek ayrı:
 
     tetikleyici.py   NE ZAMAN denetleneceğinin takvimi — TANIMLI AMA KURULU DEĞİL
-    dinleyici.py     Kampanya sayfası değişmiş mi — asıl iş burada
+    dinleyici.py     ELİMİZDEKİ kampanya sayfası değişmiş mi (G-17)
+    kesif.py         ELİMİZDE OLMAYAN yeni kampanya çıkmış mı (G-19)
+
+İki soru farklıdır ve dinleyici ikincisini yapısal olarak göremez: yalnız
+bildiği URL'leri yoklar, envanterde olmayanın adresi hiç ziyaret edilmez.
 
 Bu katman **değişikliği TESPİT eder, veriyi TAZELEMEZ.** Değişmiş bulduğu
 sayfayı kendiliğinden yeniden çekmez; «şu kampanyalar değişmiş» der ve
@@ -25,18 +29,40 @@ from src.izleme.dinleyici import (
     taban_yaz,
     tazelik_denetle,
 )
+from src.izleme.kesif import (
+    KESIF_DOSYASI,
+    KesifOlayi,
+    KesifOzeti,
+    KesifSonucu,
+    envanter_oku,
+    kampanya_urli_mi,
+    kesif_kos,
+    kesif_taban_oku,
+    kesif_taban_yaz,
+    url_normalize,
+)
 from src.izleme.tetikleyici import KAMPANYA_SAATLERI, Tetikleyici
 
 __all__ = [
     "KAMPANYA_SAATLERI",
+    "KESIF_DOSYASI",
+    "KesifOlayi",
+    "KesifOzeti",
+    "KesifSonucu",
     "IzlemeHedefi",
     "TazelikKaydi",
     "TazelikOlayi",
     "TazelikOzeti",
     "Tetikleyici",
+    "envanter_oku",
     "hedefleri_oku",
     "icerik_ozeti",
+    "kampanya_urli_mi",
+    "kesif_kos",
+    "kesif_taban_oku",
+    "kesif_taban_yaz",
     "taban_oku",
     "taban_yaz",
     "tazelik_denetle",
+    "url_normalize",
 ]

@@ -1449,6 +1449,33 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır ✔: mekanizma koşuyor · `make test` yeşil (1017) · ADR yazıldı ·
         `docs/JURI_PROVASI.md` §11 «yok» demekten çıktı
 
+- [x] **G-19** ✅ **Yeni kampanya keşfi** *(27 Ağu, Görkem)* — *takım isteği*
+      ↳ Soru: **«listede olup elimizde OLMAYAN kampanya var mı?»** G-17'deki
+        tazelik dinleyicisi bunu yapısal olarak göremiyordu: yalnız bildiği
+        URL'leri yokluyor, envanterde olmayanın adresi hiç bilinmiyor.
+      ↳ `src/izleme/kesif.py` — banka listesi yeniden keşfedilir
+        (`kampanya_urlleri()`), URL kümesi karşılaştırılır. **Detay sayfası
+        çekilmez**; `make kesif` · arayüzde **Boru Hattı → 3 · Veri Denetimi → A**.
+      ↳ **Ölçüm 1 —** gerçek keşif: Hayat Finans 9 sn / 13 adres / **1 gerçek
+        yeni kampanya bulundu** (`biz-kart-ile-okula-donus-kampanyasi`);
+        Albaraka 81 sn / 48 adres.
+      ↳ **Ölçüm 2 —** Albaraka'da envantere karşı diff **88 sahte «kaldırıldı»**
+        üretiyordu: `data/raw`'daki `/bireysel/finansmanlar/...` ürün sayfaları,
+        `kampanya_urlleri()` onları hiç döndürmüyor. Bu yüzden **YENİ** envantere,
+        **KALDIRILMIŞ** önceki KEŞFE karşı hesaplanıyor (ADR 018'in dersi).
+      ↳ **Ölçüm 3 —** sitemap ucuz kademe olarak denendi ve **reddedildi**:
+        8/9 banka beyan ediyor ama kapsama %0–%100 arasında oynuyor
+        (Türkiye Finans / Ziraat / Dünya **%0**). Kısmi kapsama yokluktan kötü.
+      ↳ ⚠️ **Dürüst sınır:** keşif kampanyayı çekmez, «N yeni bulundu» der;
+        toplamayı operatör başlatır. `data/raw` **1024 → 1024**, `katilim.db`
+        dokunulmadı — uçtan uca doğrulandı.
+      ↳ Sekme 3 ikiye ayrıldı: **A** keşif (yeni), **B** tazelik (G-17,
+        değişmeden korundu). Sekme adı «Veri Tazeliği» → «Veri Denetimi».
+      ↳ ADR: [`docs/kararlar/019-yeni-kampanya-kesfi.md`](docs/kararlar/019-yeni-kampanya-kesfi.md)
+        · Plan: [`PLAN_YENI_KAMPANYA_KESFI.md`](PLAN_YENI_KAMPANYA_KESFI.md)
+      ↳ Bitti sayılır ✔: `make test` yeşil (1107) · `make lint` temiz ·
+        gerçek bankada yeni kampanya bulundu · üretim verisi dokunulmadı
+
 - [x] **G-18** ✅ **Canlı Boru Hattı sayfası** *(27 Ağu, Görkem)* — *takım isteği*
       ↳ Planı hazır ve ayrıntılı: [`docs/PLAN_BORU_HATTI_SAYFASI.md`](docs/PLAN_BORU_HATTI_SAYFASI.md)
       ↳ **Bitti.** Planın yedi adımı da yapıldı. Sekme 1 ve Sekme 2'nin ikisinde de

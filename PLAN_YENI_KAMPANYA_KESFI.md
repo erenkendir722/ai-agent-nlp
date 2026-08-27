@@ -1,6 +1,7 @@
 # Plan — «Elimizde olmayan yeni kampanya var mı?»
 
-> Durum: **plan**, kod yazılmadı. Hazırlandığı tarih: 27 Ağustos 2026.
+> Durum: **Adım 0 ölçüldü, Faz 1 uygulandı** (27 Ağustos 2026).
+> Ölçüm sonuçları bölüm 4B'de — tasarımı değiştirdiler.
 > Sahibi: Görkem · Pano karşılığı: henüz açılmadı (öneri: **G-19**)
 
 ## 1. Bağlam — iki ayrı soru, biri hâlâ cevapsız
@@ -108,6 +109,59 @@ tasarla.**
 
 > Sonuç ne çıkarsa çıksın `docs/kararlar/019-*.md` içine yazılmalı — «denedik,
 > yoktu» da bir bulgudur.
+
+---
+
+## 4B. ADIM 0 SONUÇLARI (27 Ağustos — ölçüldü, tasarımı DEĞİŞTİRDİ)
+
+### 0.3 — Ucuz kademe: sitemap birincil kaynak OLAMAZ
+
+8/9 banka `sitemap.xml` beyan ediyor. Ama kapsama ölçüldü — envanterdeki
+kampanya URL'lerinin kaçı sitemap'te var:
+
+| Banka | Kapsama | Banka | Kapsama |
+|---|---|---|---|
+| Hayat Finans | %100 | Albaraka | %43 |
+| Emlak Katılım | %96 | Vakıf Katılım | %43 |
+| Kuveyt Türk | %89 | Türkiye Finans | **%0** |
+| | | Ziraat Katılım | **%0** |
+| | | Dünya Katılım | **%0** (CMS sunucusu) |
+| | | TOM Katılım | sitemap yok |
+
+**Kısmi kapsama bu iş için yokluktan kötüdür.** %43 kapsayan bir sitemap'i
+keşif kaynağı yapmak envanterin %57'sini «kaldırılmış» diye raporlardı.
+Karar: **keşif Selenium ile yapılır**, sitemap kullanılmaz.
+
+### 0.1 / 0.2 — Keşif bir şey buluyor, ama diff'in bir yönü güvenilmez
+
+Gerçek keşif koşuldu (yalnız `kampanya_urlleri()`, detay sayfası çekilmedi):
+
+| Banka | Süre | Listede | Envanterde | YENİ | KALDIRILMIŞ |
+|---|---|---|---|---|---|
+| Hayat Finans (0212) | **9 sn** | 13 | 16 | **1** | 4 |
+| Albaraka (0203) | **81 sn** | 48 | 136 | 0 | **88** |
+
+**Hayat Finans'ta gerçek bir yeni kampanya bulundu:**
+`hayatfinans.com.tr/kampanyalar/biz-kart-ile-okula-donus-kampanyasi` —
+envanterde yok. Özellik işe yarıyor.
+
+**Ama Albaraka'nın 88 «kaldırılmış»ı sahte.** Bakıldı: envanterdeki
+`/bireysel/finansmanlar/...` adresleri **ürün sayfaları**, kampanya detayı
+değil. `kampanya_urlleri()` onları tasarımı gereği hiç döndürmüyor. Hayat
+Finans'ın 4'ü de aynı türden (`/kampanyalar`, `/kartlar` — liste sayfaları).
+
+### Tasarım kararı — diff'in iki yönü AYRI kaynaklara karşı çalışır
+
+| Yön | Karşılaştırma tabanı | Güven | Gerekçe |
+|---|---|---|---|
+| **YENİ** | `data/raw` envanteri | ✅ yüksek | Keşifte çıkıp elimizde olmayan gerçekten yenidir. Kirli envanter YENİ'yi yalnız küçültür, şişirmez. |
+| **KALDIRILMIŞ** | **önceki KEŞİF koşusu** | ✅ yüksek | Elmayla elma: aynı mekanizmanın iki koşusu. İlk koşu taban kurar, iddia etmez. |
+| Envanterde olup listede yok | `data/raw` | ⚠️ düşük | Ürün/liste sayfalarıyla dolu. Yalnız BİLGİ olarak, açık uyarıyla gösterilir. |
+
+Bu, ADR 018'deki dersin aynısı: **karşılaştırma, karşılaştırılanı üreten yola
+karşı yapılır.** Orada Selenium gövdesi ile `httpx` gövdesi karışmasın diye
+taban kendi yolundan kurulmuştu; burada `data/raw` ile `kampanya_urlleri()`
+karışmasın diye kaldırılmış yönü kendi tabanına bakıyor.
 
 ---
 

@@ -72,6 +72,9 @@ durum:  ## veritabanı özeti
 vektor:  ## RAG vektör indeksini kur (gömme + kosinüs, ~2 dk)
 	$(PYTHON) -m src.boru_hatti vektor
 
+kesif:  ## listede olup elimizde olmayan kampanya var mı (G-19) [banka=0203 gorunur=1]
+	$(PYTHON) -m src.boru_hatti kesif $(if $(banka),--banka $(banka),) $(if $(gorunur),--gorunur,)
+
 tazelik:  ## kampanya sayfaları değişmiş mi (G-17 dinleyicisi) [adet=N demo=1]
 	$(PYTHON) -m src.boru_hatti tazelik $(if $(adet),--adet $(adet),) $(if $(demo),--demo,)
 

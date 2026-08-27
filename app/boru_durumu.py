@@ -198,6 +198,86 @@ def tazelik_kartlarini_kapat(durum: TazelikDurumu) -> None:
   durum.aktif_banka = ""
 
 
+@dataclass
+class KesifDurumu:
+  """Yeni kampanya keşfinin canlı biriktirdiği durum (G-19)."""
+
+  bankalar: dict[str, BankaDurumu] = field(default_factory=dict)
+  olaylar: list[GunlukSatiri] = field(default_factory=list)
+  toplam: int = 0
+  biten: int = 0
+  bulunan: int = 0
+  yeni: int = 0
+  kaldirilmis: int = 0
+  hatali: int = 0
+  aktif_banka: str = ""
+
+
+def kesif_olaylarini_isle(durum: KesifDurumu, olaylar: list) -> None:
+  """`src.izleme.KesifOlayi` olaylarını duruma işler."""
+  for olay in olaylar:
+    asama = getattr(olay, "asama", "")
+    if asama not in {"banka_basladi", "banka_bitti", "hata"}:
+      continue
+    kod = getattr(olay, "banka_kodu", "")
+    ad = getattr(olay, "banka_adi", "") or kod
+    durum.toplam = getattr(olay, "toplam", durum.toplam) or durum.toplam
+
+    # Bayrak devri — nabız yalnız üzerinde çalışılan bankada.
+    if kod and kod != durum.aktif_banka:
+      onceki = durum.bankalar.get(durum.aktif_banka)
+      if onceki is not None and onceki.asama == "taraniyor":
+        durum.bankalar[durum.aktif_banka] = replace(
+          onceki, aktif=False, asama="bitti"
+        )
+      durum.aktif_banka = kod
+
+    if asama == "banka_basladi":
+      durum.bankalar[kod] = BankaDurumu(
+        ad=ad, asama="taraniyor", aktif=True, alt="liste keşfediliyor",
+      )
+      durum.olaylar.append(
+        GunlukSatiri(tur="bilgi", metin="liste keşfediliyor", etiket=ad)
+      )
+      continue
+
+    if asama == "hata":
+      durum.hatali += 1
+      durum.biten += 1
+      mesaj = getattr(olay, "mesaj", "")
+      durum.bankalar[kod] = BankaDurumu(
+        ad=ad, asama="hata", aktif=False, alt="keşfedilemedi", mesaj=mesaj,
+      )
+      durum.olaylar.append(GunlukSatiri(tur="hata", metin=mesaj, etiket=ad))
+      durum.aktif_banka = ""
+      continue
+
+    # banka_bitti
+    bulunan = int(getattr(olay, "bulunan", 0))
+    yeni = int(getattr(olay, "yeni", 0))
+    kaldirilmis = int(getattr(olay, "kaldirilmis", 0))
+    durum.biten += 1
+    durum.bulunan += bulunan
+    durum.yeni += yeni
+    durum.kaldirilmis += kaldirilmis
+    durum.bankalar[kod] = BankaDurumu(
+      ad=ad,
+      asama="bitti",
+      aktif=False,
+      alt=f"{bulunan} adres · {yeni} yeni" if yeni else f"{bulunan} adres",
+      mesaj=getattr(olay, "mesaj", ""),
+    )
+    durum.olaylar.append(
+      GunlukSatiri(
+        tur="kayit" if yeni else "bilgi",
+        metin=f"{bulunan} adres bulundu · {yeni} yeni · {kaldirilmis} kaldırılmış",
+        etiket=ad,
+      )
+    )
+    durum.aktif_banka = ""
+    del durum.olaylar[:-AZAMI_GUNLUK_GECMISI]
+
+
 def toplama_olaylarini_isle(durum: ToplamaDurumu, olaylar: list) -> None:
   """`src.collector.temel_kaziyici.Ilerleme` olaylarını duruma işler.
 
@@ -360,10 +440,12 @@ __all__ = [
   "AZAMI_GUNLUK_GECMISI",
   "AZAMI_KAYIT_GECMISI",
   "CikarimDurumu",
+  "KesifDurumu",
   "TazelikDurumu",
   "ToplamaDurumu",
   "acik_kartlari_kapat",
   "cikarim_olaylarini_isle",
+  "kesif_olaylarini_isle",
   "tazelik_kartlarini_kapat",
   "tazelik_olaylarini_isle",
   "toplama_olaylarini_isle",
