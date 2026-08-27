@@ -1,6 +1,6 @@
 # Sunum — Svartal_Sunum.pdf
 
-**12 sayfa** (TEKNOFEST kapağı + 8 içerik + 3 yedek), 16:9 (1280×720 ·
+**8 sayfa** (TEKNOFEST kapağı + 7 içerik), 16:9 (1280×720 ·
 13,333in × 7,5in). Kaynak `sunum.html` + `stil.css`; PDF ondan üretilir,
 **elle düzenlenmez.** Konuşma metni ayrı: [`KONUSMA_METNI.md`](KONUSMA_METNI.md).
 
@@ -27,37 +27,68 @@ Daha önce düzen o arka planın beyaz kartına ve alt-orta çentiğine göre k�
 (x 27–1252 · y 33–686, çentik y≈550'den aşağıda x 460–830). O kısıt kalktı;
 `arkaplan/icerik.jpg` artık kullanılmıyor ama şablonun kaydı olarak duruyor.
 
-## Koyu tema — renkler logodan
+## Koyu tema — üç vurgu, ölçülerek seçildi
 
-SVARTAL logosu siyah kare + turuncu «S» + mürekkep kelime işareti. Palet o
-üçlüden türetildi:
+SVARTAL logosu siyah kare + turuncu «S» + mürekkep kelime işareti. Palet
+o üçlüden başladı, sonra `dataviz` doğrulayıcısından geçirildi
+(koyu zemin, `--pairs all`):
 
-| Rol | Hex |
+| Rol | Hex | |
+|---|---|---|
+| Zemin | `#15141A` | |
+| Metin | `#F5F4F0` | |
+| **Turuncu** | `#E85D2A` | marka · problem ve sonuç bölümleri |
+| **Turkuaz** | `#2AA3AE` | kanıt ve ölçüm bölümleri |
+| **Mor-mavi** | `#8A7BE0` | sistem/mimari bölümü |
+
+**5/5 PASS** — lightness bandı, kroma tabanı, CVD ayrımı (en kötü çift
+ΔE 9,6 deutan), normal görüş tabanı (ΔE 17,2), zemin kontrastı.
+
+**Elenenler ve nedeni** — hepsi denendi, hiçbiri geçemedi:
+
+| Renk | Neden elendi |
 |---|---|
-| Zemin | `#15141A` |
-| Metin | `#F5F4F0` |
-| **Vurgu** | `#E85D2A` |
-| İkincil | `#2AA3AE` |
+| sarı-yeşil `#7FA83A` | turuncuyla deuteranopide **ΔE 2,5** — kırmızı-yeşil renk körü bir jüri üyesi ayırt edemez |
+| yeşil `#21C08A` | lightness 0,718; koyu zeminde bandın dışında |
+| mor `#A96BC9` + mavi `#6E8CE8` | birbirine ΔE 4,8 (deutan) |
+| nötr gri `#7A8494` | kroma tabanının altında, gri okuyor |
 
-Turuncu + turkuaz ikilisi `dataviz` doğrulayıcısından geçirildi (koyu zemin,
-2 slot): lightness bandı, kroma tabanı, CVD ayrımı (ΔE 17,7 deutan), normal görüş
-tabanı ve zemin kontrastı — **5/5 PASS**. Renk değiştirmeden önce doğrulayıcıyı
-koştur; gözle karar verme.
+Yeşil özellikle istendi ve özellikle bu yüzden kullanılamadı — turuncuyla
+çakışması ölçüldü. Renk eklemeden önce:
+
+```bash
+node scripts/validate_palette.js "<hex,...>" --mode dark --pairs all
+```
+
+### Bölüm rengi bir yapı işaretidir
+
+Her sayfanın üst şeridi bölümün rengini taşır: **problem turuncu → sistem
+mor-mavi → kanıt/ölçüm turkuaz → sonuç turuncu.** Jüri renk değişiminden
+konunun değiştiğini anlar; renk süs değil.
+
+### Logo her sayfada
+
+Sol üstte mark + «SVARTAL» kelime işareti. Yalnız mark yetmez — jüri markayı
+ilk kez görüyor, tanıması için adın yanında durması gerekir.
+
+`marka/svartal-logo.png` **henüz yok**; yerinde vekil bir SVG duruyor
+(krem kare + turuncu «S», koyu zemin için ters çevrilmiş). Gerçek dosya
+konunca her sayfadaki `<svg><use href="#marka"/></svg>` yerine
+`<img src="marka/svartal-logo.png">` yazmak yeter — yer ve boyut aynı.
 
 ## Metin bütçesi — ölçülür, tahmin edilmez
 
 4 dakikada konuşulabilecek kelime **~520**. Slayttaki metin bunun katıysa jüri ya
 okur ya dinler, ikisini birden yapamaz.
 
-| | Kelime |
-|---|---|
-| 26 Ağustos sürümü (10 sayfa) | 1.882 &nbsp;— konuşmanın **3,6 katı** |
-| Şimdiki ana 9 sayfa | **1.029** |
-| Yedek sayfalar (Y1–Y3) | 372 |
+| Sürüm | Kelime | Konuşmaya oranı |
+|---|---|---|
+| 26 Ağustos (10 sayfa) | 1.882 | **3,6×** |
+| 27 Ağustos, şablonlu (9+3 sayfa) | 1.029 | 2,0× |
+| **Şimdiki (7 içerik sayfası)** | **865** | **1,7×** |
 
-Kesilen kanıtlar **silinmedi**, yedek sayfalara taşındı. Sunumda geçilmez;
-soru gelirse açılır. Hangi sorunun hangi yedek sayfaya düştüğü
-`KONUSMA_METNI.md` sonunda tabloyla yazılı.
+Slaytta görünmeyen kanıtlar **silinmedi, depoda duruyor.** Hangi sorunun
+nereden cevaplanacağı `KONUSMA_METNI.md` sonunda tabloyla yazılı.
 
 ## Taşma denetimi — gözle değil, ölçerek
 
@@ -72,23 +103,19 @@ Sunum **4 dakika** (şartname madde 10). Her sayfanın altbilgisinde konuşanın
 yazar — madde 8 «tüm üyelerin görev tanımları sunumda olmalı» maddesi böyle
 karşılanıyor, ayrı bir «ekip» slaydı yok. 01. sayfada dördünün rolü de yazılı.
 
-| # | Sayfa | Konuşan |
-|---|---|---|
-| 01 | TEKNOFEST kapağı (şablonun kendi slaydı) | — |
-| 02 | SVARTAL — iddia, beş rakam, ekip ve roller | Eren |
-| 03 | Problem — dört ifade, manşet oran tuzağı | Eren |
-| 04 | **Mimari** — yedi aşamalı akış + kanıt zinciri şeridi | Eren |
-| 05 | Hibrit çıkarım — kural / model / uzlaştırıcı, gerçek kayıt | Samet |
-| 06 | Ajanlar — beşi de dil modeli kullanmaz | Eren |
-| 07 | **Ölçüm** — ablasyon (çubuklu tablo), dürüstlük bandı | Samet |
-| 08 | Asistan — gerçek cevap, sayısal doğrulama kalkanı | Esra |
-| 09 | Sonuç, bilinen sınırlar, kapanış | Eren |
-| Y1 | *Yedek* — veri ve toplama etiği | Görkem |
-| Y2 | *Yedek* — müşteri profili ve karşılaştırma | Esra |
-| Y3 | *Yedek* — kurum içi çalışabilirlik ve lisans | Eren |
+| # | Sayfa | Bölüm rengi | Konuşan |
+|---|---|---|---|
+| 01 | TEKNOFEST kapağı | — | — |
+| 02 | SVARTAL — iddia, beş rakam, ekip | turuncu | Eren |
+| 03 | Problem — dört ifade, manşet oran tuzağı | turuncu | Eren |
+| 04 | **Mimari** — altı aşamalı akış + kanıt zinciri şeridi | mor-mavi | Eren |
+| 05 | Kanıt zinciri ve beş ajan | mor-mavi | Samet + Eren |
+| 06 | **Ölçüm** — ablasyon (çubuklu tablo), dürüstlük | turkuaz | Samet |
+| 07 | Asistan — gerçek cevap, sayısal doğrulama kalkanı | turkuaz | Esra |
+| 08 | Sonuç, bilinen sınırlar, kapanış | turuncu | Eren |
 
-Madde 8 («tüm üyelerin görev tanımları sunumda olmalı») 02. sayfanın altbilgisinde
-dördünün rolüyle karşılanıyor; ayrı ekip slaydı yok.
+Madde 8 («tüm üyelerin görev tanımları sunumda olmalı») 02. sayfanın
+altbilgisinde dördünün rolüyle karşılanıyor; ayrı ekip slaydı yok.
 
 ## Anlatılmayan terim bırakmama kuralı
 

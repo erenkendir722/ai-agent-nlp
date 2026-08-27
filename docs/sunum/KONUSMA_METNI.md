@@ -4,7 +4,7 @@ Slaytlar `sunum.html`'de; **bu dosya slaytta YAZMAYAN kısımdır.** Slayt dayan
 gösterir, anlatan sensin.
 
 **Bütçe:** 4 dakika ≈ 520 kelime. Aşağıdaki notlar toplam ~500 kelime.
-Sekiz içerik sayfası → sayfa başına **~30 saniye.**
+**Yedi içerik sayfası** → sayfa başına **~34 saniye.**
 
 > Prova ederken süre tut. 4 dakikayı aşan bir sunum, jüri sizi kesmek zorunda
 > kaldığında kapanış cümlesini kaybettirir — en pahalı kayıp odur.
@@ -45,7 +45,7 @@ Diyagramı **soldan sağa** anlat, kutuları okuma:
 > Altta duran şerit kanıt zinciri: her değer geldiği cümleyi, adresi ve güvenini
 > yanında taşır — baştan sona.
 
-## 05 · Hibrit çıkarım &nbsp;— Samet &nbsp;· 30 sn
+## 05 · Kanıt zinciri ve beş ajan &nbsp;— Samet + Eren &nbsp;· 40 sn
 
 > Kural katmanı uydurma yapamaz ama “bu konut kampanyası mı” diyemez.
 > Dil modeli anlamı çözer ama sayıda zayıf. Uzlaştırıcı çelişkide sayısal alanda
@@ -57,14 +57,13 @@ Tablodaki iki satırı göster:
 > Bunu boş bıraktığımızda kampanya karşılaştırmadan tamamen düşüyordu.
 > Son satır da önemli: sayfa ücret bilgisi vermiyorsa **boş bırakıyoruz, uydurmuyoruz.**
 
-## 06 · Ajanlar &nbsp;— Eren &nbsp;· 30 sn
 
 > “Ajan” demek her adımı bir modele sormak değil. Aritmetiği ve kısıt kontrolünü
 > modele yaptırsaydık, halüsinasyon savunmasıyla kazandığımız güveni tek hamlede
 > kaybederdik. Dil modeli **tek bir işte** kullanılıyor: metinden alan çıkarmak.
 > Gerisi deterministik kod — soldaki koşum kaydında her satırda “kod” yazıyor.
 
-## 07 · Ölçüm &nbsp;— Samet &nbsp;· 40 sn
+## 06 · Ölçüm &nbsp;— Samet &nbsp;· 40 sn
 
 > Beş yapılandırmayı aynı kodla, aynı korpusta, tek koşuda ölçtük.
 > Kural tek başına sayıda iyi ama az alan doldurur. Model çok doldurur, isabeti
@@ -81,7 +80,7 @@ Sağdaki kutuyu atlama:
 > Aralığı da söylüyoruz. 92 örnekle tek ondalık hane üzerinden övünmek
 > yanlış bir kesinlik iddiasıdır.
 
-## 08 · Asistan &nbsp;— Esra &nbsp;· 30 sn
+## 07 · Asistan &nbsp;— Esra &nbsp;· 30 sn
 
 > Sorulan soru: Kuveyt Türk'ün konut finansmanında kâr payı oranı ne?
 > Sistem vadeyi, tahsis ücretini ve masrafı veriyor; kâr payı oranı için
@@ -89,7 +88,7 @@ Sağdaki kutuyu atlama:
 > **Uydurmuyor, ama bildiğini de saklamıyor.**
 > Altta “0 LLM çağrısı” yazıyor: bu cevabı bir dil modeli üretmedi.
 
-## 09 · Sonuç &nbsp;— Eren &nbsp;· 25 sn
+## 08 · Sonuç &nbsp;— Eren &nbsp;· 25 sn
 
 Tabloyu okuma, sınırlara geç:
 
@@ -105,18 +104,21 @@ Kapanış:
 
 ---
 
-## Yedek sayfalar — Y1, Y2, Y3
+## Yedek slayt YOK — soruya sözlü cevap
 
-PDF'in sonunda duruyor, sunumda **geçilmez**. Soru gelirse açılır:
+8 sayfaya inerken yedek sayfalar kaldırıldı. Aşağıdaki kanıtlar slaytta
+görünmüyor ama **depoda duruyor**; soru gelirse ekrandan değil ağızdan cevaplanır,
+gerekirse depo açılır.
 
-| Soru gelirse | Sayfa |
-|---|---|
-| “Veriyi nasıl topladınız, izin aldınız mı?” | **Y1** — robots, hız sınırı, KVKK taraması |
-| “Şartnamedeki örneği denediniz mi?” | **Y1** — 12 iddiadan 4'ü hatalıydı → 11/11 |
-| “Sıralamayı neye göre yapıyorsunuz?” | **Y2** — beş kriter, ağırlıklar, kısıt çözme |
-| “Uygunluk nasıl çıkarılıyor?” | **Y2** — %70,1 · zorunlu ürün %24,3 |
-| “Kurum içinde çalışır mı?” | **Y3** — Docker, hava boşluğu testi |
-| “Model lisansları?” | **Y3** — 89 paket, 0 kısıtlı, Llama/Gemma yok |
+| Soru gelirse | Cevap | Nerede |
+|---|---|---|
+| “Veriyi nasıl topladınız, izin aldınız mı?” | robots kapısı, 2 sn nezaket, 16 alan adının kararı günlükte, KVKK taraması temiz | `docs/kanit/` |
+| “Şartnamedeki örneği denediniz mi?” | İlk koşuda 12 iddiadan 4'ü hatalıydı; düzeltildi, teste bağlandı — **11/11** | `tests/test_kural.py` |
+| “Sıralamayı neye göre yapıyorsunuz?” | Beş kriter, ağırlığı kullanıcı belirler (%40/%25/%20/%15), formül açık | `src/comparison/` |
+| “Uygunluk nasıl çıkarılıyor?” | Kayıtların **%70,1'inde** kısıt çıkıyor; zorunlu ürün yükümlülük kanıtına bağlanınca %59'dan **%24,3'e** indi | `src/ajanlar/uygunluk.py` |
+| “Kurum içinde çalışır mı?” | Docker üç konteyner; hava boşluğu testinde DNS ve internet kapalıyken çalıştı; **10 sızıntı testi** | `docker-compose.yml` |
+| “Model lisansları?” | 89 paket tarandı, kısıtlı lisans **0**; dört model kaynağından teyitli, Llama/Gemma yok | `docs/LISANSLAR.md` |
+| “RAG nasıl?” | **12.383** paragraf yerel dosyada, arama numpy nokta çarpımı; harici vektör veritabanı yok | `src/vektor_db.py` |
 
 ## Canlı demo
 

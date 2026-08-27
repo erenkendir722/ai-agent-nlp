@@ -1,12 +1,17 @@
-Toplam sayfa: 12
+Toplam sayfa: 8
 === SAYFA 1 ===
 (bu sayfada metin yok)
 
 === SAYFA 2 ===
-Yapay Zekâ Dil Ajanları Yarışması · 2. Senaryo
+SVARTAL
 SVARTAL
 Katılım Bankacılığı Finansal Metin Madenciliği ve Akıllı Karşılaştırma Sistemi
-Kaynağı olmayan sayı üretmeyen bir sistem.
+Kaynağı olmayan sayı
+üretmeyen
+bir sistem.
+Dokuz katılım bankasının kampanya metinlerini yapısal veriye çeviriyoruz. Kanıtı olmayan bir değer üretilemez — bunu slaytta değil,
+kodda kısıt olarak
+uyguluyoruz.
 726
 işlenmiş kampanya
 9
@@ -30,6 +35,7 @@ Arayüz ve asistan
 02
 
 === SAYFA 3 ===
+SVARTAL
 03
 Aynı bilgi, dört farklı ifade
 Katılım bankacılığında ortak veri biçimi yok: ne API var, ne indirilebilir tablo. Şartname 5.2 bunu dört ifadeyle örnekliyor.
@@ -56,13 +62,13 @@ Problem ve mimari
 03
 
 === SAYFA 4 ===
+SVARTAL
 04
 Mimari
 Beş katman. Her katman bir öncekinin çıktısını alır, kendi kanıtını ekler ve
 hiçbir değeri kaynağından koparmaz.
 KAYNAK
-9 banka
-sitesi
+9 banka sitesi
 1.024 ham sayfa
 BDDK listesindeki faal bankaların tamamı
 ›
@@ -71,42 +77,34 @@ Toplayıcı
 Selenium
 robots kapısı
 2 sn nezaket
-banka başına yalnız URL keşfi
 ›
 2
 Ön işleme
 Türkçe normalizasyon
 İ/ı · “1.500,50” · â
-menü ve reklam ayıklama
 ›
-3
+3 · ÇEKİRDEK
 Hibrit çıkarım
 Kural
-kalıp eşleme · uyduramaz
+kalıp eşleme
+uyduramaz
 Model
-Qwen3.5 · anlam
+Qwen3.5
+anlamı çözer
 Uzlaştırıcı — çelişkiyi çözer
 ›
 4
 Beş ajan
-uygunluk
-eleştirmen
-yüklem
-muhakeme
+uygunluk · eleştirmen
+yüklem · muhakeme
 orkestratör
 5/5 · LLM yok
 ›
 5
 SQLite
-tek dosya
-kurulum yok
-16 alan + tam JSON
-›
-YÜZEY
-Üç yüzey
-Panolar ve karşılaştırma
-Kampanya asistanı
-REST API · 3 uç
++ 3 yüzey
+tek dosya, kurulum yok
+panolar · asistan · API
 Kanıt
 zinciri
 Her değer; geldiği
@@ -117,7 +115,7 @@ adresini
 güven skorunu
 ve hangi
 katmandan
-çıktığını yanında taşır. Kanıtı olmayan değer üretilemez — kod bunu
+çıktığını yanında taşır — baştan sona. Kanıtı olmayan değer üretilemez; kod bunu
 kısıt olarak
 uygular, deneyen program çöker.
 Muhammed Eren
@@ -125,23 +123,12 @@ Problem ve mimari
 04
 
 === SAYFA 5 ===
+SVARTAL
 05
-İki katman, tek sonuç
-Kural katmanı sayıda iyi, dil modeli anlamda. İkisini birlikte kullanmak, ikisinin de tek başına yapabildiğinden iyi sonuç veriyor —
-ölçüldü.
-Kural katmanı
-Kalıp arar.
-Uydurma yapamaz
-, ağ gerektirmez, milisaniyeler sürer. Ama “bu konut kampanyası mı” diyemez.
-Dil modeli
-Anlamı çözer, şemaya zorlanır. Ama sayıda kural kadar iyi değil — vadede tek başına çok zayıf.
-Uzlaştırıcı
-Çelişkide
-sayısal alanda kural
-, anlamsal alanda
-model
-kazanır. Karar kuralı testlerle sabit.
-Gerçek bir kayıt — kanıt zinciriyle
+Kanıt zinciri ve beş ajan
+Aritmetiği ve kısıt kontrolünü modele yaptırmak, halüsinasyon savunmasıyla kazandığımız güveni
+tek hamlede kaybettirir.
+Gerçek bir kayıt
 Alan
 Değer
 Katman
@@ -164,63 +151,37 @@ Belirtilmemiş
 —
 “%0” bir boşluk değil, bir beyandır
 — “kâr paysız” demek sıfır oran demek. Boş bıraktığımızda kampanya karşılaştırmadan tamamen düşüyordu.
-Son satır önemli: sayfa ücret bilgisi vermiyorsa sistem
+Son satır: sayfa ücret vermiyorsa sistem
 boş bırakır, uydurmaz.
+Uygunluk
+kampanya kime açık: tip, tutar/vade, zorunlu ürün
+LLM yok
+Eleştirmen
+her değeri ham metne karşı doğrular
+LLM yok
+Yüklem
+sayı hangi alana ait — cümlenin yükleminden
+LLM yok
+Muhakeme
+profili kısıtlara karşı çözer, maliyeti hesaplar
+LLM yok
+Orkestratör
+soruyu doğru ajana yönlendirir, izleri toplar
+LLM yok
+Dil modeli
+tek bir işte
+kullanılıyor: metinden alan çıkarmak. Gerisi
+deterministik kod
+— aynı girdi her zaman aynı sonucu verir.
 Samet
-Bilgi çıkarımı · Kural ve model katmanları
+Bilgi çıkarımı |
+Eren
+Ajan mimarisi
 05
 
 === SAYFA 6 ===
+SVARTAL
 06
-Beş ajan — hiçbiri dil modeli kullanmaz
-Aritmetiği ve kısıt kontrolünü modele yaptırmak, halüsinasyon savunmasıyla kazandığımız güveni
-tek hamlede kaybettirir.
-Ajan
-Görevi
-Dil modeli
-Uygunluk
-Kampanyanın
-kime
-açık olduğunu yapısal alana çevirir: müşteri tipi, tutar/vade sınırı, zorunlu ürün
-kullanmaz
-Eleştirmen
-Modelin ürettiği her değeri
-ham metne karşı
-doğrular; kanıtı olmayanı düşürür
-kullanmaz
-Yüklem
-Sayının hangi alana ait olduğunu cümlenin yükleminden denetler — “vade 36 ay” ↔ “36 ay ödemesiz”
-kullanmaz
-Muhakeme
-Müşteri profilini kampanya kısıtlarına karşı
-çözer
-, toplam maliyeti hesaplar, sıralar
-kullanmaz
-Orkestratör
-Soruyu doğru ajana yönlendirir, izleri toplar, dürüstlük uyarılarını ekler
-kullanmaz
-Ajan izi — ekrandaki gerçek koşum kaydı
-[orkestrator ·
-kod
-· 2 ms] profil sorgusu → muhakeme
-[muhakeme ·
-kod
-· 41 ms] 18 kampanya çözüldü · 7 uygun
-[muhakeme ·
-kod
-· 3 ms] sıralama: toplam geri ödeme
-Dil modeli tek bir işte
-Metinden alan çıkarmak. Gerisi
-deterministik kod
-— aynı girdi her zaman aynı sonucu verir. Hazır ajan çatısı kullanmadık: protokol
-30 satır
-.
-Muhammed Eren
-Ajan mimarisi
-06
-
-=== SAYFA 7 ===
-07
 Katmanları tek tek kapattık
 Beş yapılandırma,
 aynı kodla, aynı korpusta, tek koşuda
@@ -256,7 +217,6 @@ Tam hiyerarşi (bizim)
 0,932
 %0,42
 %26,0
-Kural sayıda iyi ama az alan doldurur; model çok doldurur, isabeti düşük.
 Birlikte 0,79.
 Yüklem ajanı eklenince
 0,82
@@ -275,10 +235,11 @@ bayt düzeyinde deterministik değil
 taşıyor. 92 örnekle tek ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
 Samet
 Model değerlendirmesi · Metrikler ve ablasyon
-07
+06
 
-=== SAYFA 8 ===
-08
+=== SAYFA 7 ===
+SVARTAL
+07
 Sayısını doğrulayamadığında susan asistan
 Sayısal cevaplar
 yapısal veritabanından
@@ -292,14 +253,18 @@ Masraf:
 alınıyor
 Kâr payı oranı:
 Belirtilmemiş
-✓ sayısal doğrulama geçti
-kaynak + çekim tarihi
-2 ajan · 0 LLM çağrısı
+Kaynak:
+Kuveyt Türk Katılım Bankası A.Ş. · kuveytturk.com.tr
+Çekim tarihi: 24.08.2026 ·
+Bağlayıcı teklif niteliği taşımaz.
+✓ doğrulama geçti
+kaynak gösterildi
+0 LLM çağrısı
 Uydurmuyor ama bildiğini de saklamıyor.
 Kâr payı oranı o sayfada yayımlanmamış; vade ve ücret yayımlanmış, onları gösteriyor.
 Sayısal doğrulama kalkanı
 yapısal
-sayının kayıtta
+kayıtta
 birebir
 karşılığı olmalı
 alıntı
@@ -314,10 +279,11 @@ meşru soruda yanlış engelleme. Asistan “muhtemelen %2 civarıdır” cümle
 mimari olarak kuramaz.
 Esra
 Arayüz · Asistan ve karşılaştırma ekranları
-08
+07
 
-=== SAYFA 9 ===
-09
+=== SAYFA 8 ===
+SVARTAL
+08
 Ölçülen sonuçlar
 Metrik
 Sonuç
@@ -353,117 +319,12 @@ anlık görüntüdür
 • Ölçümler
 ±0,01
 gürültü taşır
-Kaynağı olmayan sayı üretmeyen bir sistem.
-Kod, veri seti, ölçüm betikleri ve tüm kararların gerekçesi açık kaynak
+Kaynağı olmayan sayı
+üretmeyen
+bir sistem.
+Kod, veri seti, ölçüm betikleri ve her kararın gerekçesi açık kaynak
 github.com/erenkendir722/ai-agent-nlp
 · Apache-2.0
 Muhammed Eren
 Kapanış
-09
-
-=== SAYFA 10 ===
-Yedek · soru gelirse
-Y1
-Veri ve toplama etiği
-Toplama disiplini — beyan değil, kanıt
-robots.txt
-Reddedilen sayfa çekilmez,
-dosya okunamıyorsa da çekilmez
-. 16 alan adının kararı günlükte
-Kimlik beyanı
-İsteklerde kim olduğumuzu bildiriyoruz; ağa giden başlık kaydedildi
-Hız sınırı
-İstekler arası en az 2 saniye, eşzamanlı istek yok
-Kapsam
-Yalnız
-herkese açık
-sayfalar
-Kişisel veri
-Tüm ham kayıtlar tarandı, gerçek kişiye ait veri
-bulunmadı
-Yayınlanan veri seti
-CSV ve JSONL, yanında veri kartı.
-Tam sayfa metni yayımlanmıyor
-— yapısal alanlar, kaynak adresi ve kısa alıntı yayımlanıyor.
-Şartnamenin kendi örneği
-İlk koşuda
-12 iddiadan 4'ü hatalıydı
-: “dosya masrafı
-alınmamaktadır
-” cümlesinden 50.000 TL ücret çıkarılıyordu. Düzeltildi, teste bağlandı — artık
-11/11
-.
-RAG
-12.391
-paragraf yerel bir dosyada, arama numpy nokta çarpımı.
-Harici vektör veritabanı yok.
-Görkem
-Veri toplama ve kalite
-Y1
-
-=== SAYFA 11 ===
-Yedek · soru gelirse
-Y2
-Müşteri profili ve karşılaştırma
-Kısıt çözme — asıl iş burada
-“Maaş müşterisi, 800.000 TL konut finansmanı, 10 yıl vade. Rakiplerin hangisi bizden iyi teklif veriyor?” Bu bir arama değil: müşteri tipi
-VE
-tutar
-VE
-vade
-VE
-zorunlu ürün.
-Uygun olmayanı da gösteriyoruz
-⛔
-“Minimum tutar 1.000.000 TL; talep 800.000 TL.”
-Sessizce elemek yerine sebebini yazmak, banka çalışanının müşteriye ne söyleyeceğini hazırlar.
-Beş kriter, ağırlığı kullanıcı belirler
-En düşük kâr payı oranı
-%40
-En düşük masraf
-%25
-En uzun vade
-%20
-En yüksek ödül
-%15
-Formül dokümantasyonda açık —
-gizli bir skor yok.
-Uygunluk ajanı
-Kayıtların
-%70,1'inde
-en az bir kısıt çıkarılıyor. Zorunlu ürün iddiası
-yükümlülük kanıtı
-şartına bağlanınca %59'dan
-%24,3'e
-indi.
-Az ama doğru kısıt, çok ama uydurma kısıttan iyidir.
-Esra
-Karşılaştırma ve profil ekranları
-Y2
-
-=== SAYFA 12 ===
-Yedek · soru gelirse
-Y3
-Kurum içi çalışabilirlik ve lisans
-On-prem bir iddia değil,
-ölçüm.
-İnternet erişimi kapatılarak koşuldu ve sonucu kayda geçti.
-Tek komutla kurulum
-Docker ile üç konteyner: arayüz, API ve yerel model. Adımlar ve doğrulanmış çıktısı dokümantasyonda.
-Hava boşluğu testi
-Dış ağa çıkışı olmayan bir ağda koşuldu: DNS ve internet
-anında engellendi
-, sistem çalışmaya devam etti. 10 sızıntı testi her koşuda kontrol ediyor.
-Çevrimdışı paket
-Bağımlılıklar önceden indirilip
-ağsız
-kurulabiliyor. Temiz bir ortamda doğrulandı.
-Lisans
-89 paket tarandı, kısıtlı lisans
-0
-. Dört modelin lisansı kaynağından teyit edildi: üçü Apache-2.0, biri MIT.
-Llama/Gemma türevi kullanılmadı
-(madde 5.10).
-Muhammed Eren
-Kurum içi çalışabilirlik
-Y3
+08

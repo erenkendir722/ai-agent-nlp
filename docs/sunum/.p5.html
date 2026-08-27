@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>SVARTAL — TEKNOFEST 2026 Yapay Zekâ Dil Ajanları Yarışması</title>
+<link rel="stylesheet" href="stil.css">
+</head>
+<body>
+
+<!-- SVARTAL markası — `marka/svartal-logo.png` gelene kadar vekil.
+     Gerçek dosya konunca her sayfadaki <svg><use/></svg> yerine
+     <img src="marka/svartal-logo.png"> yazmak yeter; yer ve boyut aynı. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="marka" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="10" fill="#F5F4F0"/>
+    <path d="M64 13 L25 55 L46 55 L36 87 L75 45 L54 45 Z" fill="#E85D2A"/>
+  </symbol>
+</svg>
+
+
+<!-- ══════════ 01 · TEKNOFEST KAPAĞI ══════════ -->
+<section class="sayfa turkuaz">
+  <div class="logo"><svg><use href="#marka"/></svg><span class="ad">SVARTAL</span></div>
+  <div class="baslik"><span class="no">06</span><h2>Katmanları tek tek kapattık</h2></div>
+  <div class="spot">Beş yapılandırma, <b>aynı kodla, aynı korpusta, tek koşuda</b> ölçüldü — 1.024 ham kayıtlık ölçüm korpusu.</div>
+
+  <div class="govde">
+    <div class="kart">
+      <!-- Çubuk UZUNLUĞU yalnız makro-F1'i kodlar (ölçek 0–0,90). Halüsinasyon
+           ayrı bir ölçek olduğu için sayı olarak durur — çift eksen yok. -->
+      <table data-tablo="ablasyon">
+        <tr><th style="width:196px;">Yapılandırma</th><th>Makro-F1 &nbsp;<span style="text-transform:none;letter-spacing:0;">(ölçek 0 – 0,90)</span></th><th style="width:78px;text-align:right;">Sayısal</th><th style="width:106px;text-align:right;">Halüsinasyon</th><th style="width:78px;text-align:right;">Doluluk</th></tr>
+
+        <tr><td>Yalnız kural</td>
+            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:76.6%"></div></div><b>0,689</b></div></td>
+            <td style="text-align:right;">0,911</td><td style="text-align:right;">%0,00</td><td style="text-align:right;">%9,1</td></tr>
+
+        <tr><td>Yalnız dil modeli</td>
+            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:51.0%"></div></div><b>0,459</b></div></td>
+            <td style="text-align:right;">0,833</td><td style="text-align:right;">%0,70</td><td style="text-align:right;">%20,2</td></tr>
+
+        <tr><td>Hibrit (kural + model)</td>
+            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:88.3%"></div></div><b>0,795</b></div></td>
+            <td style="text-align:right;">0,913</td><td style="text-align:right;">%0,39</td><td style="text-align:right;">%26,5</td></tr>
+
+        <tr><td>Hibrit · eleştirmen kapalı</td>
+            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:88.3%"></div></div><b>0,795</b></div></td>
+            <td style="text-align:right;">0,913</td><td style="text-align:right;color:var(--turuncu);font-weight:700;">%0,51</td><td style="text-align:right;">%26,5</td></tr>
+
+        <tr class="vurgu"><td>Tam hiyerarşi (bizim)</td>
+            <td><div style="display:flex;align-items:center;gap:12px;"><div class="oluk"><div class="cubuk" style="width:91.9%;background:var(--turuncu);"></div></div><b class="turuncu">0,827</b></div></td>
+            <td style="text-align:right;">0,932</td><td style="text-align:right;">%0,42</td><td style="text-align:right;">%26,0</td></tr>
+      </table>
+    </div>
+
+    <div class="satir" style="margin-top:18px;">
+      <div class="kolon" style="flex:1.25;">
+        <p style="font-size:14px;">
+          <b>Birlikte 0,79.</b> Yüklem ajanı eklenince <b>0,82</b>. Son iki satırın makro-F1'i
+          <b>aynı</b> — eleştirmen kapatılınca skor hiç değişmiyor ama
+          <b class="turuncu">halüsinasyon %0,39'dan %0,51'e çıkıyor</b>.
+          Eleştirmenin işi skoru yükseltmek değil, <b>uydurmayı kesmek.</b>
+        </p>
+      </div>
+      <div class="kolon kart vurgu-t" style="flex:1;">
+        <div class="kart-baslik t">Ölçümün dürüstlüğü</div>
+        <div class="kucuk">
+          <b>Makro-F1 0,82</b> · %95 güven aralığı 0,76–0,87 · n=92.
+          Model servisi <b>bayt düzeyinde deterministik değil</b>: aynı kod, aynı girdi, iki koşu →
+          784 hücrenin 7'si oynadı. Sonuçlarımız <b>±0,01 gürültü</b> taşıyor.
+          92 örnekle tek ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="altbilgi"><span><b>Samet</b> &nbsp;Model değerlendirmesi · Metrikler ve ablasyon</span><span class="no">06</span></div>
+</section>
+</body></html>
