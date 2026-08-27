@@ -282,8 +282,8 @@ Ne demek? · Makro-F1
 Alan başına “doğru bulduklarımız / bulmamız gerekenler” dengesi, sonra alanların ortalaması.
 Boş bırakılan hücreyi ödüllendirmez.
 Ölçümün dürüstlüğü
-Makro-F1 0,81
-(%95 güven aralığı 0,75–0,87 · n=92). Ayrıca ölçtük: model servisi
+Makro-F1 0,82
+(%95 güven aralığı 0,76–0,87 · n=92). Ayrıca ölçtük: model servisi
 bayt düzeyinde deterministik değil
 — aynı kod, aynı girdi, iki koşu → 784 hücrenin 7'si oynadı. Sonuçlarımız
 ±0,01 gürültü
@@ -408,14 +408,14 @@ Lisans
 Metrik
 Sonuç
 Hedef
-Makro-F1 (92 örnekli altın set, %95 GA 0,75–0,87)
-0,81
+Makro-F1 (92 örnekli altın set, %95 GA 0,76–0,87)
+0,82
 ≥ 0,78
 Sayısal alan doğruluğu
 0,93
 ≥ 0,90
 Halüsinasyon oranı
-%0,36
+%0,21
 ≤ %3
 Şema geçerliliği
 1,00
@@ -431,7 +431,7 @@ Bilinen sınırlar — saklamıyoruz
 11,4×
 ) — ölçtük, rapor ettik. Sıralamayı doğrudan bozmaz, çünkü motor tekil ürünleri karşılaştırır, banka ortalaması almaz.
 • Kayıtların
-%36'sı
+%39'u
 «diğer» türünde: şartnamenin sekiz türü finansman ve kart odaklı, bankaların kampanyalarının bir bölümü (döviz, sigorta, ücretsiz işlem) o sekizin dışında. Zorlama sınıflandırma yapmıyoruz.
 • Veri bir
 anlık görüntüdür
