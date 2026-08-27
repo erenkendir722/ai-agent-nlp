@@ -76,6 +76,128 @@ class CikarimDurumu:
   """
 
 
+@dataclass
+class TazelikDurumu:
+  """Tazelik yoklamasının canlı biriktirdiği durum (G-17)."""
+
+  bankalar: dict[str, BankaDurumu] = field(default_factory=dict)
+  olaylar: list[GunlukSatiri] = field(default_factory=list)
+  toplam: int = 0
+  denetlenen: int = 0
+  degismedi: int = 0
+  degisti: int = 0
+  ilk_kayit: int = 0
+  erisilemedi: int = 0
+  robots_reddi: int = 0
+  dogrulayici_ile: int = 0
+  aktif_url: str = ""
+  aktif_banka: str = ""
+  degisenler: list[tuple[str, str]] = field(default_factory=list)
+  """(banka adı, url) — bitiş tablosunun kaynağı."""
+
+  @property
+  def ilerleyen(self) -> int:
+    """İlerleme çubuğunun payı: sonucu ne olursa olsun ELE ALINAN adres.
+
+    `denetlenen` yetmiyor — robots reddi denetlenmiş sayılmıyor ama o adres
+    de işlendi. Payda toplam hedefse pay da işlenen hedef olmalı, yoksa
+    çubuk hiç dolmaz.
+    """
+    return self.denetlenen + self.robots_reddi
+
+
+_TAZELIK_RENGI: dict[str, str] = {
+  "degismedi": "bilgi",
+  "degisti": "atlandi",
+  "ilk_kayit": "bilgi",
+  "erisilemedi": "hata",
+  "robots_reddi": "atlandi",
+}
+
+_TAZELIK_ETIKETI: dict[str, str] = {
+  "degismedi": "değişmedi",
+  "degisti": "DEĞİŞTİ",
+  "ilk_kayit": "taban kuruldu",
+  "erisilemedi": "erişilemedi",
+  "robots_reddi": "robots reddetti",
+}
+
+
+def tazelik_olaylarini_isle(durum: TazelikDurumu, olaylar: list) -> None:
+  """`src.izleme.TazelikOlayi` olaylarını duruma işler."""
+  for olay in olaylar:
+    sonuc = getattr(olay, "sonuc", "")
+    if sonuc not in _TAZELIK_ETIKETI:
+      continue  # bilinmeyen sonuç arayüzü kırmaz
+    kod = getattr(olay, "banka_kodu", "")
+    ad = getattr(olay, "banka_adi", "") or kod
+    url = getattr(olay, "url", "") or ""
+    durum.toplam = getattr(olay, "toplam", durum.toplam) or durum.toplam
+    durum.aktif_url = url
+
+    if sonuc == "degismedi":
+      durum.degismedi += 1
+      durum.denetlenen += 1
+      if getattr(olay, "yontem", "") == "http_dogrulayici":
+        durum.dogrulayici_ile += 1
+    elif sonuc == "degisti":
+      durum.degisti += 1
+      durum.denetlenen += 1
+      durum.degisenler.append((format_bank_name(ad), url))
+    elif sonuc == "ilk_kayit":
+      durum.ilk_kayit += 1
+      durum.denetlenen += 1
+    elif sonuc == "erisilemedi":
+      durum.erisilemedi += 1
+    else:
+      durum.robots_reddi += 1
+
+    # Bayrak devri — toplama sekmesindekiyle aynı kural: yeni bankadan olay
+    # geldiyse önceki banka bitmiştir, nabzı yalnız aktif kart atar.
+    if kod and kod != durum.aktif_banka:
+      onceki = durum.bankalar.get(durum.aktif_banka)
+      if onceki is not None:
+        durum.bankalar[durum.aktif_banka] = replace(
+          onceki,
+          aktif=False,
+          asama="bitti" if onceki.asama == "taraniyor" else onceki.asama,
+        )
+      durum.aktif_banka = kod
+
+    kart = durum.bankalar.get(kod, BankaDurumu(ad=ad))
+    denetim = kart.sayfa + 1
+    degisen = kart.toplam + (1 if sonuc == "degisti" else 0)
+    durum.bankalar[kod] = BankaDurumu(
+      ad=ad,
+      asama="hata" if (sonuc == "erisilemedi" or kart.asama == "hata") else "taraniyor",
+      sayfa=denetim,
+      toplam=degisen,  # kart burada «değişen sayısı» tutuyor, alt yazı bunu söylüyor
+      alt=f"{denetim} URL · {degisen} değişti" if degisen else f"{denetim} URL · güncel",
+      mesaj=getattr(olay, "mesaj", ""),
+      aktif=kod == durum.aktif_banka,
+    )
+    durum.olaylar.append(
+      GunlukSatiri(
+        tur=_TAZELIK_RENGI[sonuc],  # type: ignore[arg-type]
+        metin=f"{_TAZELIK_ETIKETI[sonuc]} — {url}",
+        etiket=format_bank_name(ad),
+      )
+    )
+    del durum.olaylar[:-AZAMI_GUNLUK_GECMISI]
+
+
+def tazelik_kartlarini_kapat(durum: TazelikDurumu) -> None:
+  """Koşu bitince açık kalan kartı kapatır — nabız sürmesin."""
+  for kod, kart in list(durum.bankalar.items()):
+    if kart.aktif or kart.asama == "taraniyor":
+      durum.bankalar[kod] = replace(
+        kart,
+        aktif=False,
+        asama="bitti" if kart.asama == "taraniyor" else kart.asama,
+      )
+  durum.aktif_banka = ""
+
+
 def toplama_olaylarini_isle(durum: ToplamaDurumu, olaylar: list) -> None:
   """`src.collector.temel_kaziyici.Ilerleme` olaylarını duruma işler.
 
@@ -238,8 +360,11 @@ __all__ = [
   "AZAMI_GUNLUK_GECMISI",
   "AZAMI_KAYIT_GECMISI",
   "CikarimDurumu",
+  "TazelikDurumu",
   "ToplamaDurumu",
   "acik_kartlari_kapat",
   "cikarim_olaylarini_isle",
+  "tazelik_kartlarini_kapat",
+  "tazelik_olaylarini_isle",
   "toplama_olaylarini_isle",
 ]

@@ -84,6 +84,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Chatbot + kalkan | `src/rag/chatbot.py` |
 | RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
+| Tetikleyici · dinleyici (G-17) | `src/izleme/{tetikleyici,dinleyici}.py` |
 | Canlı boru hattı sayfası | `app/pages/4_Boru_Hattı.py` · `app/akis.py` · `app/boru_durumu.py` · `app/is_yurutucu.py` |
 
 Ayrıntı: [`docs/MIMARI.md`](docs/MIMARI.md) · Güncel ölçüm: [`docs/SONUCLAR.md`](docs/SONUCLAR.md) ·
@@ -154,6 +155,17 @@ taşınması gereken bir varlık. Çevrimdışı pakete elle kopyalama adımı k
 kurulduğu korpusun izini (`vektor_db.korpus_izi`) taşır, `make extract` ya da
 kayıt silme sonrası iz tutmaz ve uyarı çıkar. Bu denetim olmadan chatbot
 silinmiş kampanyaları kaynak göstererek cevap veriyordu.
+
+**Tazelik dinleyicisi kendi tabanını kurar, tetikleyici KURULU DEĞİL (27 Ağu).**
+`src/izleme/` değişikliği TESPİT eder, veriyi TAZELEMEZ — `data/raw` ve
+`data/katilim.db` teslim için donmuş, kendiliğinden koşan bir iş `make eval`
+sayıları ile `docs/SONUCLAR.md`'yi sessizce ayrıştırırdı. Üç şey ölçüldü:
+9 bankanın **2'si** `ETag`/`Last-Modified` veriyor (7'si vermiyor, içerik özeti
+şart) · `httpx` ile Selenium **7/9** bankada birebir aynı gövdeyi veriyor, bu
+yüzden taban çizgisi **dinleyicinin kendi yolundan** kurulur (ilk koşu
+değişiklik iddia etmez) · özet **bütün boşlukları atar**, çünkü Albaraka aynı
+sayfayı tek boşluk farkıyla iki biçimde veriyor ve dakikada bir yanlış alarm
+üretiyordu. Ayrıntı: `docs/kararlar/018-tetikleyici-dinleyici.md`.
 
 **Sessiz yutma yasak.** Gömme hatası da, arama hatası da fırlatılır. Bu kural
 bedava öğrenilmedi: `embed_text` sıfır vektörü, `vektor_ara` boş liste
@@ -234,8 +246,9 @@ make extract-yerel      # aynı çıkarım, yerel Ollama ile (yedek / hava boşl
 make saglayici-dogrula  # EVREN bağlantısı + şema kısıtı sınaması
 make durum        # kaç kampanya, kaç banka, RAG indeksi kurulu mu
 make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
+make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make run          # Streamlit arayüzü
-make test         # testler (980 test)
+make test         # testler (1017 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)

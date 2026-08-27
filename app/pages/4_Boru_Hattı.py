@@ -20,6 +20,7 @@ onay kutusu işaretlenirse dokunulur.
 from __future__ import annotations
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -43,6 +44,8 @@ from src.collector.toplayici import (  # noqa: E402
   topla,
 )
 from src.depolama import VERITABANI_URL  # noqa: E402
+from src.izleme import Tetikleyici, hedefleri_oku, tazelik_denetle  # noqa: E402
+from src.izleme.dinleyici import taban_oku  # noqa: E402
 from src.extraction.saglayici import (  # noqa: E402
   EVREN_MODEL,
   OLLAMA_MODEL,
@@ -59,9 +62,12 @@ from app.akis import (  # noqa: E402
 from app.boru_durumu import (  # noqa: E402
   AZAMI_GUNLUK_GECMISI,
   CikarimDurumu,
+  TazelikDurumu,
   ToplamaDurumu,
   acik_kartlari_kapat,
   cikarim_olaylarini_isle,
+  tazelik_kartlarini_kapat,
+  tazelik_olaylarini_isle,
   toplama_olaylarini_isle,
 )
 from app.is_yurutucu import baslat, olaylari_cek  # noqa: E402
@@ -103,6 +109,7 @@ st.session_state.setdefault("bh_is", None)
 st.session_state.setdefault("bh_is_turu", "")
 st.session_state.setdefault("bh_toplama_ozet", None)
 st.session_state.setdefault("bh_cikarim_ozet", None)
+st.session_state.setdefault("bh_tazelik_ozet", None)
 st.session_state.setdefault("bh_oturum_urlleri", [])
 
 
@@ -231,6 +238,12 @@ def _bekleyen_isi_devral() -> bool:
     while (kalan := olaylari_cek(is_)):
       cikarim_olaylarini_isle(durum, kalan)
     _isi_bitir("bh_cikarim_ozet")
+  elif tur == "tazelik":
+    durum = _durum_al("bh_tazelik_durum", TazelikDurumu)
+    while (kalan := olaylari_cek(is_)):
+      tazelik_olaylarini_isle(durum, kalan)
+    tazelik_kartlarini_kapat(durum)
+    _isi_bitir("bh_tazelik_ozet")
   else:  # tür bilinmiyorsa yuvayı boşalt — kilitli kalmasın
     st.session_state.bh_is = None
     st.session_state.bh_is_turu = ""
@@ -246,7 +259,9 @@ MESGUL = bool(st.session_state.bh_is and st.session_state.bh_is.calisiyor_mu())
 # Sekmeler
 # ---------------------------------------------------------------------------
 
-sekme_toplama, sekme_cikarim = st.tabs(["1 · Veri Toplama", "2 · Çıkarım"])
+sekme_toplama, sekme_cikarim, sekme_tazelik = st.tabs(
+  ["1 · Veri Toplama", "2 · Çıkarım", "3 · Veri Tazeliği"]
+)
 
 
 # === SEKME 1 — VERİ TOPLAMA ===============================================
@@ -720,3 +735,209 @@ with sekme_cikarim:
         st.dataframe(pd.DataFrame(satirlar), use_container_width=True, hide_index=True)
   else:
     _cikarim_ciz(c_durum, None, akiyor=False, gecen=0.0)
+
+
+# === SEKME 3 — VERİ TAZELİĞİ (G-17) ========================================
+
+with sekme_tazelik:
+  tetikleyici = Tetikleyici()
+  taban = taban_oku()
+
+  st.markdown(
+    "Kayıtlı kampanya sayfaları **son yoklamadan beri değişmiş mi?** "
+    "Önce HTTP doğrulayıcı (`ETag` / `Last-Modified`), yoksa içerik özeti."
+  )
+  st.info(
+    "Bu bir **değişiklik tespitidir, tazeleme değildir.** Değişmiş bulunan "
+    "sayfa kendiliğinden yeniden çekilmez — toplama Sekme 1'den, sizin "
+    "kararınızla yapılır. Sebep: `data/raw` ve `data/katilim.db` yayımlanan "
+    "ölçümlerin üzerinde koştuğu veridir; kendiliğinden değişirse `make eval` "
+    "çıktısı ile `docs/SONUCLAR.md` sessizce ayrışır."
+  )
+
+  z1, z2, z3 = st.columns(3)
+  z1.metric("Taban çizgisi", f"{len(taban)} adres")
+  z2.metric("Zamanlayıcı", "kurulu değil" if not tetikleyici.kurulu else "kurulu")
+  z3.metric(
+    "Tasarlanan sıradaki koşu",
+    tetikleyici.sonraki_calisma(datetime.now()).strftime("%d %b %H:%M"),
+  )
+  st.caption(
+    "Tetikleyici **tanımlı ama bilerek kurulu değil**: kurulu bir zamanlayıcı "
+    "teslim için donmuş ölçüm verisine yazabilir. Ürünleşince kurulacak satır "
+    f"hazır — `{tetikleyici.cron_satiri()}` "
+    "(`docs/KURUMSAL_ENTEGRASYON.md` §5 ve §8)."
+  )
+
+  st.divider()
+
+  y1, y2 = st.columns([1, 1.4])
+  with y1:
+    t_kaynaklar = {
+      f"üretim `data/raw` ({uretim_adet})": HAM_DIZIN,
+      f"`data/demo_raw` ({demo_adet})": DEMO_HAM_DIZIN,
+    }
+    z_kaynak_ad = st.selectbox(
+      "Kaynak", list(t_kaynaklar), key="bh_z_kaynak", disabled=MESGUL,
+      help="Hangi ham kayıt kümesinin adresleri yoklanacak.",
+    )
+    z_dizin = t_kaynaklar[z_kaynak_ad]
+  with y2:
+    z_kip = st.radio(
+      "Koşu kipi",
+      ["Demo (ilk N adres)", "Tam koşu (tüm adresler)"],
+      key="bh_z_kip", disabled=MESGUL, horizontal=True,
+      help="Nezaket kuralı burada da geçerli: istek arası ≥2 sn.",
+    )
+  z_demo = z_kip.startswith("Demo")
+
+  z_havuz = _ham_kayit_sayisi(z_dizin)
+  if z_demo and z_havuz > 1:
+    z_adet = st.slider(
+      "Yoklanacak adres", min_value=1, max_value=min(100, z_havuz),
+      value=min(20, z_havuz), key="bh_z_adet", disabled=MESGUL,
+    )
+  elif z_demo:
+    z_adet = z_havuz
+  else:
+    z_adet = z_havuz
+
+  # SÜRE UYARISI ölçülen nezaket kuralından türer, tahmin değil.
+  st.caption(
+    f"**{z_adet} adres** yoklanacak · istek arası ≥2 sn → kabaca "
+    f"**{z_adet * 2 // 60} dk {z_adet * 2 % 60} sn**. "
+    "Yazma hedefi `data/izleme/tazelik.json` — üretim verisine dokunulmaz."
+  )
+
+  v1, v2, _ = st.columns([1, 1, 3])
+  z_basla = v1.button(
+    "Tazeliği Denetle", type="primary", disabled=MESGUL or not z_havuz,
+    use_container_width=True, key="bh_z_basla",
+  )
+  z_iptal = v2.button(
+    "İptal", disabled=not (MESGUL and st.session_state.bh_is_turu == "tazelik"),
+    use_container_width=True, key="bh_z_iptal",
+  )
+
+  if not z_havuz:
+    st.warning("Bu kaynakta ham kayıt bulunmuyor.")
+  if MESGUL and st.session_state.bh_is_turu != "tazelik":
+    st.info("Şu an başka bir koşu sürüyor — aynı anda tek iş çalışır.")
+
+  if z_iptal and st.session_state.bh_is is not None:
+    st.session_state.bh_is.iptal_et()
+    st.toast("İptal istendi — açık yoklama bitince duracak.")
+
+  if z_basla:
+    st.session_state.bh_tazelik_ozet = None
+    st.session_state["bh_tazelik_durum"] = TazelikDurumu()
+
+    def _tazelik_isi(is_, *, dizin=z_dizin, adet=z_adet):
+      """İŞÇİ PARÇACIĞI — burada hiçbir `st.*` çağrılmaz."""
+      hedefler = hedefleri_oku(dizin)[:adet]
+      return tazelik_denetle(
+        hedefler, ilerleme=is_.bildir, iptal=is_.iptal_edildi_mi
+      )
+
+    st.session_state.bh_is = baslat("tazelik", _tazelik_isi)
+    st.session_state.bh_is_turu = "tazelik"
+    st.rerun()
+
+  st.divider()
+
+  z_durum = _durum_al("bh_tazelik_durum", TazelikDurumu)
+
+  def _tazelik_ciz(durum: TazelikDurumu, *, akiyor: bool, gecen: float) -> None:
+    ust = st.columns(5)
+    ust[0].metric("Değişmedi", durum.degismedi)
+    ust[1].metric("Değişti", durum.degisti)
+    ust[2].metric(
+      "Taban kuruldu", durum.ilk_kayit,
+      help="İlk yoklama karşılaştıracak bir şey bulamaz; taban çizgisi kurar "
+           "ve değişiklik İDDİA ETMEZ.",
+    )
+    ust[3].metric("Erişilemedi", durum.erisilemedi)
+    ust[4].metric("Geçen süre", f"{gecen:.0f} sn")
+    st.markdown(
+      ilerleme_cubugu(durum.ilerleyen, durum.toplam, akiyor=akiyor),
+      unsafe_allow_html=True,
+    )
+    if durum.dogrulayici_ile:
+      st.caption(
+        f"{durum.dogrulayici_ile} adres **sayfa gövdesi hiç indirilmeden** "
+        "yanıtlandı (HTTP 304). Ölçüldü: 9 bankanın 2'si doğrulayıcı veriyor."
+      )
+    st.markdown(banka_izgarasi(list(durum.bankalar.values())), unsafe_allow_html=True)
+    if durum.aktif_url:
+      st.caption(f"Son yoklanan: {durum.aktif_url}")
+    _gunluk_ciz(durum.olaylar, anahtar="bh_z_gunluk")
+
+  if MESGUL and st.session_state.bh_is_turu == "tazelik":
+
+    @st.fragment(run_every=0.4)
+    def _canli_tazelik() -> None:
+      is_ = st.session_state.bh_is
+      if is_ is None:
+        return
+      durum = _durum_al("bh_tazelik_durum", TazelikDurumu)
+      tazelik_olaylarini_isle(durum, olaylari_cek(is_))
+      if not is_.calisiyor_mu():
+        _bekleyen_isi_devral()
+        st.rerun(scope="app")
+      _tazelik_ciz(durum, akiyor=True, gecen=is_.gecen_sure())
+
+    _canli_tazelik()
+
+  elif st.session_state.bh_tazelik_ozet:
+    paket = st.session_state.bh_tazelik_ozet
+    z_ozet = paket["sonuc"]
+    _tazelik_ciz(z_durum, akiyor=False, gecen=paket["sure"])
+    _hata_kutusu(paket)
+
+    if z_ozet is not None:
+      st.subheader("Yoklama özeti")
+      if z_ozet.iptal_edildi:
+        st.warning(
+          "Yoklama İPTAL edildi — sayılar kesildiği ana kadarkidir. "
+          "O ana kadar yoklanan adresler taban çizgisine yazıldı."
+        )
+      if z_ozet.taban_kuruldu_mu:
+        st.info(
+          f"**Taban çizgisi kuruldu** ({z_ozet.ilk_kayit} adres). Bu koşu "
+          "değişiklik iddia etmez: karşılaştırılacak önceki ölçüm yoktu. "
+          "İkinci koşudan itibaren değişiklikler görünür."
+        )
+      elif z_ozet.degisti == 0:
+        st.success(
+          f"**{z_ozet.degismedi} adresin hiçbiri değişmemiş.** "
+          "Kayıtlı kampanya verisi güncel."
+        )
+      else:
+        st.warning(
+          f"**{z_ozet.degisti} kampanya sayfası değişmiş.** Tazelemek için "
+          "Sekme 1'den ilgili bankaları toplayın."
+        )
+
+      if z_ozet.degisenler:
+        st.markdown("**Değişen kampanyalar**")
+        st.dataframe(
+          pd.DataFrame(
+            [
+              {"Banka": format_bank_name(o.banka_adi), "Kaynak": o.url}
+              for o in z_ozet.degisenler
+            ]
+          ),
+          use_container_width=True, hide_index=True,
+        )
+
+      if z_ozet.robots_reddi:
+        st.info(
+          f"**robots.txt {z_ozet.robots_reddi} adresi reddetti** — denetim de "
+          "bir ziyarettir, kapı burada da işler."
+        )
+      st.caption(
+        f"Taban çizgisi: `{z_ozet.taban_dosyasi}` · "
+        f"yoklama süresi {z_ozet.sure:.0f} sn"
+      )
+  else:
+    _tazelik_ciz(z_durum, akiyor=False, gecen=0.0)

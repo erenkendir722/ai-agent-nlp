@@ -71,6 +71,13 @@ class BankaDurumu:
     sırayla ilerlemesinden türetiliyor (`boru_durumu`), aşamadan değil.
     """
 
+    alt: str = ""
+    """Kartın alt satırı. Boşsa `sayfa`/`toplam`'dan türetilir.
+
+    Tazelik sekmesi burada «12 URL · 2 değişti» gibi kendi özetini yazıyor;
+    o sekmede sayılan şey sayfa değil denetlenen adres.
+    """
+
 
 @dataclass(frozen=True)
 class GunlukSatiri:
@@ -174,7 +181,9 @@ def banka_izgarasi(durumlar: list[BankaDurumu]) -> str:
         # ilerlediği için aynı anda birden fazla kartın yanıp sönmesi
         # gerçeği yanlış gösterirdi.
         ek_sinif = " kl-nabizli" if (durum.asama == "taraniyor" and durum.aktif) else ""
-        if durum.toplam > 0:
+        if durum.alt:
+            alt = durum.alt
+        elif durum.toplam > 0:
             alt = f"{durum.sayfa}/{durum.toplam} sayfa"
         elif durum.sayfa > 0:
             alt = f"{durum.sayfa} sayfa"

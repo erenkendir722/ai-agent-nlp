@@ -1419,21 +1419,35 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 > Mentör görüşmesinden çıkan iki iş. Karşılık tablosu:
 > [`docs/MENTOR_GERI_BILDIRIMI.md`](docs/MENTOR_GERI_BILDIRIMI.md)
 
-- [ ] **G-17** 🔴 **Tetikleyici + dinleyici mekanizması** · 📅 **26 Ağu gecesi**
-      ↳ Mentör: *«klasik try-catch ötesinde tetikleyici (trigger) ve dinleyici
-        (listener) mantıkları; kampanya açılış/kapanış saatlerine göre (08:00,
-        17:00, 24:00) periyodik tetikleyici ya da metadata kontrolü»*
-      ↳ **Bugün kodda hiç yok** — toplama yalnız elle tetikleniyor (`make crawl`).
-        Jüri provasında da böyle söylüyoruz: [`docs/JURI_PROVASI.md`](docs/JURI_PROVASI.md) §11
-      ↳ Tasarım dayanağı hazır: [`docs/KURUMSAL_ENTEGRASYON.md`](docs/KURUMSAL_ENTEGRASYON.md)
-        §5 ve §8 zaten «gecelik iş (cron / Airflow / SQL Agent)» diyor
-      ↳ Ucuz ve dürüst yol: `HamKayit` üzerinde **içerik özeti** (sha256) +
-        `ETag`/`Last-Modified` yoklaması → değişmeyen sayfa yeniden çıkarıma girmez
-      ↳ ⚠️ **`data/raw` ve `data/katilim.db` teslim için donmuş durumda.** Yeni
-        mekanizma ayrı dizine yazsın; ölçümlerin üstüne yazılırsa `make eval`
-        sayıları ile `docs/SONUCLAR.md` ayrışır
-      ↳ Bitti sayılır: mekanizma koşuyor, `make test` yeşil, ADR yazıldı
-        (`docs/kararlar/017-*.md`), `docs/JURI_PROVASI.md` §11 «yok» demekten çıktı
+- [x] **G-17** ✅ **Tetikleyici + dinleyici mekanizması** *(27 Ağu, Görkem)*
+      ↳ **Dinleyici kodda ve koşuyor** — `src/izleme/dinleyici.py`. İki kademe:
+        koşullu GET (`ETag`/`Last-Modified`), olmazsa içerik özeti (sha256).
+        `make tazelik` · arayüzde **Boru Hattı → 3 · Veri Tazeliği**.
+      ↳ **Tetikleyici tanımlı ama BİLEREK kurulu değil** — `src/izleme/tetikleyici.py`.
+        08:00 / 17:00 / 24:00 takvimi hazır, `cron_satiri()` üretiyor
+        (`0 0,8,17 * * * make tazelik`). `kurulu=False` olduğunu koruyan test var:
+        kurulum bir karardır, kaza olamaz.
+      ↳ **Ölçüm 1 —** 9 bankanın **2'si** `ETag`/`Last-Modified` veriyor (ikisi de
+        304 dönüyor), **7'si** vermiyor → tek başına doğrulayıcı yolu yetmiyordu.
+      ↳ **Ölçüm 2 —** taban çizgisi dinleyicinin KENDİ yolundan kurulur: `httpx`
+        ile Selenium 7/9 bankada birebir aynı gövdeyi veriyor, 2'sinde render
+        farkı var. İlk koşu `ilk_kayit` der, değişiklik iddia etmez.
+      ↳ **Ölçüm 3 —** özet bütün boşlukları atar: Albaraka bir sayfayı 8 çekimde
+        iki biçimde verdi, fark tek boşluk (`'danbaşlayan` ↔ `'dan başlayan`) ve
+        dakikada bir yanlış alarm üretiyordu. Düzeltme sonrası 6 adres × 5 koşu
+        → **0 yanlış alarm**.
+      ↳ ⚠️ **Dürüst sınır:** değişen sayfa otomatik yeniden ÇEKİLMEZ — tespit
+        eder, tazelemeyi operatör başlatır. `data/raw` ve `data/katilim.db`
+        dokunulmadı; yazılan tek yer `data/izleme/tazelik.json`.
+      ↳ ADR: [`docs/kararlar/018-tetikleyici-dinleyici.md`](docs/kararlar/018-tetikleyici-dinleyici.md)
+        · `docs/JURI_PROVASI.md` §11 artık «hiçbiri yok» demiyor
+      ↳ Mentörün özgün isteği: *«klasik try-catch ötesinde tetikleyici (trigger)
+        ve dinleyici (listener) mantıkları; kampanya açılış/kapanış saatlerine
+        göre (08:00, 17:00, 24:00) periyodik tetikleyici ya da metadata kontrolü»*
+      ↳ Tasarım dayanağı: [`docs/KURUMSAL_ENTEGRASYON.md`](docs/KURUMSAL_ENTEGRASYON.md)
+        §5 ve §8 — ürünleşince kurulacak yer orada yazılı
+      ↳ Bitti sayılır ✔: mekanizma koşuyor · `make test` yeşil (1017) · ADR yazıldı ·
+        `docs/JURI_PROVASI.md` §11 «yok» demekten çıktı
 
 - [x] **G-18** ✅ **Canlı Boru Hattı sayfası** *(27 Ağu, Görkem)* — *takım isteği*
       ↳ Planı hazır ve ayrıntılı: [`docs/PLAN_BORU_HATTI_SAYFASI.md`](docs/PLAN_BORU_HATTI_SAYFASI.md)

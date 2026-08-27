@@ -226,10 +226,52 @@ boşluğu denetiminden geçirilmesi gereken yeni bir bağımlılık yığını g
 
 ## 11. «Banka sitesi yarın değişirse ne olur? Sisteminiz bunu nasıl fark eder?»
 
-> **Bugün fark etmez — toplama elle tetiklenir (`make crawl`), zamanlanmış bir
-> iş yok.** Bunu saklamıyoruz. Sistemin bu sürümünde tazeleme operatörün
-> kararıdır; kurumsal yerleşimde gecelik iş olarak zamanlanması tasarlandı ama
-> **kodlanmadı**.
+> **Fark eder — dinleyici kodda ve koşuyor.** Arayüzde **Boru Hattı → 3 · Veri
+> Tazeliği** sekmesi ya da `make tazelik`: kayıtlı her kampanya sayfası
+> yoklanır, değişmiş olanlar listelenir.
+>
+> **Ama tazelemeyi biz yapmıyoruz.** Bu bir *değişiklik tespitidir*: sistem
+> «şu 3 kampanya değişmiş» der, yeniden çekmeyi operatör başlatır. Periyodik
+> tetikleyici de **tanımlı ama bilerek kurulu değil** — gerekçe aşağıda.
+
+**Nasıl çalışıyor (iki kademe, ucuzdan pahalıya):**
+1. Elimizde `ETag`/`Last-Modified` varsa **koşullu GET**; sunucu `304` derse
+   sayfa gövdesi hiç inmez.
+2. Doğrulayıcı yoksa sayfa çekilir, gövde metninin **sha256 özeti** önceki
+   yoklamanınkiyle karşılaştırılır.
+
+**Ölçüldü (27 Ağu, 9 bankanın her birinden 1 URL):**
+
+| | |
+|---|---|
+| `ETag` ya da `Last-Modified` veren | **2 / 9** (Kuveyt Türk, Türkiye Finans) |
+| Koşullu GET'e `304` dönen | **2 / 2** |
+| Hiçbir doğrulayıcı vermeyen → içerik özeti | **7 / 9** |
+
+Yani tek başına `ETag` yoklaması bankaların yedisini kapsamıyordu; iki kademe
+bu ölçüm yüzünden var.
+
+**İlk koşu değişiklik iddia etmez.** Taban çizgisini dinleyicinin KENDİ çekim
+yolu kurar. Sebebi ölçüldü: `httpx` ile Selenium 9 bankanın 7'sinde birebir
+aynı gövdeyi veriyor, 2'sinde vermiyor (menü başlığı, tablo öneki) — bu bir
+içerik değişikliği değil render farkı olduğu için Selenium tabanına karşı
+karşılaştırma o iki bankada her koşuda yanlış alarm üretirdi.
+
+**Yanlış alarm ölçümü:** 6 adres × 5 ardışık koşu → 1. koşu taban, 2.–5.
+koşular **6 «değişmedi», 0 yanlış alarm**. Ayrıntı:
+[`docs/kararlar/018-tetikleyici-dinleyici.md`](kararlar/018-tetikleyici-dinleyici.md)
+
+**Tetikleyici neden kurulu değil — iki gerekçe, ikisi de bilinçli:**
+1. `data/raw` ve `data/katilim.db` teslim için **donmuş**; yayımlanan sayılar o
+   veride ölçüldü. Kendiliğinden koşan bir toplama işi `make eval` ile
+   `docs/SONUCLAR.md` arasında sessiz ayrışma üretirdi.
+2. Kurulu bir zamanlayıcının çalıştığı **gösterilemez**; sekmede koşan bir
+   denetim gösterilebilir.
+
+Ürünleşince kurulacak satır hazır: `0 0,8,17 * * * make tazelik`
+(`Tetikleyici.cron_satiri()` üretiyor, saatler mentörün verdiği 08:00/17:00/24:00).
+`Tetikleyici.kurulu = False` olduğunu koruyan bir test var — kurulum bir
+karardır, kaza olamaz.
 
 **Kırılmaya karşı bugün ne var:**
 - Kazıyıcılarda banka başına değişen tek şey URL keşfidir; gezme, robots kapısı
@@ -241,11 +283,12 @@ boşluğu denetiminden geçirilmesi gereken yeni bir bağımlılık yığını g
 - Alan silindiğinde sistem **uydurmuyor**: 51 vakada `uydurdu = 0`.
 - `make durum` RAG indeksinin bayat olup olmadığını söyler (korpus izi).
 
-**Ne yok:** `ETag`/`Last-Modified` dinleyicisi, içerik özeti karşılaştırması,
-periyodik tetikleyici. Yol haritasında ve
-[`docs/KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md) §5'te tasarımı yazılı.
+**Ne yok:** periyodik tetikleyici **kurulu değil** (tanımlı, gerekçesi
+yukarıda) ve değişen sayfa **otomatik yeniden çekilmiyor** — tazeleme
+operatörün kararı. Kurumsal yerleşim tasarımı
+[`docs/KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md) §5 ve §8'de.
 
-**Kaynak:** [`docs/DAYANIKLILIK.md`](DAYANIKLILIK.md) · `src/collector/kaziyicilar/`
+**Kaynak:** `src/izleme/` · [`docs/kararlar/018-tetikleyici-dinleyici.md`](kararlar/018-tetikleyici-dinleyici.md) · [`docs/DAYANIKLILIK.md`](DAYANIKLILIK.md) · `src/collector/kaziyicilar/`
 
 ---
 

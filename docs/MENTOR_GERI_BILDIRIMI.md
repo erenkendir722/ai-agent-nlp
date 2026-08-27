@@ -21,7 +21,7 @@ göre ayıklandı; ertelenenler gerekçesiyle yazılı.
 |---|---|---|---|
 | 1 | Multi-agent mimarisi belirli bir desene dayanmalı | ✅ **vardı** (ADR 005, hiyerarşik) | [`kararlar/005`](kararlar/005-ajan-mimarisi.md) |
 | 2 | Ajan sayısının gerekçelendirilmesi + orkestrasyon diyagramı | ✅ **bugün eklendi** | [`MIMARI.md`](MIMARI.md) §3.5 |
-| 3 | Tetikleyici / dinleyici mantığı, periyodik güncelleme | ❌ **kodda yok** — Görkem, 26 Ağu gecesi | [`KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md) §5 (tasarım) |
+| 3 | Tetikleyici / dinleyici mantığı, periyodik güncelleme | ✅ **dinleyici kodda** (27 Ağu) · tetikleyici tanımlı, bilerek kurulu değil | [`kararlar/018-tetikleyici-dinleyici.md`](kararlar/018-tetikleyici-dinleyici.md) |
 | 4 | LLM'e doğrudan DB analizi yaptırma; TAG/DAG, Text-to-SQL, Vanna.ai | ✅ **zaten yapmıyoruz** — bilinçli karar | [`JURI_PROVASI.md`](JURI_PROVASI.md) §9 |
 | 5 | Saf RAG yerine hibrit (Regex + LLM) | ✅ **vardı ve ölçüldü** | [`kararlar/003`](kararlar/003-hibrit-cikarim.md) · `data/ablasyon.json` |
 | 6 | Karar destek: vade/tutar karşılaştırması, segment bazlı alternatif | ⬆️ **bugün genişletildi** | Karşılaştırma sayfası · [`karsilastirma.py`](../src/comparison/karsilastirma.py) |
@@ -73,11 +73,25 @@ verilmedi. Ajan katkısı iddia değil ölçüm: eleştirmen kapatılınca halü
 
 ---
 
-## 3. Tetikleyici ve dinleyici — açıkça yok
+## 3. Tetikleyici ve dinleyici — dinleyici var, tetikleyici bilerek kurulu değil
 
-**Bugün toplama elle tetikleniyor** (`make crawl`). Zamanlanmış iş, `ETag` /
-`Last-Modified` dinleyicisi, içerik özeti karşılaştırması — hiçbiri kodda yok.
-Bunu jüriye de böyle söylüyoruz ([`JURI_PROVASI.md`](JURI_PROVASI.md) §11).
+**Yapıldı (27 Ağustos).** `src/izleme/` altında iki parça:
+
+- **Dinleyici** (`dinleyici.py`) — kodda ve koşuyor. Koşullu GET
+  (`ETag`/`Last-Modified`), olmazsa içerik özeti (sha256). `make tazelik` ya da
+  arayüzde **Boru Hattı → 3 · Veri Tazeliği**.
+- **Tetikleyici** (`tetikleyici.py`) — 08:00 / 17:00 / 24:00 takvimi tanımlı,
+  **kurulu değil**. `data/raw` ve `data/katilim.db` teslim için donmuş; kurulu
+  bir iş ölçümlerle belgeleri ayrıştırırdı. Ürünleşince kurulacak satır hazır:
+  `0 0,8,17 * * * make tazelik`.
+
+**Ölçüldü:** 9 bankanın **2'si** `ETag`/`Last-Modified` veriyor (ikisi de `304`
+dönüyor), **7'si** vermiyor → içerik özeti şart. İlk koşu taban çizgisi kurar,
+değişiklik iddia etmez. Yanlış alarm: 6 adres × 5 koşu → **0**. Gerekçeler ve
+iki ayrı ölçüm: [`kararlar/018-tetikleyici-dinleyici.md`](kararlar/018-tetikleyici-dinleyici.md)
+
+**Kalan dürüst sınır:** değişen sayfa **otomatik yeniden çekilmiyor** — sistem
+tespit eder, tazelemeyi operatör başlatır.
 
 **Bugün var olan kırılganlık savunması:**
 

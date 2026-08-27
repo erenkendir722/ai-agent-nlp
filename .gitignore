@@ -13,6 +13,10 @@ data/ablasyon/
 # atılabilir. Üretim verisinden ayrı tutulur ki demo koşusu ambarı kırpmasın.
 data/demo_raw/
 data/demo/
+# Tazelik taban çizgisi (G-17) — türetilmiş, her koşuda yeniden kurulabilir.
+# Depoya girerse başka bir makinede «her şey değişmiş» görünür: taban çizgisi
+# onu kuran makinenin ağ yolundan üretilir.
+data/izleme/
 # Ham anlık görüntülerin META VERİSİ repoda kalır (izlenebilirlik kanıtı),
 # ham HTML dosyaları kalmaz (depo şişer + telif riski).
 data/raw/**/*.html

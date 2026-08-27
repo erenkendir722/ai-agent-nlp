@@ -27,7 +27,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
-from src.collector.toplayici import bankalari_yukle, ham_kayitlari_oku, topla
+from src.collector.toplayici import (
+    DEMO_HAM_DIZIN,
+    HAM_DIZIN,
+    bankalari_yukle,
+    ham_kayitlari_oku,
+    topla,
+)
 from src.depolama import (
     VERITABANI_URL,
     cikarim_kosusu_yaz,
@@ -609,6 +615,62 @@ def komut_durum(_: argparse.Namespace) -> int:
     return 0
 
 
+def komut_tazelik(args: argparse.Namespace) -> int:
+    """Veri tazeliği denetimi (G-17) — kampanya sayfaları değişmiş mi?
+
+    `Tetikleyici.cron_satiri()`'nin çağırdığı hedef budur. Ürünleşince cron
+    bu komutu koşar; bugün elle ya da arayüzden çağrılır.
+
+    HİÇBİR ŞEY YENİDEN ÇEKİLMEZ: `data/raw` ve `data/katilim.db`'ye
+    dokunulmaz, yalnız `data/izleme/tazelik.json` yazılır.
+    """
+    from src.izleme import Tetikleyici, hedefleri_oku, tazelik_denetle
+
+    dizin = DEMO_HAM_DIZIN if args.demo else HAM_DIZIN
+    hedefler = hedefleri_oku(dizin)
+    if args.adet:
+        hedefler = hedefler[: args.adet]
+    if not hedefler:
+        log.error("Denetlenecek adres yok: %s", dizin)
+        return 1
+
+    log.info("%d adres yoklanıyor (%s)", len(hedefler), dizin)
+    ozet = tazelik_denetle(hedefler, ilerleme=_tazelik_ilerlemesi)
+
+    tetikleyici = Tetikleyici()
+    print()
+    print("=" * 64)
+    print(f"  Denetlenen adres     : {ozet.denetlenen}")
+    print(f"  Değişmedi            : {ozet.degismedi}")
+    print(f"  DEĞİŞTİ              : {ozet.degisti}")
+    print(f"  Taban çizgisi kuruldu: {ozet.ilk_kayit}")
+    print(f"  Erişilemedi          : {ozet.erisilemedi}")
+    print(f"  robots.txt reddetti  : {ozet.robots_reddi}")
+    print(f"  Gövde inmeden (304)  : {ozet.dogrulayici_ile}")
+    print(f"  Süre                 : {ozet.sure:.0f} sn")
+    for olay in ozet.degisenler[:10]:
+        print(f"     - {olay.banka_adi[:18]:18} {olay.url}")
+    print("=" * 64)
+    if ozet.taban_kuruldu_mu:
+        print("  BİLGİ: İlk koşu — taban çizgisi kuruldu, değişiklik iddia edilmedi.")
+    elif ozet.degisti:
+        print("  DİKKAT: Değişen sayfalar var — tazelemek için `make crawl`.")
+    else:
+        print("  Kayıtlı kampanya verisi güncel.")
+    print(f"  Zamanlayıcı kurulu mu: {'evet' if tetikleyici.kurulu else 'HAYIR (tasarım)'}")
+    print(f"  Ürünleşince cron      : {tetikleyici.cron_satiri()}")
+    return 0
+
+
+def _tazelik_ilerlemesi(olay: object) -> None:
+    """Tazelik olaylarını terminale tek satır hâlinde basar."""
+    sonuc = getattr(olay, "sonuc", "")
+    if sonuc in {"degisti", "erisilemedi"}:
+        log.info("  %-12s %s", sonuc.upper(), getattr(olay, "url", ""))
+    else:
+        log.debug("  %-12s %s", sonuc, getattr(olay, "url", ""))
+
+
 def komut_vektor(_: argparse.Namespace) -> int:
     """RAG vektör indeksini kurar (S-09, ADR 014).
 
@@ -675,6 +737,17 @@ def ayristirici_kur() -> argparse.ArgumentParser:
 
     p_vektor = altlar.add_parser("vektor", help="RAG vektör indeksini kur (gömme + kosinüs)")
     p_vektor.set_defaults(islev=komut_vektor)
+
+    p_tazelik = altlar.add_parser(
+        "tazelik", help="kampanya sayfaları değişmiş mi (G-17 dinleyicisi)"
+    )
+    p_tazelik.add_argument(
+        "--adet", type=int, default=0, help="yalnız ilk N adres (0 = hepsi)"
+    )
+    p_tazelik.add_argument(
+        "--demo", action="store_true", help="data/demo_raw adreslerini yokla"
+    )
+    p_tazelik.set_defaults(islev=komut_tazelik)
 
     return ap
 

@@ -66,6 +66,9 @@ durum:  ## veritabanı özeti
 vektor:  ## RAG vektör indeksini kur (gömme + kosinüs, ~2 dk)
 	$(PYTHON) -m src.boru_hatti vektor
 
+tazelik:  ## kampanya sayfaları değişmiş mi (G-17 dinleyicisi) [adet=N demo=1]
+	$(PYTHON) -m src.boru_hatti tazelik $(if $(adet),--adet $(adet),) $(if $(demo),--demo,)
+
 chatbot-test:  ## chatbot 31 soruluk test seti (S-10): doğruluk + kaynak gösterme
 	$(PYTHON) -m eval.chatbot_testi
 
