@@ -26,7 +26,6 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili  # noqa: E402
-from src.rag.chatbot import YASAL_UYARI  # noqa: E402
 from src.schema import HedefKitle  # noqa: E402
 from app.ui_utils import (  # noqa: E402
     format_hedef_kitle,
@@ -59,10 +58,6 @@ st.markdown(
 # Üstte YALNIZ kullanıcının bilmesi gereken kalır: sıralamanın neye göre
 # yapıldığı kararı etkiler. «Deterministik kod, dil modeli çalışmaz» iddiası
 # yöntem anlatımıdır — sayfanın en altına, ajan izleri panelinin yanına indi.
-st.caption(
-    "Kampanya listesi değil, **kısıt çözümü**. Sıralama **manşet orana değil, "
-    "toplam maliyete** göre yapılır."
-)
 
 
 kampanyalar = kampanyalari_yukle()
@@ -154,11 +149,6 @@ ust3.metric(
 # «Maliyeti hesaplanan: 4» sıradan üçüncü bir sayı gibi duruyordu; oysa
 # sayfanın asıl sınırı bu. «Toplam maliyete göre sıralı» iddiası yalnız o
 # kayıtlar için geçerli, kalanlar maliyetsiz sıralanıyor. Söylemek zorundayız.
-if toplam_uygun and maliyetli < toplam_uygun:
-    ust3.caption(
-        f"{toplam_uygun} uygun kampanyanın {maliyetli} tanesi. "
-        "Maliyet sıralaması yalnız bunları kapsar."
-    )
 
 # UYARI KUTUSU KALDIRILDI (27 Agustos). Ayni bilgi «Maliyeti hesaplanan»
 # olcusunun altindaki aciklamada zaten yaziyor; sari kutu onu ikinci kez, iki
@@ -364,8 +354,6 @@ with st.expander(f"Nasıl hesaplandı? — {iz.ajan_adi} · {iz.sure_ms} ms", ex
         "Kısıt çözümü ve taksit hesabı deterministik koddur — aynı girdi her "
         "zaman aynı sonucu verir."
     )
-
-st.caption(f"_{YASAL_UYARI}_")
 
 st.divider()
 if uygunlar:

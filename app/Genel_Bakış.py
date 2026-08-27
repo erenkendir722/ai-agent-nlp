@@ -78,12 +78,6 @@ def _bankalar():
 
 
 st.title("Katılım Bankacılığı Kampanya Analizi")
-st.markdown(
-  '<div class="kl-serit">Dokuz katılım bankasının güncel kampanyaları tek ekranda: '
-  "koşullarıyla, kaynağıyla ve <b>müşteriye söylenebilecek karşılaştırmalı "
-  "maliyetiyle</b>. Her sayının geldiği cümle görülebilir.</div>",
-  unsafe_allow_html=True,
-)
 
 
 # ---------------------------------------------------------------------------
@@ -210,10 +204,7 @@ s5.metric(
 
 son = ozet["son_guncelleme"]
 st.caption(
-  f"Son veri çekimi: **{son:%d.%m.%Y %H:%M}** · "
-  f"Kayıt defterindeki {len(bankalar)} bankanın {_faal_sayisi}'i faal; "
-  f"kalan {len(bankalar) - _faal_sayisi}'i henüz faaliyete geçmedi "
-  "ve kampanya yayımlamıyor."
+  f"Son veri çekimi: **{son:%d.%m.%Y %H:%M}**"
   if son
   else "Son çekim bilinmiyor"
 )
@@ -307,10 +298,6 @@ with tab_piyasa:
 with tab_sistem:
   # ES-05 Veri Kalitesi ve Şeffaflık
   st.subheader("Veri Kalitesi ve Şeffaflık")
-  st.caption(
-    "Gerçek dünya verisi kusursuz değildir. Sistemimiz, veriyi olduğundan iyi göstermek yerine, "
-    "kullanıcıyı hangi veriye ne kadar güvenebileceği konusunda şeffafça bilgilendirir."
-  )
 
   eval_ozet = sonuclari_oku()
   k1, k2, k3 = st.columns(3)
@@ -367,7 +354,6 @@ with tab_sistem:
   q1, q2 = st.columns(2)
   with q1:
     st.markdown("**Model Güven Skoru Dağılımı**")
-    st.caption("Çıkarılan verilere duyulan güvenin dağılımı.")
     
     guvenler = [k.ortalama_guven for k in kayitlar if k.ortalama_guven > 0]
     if guvenler:
@@ -381,8 +367,7 @@ with tab_sistem:
       st.info("Güven skoru hesaplanabilen kampanya yok.")
 
   with q2:
-    st.markdown("**Kritik Alan Doluluk Oranları (Eksik Veri Analizi)**")
-    st.caption("Hangi alanın kaç kampanyada yayımlandığı. Eksiklik kaynakta, çıkarımda değil.")
+    st.markdown("**Kritik Alan Doluluk Oranları**")
     
     # Basitçe dolulukları veri yapısından sayıyoruz
     alan_doluluk = {
@@ -404,12 +389,6 @@ with tab_sistem:
       fig_bar.update_xaxes(showgrid=False)
       fig_bar.update_yaxes(showgrid=False)
       st.plotly_chart(fig_bar, use_container_width=True, theme=None)
-      belirtilmemis = {ad: toplam - say for ad, say in alan_doluluk.items()}
-      st.caption(
-        "Belirtilmemiş (kaynakta yok): "
-        + " · ".join(f"{ad} {say}" for ad, say in belirtilmemis.items())
-        + ". Ürün türü %0 ise model uydurmuyor; sayfalarda bu alan yazmıyor."
-      )
     else:
       st.info("Hesaplanacak veri yok.")
 
@@ -451,13 +430,6 @@ defter = pd.DataFrame(
   ]
 )
 st.dataframe(defter, use_container_width=True, hide_index=True)
-
-_kurulus = len(bankalar) - len(faal_bankalar)
-st.caption(
-  f"Faaliyetteki **{len(faal_bankalar)}** katılım bankasının tamamı tarandı. "
-  f"BDDK listesindeki diğer {_kurulus} banka henüz faaliyete geçmedi; "
-  "kampanya yayınlamadıkları için listede yer almıyor."
-)
 
 with st.expander("Veri toplama metodolojisi ve etik ilkeler"):
   st.markdown(

@@ -34,11 +34,6 @@ ortak_kenar()
 sayfa_gezinme()
 st.title("Canlı Metin Analizi")
 
-st.caption(
-  "Görülmemiş ham metin → yapısal alanlar + kanıt alıntısı. "
-  "Şartname madde 6 (metin girdisi + yapılandırılmış çıktı) ve madde 11."
-)
-
 with st.sidebar:
   st.header("Hibrit çıkarım")
   st.markdown(
