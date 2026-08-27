@@ -90,9 +90,23 @@ if not kayitlar:
 
 bankalar = sorted({k.banka_adi for k in kayitlar})
 
+# GENEL BAKIŞ'TAN GELEN SEÇİM.
+#
+# O sayfadaki banka düğmesi `bp_secili_banka` anahtarını yazıp buraya
+# yönlendiriyor; aşağıdaki `st.selectbox` aynı anahtarı kullandığı için
+# Streamlit değeri seçili kabul eder.
+#
+# Doğrulama şart: veri değişip banka listeden düştüyse (yeniden çıkarım,
+# kayıt silme) Streamlit «seçenek listede yok» diye HATA fırlatır ve sayfa
+# hiç açılmaz. Geçersiz değer sessizce düşürülür, ilk banka gösterilir.
+if st.session_state.get("bp_secili_banka") not in bankalar:
+  st.session_state.pop("bp_secili_banka", None)
+
 with st.container(border=True):
   s1, s2 = st.columns([3, 2])
-  secili = s1.selectbox("Banka", options=bankalar, format_func=format_bank_name)
+  secili = s1.selectbox(
+    "Banka", options=bankalar, format_func=format_bank_name, key="bp_secili_banka"
+  )
   s2.caption(
     "Sayılar yalnız bu bankanın kayıtlarından hesaplanır. "
     "Bankalar arası kıyas için Karşılaştırma ekranını kullanın."

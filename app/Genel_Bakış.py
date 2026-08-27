@@ -77,6 +77,33 @@ st.caption(
   "Takım SVARTAL"
 )
 
+
+# ---------------------------------------------------------------------------
+# Hızlı menü
+# ---------------------------------------------------------------------------
+#
+# Sıra DEMO SIRASINI izler (`ortak_kenar` içindeki metinle aynı), alfabetik ya
+# da dosya numarasına göre değil: jüri önünde ekranlar bu sırayla geziliyor.
+
+HIZLI_MENU = [
+  ("Banka Profili", "pages/5_Banka_Profili.py"),
+  ("Karşılaştırma", "pages/1_Karşılaştırma.py"),
+  ("Müşteri Profili", "pages/0_Müşteri_Profili.py"),
+  ("Chatbot", "pages/2_Chatbot.py"),
+  ("Metin Analizi", "pages/3_Metin_Analizi.py"),
+  ("Canlı Boru Hattı", "pages/4_Boru_Hattı.py"),
+]
+
+st.markdown("**Hızlı menü**")
+for _satir_bas in range(0, len(HIZLI_MENU), 3):
+  for _sutun, (_etiket, _sayfa) in zip(
+    st.columns(3), HIZLI_MENU[_satir_bas : _satir_bas + 3], strict=False
+  ):
+    if _sutun.button(_etiket, key=f"gb_menu_{_sayfa}", use_container_width=True):
+      st.switch_page(_sayfa)
+
+st.divider()
+
 try:
   with st.status("Sistem verileri hazırlanıyor...", expanded=False) as status:
     st.write("Orkestratör veritabanını tarıyor...")
