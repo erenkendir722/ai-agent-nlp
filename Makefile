@@ -4,7 +4,7 @@
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         altin-tur2 altin-tur2-fark kural-olc \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-metni veri-kalitesi \
-        suresi-gecenleri-ele kanit kanit-robots kanit-kvkk
+        suresi-gecenleri-ele yinelenenleri-ele kanit kanit-robots kanit-kvkk
 
 # SANAL ORTAMIN YERİ İŞLETİM SİSTEMİNE GÖRE DEĞİŞİR (26 Ağustos).
 #
@@ -54,11 +54,11 @@ kur:  ## sanal ortam + bağımlılıklar
 crawl:  ## banka sitelerinden kampanya topla (Chrome gerekir; gorunmez=1 ile headless)
 	$(PYTHON) -m src.boru_hatti crawl $(if $(gorunmez),--gorunmez) $(if $(banka),--banka $(banka))
 
-extract:  ## ham kayıtlardan çıkarım yap (kural + LLM hibrit) — EVREN
-	$(PYTHON) -m src.boru_hatti extract
+extract:  ## ham kayıtlardan çıkarım yap (kural + LLM hibrit) — EVREN [banka=0214 · kimlik="0203-a1b2 0203-c3d4"]
+	$(PYTHON) -m src.boru_hatti extract $(if $(banka),--banka $(banka)) $(if $(kimlik),--kimlik $(kimlik))
 
-extract-yerel:  ## çıkarım: yerel Ollama ile (hava boşluğu demosu / EVREN düştüğünde)
-	LLM_SAGLAYICI=ollama CIKARIM_ISCI=1 AZAMI_METIN=6000 $(PYTHON) -m src.boru_hatti extract
+extract-yerel:  ## çıkarım: yerel Ollama ile (hava boşluğu demosu / EVREN düştüğünde) [banka=0214]
+	LLM_SAGLAYICI=ollama CIKARIM_ISCI=1 AZAMI_METIN=6000 $(PYTHON) -m src.boru_hatti extract $(if $(banka),--banka $(banka))
 
 saglayici-dogrula:  ## EVREN bağlantısını ve şema kısıtını sına
 	$(PYTHON) -m src.extraction.saglayici
@@ -142,6 +142,9 @@ parmak-izi-goc:  ## cikarim damgasini yeni tanima tasi (ADR 017; uygula=1 ile ya
 
 suresi-gecenleri-ele:  ## suresi gecmis kampanyalari sil (uygula=1 olmadan yalniz gosterir)
 	$(PYTHON) tools/suresi_gecenleri_ele.py $(if $(uygula),--uygula)
+
+yinelenenleri-ele:  ## ayni icerikli yinelenen kayitlari sil (uygula=1 olmadan yalniz gosterir)
+	$(PYTHON) tools/yinelenenleri_ele.py $(if $(uygula),--uygula) $(if $(ayrinti),--ayrinti)
 
 # --- Veri toplama etigi kanitlari (G-14) — docs/kanit/VERI_TOPLAMA_ETIGI.md ---
 kanit: kanit-robots kanit-kvkk  ## veri toplama etigi kanitlarini yenile (robots + KVKK)

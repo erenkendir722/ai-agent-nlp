@@ -570,7 +570,49 @@ def _cikar_ve_kaydet(
     return 0
 
 def komut_extract(args: argparse.Namespace) -> int:
-    return _cikar_ve_kaydet(list(ham_kayitlari_oku()), args)
+    """Ham kayıtlardan çıkarım yapar; `--banka`/`--kimlik` ile daraltılabilir.
+
+    NEDEN SÜZGEÇ VAR: ham veri düzeltildiğinde 900+ kaydın hepsini yeniden
+    çıkarmak hem gereksiz hem zararlı — EVREN bayt düzeyinde deterministik
+    değil, dokunulmayan kayıtların değerleri de oynardı (bkz. CLAUDE.md,
+    «SAPMA SAYISAL ALANLARA DA VURUYOR»). Süzgeç dokunulanı yalıtır.
+
+    İKİ KADEME, ÇÜNKÜ İKİSİNİN DE KARŞILIĞI ÇIKTI:
+        `--banka 0214`  bir bankanın gövde ayıklaması toptan düzeldi (27 Ağu)
+        `--kimlik 0203-2a8c276994f9 ...`  aynı bankanın YALNIZ birkaç kaydı
+            düzeldi (27 Ağu, Albaraka'da 4 kayıt). Burada `--banka 0203`
+            demek, dokunulmamış 122 kaydı da sapmaya açmak olurdu.
+
+    İkisi birlikte verilirse KESİŞİM alınır. `kaydet` upsert olduğu için
+    süzülen koşu diğer satırlara dokunmaz; süzgeç yalnız İŞLENECEK kayıt
+    kümesini daraltır.
+    """
+    kayitlar = list(ham_kayitlari_oku())
+    secim: list[str] = []
+
+    if args.banka:
+        istenen = set(args.banka)
+        kayitlar = [k for k in kayitlar if k.banka_kodu in istenen]
+        secim.append(f"banka={', '.join(sorted(istenen))}")
+
+    if args.kimlik:
+        istenen_kimlik = set(args.kimlik)
+        kayitlar = [k for k in kayitlar if k.kampanya_id() in istenen_kimlik]
+        secim.append(f"kimlik={len(istenen_kimlik)} adet")
+        # SESSİZ EKSİK YASAK: yazım hatası olan bir kimlik süzgeci sessizce
+        # daraltır, koşu «başarılı» görünür ve düzeltilen kayıt hiç çıkarılmaz.
+        bulunmayan = istenen_kimlik - {k.kampanya_id() for k in kayitlar}
+        if bulunmayan:
+            log.error("Ham kayıtta bulunamayan kimlik: %s", ", ".join(sorted(bulunmayan)))
+            return 1
+
+    if secim:
+        log.info("Süzgeç: %s — %d kayıt işlenecek", " · ".join(secim), len(kayitlar))
+        if not kayitlar:
+            log.error("Süzgece uyan ham kayıt yok: %s", " · ".join(secim))
+            return 1
+
+    return _cikar_ve_kaydet(kayitlar, args)
 
 
 def komut_seed(args: argparse.Namespace) -> int:
@@ -789,6 +831,21 @@ def ayristirici_kur() -> argparse.ArgumentParser:
             action="store_true",
             help="ablasyon: yüklem denetimi kapalı",
         )
+        if ad == "extract":
+            # Yalnız `extract`e: `seed` tohum dosyasından okur, orada ham
+            # kayıt süzmenin karşılığı yok.
+            p.add_argument(
+                "--banka",
+                nargs="*",
+                default=[],
+                help="yalnız bu banka kodlarını çıkar (örn. --banka 0214)",
+            )
+            p.add_argument(
+                "--kimlik",
+                nargs="*",
+                default=[],
+                help="yalnız bu kampanya kimliklerini çıkar (örn. --kimlik 0203-2a8c276994f9)",
+            )
         p.set_defaults(islev=islev)
 
     p_durum = altlar.add_parser("durum", help="veritabanı özeti")
