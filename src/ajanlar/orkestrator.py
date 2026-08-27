@@ -39,7 +39,9 @@ from src.rag.chatbot import (
 )
 from src.rag.baglam import Devir, SohbetBaglami, baglam_guncelle, soruyu_tamamla
 from src.rag.chatbot import sor as chatbot_sor
-from src.schema import HedefKitle, Kampanya
+from src.comparison.karsilastirma import ALAN_YONLERI
+from src.rag.chatbot import alan_goster
+from src.schema import TEK_BIRIMLI_ALANLAR, Alan, Birim, HedefKitle, Kampanya, alan_etiketi
 
 PROFIL_SORGUSU = "profil_sorgusu"
 """`Niyet` bir StrEnum ve `chatbot.py` içinde donmuş durumda; yeni değeri
@@ -146,6 +148,59 @@ def profil_sorgusu_mu(soru: str) -> bool:
 # ---------------------------------------------------------------------------
 # Cevap üretimi
 # ---------------------------------------------------------------------------
+
+
+BILINEN_ALANLAR: tuple[str, ...] = tuple(
+    alan for alan in ALAN_YONLERI if alan != "kar_payi_orani"
+)
+"""Kâr payı yoksa CEVABIN SUSMAMASI için gösterilecek alanlar.
+
+Liste elle yazılmadı: karşılaştırma motorunun kıyasladığı alanlardan
+(`ALAN_YONLERI`) kâr payı çıkarılarak türetiliyor. Yeni bir ölçüt oraya
+eklenince burada da kendiliğinden görünür."""
+
+
+def _alan_birimi(alan_adi: str, alan: Alan) -> Birim | None:
+    """Alanın boyutu: tek birimlide sözleşmeden, çok birimlide taşıyıcıdan.
+
+    `KampanyaKaydi.birim()` aynı ayrımı sütun için yapıyor; buradaki taşıyıcı
+    `Alan` nesnesinin kendisi. Sabit tek yerde (`TEK_BIRIMLI_ALANLAR`), yalnız
+    okuma noktası farklı — birim olmadan gösterim YANLIŞ yazar: `%0,50`
+    olarak çıkarılmış bir tahsis ücreti «0,50 TL» görünürdü (bulgu 1.1).
+    """
+    return TEK_BIRIMLI_ALANLAR.get(alan_adi) or alan.birim
+
+
+def _bilinen_satirlar(
+    kampanya: Kampanya | None, sira: int, hesap: dict[str, float]
+) -> list[str]:
+    """Kâr payı olmayan kampanyada BİLİNEN alanları yazar.
+
+    NEDEN VAR — 27 Ağustos'ta ölçüldü. «Emlak Katılım'ın … toplam maliyeti
+    Kuveyt Türk'ünkinden düşük mü?» sorusunda beş kampanyanın beşi de tek
+    satırla geçiştiriliyordu:
+
+        - Kâr payı oranı **Belirtilmemiş**, maliyet hesaplanamadı.
+
+    Oysa o kayıtlarda tahsis ücreti (%0,50 · %1,10), azami vade ve finansman
+    tutarı DOLUYDU. Bilinmeyeni beyan etmek doğrudur; bilineni saklamak
+    değil — kullanıcı «bu sistemde hiçbir bilgi yok» sanıyordu.
+
+    Her yazılan sayı `hesap`'a da girer: kalkan `SISTEM` parçasında sayının
+    yeniden üretilebilir olmasını şart koşuyor.
+    """
+    if kampanya is None:
+        return []
+    satirlar: list[str] = []
+    for alan_adi in BILINEN_ALANLAR:
+        alan = getattr(kampanya, alan_adi, None)
+        if alan is None or alan.deger is None:
+            continue
+        deger = float(alan.deger)
+        gosterim = alan_goster(alan_adi, alan.deger, _alan_birimi(alan_adi, alan))
+        satirlar.append(f"   - {alan_etiketi(alan_adi)}: {gosterim}")
+        hesap[f"{alan_adi}_{sira}"] = deger
+    return satirlar
 
 
 def _profil_cevabi(
@@ -261,7 +316,23 @@ def _profil_cevabi(
     ]
 
     # -- Maliyet listesi: her sayı kendi hesabından yeniden üretilebilmeli --
-    maliyet_satirlari: list[str] = ["", "**Toplam maliyete göre sıralı:**", ""]
+    #
+    # SIRALAMA İDDİASI KOŞULA BAĞLI (27 Ağustos). Başlık koşulsuz yazılıyordu
+    # ve hiçbir kalemin maliyeti hesaplanamadığında bile «Toplam maliyete göre
+    # sıralı» diyordu — yapılmamış bir sıralamayı yapılmış gibi sunmak.
+    # Ölçüldü: Kuveyt Türk ve Emlak Katılım'ın 11 konut kaydının HİÇBİRİNDE
+    # kâr payı oranı yayımlanmamış (sayfalardaki yüzdeler kredi/değer oranı ve
+    # tahsis ücreti; oran bankanın hesaplama aracının arkasında).
+    hesaplanabilir = sum(1 for s in uygunlar[:5] if s.maliyet)
+    if hesaplanabilir:
+        maliyet_basligi = "**Toplam maliyete göre sıralı:**"
+    else:
+        maliyet_basligi = (
+            "**Toplam maliyet sıralaması yapılamadı** — aşağıdaki kampanyaların "
+            "hiçbirinde kâr payı oranı yayımlanmamış. Bilinen alanlar veriliyor; "
+            "oran için bankanın kendi hesaplama aracına bakılmalı."
+        )
+    maliyet_satirlari: list[str] = ["", maliyet_basligi, ""]
     maliyet_hesabi = dict(profil_hesabi)
 
     for sira, sonuc in enumerate(uygunlar[:5], 1):
@@ -296,6 +367,10 @@ def _profil_cevabi(
         else:
             maliyet_satirlari.append(
                 "   - Kâr payı oranı **Belirtilmemiş**, maliyet hesaplanamadı."
+            )
+            # BİLİNENİ SAKLAMA: tahsis ücreti, vade ve tutar dolu olabilir.
+            maliyet_satirlari += _bilinen_satirlar(
+                kimlik_kampanya.get(sonuc.kampanya_id), sira, maliyet_hesabi
             )
         if sonuc.veri_eksik:
             maliyet_satirlari.append(

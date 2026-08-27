@@ -17,19 +17,31 @@ from src.ajanlar.orkestrator import (
     profil_ayristir,
     profil_sorgusu_mu,
 )
-from src.schema import Alan, HedefKitle, Kampanya, UygunlukKosullari
+from src.schema import Alan, Birim, HedefKitle, Kampanya, UygunlukKosullari
 
 
-def _kampanya(ad="Test Bankası", *, oran=1.89, uygunluk=None, url=None) -> Kampanya:
+def _alan(deger, ham: str) -> Alan:
+    return Alan(deger=deger, ham_ifade=ham, guven=0.9, yontem="kural")
+
+
+def _kampanya(
+    ad="Test Bankası", *, oran=1.89, uygunluk=None, url=None,
+    vade=None, tahsis=None, tahsis_birim=None, kimlik=None,
+) -> Kampanya:
     return Kampanya(
         banka_adi=ad,
         banka_kodu="0299",
-        kampanya_id=f"0299-{ad}",
+        kampanya_id=kimlik or f"0299-{ad}",
         kaynak_url=url or f"https://{ad}.test",
         cekim_tarihi=datetime(2026, 8, 14),
         kar_payi_orani=(
-            Alan(deger=oran, ham_ifade=f"%{oran}", guven=0.9, yontem="kural")
-            if oran is not None
+            _alan(oran, f"%{oran}") if oran is not None else Alan.yok()
+        ),
+        vade_ay_max=_alan(vade, f"{vade} ay") if vade is not None else Alan.yok(),
+        tahsis_ucreti=(
+            Alan(deger=tahsis, ham_ifade=f"%{tahsis}", guven=0.9,
+                 yontem="kural", birim=tahsis_birim)
+            if tahsis is not None
             else Alan.yok()
         ),
         uygunluk=uygunluk,
@@ -448,3 +460,64 @@ def test_banka_suzgeci_urun_suzgecinden_once_kosar(ork) -> None:
     # Ters sıra sorulmayan bankayı geri veriyor — testin ayırt ettiği şey bu.
     ters = _banka_suz(soru, _urun_suz(soru, kampanyalar))
     assert [k.banka_adi for k in ters] == ["Ziraat Katılım Bankası A.Ş."]
+
+
+# ---------------------------------------------------------------------------
+# Kâr payı yoksa: SIRALAMA İDDİA EDİLMEZ, BİLİNEN SAKLANMAZ (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+#     soru  : «mevcut müşteri 1.000.000 TL … toplam maliyeti … düşük mü?»
+#     cevap : «Toplam maliyete göre sıralı:» + beş kez
+#             «Kâr payı oranı Belirtilmemiş, maliyet hesaplanamadı.»
+#
+# İki kusur bir arada: yapılmamış bir sıralama yapılmış gibi sunuluyordu ve
+# o kayıtlarda DOLU olan tahsis ücreti · vade · tutar hiç gösterilmiyordu.
+# Kullanıcı «bu sistemde hiçbir bilgi yok» sanıyordu. Ölçüldü: Kuveyt Türk ve
+# Emlak Katılım'ın 11 konut kaydının hiçbirinde kâr payı oranı YAYIMLANMAMIŞ
+# (sayfalardaki yüzdeler kredi/değer oranı ve tahsis ücreti) — yani veri
+# doğruydu, kusur cevabın kendisindeydi.
+
+
+def _oransiz(ad: str, **alanlar) -> Kampanya:
+    return _kampanya(ad, oran=None, kimlik=f"0299-{ad}", **alanlar)
+
+
+def test_maliyet_hesaplanamayinca_siralama_iddia_edilmez(ork) -> None:
+    kampanyalar = [
+        _oransiz("A Katılım Bankası A.Ş.", vade=120),
+        _oransiz("B Katılım Bankası A.Ş.", vade=120),
+    ]
+    cevap, _ = ork.calistir("mevcut müşteri 1.000.000 TL 120 ay", kampanyalar)
+
+    assert "Toplam maliyete göre sıralı" not in cevap.metin
+    assert "sıralaması yapılamadı" in cevap.metin
+    assert "hesaplama aracına" in cevap.metin
+
+
+def test_kar_payi_yoksa_bilinen_alanlar_gosterilir(ork) -> None:
+    """Bilinmeyeni beyan etmek doğrudur; bilineni saklamak değil."""
+    kampanyalar = [
+        _oransiz("A Katılım Bankası A.Ş.", vade=120, tahsis=0.5, tahsis_birim=Birim.YUZDE),
+    ]
+    cevap, _ = ork.calistir("mevcut müşteri 1.000.000 TL 120 ay", kampanyalar)
+
+    assert "Tahsis ücreti: %0,50" in cevap.metin, cevap.metin
+    assert "Azami vade: 120 ay" in cevap.metin
+    assert cevap.dogrulama_gecti, cevap.reddedilen_sayilar
+
+
+def test_bilinen_alan_birimine_gore_yazilir(ork) -> None:
+    """`%0,50` ile `500 TL` aynı sütunda durur — birimsiz gösterim yanlış yazar."""
+    kampanyalar = [
+        _oransiz("A Katılım Bankası A.Ş.", vade=120, tahsis=500.0, tahsis_birim=Birim.TL),
+    ]
+    cevap, _ = ork.calistir("mevcut müşteri 1.000.000 TL 120 ay", kampanyalar)
+    assert "Tahsis ücreti: 500 TL" in cevap.metin, cevap.metin
+
+
+def test_maliyet_hesaplanabiliyorsa_baslik_degismez(ork) -> None:
+    """Düzeltme yalnız hesaplanamayan hâli değiştirir — gerileme nöbetçisi."""
+    cevap, _ = ork.calistir(
+        "mevcut müşteri 1.000.000 TL 120 ay", [_kampanya(oran=2.5, vade=120)]
+    )
+    assert "**Toplam maliyete göre sıralı:**" in cevap.metin

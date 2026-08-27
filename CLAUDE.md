@@ -245,6 +245,18 @@ sözlüğündeki «ev» (konut) «ters çEVrilir» içinde bulunuyor ve «Python
 nasıl ters çevrilir?» sorusu üç kaynakla konut kampanyası dökümü alıyordu.
 Üç harf ve altı tam sözcük aranır, yoksa «ev» «evrak»ı da yakalar.
 
+**Yapılmamış sıralama YAPILMIŞ gibi sunulmaz; bilinen alan SAKLANMAZ
+(27 Ağu).** `_profil_cevabi` başlığı koşulsuz «Toplam maliyete göre sıralı»
+yazıyordu — hiçbir kalemin maliyeti hesaplanamadığında bile. Ölçüldü: Kuveyt
+Türk ve Emlak Katılım'ın **11 konut kaydının hiçbirinde kâr payı oranı
+yayımlanmamış** (sayfalardaki yüzdeler kredi/değer oranı ve tahsis ücreti;
+oran bankanın hesaplama aracının arkasında). Yani veri doğruydu, kusur
+cevaptaydı: beş kalem de tek satırla geçiştiriliyor, o kayıtlarda DOLU olan
+tahsis ücreti · vade · tutar hiç gösterilmiyordu ve kullanıcı «bu sistemde
+hiçbir bilgi yok» sanıyordu. Gösterilecek alanlar elle yazılmaz,
+`ALAN_YONLERI`'nden türer; birim `TEK_BIRIMLI_ALANLAR`'dan çözülür — birimsiz
+gösterim `%0,50`'yi «0,50 TL» yazardı (bulgu 1.1).
+
 **Kullanıcıdan bilgi isteyen cevap, HANGİ YUVAYI istediğini beyan eder
 (ADR 024, 27 Ağu).** `Cevap.beklenen_yuvalar` — iki üretici var (profil kolu
 ve hesaplanan ölçüt cevabı) ve ikisi de aynı ölçüyü kullanır
@@ -404,7 +416,7 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1581 test)
+make test         # testler (1585 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make chatbot-tarama # chatbot boşluk taraması (194 üretilmiş soru) [adet=N]
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
