@@ -10,12 +10,27 @@ ve kaynak alıntısı erişilebilir durumda.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
-import pandas as pd
-import plotly.express as px
-import streamlit as st
+# PyArrow 25'in varsayılan mimalloc ayırıcısı macOS/arm64'te thread yeniden
+# başlatılırken çöküyor; Streamlit her sayfa geçişinde yeni bir ScriptRunner
+# thread'i açtığı için `st.dataframe` olan bir sayfadan çıkınca uygulama
+# komple ölüyor (SIGSEGV — hata sayfası bile çıkmıyor, sunucu düşüyor).
+#
+# `make run` bunu ortamdan geçirir; bu satır yukarıdaki docstring'in tarif
+# ettiği çıplak `streamlit run app/Genel_Bakış.py` için. Çok sayfalı uygulamada
+# önce bu betik koştuğundan bütün sayfalar bundan yararlanır.
+#
+# `import pandas`tan ÖNCE olmalı: pandas pyarrow'u kendi import'unda getiriyor
+# ve ayırıcı import anında seçiliyor. Aşağıdaki E402'ler bu yüzden.
+# Ayrıntı: docs/ARAYUZ_INCELEME.md — «Ortam» bölümü.
+os.environ.setdefault("ARROW_DEFAULT_MEMORY_POOL", "system")
+
+import pandas as pd  # noqa: E402
+import plotly.express as px  # noqa: E402
+import streamlit as st  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 

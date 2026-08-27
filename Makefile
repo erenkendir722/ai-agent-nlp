@@ -31,7 +31,13 @@ export PYTHONIOENCODING := utf-8
 # sayfadan çıkınca uygulama komple ölüyor — 18 Ağustos'ta sayfa geçişinde
 # yaşandı. Sistem ayırıcısı bu yolu kapatır.
 # Ayrıntı: docs/ARAYUZ_INCELEME.md — «Ortam» bölümü.
-ARROW_HAVUZ ?= ARROW_DEFAULT_MEMORY_POOL=system
+#
+# `export`: bu yalnız `run`'ın derdi değil. `AppTest` de her sayfa için yeni
+# bir ScriptRunner thread'i açtığından `make test` aynı yerden çöküyordu —
+# 27 Ağustos'ta ikinci sayfa çizilirken `exit 139`, üstelik pytest özet satırı
+# bile basılamadığı için «kaç test geçti» bilgisi de kayboluyordu. Değişkeni
+# tek tek hedeflere eklemek yerine hepsine geçiriyoruz.
+export ARROW_DEFAULT_MEMORY_POOL ?= system
 
 help:  ## bu yardım metnini göster
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -92,7 +98,7 @@ kur-cevrimdisi:  ## ağsız kurulum — paketler/ klasöründen (E-14)
 	@echo "✅ Ağsız kurulum tamam. Sınama: make test"
 
 run:  ## Streamlit arayüzünü başlat
-	$(ARROW_HAVUZ) $(STREAMLIT) run app/Genel_Bakış.py
+	$(STREAMLIT) run app/Genel_Bakış.py
 
 api:  ## REST API'yi başlat (3 uç nokta)
 	$(PYTHON) -m uvicorn src.api.sunucu:uygulama --host 0.0.0.0 --port 8000

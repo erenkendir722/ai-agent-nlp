@@ -306,8 +306,40 @@ thread'i açtığı için `st.dataframe` olan bir sayfadan çıkınca tetikleniy
 
 Doğrulama: dört sayfa tek süreçte önce `exit 139` (segfault), sonra `exit 0`.
 
-Bunu `Makefile`'ın `run` hedefine kalıcı olarak eklemek gerekiyor — yoksa
-`make run` diyen herkeste, **jüri önünde dahil** tekrar çöker.
+### 27 Ağustos — kapatıldı, ama önce ikinci bir yerden ısırdı
+
+Yama önce yalnız `Makefile`'ın `run` hedefine kondu. Eksik kalan yer `test`ti:
+`AppTest` de sayfa başına yeni bir ScriptRunner thread'i açtığı için `make test`
+**ikinci sayfayı çizerken** aynı yerden çöküyordu.
+
+```
+tests/test_arayuz_sayfalari.py::test_sayfa_istisnasiz_yuklenir
+Fatal Python error: Segmentation fault
+  pyarrow/pandas_compat.py, line 638 in convert_column
+make: *** [test] Segmentation fault: 11
+```
+
+Bu, tek bir testin düşmesinden daha kötüydü: **süreç** öldüğü için pytest özet
+satırına hiç gelinemiyordu — «kaç test geçti» bilgisi kayboluyor, kalan testler
+hiç koşmuyordu. Takım bu yüzden 847/980 gibi eksik sayılar taşıyordu; tam takım
+ilk kez temiz koştuğunda **1027** çıktı.
+
+Ders: değişken tek bir hedefe değil, **sürecin kendisine** ait. Üç kapıya birden
+konuldu, çünkü uygulamayı başlatmanın üç yolu var:
+
+| Kapı | Yer | Kimi korur |
+|---|---|---|
+| `export` | `Makefile` (tüm hedefler) | `make run`, `make test`, `make api`, … |
+| `os.environ.setdefault` | `tests/conftest.py` | çıplak `pytest` — IDE, CI, elle koşum |
+| `os.environ.setdefault` | `app/Genel_Bakış.py` | çıplak `streamlit run` (docstring'in tarif ettiği yol) |
+
+Değişken `pyarrow` import'undan **önce** kurulmalı; ayırıcı import anında
+seçiliyor ve `pandas` pyarrow'u kendi import'unda getiriyor. Sonradan kurmak
+hiçbir şey değiştirmez — `backend_name` yine `mimalloc` kalır.
+
+Regresyon nöbetçisi: `tests/test_arayuz_pyarrow_ayirici.py`. İkinci çizimi ayrı
+bir süreçte koşturup çıkış kodunu denetler (segfault yakalanabilir bir istisna
+değildir, ancak çocuk sürecin çıkış kodundan görülür).
 
 ---
 

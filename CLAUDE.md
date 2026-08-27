@@ -167,6 +167,18 @@ değişiklik iddia etmez) · özet **bütün boşlukları atar**, çünkü Albar
 sayfayı tek boşluk farkıyla iki biçimde veriyor ve dakikada bir yanlış alarm
 üretiyordu. Ayrıntı: `docs/kararlar/018-tetikleyici-dinleyici.md`.
 
+**PyArrow ayırıcısı `system` olmalı — `ARROW_DEFAULT_MEMORY_POOL`.**
+PyArrow 25 macOS/arm64'te varsayılan `mimalloc` ile, thread yeniden
+başlatılırken SIGSEGV veriyor. Streamlit her sayfa geçişinde yeni ScriptRunner
+thread'i açtığı için `st.dataframe` olan bir sayfadan çıkınca **sunucu komple
+ölüyor** — hata sayfası bile çıkmadan. Değişken üç yerde kurulu: `Makefile`
+(`export`, tüm hedefler), `tests/conftest.py`, `app/Genel_Bakış.py`. Üçü de
+`pyarrow` import'undan önce çalışmak zorunda; `pandas` pyarrow'u kendi
+import'unda getirdiği için sonradan kurmak hiçbir şey değiştirmez. Bu satırları
+«gereksiz» diye temizleme — 18 ve 27 Ağustos'ta iki kez ısırdı, ikincisinde
+`make test`'i komple çökertti. Nöbetçi: `tests/test_arayuz_pyarrow_ayirici.py`.
+Ayrıntı: [`docs/ARAYUZ_INCELEME.md`](docs/ARAYUZ_INCELEME.md) — «Ortam».
+
 **Sessiz yutma yasak.** Gömme hatası da, arama hatası da fırlatılır. Bu kural
 bedava öğrenilmedi: `embed_text` sıfır vektörü, `vektor_ara` boş liste
 döndürdüğü için RAG dört gün hiç çalışmadan çalışıyor göründü. Sıfır vektörü de
@@ -248,7 +260,7 @@ make durum        # kaç kampanya, kaç banka, RAG indeksi kurulu mu
 make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make run          # Streamlit arayüzü
-make test         # testler (1017 test)
+make test         # testler (1064 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)
