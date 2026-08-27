@@ -267,7 +267,16 @@ def _manset_parcasi(
     if not adaylar:
         return None
 
-    en_iyi = min(adaylar) if yon == "dusuk_iyi" else max(adaylar)
+    # ANAHTAR ŞART: demet sıralamasına güvenilirse iki kayıt AYNI değerde
+    # eşitlendiğinde Python ikinci öğeyi kıyaslamaya geçer ve `UygunlukSonucu`
+    # sıralanabilir değildir — `TypeError` ile çöker. Eşitlik istisna değil
+    # kural: «500.000 TL taşıt finansmanı, 48 ay» sorgusunda uygun kayıtların
+    # çoğu aynı oranı taşıyor. Kıyas yalnız SAYIYA yapılır; eşitlikte ilk
+    # gelen kazanır ve sıra `MuhakemeAjani` tarafından zaten belirlenmiştir.
+    def _deger(aday: tuple[float, UygunlukSonucu, Alan]) -> float:
+        return aday[0]
+
+    en_iyi = min(adaylar, key=_deger) if yon == "dusuk_iyi" else max(adaylar, key=_deger)
     deger, sonuc, alan = en_iyi
     nitelik = "en düşük" if yon == "dusuk_iyi" else "en yüksek"
     gosterim = alan_goster(olcut, alan.deger, _alan_birimi(olcut, alan))

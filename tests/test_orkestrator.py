@@ -593,3 +593,22 @@ def test_manset_kapsam_disi_orani_vitrine_koymaz(ork) -> None:
 
     assert "en düşük kâr payı oranı: Konutcu" in cevap.metin
     assert "Kartci" not in cevap.metin
+
+
+def test_manset_esit_degerlerde_cokmez(ork) -> None:
+    """İki kayıt AYNI değerde eşitse manşet çökmemeli.
+
+    `min`/`max` demet sıralamasına düşerse Python ikinci öğeyi kıyaslar ve
+    `UygunlukSonucu` sıralanabilir değildir — TypeError. Eşitlik istisna
+    değil kural: «500.000 TL taşıt finansmanı, 48 ay» sorgusunda uygun
+    kayıtların çoğu aynı oranı taşıyor ve sorgu KOMPLE çöküyordu.
+    """
+    kampanyalar = [
+        _konut("Bir", 2.50).model_copy(update={"kampanya_id": "0299-bir"}),
+        _konut("İki", 2.50).model_copy(update={"kampanya_id": "0299-iki"}),
+        _konut("Üç", 2.50).model_copy(update={"kampanya_id": "0299-uc"}),
+    ]
+    cevap, _ = ork.calistir(SORU, kampanyalar=kampanyalar)
+
+    assert "en düşük kâr payı oranı" in cevap.metin
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
