@@ -83,6 +83,47 @@ class TestAblasyonTablosu:
         assert f"{boyut:,}".replace(",", ".") in metin, "slayttaki kampanya sayısı ölçümle uyuşmuyor"
 
 
+def test_slayttaki_test_sayisi_dogru() -> None:
+    """Kapaktaki «geçen test» rakamı GERÇEK test sayısı olmalı.
+
+    NEDEN VAR — 27 Ağustos'ta yakalandı: slayt «787 geçen test» diyordu, gerçek
+    sayı 1.296'ydı. `data-sayi="test"` işareti denetim için konmuş ama denetimi
+    yazılmamıştı; rakam altı hafta boyunca sessizce eskidi.
+
+    Bu, jüriye söylenen bir sayı. Ablasyon ve sonuç tabloları ölçüm dosyalarına
+    bağlı; bu rakamın bağlanacağı dosya yok, o yüzden pytest'in KENDİSİNE
+    sorulur.
+
+    Toplama ayrı bir süreçte yapılır: bu testin içinden `session.items`
+    okumak, alt küme koşulduğunda (tek dosya, `-k` süzgeci) yanlış düşerdi.
+    """
+    import re
+    import subprocess
+    import sys
+
+    metin = SUNUM.read_text(encoding="utf-8")
+    eslesme = re.search(r'data-sayi="test"[^>]*>([\d.]+)<', metin)
+    assert eslesme, "slaytta `data-sayi=\"test\"` işaretli rakam yok"
+    slayttaki = int(eslesme.group(1).replace(".", ""))
+
+    sonuc = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", "tests/"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=600,
+        cwd=KOK,
+    )
+    toplanan = re.search(r"(\d+)\s+tests? collected", sonuc.stdout)
+    assert toplanan, f"pytest toplama çıktısı okunamadı:\n{sonuc.stdout[-600:]}"
+    gercek = int(toplanan.group(1))
+
+    assert slayttaki == gercek, (
+        f"slayt {slayttaki} test diyor, gerçek {gercek}. Slaytı düzeltin."
+    )
+
+
 @pytest.mark.skipif(not SONUCLAR.exists(), reason="eval koşulmamış")
 class TestSonucTablosu:
     def test_kapanis_sayilari_sonuclarla_ayni(self) -> None:

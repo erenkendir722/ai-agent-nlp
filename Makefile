@@ -3,7 +3,7 @@
         kapsam cikti-ornekleri veri-seti \
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         altin-tur2 altin-tur2-fark kural-olc \
-        gorev gorev-dogrula git-kontrol hava-boslugu sunum veri-kalitesi \
+        gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-metni veri-kalitesi \
         suresi-gecenleri-ele kanit kanit-robots kanit-kvkk
 
 # SANAL ORTAMIN YERİ İŞLETİM SİSTEMİNE GÖRE DEĞİŞİR (26 Ağustos).
@@ -251,6 +251,9 @@ ifeq ($(wildcard /Applications/Google Chrome.app),)
 else
   KROM ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
 endif
+
+sunum-metni:  ## slayt metin dokumu -> docs/sunum/sunum_icerik.txt
+	$(PYTHON) tools/sunum_metni.py
 
 sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (10 sayfa, 16:9)
 	@"$(KROM)" --headless --disable-gpu --no-sandbox \
