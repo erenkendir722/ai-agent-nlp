@@ -49,11 +49,12 @@ st.markdown(
     "elendiğini ve toplam maliyeti görün.</div>",
     unsafe_allow_html=True,
 )
+# Üstte YALNIZ kullanıcının bilmesi gereken kalır: sıralamanın neye göre
+# yapıldığı kararı etkiler. «Deterministik kod, dil modeli çalışmaz» iddiası
+# yöntem anlatımıdır — sayfanın en altına, ajan izleri panelinin yanına indi.
 st.caption(
-    "Kampanya listesi değil, **kısıt çözümü**: müşteri tipi, tutar, vade ve "
-    "mevcut ürünler birlikte değerlendirilir. Sıralama **manşet orana değil, "
-    "toplam maliyete** göre yapılır. Kısıt çözümü ve taksit hesabı "
-    "**deterministik koddur**; bu ekranda hiçbir aşamada dil modeli çalışmaz."
+    "Kampanya listesi değil, **kısıt çözümü**. Sıralama **manşet orana değil, "
+    "toplam maliyete** göre yapılır."
 )
 
 
@@ -272,15 +273,12 @@ if elenenler:
 # Ajan izleri — mimarinin kanıtı
 # ---------------------------------------------------------------------------
 
-with st.expander(f"Ajan izleri — {iz.ajan_adi} · {iz.sure_ms} ms", expanded=False):
-    st.markdown(
-        "Her ajan ne yaptığını ve **hangi motoru kullandığını** kaydeder. "
-        "Aritmetik ve kısıt çözümü `kod`, dil işleri `LLM` ile işaretlenir."
-    )
+with st.expander(f"Nasıl hesaplandı? — {iz.ajan_adi} · {iz.sure_ms} ms", expanded=False):
     st.code(iz.satir(), language=None)
     st.caption(
-        f"Bu ekranda LLM çağrısı: **{0 if not iz.llm_kullanildi else 1}** — "
-        "uygunluk muhakemesi tümüyle deterministiktir."
+        f"Bu ekranda dil modeli çağrısı: **{0 if not iz.llm_kullanildi else 1}**. "
+        "Kısıt çözümü ve taksit hesabı deterministik koddur — aynı girdi her "
+        "zaman aynı sonucu verir."
     )
 
 st.caption(f"_{YASAL_UYARI}_")

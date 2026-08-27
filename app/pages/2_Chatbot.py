@@ -62,10 +62,7 @@ with st.sidebar:
       st.session_state.bekleyen_soru = ornek
   if st.button("Kalkan gösterimi: " + KALKAN_ORNEGI, use_container_width=True):
     st.session_state.bekleyen_soru = KALKAN_ORNEGI
-  st.caption(
-    "İlk dört soru yapısal yoldan cevaplanır. Son düğme kalkanı göstermek içindir "
-    "(kırmızı kutu hata değil, uydurma sayının yayına çıkmamasıdır)."
-  )
+  st.caption("Son düğme, sistemin kendini nasıl frenlediğini gösterir.")
 
   st.divider()
   st.header("Mimari")

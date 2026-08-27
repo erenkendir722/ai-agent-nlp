@@ -170,18 +170,13 @@ if not suzulmus:
 
 with st.sidebar:
   st.header("Skor ağırlıkları")
-  st.caption(
-    "«En Avantajlı» sıralaması bu ağırlıklarla hesaplanır. "
-    "Formül dokümantasyondadır; sıralama kara kutu değildir."
-  )
+  st.caption("«En avantajlı» sıralamasını siz belirlersiniz.")
   a_kar = st.slider("Kâr payı oranı", 0.0, 1.0, 0.40, 0.05)
   a_masraf = st.slider("Masraf", 0.0, 1.0, 0.25, 0.05)
   a_vade = st.slider("Vade", 0.0, 1.0, 0.20, 0.05)
   a_odul = st.slider("Ödül", 0.0, 1.0, 0.15, 0.05)
   agirliklar = Agirliklar(a_kar, a_masraf, a_vade, a_odul)
-  st.caption(f"Ağırlık toplamı {agirliklar.toplam():.2f} — otomatik normalize edilir.")
-  
-  st.info("**Vade Ağırlığı:** Vade ağırlığı sol kaydırıcıyla kullanıcı tarafından belirlenir. Farklı vadeli kampanyalar karşılaştırıldığında tablonun üzerinde otomatik uyarı çıkar ve karar toplam maliyete bırakılır.")
+  st.caption(f"Toplam {agirliklar.toplam():.2f} — otomatik dengelenir.")
 
 # ---------------------------------------------------------------------------
 # Kriter butonları (şartname 5.7)
@@ -369,163 +364,12 @@ else:
 st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
 
 # ---------------------------------------------------------------------------
-# Yapay Zeka Battlecard (Biz vs Onlar)
-# ---------------------------------------------------------------------------
-if benim_bankam != "(Seçilmedi)" and sirali:
-  st.subheader("Yapay Zeka Battlecard: Biz vs Onlar")
-  st.caption(
-    "Serbest metin özetidir — sayısal iddia tablodaki yapısal kayıtlardan gelir. "
-    "Hava boşluğu demosunda EVREN yoksa bu düğme çalışmaz; sıra tabloda kalır."
-  )
-  st.warning(
-    "Bu çıktı sayısal doğrulama kalkanından geçmez. Oran ve vade için yukarıdaki tabloyu kullanın."
-  ) 
-  if st.button("Battlecard Üret (EVREN API)"):
-    biz_data = [k for k in sirali if format_bank_name(k.banka_adi) == format_bank_name(benim_bankam)]
-    onlar_data = [k for k in sirali if format_bank_name(k.banka_adi) != format_bank_name(benim_bankam) and format_bank_name(k.banka_adi) in [format_bank_name(b) for b in secili_bankalar]]
-    
-    if not biz_data:
-      st.warning(f"{benim_bankam} bankasına ait filtrelenmiş kampanya bulunamadı.")
-    elif not onlar_data:
-      st.warning("Karşılaştırma yapılacak Rakip Seti kampanyası bulunamadı.")
-    else:
-      with st.spinner("EVREN API analiz ediyor..."):
-        import os
-        from openai import OpenAI
-        
-        api_key = os.getenv("EVREN_API_ANAHTARI", "dummy_key")
-        api_url = os.getenv("EVREN_TEMEL_URL", "https://evren-llmapi.ssyz.org.tr/v1")
-        model_adi = os.getenv("LLM_MODEL", "llm-fast") 
-        
-        try:
-          client = OpenAI(base_url=api_url, api_key=api_key)
-          
-          # Veriyi hazırlama
-          biz_ozet = "\n".join([f"- Ürün: {k.urun_turu or k.kampanya_turu} | Kâr: {k.kar_payi_orani} | Vade: {k.vade_ay_max} | Tahsis: {k.tahsis_ucreti}" for k in biz_data])
-          onlar_ozet = "\n".join([f"- Banka: {k.banka_adi} | Ürün: {k.urun_turu or k.kampanya_turu} | Kâr: {k.kar_payi_orani} | Vade: {k.vade_ay_max} | Tahsis: {k.tahsis_ucreti}" for k in onlar_data])
-          
-          prompt = f"""Sen kıdemli bir katılım bankacılığı ürün yöneticisisin. Aşağıdaki ürün özelliklerine dayanarak, "Bizim Bankamız"ın satış ekipleri için bir "Battlecard" (Rakip analiz kartı) hazırla.
-          
-Bizim Ürünlerimiz ({benim_bankam}):
-{biz_ozet}
-
-Rakip Ürünleri:
-{onlar_ozet}
-
-Lütfen analizini şu başlıklarla yap:
-1. Bizim Üstün Olduğumuz Yönler (Avantajlar)
-2. Rakiplerin Üstün Olduğu Yönler (Zayıflıklar)
-3. Satış Stratejisi (Müşteriye ne söylemeliyiz?)
-
-Sadece analizi ver, profesyonel bir B2B dili kullan."""
-
-          response = client.chat.completions.create(
-              model=model_adi,
-              messages=[
-                  {"role": "system", "content": "Sen kıdemli bir finansal analiz uzmanısın."},
-                  {"role": "user", "content": prompt}
-              ],
-              temperature=0.3
-          )
-          st.success("Battlecard başarıyla üretildi!")
-          st.markdown(f"> **Not:** {model_adi} modeli kullanıldı.")
-          st.info(response.choices[0].message.content)
-        except Exception as e:
-          st.error(f"EVREN API'sine ulaşılamadı: {str(e)}")
-
-# ---------------------------------------------------------------------------
-# Avantaj skorunun dökümü
-# ---------------------------------------------------------------------------
-
-if secili_kriter == Kriter.EN_AVANTAJLI:
-  with st.expander("«En Avantajlı» skoru nasıl hesaplandı?"):
-    st.markdown(
-      "Her kriter kendi içinde 0–1 aralığına ölçeklenir (min-maks "
-      "normalizasyon), sonra yukarıdaki ağırlıklarla toplanır. "
-      "Eksik veri nötr (0,5) sayılır ve *karşılaştırılabilirlik* oranı düşer.\n\n"
-      "**Not:** Vade ağırlığı kullanıcı tarafından belirlenir; uzun vade tek başına avantaj "
-      "sayılır, ama farklı vadeli ürünler için yukarıdaki uyarı çıkar ve karar toplam maliyete bırakılır."
-    )
-    for detay in avantaj_skorla(sirali, agirliklar):
-      st.markdown(
-        f"**{detay.banka_adi}** — {detay.aciklama()} \n"
-        f"Karşılaştırılabilirlik: {detay.karsilastirilabilirlik:.2f}"
-      )
-else:
-  with st.expander(f"«{KRITER_ETIKETLERI[secili_kriter]}» sıralaması nasıl yapıldı?"):
-    st.markdown(
-      "Bu sıralama, bankaların sağladığı spesifik veri alanı üzerinden "
-      "saf matematiksel büyüklük/küçüklük kuralı (deterministik karşılaştırma motoru) "
-      "kullanılarak yapılmıştır. **Sıralamanın kendisinde dil modeli çalışmaz**, "
-      "aritmetik koddadır — bu adım tekrarlanabilir ve denetlenebilir. "
-      f"Sıralanan alanların bir kısmı çıkarım katmanından geldiği için sistemin "
-      f"ölçülmüş halüsinasyon oranı sıfır değil, **{_halusinasyon_metni()}**'tir "
-      f"(`docs/SONUCLAR.md`); her satırın kaynak kanıtı aşağıda açılabilir.\n\n"
-      "- **Kural 1 (Şeffaflık):** İlgili veriyi eksik ('Belirtilmemiş') sunan bankalar, "
-      "karşılaştırılamaz oldukları için doğrudan **en alta** itilir.\n"
-      "- **Kural 2 (Denge):** Eşit değerli kampanyalarda Python'un kararlı "
-      "sıralama garantisi girdi sırasını korur — öngörülebilir, tekrarlanabilir sonuç."
-    )
-
-st.divider()
-
-# ---------------------------------------------------------------------------
-# Kanıt panelleri — her sayının kaynağı
-# ---------------------------------------------------------------------------
-
-st.subheader("Kayıt detayları ve kaynak kanıtı")
-
-for kayit in sirali[:20]:
-  baslik = (
-    f"{format_bank_name(kayit.banka_adi)} — "
-    f"{format_kategori(kayit.urun_turu or kayit.kampanya_turu) if (kayit.urun_turu or kayit.kampanya_turu) else 'Kampanya'} "
-    f"(doluluk %{kayit.doluluk_orani * 100:.0f})"
-  )
-  with st.expander(baslik):
-    kampanya: Kampanya = kayit.kampanyaya_cevir()
-    st.markdown(f"**Kaynak:** [{kayit.kaynak_url}]({kayit.kaynak_url})")
-    st.markdown("---")
-    st.caption(f"Çekim tarihi: {kayit.cekim_tarihi:%d.%m.%Y %H:%M}")
-
-    for alan_adi, alan in kampanya.cikarilan_alanlar().items():
-      if not alan.var_mi:
-        continue
-      c1, c2, c3 = st.columns([2, 2, 1])
-      c1.markdown(f"**{format_alan_adi(alan_adi)}**")
-      c2.markdown(_enum_yazi(alan))
-      c3.markdown(f"`{alan.yontem}` · {alan.guven:.2f}")
-      if alan.kaynak and alan.kaynak.alinti:
-        st.caption(f" Kaynak alıntısı: _{alan.kaynak.alinti[:280]}_")
-
-    bos = [format_alan_adi(ad) for ad, a in kampanya.cikarilan_alanlar().items() if not a.var_mi]
-    if bos:
-      st.caption(f"**Belirtilmemiş alanlar:** {', '.join(bos)}")
-    
-    # Geliştirici Modu açıksa, o kampanyanın ham JSON halini göster
-    if st.session_state.get("dev_mode", False):
-      st.markdown("---")
-      st.caption("**API Yanıtı (JSON)**")
-      st.json(kampanya.model_dump())
-
-st.divider()
-
-if st.session_state.get("dev_mode", False):
-  st.subheader("Geliştirici Entegrasyonu (B2B API)")
-  st.markdown("Aşağıdaki cURL komutuyla filtrelenmiş sonuçları gerçek API'den çekebilirsiniz (`make api` ile başlatın):")
-  
-  curl_cmd = f"""curl "http://localhost:8000/compare?kriter={secili_kriter.value}&limit=10"
-"""
-  st.code(curl_cmd, language="bash")
-  st.divider()
-
-# ---------------------------------------------------------------------------
 # ES-08: Yan Yana Karşılaştırma ve Maliyet
 # ---------------------------------------------------------------------------
 
 st.subheader("Yan Yana Toplam Maliyet Karşılaştırması")
 st.caption(
-  "Eşit taksitli (annüite) ödeme planı. Katılım bankacılığında murabaha ile "
-  "satış bedeli baştan sabitlenir; taksit hesabı matematiksel olarak aynıdır."
+  "Aynı anapara ve vadede bankaları gerçek toplam maliyetle kıyaslayın."
 )
 
 if not sirali:
@@ -785,8 +629,157 @@ else:
           st.plotly_chart(fig_taksit, use_container_width=True)
 
       st.caption(
-        "Hesap annüite formülüyle, `src/comparison/karsilastirma.py` içinde "
-        "yapılır. Kâr payı oranı ve azami vade kampanya kaydından gelir; "
-        "kaynak kanıtı yukarıdaki kayıt detaylarında açılabilir."
+        "Kâr payı oranı ve azami vade kampanya kaydından gelir; kaynağı "
+        "«Kayıt detayları» bölümünde açılabilir."
       )
 
+
+
+
+# ---------------------------------------------------------------------------
+# Yapay Zeka Battlecard (Biz vs Onlar)
+# ---------------------------------------------------------------------------
+if benim_bankam != "(Seçilmedi)" and sirali:
+  st.subheader("Yapay Zeka Battlecard: Biz vs Onlar")
+  st.caption(
+    "Serbest metin özetidir — sayısal iddia tablodaki yapısal kayıtlardan gelir. "
+    "Hava boşluğu demosunda EVREN yoksa bu düğme çalışmaz; sıra tabloda kalır."
+  )
+  st.warning(
+    "Bu çıktı sayısal doğrulama kalkanından geçmez. Oran ve vade için yukarıdaki tabloyu kullanın."
+  ) 
+  if st.button("Battlecard Üret (EVREN API)"):
+    biz_data = [k for k in sirali if format_bank_name(k.banka_adi) == format_bank_name(benim_bankam)]
+    onlar_data = [k for k in sirali if format_bank_name(k.banka_adi) != format_bank_name(benim_bankam) and format_bank_name(k.banka_adi) in [format_bank_name(b) for b in secili_bankalar]]
+    
+    if not biz_data:
+      st.warning(f"{benim_bankam} bankasına ait filtrelenmiş kampanya bulunamadı.")
+    elif not onlar_data:
+      st.warning("Karşılaştırma yapılacak Rakip Seti kampanyası bulunamadı.")
+    else:
+      with st.spinner("EVREN API analiz ediyor..."):
+        import os
+        from openai import OpenAI
+        
+        api_key = os.getenv("EVREN_API_ANAHTARI", "dummy_key")
+        api_url = os.getenv("EVREN_TEMEL_URL", "https://evren-llmapi.ssyz.org.tr/v1")
+        model_adi = os.getenv("LLM_MODEL", "llm-fast") 
+        
+        try:
+          client = OpenAI(base_url=api_url, api_key=api_key)
+          
+          # Veriyi hazırlama
+          biz_ozet = "\n".join([f"- Ürün: {k.urun_turu or k.kampanya_turu} | Kâr: {k.kar_payi_orani} | Vade: {k.vade_ay_max} | Tahsis: {k.tahsis_ucreti}" for k in biz_data])
+          onlar_ozet = "\n".join([f"- Banka: {k.banka_adi} | Ürün: {k.urun_turu or k.kampanya_turu} | Kâr: {k.kar_payi_orani} | Vade: {k.vade_ay_max} | Tahsis: {k.tahsis_ucreti}" for k in onlar_data])
+          
+          prompt = f"""Sen kıdemli bir katılım bankacılığı ürün yöneticisisin. Aşağıdaki ürün özelliklerine dayanarak, "Bizim Bankamız"ın satış ekipleri için bir "Battlecard" (Rakip analiz kartı) hazırla.
+          
+Bizim Ürünlerimiz ({benim_bankam}):
+{biz_ozet}
+
+Rakip Ürünleri:
+{onlar_ozet}
+
+Lütfen analizini şu başlıklarla yap:
+1. Bizim Üstün Olduğumuz Yönler (Avantajlar)
+2. Rakiplerin Üstün Olduğu Yönler (Zayıflıklar)
+3. Satış Stratejisi (Müşteriye ne söylemeliyiz?)
+
+Sadece analizi ver, profesyonel bir B2B dili kullan."""
+
+          response = client.chat.completions.create(
+              model=model_adi,
+              messages=[
+                  {"role": "system", "content": "Sen kıdemli bir finansal analiz uzmanısın."},
+                  {"role": "user", "content": prompt}
+              ],
+              temperature=0.3
+          )
+          st.success("Battlecard başarıyla üretildi!")
+          st.markdown(f"> **Not:** {model_adi} modeli kullanıldı.")
+          st.info(response.choices[0].message.content)
+        except Exception as e:
+          st.error(f"EVREN API'sine ulaşılamadı: {str(e)}")
+
+# ---------------------------------------------------------------------------
+# Avantaj skorunun dökümü
+# ---------------------------------------------------------------------------
+
+if secili_kriter == Kriter.EN_AVANTAJLI:
+  with st.expander("«En Avantajlı» skoru nasıl hesaplandı?"):
+    st.markdown(
+      "Her kriter kendi içinde 0–1 aralığına ölçeklenir (min-maks "
+      "normalizasyon), sonra yukarıdaki ağırlıklarla toplanır. "
+      "Eksik veri nötr (0,5) sayılır ve *karşılaştırılabilirlik* oranı düşer.\n\n"
+      "**Not:** Vade ağırlığı kullanıcı tarafından belirlenir; uzun vade tek başına avantaj "
+      "sayılır, ama farklı vadeli ürünler için yukarıdaki uyarı çıkar ve karar toplam maliyete bırakılır."
+    )
+    for detay in avantaj_skorla(sirali, agirliklar):
+      st.markdown(
+        f"**{detay.banka_adi}** — {detay.aciklama()} \n"
+        f"Karşılaştırılabilirlik: {detay.karsilastirilabilirlik:.2f}"
+      )
+else:
+  with st.expander(f"«{KRITER_ETIKETLERI[secili_kriter]}» sıralaması nasıl yapıldı?"):
+    st.markdown(
+      "Sıralama kampanya kayıtlarındaki sayılara göre yapılır; "
+      "**bu adımda dil modeli çalışmaz.** "
+      f"Sıralanan alanların bir kısmı çıkarım katmanından geldiği için sistemin "
+      f"ölçülmüş halüsinasyon oranı sıfır değil, **{_halusinasyon_metni()}**'tir "
+      f"(`docs/SONUCLAR.md`); her satırın kaynak kanıtı aşağıda açılabilir.\n\n"
+      "- **Kural 1 (Şeffaflık):** İlgili veriyi eksik ('Belirtilmemiş') sunan bankalar, "
+      "karşılaştırılamaz oldukları için doğrudan **en alta** itilir.\n"
+      "- **Kural 2 (Denge):** Eşit değerli kampanyalarda Python'un kararlı "
+      "sıralama garantisi girdi sırasını korur — öngörülebilir, tekrarlanabilir sonuç."
+    )
+
+st.divider()
+
+# ---------------------------------------------------------------------------
+# Kanıt panelleri — her sayının kaynağı
+# ---------------------------------------------------------------------------
+
+st.subheader("Kayıt detayları ve kaynak kanıtı")
+
+for kayit in sirali[:20]:
+  baslik = (
+    f"{format_bank_name(kayit.banka_adi)} — "
+    f"{format_kategori(kayit.urun_turu or kayit.kampanya_turu) if (kayit.urun_turu or kayit.kampanya_turu) else 'Kampanya'} "
+    f"(doluluk %{kayit.doluluk_orani * 100:.0f})"
+  )
+  with st.expander(baslik):
+    kampanya: Kampanya = kayit.kampanyaya_cevir()
+    st.markdown(f"**Kaynak:** [{kayit.kaynak_url}]({kayit.kaynak_url})")
+    st.markdown("---")
+    st.caption(f"Çekim tarihi: {kayit.cekim_tarihi:%d.%m.%Y %H:%M}")
+
+    for alan_adi, alan in kampanya.cikarilan_alanlar().items():
+      if not alan.var_mi:
+        continue
+      c1, c2, c3 = st.columns([2, 2, 1])
+      c1.markdown(f"**{format_alan_adi(alan_adi)}**")
+      c2.markdown(_enum_yazi(alan))
+      c3.markdown(f"`{alan.yontem}` · {alan.guven:.2f}")
+      if alan.kaynak and alan.kaynak.alinti:
+        st.caption(f" Kaynak alıntısı: _{alan.kaynak.alinti[:280]}_")
+
+    bos = [format_alan_adi(ad) for ad, a in kampanya.cikarilan_alanlar().items() if not a.var_mi]
+    if bos:
+      st.caption(f"**Belirtilmemiş alanlar:** {', '.join(bos)}")
+    
+    # Geliştirici Modu açıksa, o kampanyanın ham JSON halini göster
+    if st.session_state.get("dev_mode", False):
+      st.markdown("---")
+      st.caption("**API Yanıtı (JSON)**")
+      st.json(kampanya.model_dump())
+
+st.divider()
+
+if st.session_state.get("dev_mode", False):
+  st.subheader("Geliştirici Entegrasyonu (B2B API)")
+  st.markdown("Aşağıdaki cURL komutuyla filtrelenmiş sonuçları gerçek API'den çekebilirsiniz (`make api` ile başlatın):")
+  
+  curl_cmd = f"""curl "http://localhost:8000/compare?kriter={secili_kriter.value}&limit=10"
+"""
+  st.code(curl_cmd, language="bash")
+  st.divider()

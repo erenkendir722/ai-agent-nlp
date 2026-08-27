@@ -262,7 +262,7 @@ with tab_sistem:
   q1, q2 = st.columns(2)
   with q1:
     st.markdown("**Model Güven Skoru Dağılımı**")
-    st.caption("Modelin her bir kampanyadaki verileri çıkarırken duyduğu güvenin dağılımı.")
+    st.caption("Çıkarılan verilere duyulan güvenin dağılımı.")
     
     guvenler = [k.ortalama_guven for k in kayitlar if k.ortalama_guven > 0]
     if guvenler:
@@ -277,7 +277,7 @@ with tab_sistem:
 
   with q2:
     st.markdown("**Kritik Alan Doluluk Oranları (Eksik Veri Analizi)**")
-    st.caption("Bankaların sitelerinde ilgili veriyi bulundurma oranları. Eksiklik modelden değil, kaynaktan gelir.")
+    st.caption("Hangi alanın kaç kampanyada yayımlandığı. Eksiklik kaynakta, çıkarımda değil.")
     
     # Basitçe dolulukları veri yapısından sayıyoruz
     alan_doluluk = {

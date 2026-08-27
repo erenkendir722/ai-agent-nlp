@@ -646,10 +646,7 @@ with sekme_cikarim:
     with sol:
       st.markdown("**Katman hattı**")
       st.markdown(katman_hatti(sayaclar, akiyor=akiyor), unsafe_allow_html=True)
-      st.caption(
-        "Çıkarılan alanın hangi katmandan geldiği: yalnız kural motoru, "
-        "yalnız LLM, ya da ikisinin uzlaştığı."
-      )
+      st.caption("Her alanın hangi katmandan geldiği.")
     with sag:
       st.markdown("**Son işlenen kayıtlar**")
       st.markdown(kayit_seridi(durum.kayitlar), unsafe_allow_html=True)

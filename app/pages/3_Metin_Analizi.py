@@ -41,7 +41,7 @@ with st.sidebar:
 - **Eleştirmen** — çıkarım hattında uydurma alanı düşürür
     """
   )
-  st.caption("Sıra: önce kural (anında), sonra LLM. Eşzamanlı değil; hibrit görünür olsun diye.")
+  st.caption("Önce kural motoru, sonra dil modeli çalışır.")
 
 ORNEK_METIN = """Değerli Müşterimiz,
 Yeni ev alacaklar için harika bir haberimiz var! Konut finansmanı kampanyamız kapsamında, %1,89 kâr payı oranıyla 120 aya varan vade seçenekleri sunuyoruz. 500.000 TL'ye kadar kullanabileceğiniz bu finansmanda hiçbir tahsis ücreti veya gizli masraf bulunmamaktadır (Masrafsız).
