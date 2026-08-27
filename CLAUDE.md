@@ -480,7 +480,7 @@ make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz
 make kapsam       # banka bazlı kapsam raporu -> docs/KAPSAM_RAPORU.md
 make cikti-ornekleri    # model çıktı örnekleri -> docs/CIKTI_ORNEKLERI.md
 make veri-seti    # yayınlanabilir veri seti + veri kartı -> data/exports/
-make sunum        # docs/sunum/sunum.html -> Svartal_Sunum.pdf (10 sayfa)
+make sunum        # docs/sunum/sunum.html -> Svartal_Sunum.pdf (7 sayfa, TEKNOFEST sablonu)
 make lisanslar    # bağımlılık + model lisans raporu
 make lisanslar-teyit    # aynı rapor + model lisanslarını HF'ten teyit et (ağ)
 make kanit        # veri toplama etiği kanıtları (robots günlüğü + KVKK taraması)

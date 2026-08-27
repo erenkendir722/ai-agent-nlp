@@ -1,6 +1,9 @@
-Toplam sayfa: 10
+Toplam sayfa: 7
 === SAYFA 1 ===
-TEKNOFEST 2026 · Yapay Zekâ Dil Ajanları Yarışması · 2. Senaryo
+(bu sayfada metin yok)
+
+=== SAYFA 2 ===
+Yapay Zekâ Dil Ajanları Yarışması · 2. Senaryo · Katılım Bankacılığı Metin Madenciliği
 SVARTAL
 Katılım Bankacılığı Finansal Metin Madenciliği ve Akıllı Karşılaştırma Sistemi
 Kampanya metinlerinden
@@ -10,7 +13,7 @@ deterministik
 karşılaştırma · Sayısını doğrulayamadığında
 susan
 asistan
-931
+727
 işlenmiş kampanya
 9
 katılım bankası (faal olanın tamamı)
@@ -28,44 +31,48 @@ Görkem
 Veri toplama · Toplayıcı, veri kalitesi, terim sözlüğü
 Esra
 Arayüz · Panolar, asistan ekranı, kullanım kılavuzu
-Bilişim Vadisi · 27 Ağustos 2026
+Takım SVARTAL · Bilişim Vadisi, 27 Ağustos 2026
+01
 
-=== SAYFA 2 ===
+=== SAYFA 3 ===
 02
-Problem
-Katılım bankacılığı kampanyalarında ortak bir veri biçimi yok. Bilgi; serbest metnin, tablonun ya da dipnotun içinde saklı.
-Bir banka çalışanı rakip kampanyaları karşılaştırmak istediğinde tek yolu var:
-bankaların sitelerini tek tek açıp serbest metinleri elle okumak.
-Kâr payı, vade ve masraf bilgisi standart bir alanda durmuyor; ne bir API var, ne indirilebilir tablo.
-Terminoloji de farklı: faiz yerine
-kâr payı
-, kredi yerine
-finansman
-. Üstelik aynı bilgi bankadan bankaya başka türlü yazılıyor — şartname 5.2 bunu dört ifadeyle örnekliyor:
-Aynı bilgi, dört farklı ifade
-“%2,05 kâr payı oranı”
-“avantajlı kâr payı fırsatı”
-“özel oranlı finansman”
-“düşük maliyetli finansman”
+Problem ve sistemin cevabı
+Katılım bankacılığı kampanyalarında ortak bir veri biçimi yok: ne API var, ne indirilebilir tablo. Bilgi serbest metnin, tablonun ya da dipnotun içinde saklı — ve
+aynı bilgi bankadan bankaya başka türlü yazılıyor.
+1 · Toplayıcı
+Kampanya listeleri JavaScript ile geliyor; toplama
+Selenium
+ile. Banka başına değişen tek şey
+URL keşfi.
+→
+2 · Ön işleme
+Menü/reklam ayıklanır; Türkçe'ye özgü düzeltmeler yapılır (İ/ı, “1.500,50”, şapkalı â).
+→
+3 · Hibrit çıkarım
+Kural katmanı
+ve
+dil modeli
+aynı metni ayrı ayrı okur; uzlaştırıcı ikisini birleştirir.
+→
+4 · Ajanlar
+Beş ajan: uygunluk · eleştirmen · yüklem · muhakeme · orkestratör.
+Beşi de dil modeli kullanmaz.
+→
+5 · Veritabanı
+SQLite
+— tek dosya, kurulum gerektirmez. Her kayıt hem sütunlarda hem tam JSON olarak durur.
+Aynı bilgi, dört farklı ifade · şartname 5.2
+“%2,05 kâr payı oranı” · “avantajlı kâr payı fırsatı”
+“özel oranlı finansman” · “düşük maliyetli finansman”
 İlkinde sayı var, diğer üçünde yok.
 Sayı uyduran bir sistem son üçünde yanlış oran üretir.
 Bankacılıkta yanlış oran, eksik orandan çok daha pahalıdır.
-Sayı çoğu zaman cümlede bile değil
-Vade | Kâr Payı Oranı | Tahsis Ücreti | Aylık Toplam Maliyet
-3 | 4,20% | 0,50% | 5,77%
-36 |
-3,80%
-|
-0,50%
-| 4,98%
-Gerçek bir sayfadan alınmış tablo. Doğru oranı bulmak için satırın vadesini ve hangi sütunun kâr payı, hangisinin ücret olduğunu bilmek gerekiyor —
-ikisi de yüzde.
-9
-faal katılım bankası, 9 ayrı site yapısı
-BDDK listesinde 15 kuruluş var; altısı henüz faaliyete geçmemiş. Her faal bankanın sayfa şeması ve terminolojisi farklı.
-0
-ortak veri biçimi
-Elimizdeki tek şey HTML sayfası ve içindeki Türkçe serbest metin.
+Ne demek? · Kanıt zinciri
+Sistemin ürettiği
+her değer
+; geldiği cümleyi, sayfa adresini, güven skorunu ve hangi katmandan çıktığını yanında taşır. Kanıtı olmayan bir değer üretilemez — kod bunu
+kısıt olarak
+uygular, deneyen program çöker. Bankacılıkta izlenebilirliği olmayan sayı kullanılamaz; tasarımın sebebi budur.
 En düşük oran, en ucuz ürün demek değildir
 %1,87 kâr payı
 + 20.000 TL tahsis ücreti
@@ -75,39 +82,9 @@ En düşük oran, en ucuz ürün demek değildir
 2.028.925 TL
 800.000 TL · 120 ay. Manşette daha iyi görünen ürün toplamda
 4.204 TL pahalı.
-Sistemimiz sıralamayı orana göre değil,
+Sistem sıralamayı orana göre değil,
 toplam geri ödemeye
-göre yapar — bu hesap testle sabitlenmiştir.
-Muhammed Eren
-Takım lideri · Problem ve mimari
-02
-
-=== SAYFA 3 ===
-03
-Sistem tek bakışta
-Beş katman. Her katman bir öncekinin çıktısını alır, kendi kanıtını ekler ve
-hiçbir değeri kaynağından koparmaz.
-1 · Toplayıcı
-Banka sitelerinden kampanya sayfalarını çeker.
-Banka başına özel kod yok
-— farklar tek bir YAML dosyasında.
-→
-2 · Ön işleme
-Menü/reklam ayıklanır; Türkçe'ye özgü düzeltmeler yapılır (İ/ı, “1.500,50”, şapkalı â).
-→
-3 · Hibrit çıkarım
-Kural katmanı
-(kalıp eşleme) ve
-dil modeli
-aynı metni ayrı ayrı okur; uzlaştırıcı ikisini birleştirir.
-→
-4 · Ajanlar
-Beş ajan: uygunluk · eleştirmen · yüklem · muhakeme · orkestratör. Dördü
-dil modeli kullanmaz.
-→
-5 · Veritabanı
-SQLite
-— tek dosya, kurulum gerektirmez. Her kayıt hem düz sütunlarda hem tam JSON olarak durur.
+göre yapar — hesap testle sabitlenmiştir.
 Üç kullanım yüzeyi — hepsi aynı veritabanına bakar
 Panolar ve karşılaştırma
 Kampanya dağılımı, veri kalitesi, yan yana ürün karşılaştırma, CSV dışa aktarma
@@ -118,114 +95,51 @@ Jüri kendi metnini yapıştırır, yapısal çıktıyı ve kanıtını anında 
 Ayrıca
 REST API
 (3 uç nokta): kurumsal sistemlere bağlanmak için.
-Ne demek? · Kanıt zinciri
-Sistemin ürettiği
-her değer
-, geldiği cümleyi, sayfa adresini, güven skorunu ve hangi katmandan çıktığını yanında taşır. Kanıtı olmayan bir değer üretilemez — kod bunu
-kısıt olarak
-uygular, deneyen program çöker. Bankacılıkta izlenebilirliği olmayan sayı kullanılamaz; bu tasarımın sebebi budur.
-Teknoloji seçimleri ve gerekçeleri
-Qwen3.5
-Açık ağırlıklı,
-Apache-2.0
-. Llama/Gemma türevleri şartname 5.10 gereği kullanılmadı
-SQLite
-Sunucu kurulumu istemez; tek dosya kopyalanır. Kurum içi kurulumun en sade hâli
-Streamlit
-Arayüz için; Python dışında yığın yok
-Yerel vektör
-Harici vektör veritabanı yok — arama
-numpy
-ile, kendi makinemizde
-Tek cümlede fark
-Sistem,
-bilmediğini bildiğini söyleyebilen
-bir sistemdir. Alan boşsa “Belirtilmemiş” yazar; sayıyı doğrulayamıyorsa cevabı hiç göstermez.
 Muhammed Eren
 Takım lideri · Problem ve mimari
-03
+02
 
 === SAYFA 4 ===
-04
-Veri: nereden, nasıl, ne kadar
-931 yürürlükteki kampanya kaydı, BDDK listesindeki
+03
+Veri ve hibrit çıkarım
+727 yürürlükteki kampanya kaydı, BDDK listesindeki
 faal dokuz katılım bankasının hepsinden.
-Toplama kurallarının kanıtı depoda.
-931
-kampanya kaydı
-9 bankadan, 24 Ağustos çekimi · süresi geçmiş kampanyalar ayıklandı
-15.151
+Toplama kurallarının kanıtı da, her değerin kaynağı da depoda.
+727
+kampanya kaydı, 9 bankadan
+Süresi geçmiş ve içeriksiz sayfalar ayıklandı
+12.391
 paragraf, asistan için indekslendi
-Sayfa metinleri arama için parçalandı
+Yerel dosyada, harici vektör veritabanı yok
 98
 altın set örneği
 Dört kişi
 elle
-etiketledi
-Ne demek? · robots.txt
-Web sitelerinin kök dizininde duran bir metin dosyasıdır; sitenin sahibi orada
-“otomatik programlar hangi sayfalarımı çekebilir”
-bilgisini yazar. Bir zorunluluk mekanizması değil, nezaket kuralıdır — ama biz kural olarak uyguluyoruz:
-reddedilen sayfa çekilmez, dosya okunamıyorsa da çekilmez.
-12 alan adının kararı tek tek günlüğe yazıldı; günlük depoda duruyor ve tek komutla yenileniyor.
+etiketledi, modele sordurulmadı
 Toplama disiplini — beyan değil, kanıt
+robots.txt
+Sitenin “otomatik programlar neyi çekebilir” beyanı. Reddedilen sayfa çekilmez,
+dosya okunamıyorsa da çekilmez
+; 12 alan adının kararı günlükte
 Kimlik beyanı
 İsteklerde kim olduğumuzu ve iletişimi bildiriyoruz; ağa giden başlık kaydedildi
 Hız sınırı
-İstekler arası en az 2 saniye, eşzamanlı istek yok — siteleri yormuyoruz
+İstekler arası en az 2 saniye, eşzamanlı istek yok
 Kapsam
 Yalnız
 herkese açık
 sayfalar; giriş gerektiren hiçbir alan yok
 Kişisel veri
-1.024 kayıt tarandı, gerçek kişiye ait veri
+Tüm ham kayıtlar tarandı, gerçek kişiye ait veri
 bulunmadı
 (KVKK taraması, depoda)
-Yayınlanan veri seti
-Depoda iki biçimde:
-CSV
-(Excel'de açılır) ve
-JSONL
-(kanıt zinciriyle, makine için). Yanında bir
-veri kartı
-var: kapsam, dağılım, toplama yöntemi, bilinen sınırlar.
-Tam sayfa metni yayımlanmıyor
-— yapısal alanlar, kaynak adresi ve değerin dayandığı kısa alıntı yayımlanıyor. Bu, telif riskini sıfırlarken doğrulanabilirliği koruyor.
-Dengesizliği gizlemiyoruz
-En geniş kapsamlı bankada, en dar kapsamlının
-11,9 katı
-kaydımız var — bankaların yayımladığı sayfa sayısı farklı. Bu bir yanlılık kaynağıdır; ölçtük ve rapor olarak yayımladık.
-Sıralamayı doğrudan bozmaz
-, çünkü motor tekil ürünleri karşılaştırır, banka ortalaması almaz. Yine de “en avantajlı” dediğimiz şey,
-topladığımız kümede
-en avantajlı olandır — sunumda da böyle söylüyoruz.
-Veri kalitesi her koşuda denetleniyor
-Aykırı değer (5.000 TL'den küçük finansman, 360 aydan uzun vade), aynı bankada çelişen oranlar ve eksik alanlar otomatik taranıp rapora yazılıyor. Süresi geçmiş kampanyalar ayrı bir komutla ayıklanabiliyor —
-“bankalar sitelerini değiştirirse ne olur?”
-sorusunun cevabı bu denetimdir: kırılma sessiz kalmaz, rapora düşer.
-Görkem
-Veri toplama · Veri kalitesi ve terim sözlüğü
-04
-
-=== SAYFA 5 ===
-05
-Hibrit çıkarım: iki katman, tek sonuç
-Kural katmanı sayıda iyi, dil modeli anlamda iyi. İkisini birlikte kullanmak, ikisinin de tek başına yapabildiğinden iyi sonuç veriyor —
-ölçüldü.
-Kural katmanı — kalıp eşleme
-“%1,89”, “120 aya kadar”, “31 Aralık 2026”, “masraf alınmaz” gibi kalıpları arar.
-Uydurma yapamaz
-(halüsinasyon oranı %0,00), ağ gerektirmez, milisaniyeler sürer. Ama “bu bir konut kampanyası mı” sorusunu
-cevaplayamaz
-: sınıflandırmada başarısı sıfır.
-Dil modeli katmanı — anlam
-Metni okur, kampanya türünü ve hedef kitleyi anlar. Model
-şemaya zorlanır
-: yalnız izin verilen alanları ve değerleri üretebilir. Buna rağmen sayıda kural katmanı kadar iyi değil — vade çıkarımında tek başına çok zayıf.
-Uzlaştırıcı — çelişkide kim kazanır
-İki katman aynı değeri bulduysa güven yükselir (“hibrit”). Çelişirlerse
-sayısal alanlarda kural katmanı kazanır
-: kalıp eşlemenin kanıtı metnin kendisidir. Anlamsal alanlarda model kazanır. Karar kuralı kayıt altında ve testlerle sabit.
+Kural katmanı ve dil modeli — kim neyi iyi yapıyor
+Kural katmanı
+“%1,89”, “120 aya kadar”, “masraf alınmaz” kalıplarını arar: uydurma yapamaz, ağ gerektirmez, milisaniyeler sürer — ama “bu bir konut kampanyası mı” sorusunu cevaplayamaz.
+Dil modeli
+türü ve hedef kitleyi anlar, şemaya zorlanır, ama sayıda kural kadar iyi değil.
+Uzlaştırıcı
+çelişkide karar verir: sayısal alanlarda kural kazanır (kanıtı metnin kendisidir), anlamsal alanlarda model. Karar kuralı testlerle sabit.
 Gerçek bir kayıt — kanıt zinciriyle
 Alan
 Değer
@@ -243,10 +157,6 @@ azami tutar
 50.000 TL
 hibrit
 0,94
-hedef kitle
-yeni müşteri
-model
-0,80
 tahsis ücreti
 Belirtilmemiş
 —
@@ -258,7 +168,7 @@ boş bırakır, uydurmaz.
 “%0 kâr payı” bir boşluk değil, bir beyandır
 “Vade farksız”, “kâr paysız” ifadeleri
 sıfır oran
-demektir. Önce bunları boş bırakıyorduk; altın set denetiminde yakalandı ve karar kayda geçirildi. Boş bırakmak, kampanyayı karşılaştırmadan
+demektir. Önce bunları boş bırakıyorduk; altın set denetiminde yakalandı. Boş bırakmak, kampanyayı karşılaştırmadan
 tamamen düşürüyordu.
 Şartnamenin kendi örneği: 11 iddianın 11'i
 Şartnamedeki üç örnek banka metnini sisteme verdik. İlk koşuda
@@ -267,17 +177,19 @@ tamamen düşürüyordu.
 alınmamaktadır
 ” cümlesinden 50.000 TL'lik bir ücret çıkarılıyordu — olumsuzluk kipi sözlükte yoktu. Düzeltildi ve
 teste bağlandı
-; artık 11/11. Jürinin verdiği örneği çalıştırmak, en ucuz denetim oldu.
+; artık 11/11.
+Görkem
+Veri toplama · Veri kalitesi |
 Samet
-Bilgi çıkarımı · Kural ve model katmanları
-05
+Bilgi çıkarımı
+03
 
-=== SAYFA 6 ===
-06
-Ajan mimarisi
-Beş ajan, beş ayrı iş.
-Dördü dil modeli kullanmaz
-— çünkü aritmetiği ve kısıt kontrolünü modele yaptırmak, kazandığımız güveni tek hamlede kaybettirir.
+=== SAYFA 5 ===
+04
+Ajan mimarisi ve ölçüm
+Beş ajan, beş ayrı iş — ve
+hiçbiri dil modeli kullanmaz.
+Aritmetiği ve kısıt kontrolünü modele yaptırmak, kazandığımız güveni tek hamlede kaybettirir. Katmanları tek tek kapatıp ne kaybettiğimizi ölçtük.
 Kim ne yapıyor
 Ajan
 Görevi
@@ -305,17 +217,7 @@ Soruyu doğru ajana yönlendirir, izleri toplar, dürüstlük uyarılarını ekl
 kullanmaz
 Dil modeli
 tek bir işte
-kullanılıyor: metinden alan çıkarmak. Gerisi deterministik kod — yani aynı girdi her zaman aynı sonucu verir.
-Uygunluk ajanı ne kazandırdı
-Şemada 14 Ağustos'tan beri bir
-uygunluk
-alanı vardı ama dolduran yoktu; ekran her kaydı “uygunluk çıkarılamadı” diye listeliyordu. Ajan yazıldı: kayıtların
-%70,1'ünde
-en az bir kısıt çıkarılıyor. İlk sürüm çok cömertti — metinde “kredi kartı” görmeyi zorunluluk sayıyor ve kayıtların %59'una yanlış kısıt yazıyordu.
-Yükümlülük kanıtı
-şartı eklendi (“…sahip olmak gerekmektedir”), oran %24,3'e indi.
-Az ama doğru kısıt, çok ama uydurma kısıttan iyidir:
-yanlış kısıt müşteriyi haksız yere eler.
+kullanılıyor: metinden alan çıkarmak. Gerisi deterministik kod — aynı girdi her zaman aynı sonucu verir.
 Ajan izi — ekranda görünen gerçek kayıt
 [orkestrator · kod · 2 ms]
 profil sorgusu → muhakeme
@@ -327,27 +229,13 @@ Her satırda
 “kod”
 yazıyor: o adımda dil modeli çalışmadı. Ajan mimarisinin varlığını sözümüze değil,
 ekrandaki koşum kaydına
-bakarak görürsünüz.
-Ajan tuzağı
-“Ajan” demek, her adımı bir dil modeline sormak değildir. Bizim ajanlarımızın ihtiyacı olan şey bir
-sözleşme
-: ne yaptığını, neden yaptığını ve ne kadar sürdüğünü yazan bir iz. Hazır bir ajan çatısı kullanmadık — protokol
+bakarak görürsünüz. Hazır bir ajan çatısı kullanmadık — protokol
 30 satır
 , o çatının lisans ve bağımlılık denetimi ise günler sürerdi.
-Muhammed Eren
-Takım lideri · Ajan mimarisi
-06
-
-=== SAYFA 7 ===
-07
-Ölçüm: hangi katman ne katıyor
-Beş yapılandırma,
-aynı kodla, aynı korpusta, tek koşuda
-ölçüldü. Katmanları tek tek kapatınca ne kaybettiğimizi gösteriyoruz.
-Ablasyon tablosu · 1.024 ham kayıt (ayıklama öncesi ölçüm korpusu) · 98 örnekli altın set
+Ablasyon · 1.024 ham kayıtlık ölçüm korpusu · 98 örnekli altın set
 Yapılandırma
 Makro-F1
-Sayısal doğruluk
+Sayısal
 Halüsinasyon
 Doluluk
 Yalnız kural
@@ -387,50 +275,39 @@ uydurmayı kesmek.
 Ne demek? · Altın set
 Doğru cevapların
 insan eliyle
-yazıldığı referans küme. Dört kişi 98 kampanyayı tek tek okuyup etiketledi.
+yazıldığı referans küme.
 Modele sordurulmadı
 — cevap anahtarı modelden gelseydi ölçtüğümüz şey doğruluk değil, iki modelin benzerliği olurdu.
 Ne demek? · Makro-F1
-Her alan için “doğru bulduklarımız / bulmamız gerekenler” dengesi; sonra alanların ortalaması.
-Boş bırakılan hücreyi ödüllendirmez
-— hiçbir şey çıkarmayan bir sistem yüksek “doğruluk” alabilir ama F1 alamaz.
+Alan başına “doğru bulduklarımız / bulmamız gerekenler” dengesi, sonra alanların ortalaması.
+Boş bırakılan hücreyi ödüllendirmez.
 Ölçümün dürüstlüğü
 Makro-F1 0,81
-(%95 güven aralığı 0,75–0,87 · n=92)
-. Aralığı da söylüyoruz: 92 örnekle tek bir ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
-Ayrıca ölçtük: model servisi
-bayt düzeyinde deterministik değil.
-Aynı kod, aynı girdi, iki koşu → 784 hücrenin 7'si oynadı. Yani sonuçlarımız
+(%95 güven aralığı 0,75–0,87 · n=92). Ayrıca ölçtük: model servisi
+bayt düzeyinde deterministik değil
+— aynı kod, aynı girdi, iki koşu → 784 hücrenin 7'si oynadı. Sonuçlarımız
 ±0,01 gürültü
-taşıyor. Bir iyileştirmenin gerçek olması için bu bandın
+taşıyor; bir iyileştirmenin gerçek olması için bu bandın
 dışına
-çıkması gerekir.
-Tablonun kendisi de bir kez yanlıştı
-18 Ağustos'ta bu tablonun satırları
-farklı kod sürümleriyle
-koşulmuştu; karşılaştırma geçersizdi. Uyarı mekanizması vardı, eksik olan koşumdu. Artık beş yapılandırma
-tek süreçte
-, aralarında insan olmadan koşuyor ve tablo ancak
-hepsi bitince
-yazılıyor. İnsan hatasını uyarıyla değil, yapıyla engelledik.
+çıkması gerekir. 92 örnekle tek ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
 Samet
 Model değerlendirmesi · Metrikler ve ablasyon
-07
+04
 
-=== SAYFA 8 ===
-08
-Asistan: kaynak gösteren, gerektiğinde susan
+=== SAYFA 6 ===
+05
+Asistan, karşılaştırma ve müşteri profili
 Sayısal cevaplar
 metin aramasından değil, yapısal veritabanından
-gelir. Doğrulanamayan sayı taşıyan cevap ekrana hiç çıkmaz.
+gelir. “En avantajlı” ise mutlak bir gerçek değil, bir tercih bileşimidir — sistem o tercihi gizlemez, kullanıcıya verir.
 Ne demek? · RAG (dayanaklandırılmış üretim)
 Modele soruyu doğrudan sormak yerine, önce
 kendi verimizden
-ilgili parçaları buluruz ve cevabı onlara dayandırırız. Bizde bu, 15.151 paragrafın sayısal “parmak izine” çevrilip
+ilgili parçaları buluruz ve cevabı onlara dayandırırız. Bizde 12.391 paragraf sayısal “parmak izine” çevrilip
 yerel bir dosyada
-tutulmasıyla yapılıyor; arama basit bir matris çarpımı — milisaniyeler.
+tutuluyor; arama basit bir matris çarpımı — milisaniyeler.
 Harici vektör veritabanı yok:
-tahsis edildiği söylenen servis adresi çözülmüyordu, dolayısıyla bağımlılığı tamamen kaldırdık. Yan fayda: sistem dış servise bağımlı olmadan çalışıyor.
+tahsis edildiği söylenen servis adresi çözülmüyordu, bağımlılığı tamamen kaldırdık.
 Sayısal doğrulama kalkanı — nasıl çalışır
 Cevap parçası
 Nasıl denetlenir
@@ -447,67 +324,16 @@ düz metin
 Sayı içeremez — kod bunu kısıt olarak uygular
 Denetimden geçemeyen cevap
 gösterilmez.
-Yani asistan “muhtemelen %2 civarıdır” cümlesini kuramaz — mimari olarak kuramaz.
+Asistan “muhtemelen %2 civarıdır” cümlesini kuramaz — mimari olarak kuramaz.
 0/35
 meşru soruda yanlış engelleme
 Kalkan bir dönem meşru cevapların %14,3'ünü engelliyordu — bir vakada engellenen sayı
 KVKK'nın kanun numarasıydı.
-Kalkanı gevşetmedik; neyi denetlediğini düzelttik.
-Ekranda ne görünüyor
-Her cevapta
-niyet etiketi
-(soru nasıl anlaşıldı),
-kaynak kartları
-(hangi kampanya kayıtları, adresleriyle) ve
-doğrulama rozeti
-(✅ / ⛔) durur. Örnek sorulardan biri kalkanı
-bilerek
-tetikler: sistemin kendini nasıl frenlediğini göstermek için.
-Dayanaklandırma, determinizm değildir
-RAG cevabı
-kaynağa bağlar
-, ama üretimi deterministik yapmaz. Sayının doğruluğunu garanti eden şey RAG değil,
-kalkan
-: cevaptaki her sayı yapısal kayıtta veya alıntıda karşılığı olduğu için ekranda durabiliyor.
-31 soruluk asistan test kümesi
-Doğruluk
+Kalkanı gevşetmedik; neyi denetlediğini düzelttik. 31 soruluk asistan kümesinde doğruluk
 1,00
-· kaynak gösterme
+, kaynak gösterme
 1,00
-. Kümede kapsam dışı sorular da var: sistem
-“bilmiyorum”
-diyebilmeli. İlk koşuda doğruluk 0,61'di ve küme
-üç gerçek hata
-buldu — biri, sorulmayan bir bankanın oranını cevaplamaktı.
-Esra
-Arayüz · Asistan ekranı ve panolar
-08
-
-=== SAYFA 9 ===
-09
-Karşılaştırma ve müşteri profili
-“En avantajlı” mutlak bir gerçek değil, bir tercih bileşimidir. Sistem o tercihi
-gizlemez, kullanıcıya verir
-— ve hesabı kendisi yapar.
-Beş kriter, ağırlığı kullanıcı belirler
-En düşük kâr payı oranı
-%40
-En düşük masraf
-%25
-En uzun vade
-%20
-En yüksek ödül
-%15
-Varsayılan ağırlıklar bunlar; ekrandaki kaydırıcılarla değiştirilebilir. Beşinci kriter —
-en avantajlı
-— bu dördünün ağırlıklı bileşimidir ve formülü dokümantasyonda açıkça yazılıdır.
-Gizli bir skor yok.
-Karşılaştırılamayanı karşılaştırmıyoruz
-Farklı vadeler, biri masraflı diğeri masrafsız ürünler ya da eksik alanlar söz konusuysa ekran
-uyarı verir.
-Ortak bir anapara ve vade girilerek tüm ürünler
-aynı tabana
-indirgenebilir; toplam geri ödeme o zaman gerçekten kıyaslanabilir olur.
+.
 Müşteri profili ekranı — asıl iş burada
 Soru artık “kampanyaları listele” değil:
 “Karşımda maaş müşterisi var, 800.000 TL konut finansmanı istiyor, 10 yıl vade. Rakiplerin hangisi bizden iyi teklif veriyor ve neden?”
@@ -519,19 +345,29 @@ tutar aralığı
 VE
 vade sınırı
 VE
-zorunlu ürün. Muhakeme ajanı her kampanyayı bu kısıtlara karşı çözer.
+zorunlu ürün. Muhakeme ajanı her kampanyayı bu kısıtlara karşı çözer. Eksik bilgi
+uydurulmaz, sorulur
+— ve sistem kendi sorduğu sorunun cevabını duyar.
 Uygun olmayanı da gösteriyoruz — sebebiyle
 ⛔
 “Minimum tutar 1.000.000 TL; talep 800.000 TL.”
 Sessizce elemek yerine sebebini yazmak, banka çalışanının müşteriye ne söyleyeceğini de hazırlar. Uygunluk koşulu
 çıkarılamamış
-kayıtlar ayrıca işaretlenir: eksik veriyi “uygun” diye göstermek, sistemin bilmediği bir şeyi biliyormuş gibi sunması olurdu.
+kayıtlar ayrıca işaretlenir: eksik veriyi “uygun” diye göstermek, sistemin bilmediği bir şeyi biliyormuş gibi sunması olurdu. Uygunluk ajanı kayıtların
+%70,1'inde
+en az bir kısıt çıkarıyor; zorunlu ürün iddiası
+yükümlülük kanıtı
+şartına bağlandıktan sonra %59'dan
+%24,3'e
+indi.
+Az ama doğru kısıt, çok ama uydurma kısıttan iyidir.
 Sıralama, manşet orana göre değil
 Liste
 toplam geri ödemeye
 göre sıralanır; taksit hesabı annüite formülüyle,
 kodda
-yapılır. Bu aritmetiği dil modeline yaptırsaydık, halüsinasyon savunmasıyla kazandığımız güveni tek hamlede kaybederdik.
+yapılır. Beş kriterin ağırlığını kullanıcı belirler (varsayılan: oran %40 · masraf %25 · vade %20 · ödül %15) ve formül dokümantasyonda açık —
+gizli bir skor yok.
 Ekranda kalmıyor: dışa aktarma ve API
 Karşılaştırma tablosu tek tıkla
 CSV
@@ -545,21 +381,21 @@ REST API
 /ask
 — aynı motor, arayüzsüz.
 Esra
-Arayüz · Karşılaştırma ve profil ekranları
-09
+Arayüz · Asistan, karşılaştırma ve profil ekranları
+05
 
-=== SAYFA 10 ===
-10
+=== SAYFA 7 ===
+06
 Kurum içi çalışabilirlik ve sonuç
 On-prem bir iddia değil,
 ölçüm.
 İnternet erişimi kapatılarak koşuldu ve sonucu kayda geçti.
 Tek komutla kurulum
-Docker ile üç konteyner ayağa kalkıyor: arayüz, API ve yerel model. Kurulum adımları ve doğrulanmış çıktısı dokümantasyonda.
+Docker ile üç konteyner ayağa kalkıyor: arayüz, API ve yerel model. Adımlar ve doğrulanmış çıktısı dokümantasyonda.
 Hava boşluğu testi
 Dış ağa çıkışı olmayan bir ağda koşuldu: DNS ve internet
 anında engellendi
-, sistem çalışmaya devam etti. Ayrıca 6 sızıntı testi her koşuda kontrol ediyor.
+, sistem çalışmaya devam etti. 6 sızıntı testi her koşuda kontrol ediyor.
 Çevrimdışı paket
 Bağımlılıklar önceden indirilip
 ağsız
@@ -567,7 +403,7 @@ kurulabiliyor. Temiz bir ortamda denendi ve doğrulandı.
 Lisans
 89 paket tarandı, kısıtlı lisans
 0
-. Kullanılan dört modelin lisansı kaynağından teyit edildi: üçü Apache-2.0, biri MIT.
+. Dört modelin lisansı kaynağından teyit edildi: üçü Apache-2.0, biri MIT. Llama/Gemma türevi kullanılmadı (madde 5.10).
 Ölçülen sonuçlar
 Metrik
 Sonuç
@@ -593,14 +429,13 @@ Bilinen sınırlar — saklamıyoruz
 : çoğu banka oranı kampanya sayfasında değil başvuru ekranında veriyor. Uydurmak yerine “Belirtilmemiş” diyoruz.
 • Kapsam bankalar arasında dengesiz (
 11,4×
-) — ölçtük, rapor ettik.
+) — ölçtük, rapor ettik. Sıralamayı doğrudan bozmaz, çünkü motor tekil ürünleri karşılaştırır, banka ortalaması almaz.
 • Kayıtların
 %36'sı
 «diğer» türünde: şartnamenin sekiz türü finansman ve kart odaklı, bankaların kampanyalarının bir bölümü (döviz, sigorta, ücretsiz işlem) o sekizin dışında. Zorlama sınıflandırma yapmıyoruz.
 • Veri bir
 anlık görüntüdür
 ; her kayıt kendi çekim tarihini taşır.
-• JavaScript ile parça parça yüklenen sayfalarda ilk grup otomatik alınıyor, kalanı elle.
 • Ölçümler
 ±0,01
 gürültü taşır; sayıyı bu bantla söylüyoruz.
@@ -611,4 +446,4 @@ Takım SVARTAL · Muhammed Eren · Samet · Görkem · Esra
 Apache-2.0 · TEKNOFEST 2026
 Muhammed Eren
 Kurum içi çalışabilirlik · Kapanış
-10
+06

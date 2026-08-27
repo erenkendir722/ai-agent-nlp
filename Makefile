@@ -265,7 +265,7 @@ endif
 sunum-metni:  ## slayt metin dokumu -> docs/sunum/sunum_icerik.txt
 	$(PYTHON) tools/sunum_metni.py
 
-sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (10 sayfa, 16:9)
+sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (7 sayfa, 16:9)
 	@"$(KROM)" --headless --disable-gpu --no-sandbox \
 	  --allow-file-access-from-files --no-pdf-header-footer \
 	  --print-to-pdf="$(CURDIR)/docs/sunum/Svartal_Sunum.pdf" \
