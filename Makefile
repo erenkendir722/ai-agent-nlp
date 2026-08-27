@@ -4,7 +4,8 @@
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         altin-tur2 altin-tur2-fark kural-olc \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-metni veri-kalitesi \
-        suresi-gecenleri-ele yinelenenleri-ele kanit kanit-robots kanit-kvkk
+        suresi-gecenleri-ele yinelenenleri-ele liste-sayfalarini-ele \
+        kanit kanit-robots kanit-kvkk
 
 # SANAL ORTAMIN YERİ İŞLETİM SİSTEMİNE GÖRE DEĞİŞİR (26 Ağustos).
 #
@@ -148,6 +149,9 @@ suresi-gecenleri-ele:  ## suresi gecmis kampanyalari sil (uygula=1 olmadan yalni
 
 yinelenenleri-ele:  ## ayni icerikli yinelenen kayitlari sil (uygula=1 olmadan yalniz gosterir)
 	$(PYTHON) tools/yinelenenleri_ele.py $(if $(uygula),--uygula) $(if $(ayrinti),--ayrinti)
+
+liste-sayfalarini-ele:  ## indekslenemeyen liste sayfalarini sil (uygula=1 olmadan yalniz gosterir)
+	$(PYTHON) tools/liste_sayfalarini_ele.py $(if $(uygula),--uygula)
 
 # --- Veri toplama etigi kanitlari (G-14) — docs/kanit/VERI_TOPLAMA_ETIGI.md ---
 kanit: kanit-robots kanit-kvkk  ## veri toplama etigi kanitlarini yenile (robots + KVKK)

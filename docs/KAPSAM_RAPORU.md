@@ -1,6 +1,6 @@
 # Banka Bazlı Kapsam Raporu
 
-_Otomatik üretildi: 26.08.2026 18:22 · `make kapsam`_
+_Otomatik üretildi: 27.08.2026 19:08 · `make kapsam`_
 
 Bu dosya elle düzenlenmez. Karşılaştırma sonuçlarını okurken **önce buraya**
 bakın: kapsam dengesizliği, motorun tarafsızlığından bağımsız bir yanlılık
@@ -8,39 +8,39 @@ kaynağıdır (şartname 15.1).
 
 ## Kapsam
 
-- Toplam kampanya: **931**
+- Toplam kampanya: **727**
 - Banka: **9** (BDDK listesindeki **faal** katılım bankalarının tamamı)
-- En geniş kapsam / en dar kapsam oranı: **11.9×**
+- En geniş kapsam / en dar kapsam oranı: **11.4×**
 
 | Banka | Kampanya | Pay | Dolu alan / kayıt |
 |---|---|---|---|
-| Kuveyt Türk Katılım Bankası A.Ş. | 190 | %20.4 | 5.0 / 16 |
-| Türkiye Finans Katılım Bankası A.Ş. | 172 | %18.5 | 2.6 / 16 |
-| Ziraat Katılım Bankası A.Ş. | 162 | %17.4 | 3.4 / 16 |
-| Albaraka Türk Katılım Bankası A.Ş. | 126 | %13.5 | 4.4 / 16 |
-| T.O.M. Katılım Bankası A.Ş. | 97 | %10.4 | 5.4 / 16 |
-| Türkiye Emlak Katılım Bankası A.Ş. | 78 | %8.4 | 4.8 / 16 |
-| Dünya Katılım Bankası A.Ş. | 54 | %5.8 | 2.0 / 16 |
-| Vakıf Katılım Bankası A.Ş. | 36 | %3.9 | 4.7 / 16 |
-| Hayat Finans Katılım Bankası A.Ş. | 16 | %1.7 | 4.5 / 16 |
+| Kuveyt Türk Katılım Bankası A.Ş. | 183 | %25.2 | 5.0 / 16 |
+| Ziraat Katılım Bankası A.Ş. | 154 | %21.2 | 3.4 / 16 |
+| Albaraka Türk Katılım Bankası A.Ş. | 116 | %16.0 | 4.6 / 16 |
+| Türkiye Emlak Katılım Bankası A.Ş. | 77 | %10.6 | 4.9 / 16 |
+| Türkiye Finans Katılım Bankası A.Ş. | 55 | %7.6 | 5.1 / 16 |
+| T.O.M. Katılım Bankası A.Ş. | 49 | %6.7 | 5.4 / 16 |
+| Dünya Katılım Bankası A.Ş. | 45 | %6.2 | 4.4 / 16 |
+| Vakıf Katılım Bankası A.Ş. | 32 | %4.4 | 4.9 / 16 |
+| Hayat Finans Katılım Bankası A.Ş. | 16 | %2.2 | 4.5 / 16 |
 
 ## Kampanya türü dağılımı
 
 | Tür | Kayıt | Pay |
 |---|---|---|
-| `diger` | 416 | %44.7 |
-| `kart` | 194 | %20.8 |
-| `alisveris_puani` | 108 | %11.6 |
-| `yatirim_urunu` | 46 | %4.9 |
-| `tasit_finansmani` | 46 | %4.9 |
-| `finansman` | 43 | %4.6 |
-| `ihtiyac_finansmani` | 41 | %4.4 |
-| `konut_finansmani` | 29 | %3.1 |
-| `yeni_musteri` | 8 | %0.9 |
+| `diger` | 261 | %35.9 |
+| `kart` | 179 | %24.6 |
+| `alisveris_puani` | 107 | %14.7 |
+| `finansman` | 40 | %5.5 |
+| `yatirim_urunu` | 39 | %5.4 |
+| `ihtiyac_finansmani` | 35 | %4.8 |
+| `tasit_finansmani` | 35 | %4.8 |
+| `konut_finansmani` | 23 | %3.2 |
+| `yeni_musteri` | 8 | %1.1 |
 
 ## `diger` neden bu kadar çok?
 
-Kayıtların **416'i** (%44.7) `diger` türünde. Bu bir sınıflandırma başarısızlığı DEĞİL, bilinçli bir karardır:
+Kayıtların **261'i** (%35.9) `diger` türünde. Bu bir sınıflandırma başarısızlığı DEĞİL, bilinçli bir karardır:
 şartname 5.4'teki sekiz tür finansman ve kart odaklıdır; bankaların yayımladığı
 kampanyaların önemli bir bölümü o sekizin dışına düşer. **Zorlama sınıflandırma
 yapmaktansa «diğer» demek daha dürüsttür** (ADR 002).
@@ -50,19 +50,19 @@ başlıkta sayılabilir):
 
 | Konu | `diger` kaydı |
 |---|---|
-| döviz / altın / yatırım | 150 |
-| taksit / vade farksız | 123 |
-| ücretsiz işlem / ATM | 99 |
-| indirim / iade | 97 |
-| sigorta | 39 |
-| promosyon / hediye | 38 |
+| taksit / vade farksız | 132 |
+| indirim / iade | 116 |
+| döviz / altın / yatırım | 96 |
+| promosyon / hediye | 41 |
+| ücretsiz işlem / ATM | 38 |
+| sigorta | 26 |
 
 > Altın sette `kampanya_turu` alanının F1 skoru **0,80** — yani tür çıkarımı
 > ölçülen bir başarıyla çalışıyor; `diger` oranı korpusun kendi özelliğidir.
 
 ## Bu dengesizlik neyi etkiler
 
-En geniş kapsamlı bankada en dar kapsamlının **11.9 katı** kayıt var.
+En geniş kapsamlı bankada en dar kapsamlının **11.4 katı** kayıt var.
 Sonuçları okurken üç kural:
 
 1. **«En avantajlı» ifadesi, TOPLADIĞIMIZ kümede en avantajlı demektir.**
