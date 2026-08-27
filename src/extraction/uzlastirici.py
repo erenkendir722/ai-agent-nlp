@@ -430,42 +430,58 @@ def kampanya_cikar(
     llm_alanlari: dict[str, Alan] = {}
     
     trace = {}
-    t0 = time.time()
+
+    # SÜRE ÖLÇÜMÜ `perf_counter` İLE — `time.time()` DEĞİL (27 Ağustos).
+    #
+    # `time.time()` bir DUVAR SAATİDİR: Windows'ta çözünürlüğü ~15,6 ms ve NTP
+    # düzeltmesinde geriye bile gidebilir. Kural katmanı tek bir küçük kaydı bir
+    # saat tıkından hızlı bitirince `time.time() - t0` tam olarak 0,0 çıkıyordu.
+    #
+    # Ölçülen zarar: `tests/test_boru_hatti_ilerleme.py` içindeki «kayıt olayı
+    # ölçülen değerleri taşır» testi KARARSIZ hâle gelmişti — `sure > 0` tam
+    # koşuda düşüyor, tek başına koşunca geçiyordu (önbellek soğukken yavaş,
+    # sıcakken bir tıktan hızlı). Canlı boru hattı sayfasındaki süre göstergesi
+    # de aynı sebeple 0 ms gösterirdi.
+    #
+    # `perf_counter` monotondur ve alt-mikrosaniye çözünürlüklüdür; süre
+    # ölçmenin doğru aracı odur. Çıkarılan DEĞERLERE dokunmaz, yalnız
+    # `trace_log` sayılarını düzeltir.
+    t0 = time.perf_counter()
 
     if kural_kullan:
-        t_kural = time.time()
+        t_kural = time.perf_counter()
         kural_alanlari = kurallarla_cikar(metin, kayit.url, kayit.cekim_tarihi)
-        trace["kural_suresi"] = time.time() - t_kural
+        trace["kural_suresi"] = time.perf_counter() - t_kural
 
     if llm_kullan:
-        t_llm = time.time()
+        t_llm = time.perf_counter()
         if llm_cikarici is None:
-            t_load = time.time()
+            t_load = time.perf_counter()
             from src.extraction.llm import LLMCikarici
 
             llm_cikarici = LLMCikarici()
-            trace["llm_load_suresi"] = time.time() - t_load
+            trace["llm_load_suresi"] = time.perf_counter() - t_load
         
-        t_inf = time.time()
+        t_inf = time.perf_counter()
         llm_alanlari = llm_cikarici.cikar(metin, kayit.url, kayit.cekim_tarihi)  # type: ignore[attr-defined]
-        trace["llm_cikarim_suresi"] = time.time() - t_inf
-        trace["llm_toplam_suresi"] = time.time() - t_llm
+        trace["llm_cikarim_suresi"] = time.perf_counter() - t_inf
+        trace["llm_toplam_suresi"] = time.perf_counter() - t_llm
 
-    t_uz = time.time()
+    t_uz = time.perf_counter()
     kampanya, rapor = uzlastir(kural_alanlari, llm_alanlari, kayit=kayit, yuklem=yuklem)
-    trace["uzlastirma_suresi"] = time.time() - t_uz
+    trace["uzlastirma_suresi"] = time.perf_counter() - t_uz
 
     # UYGUNLUK AJANI — uzlaştırmadan SONRA koşar (A-08).
     # Kısıtların çoğu uzlaştırılmış alanlardan türer (`max_tutar` ←
     # `finansman_tutari_max`); kural ve LLM katmanları ayrı ayrı çıkarım
     # yaparken türetmek, uzlaştırıcının seçmediği bir değeri kısıta yazma
     # riski taşırdı. LLM çağırmaz, bu yüzden ablasyonun her kolunda koşar.
-    t_uygunluk = time.time()
+    t_uygunluk = time.perf_counter()
     from src.ajanlar.uygunluk import UygunlukAjani
 
     kampanya.uygunluk = UygunlukAjani().cikar(kampanya)
-    trace["uygunluk_suresi"] = time.time() - t_uygunluk
-    trace["toplam_sure"] = time.time() - t0
+    trace["uygunluk_suresi"] = time.perf_counter() - t_uygunluk
+    trace["toplam_sure"] = time.perf_counter() - t0
     
     rapor.trace_log = trace
     return kampanya, rapor
