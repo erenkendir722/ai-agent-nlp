@@ -262,7 +262,7 @@ def ortak_kenar(*, demo_ipuclari: bool = True) -> None:
         if demo_ipuclari:
             st.caption(
                 "Demo sırası: Genel Bakış → **Boru Hattı** → Metin Analizi → "
-                "Karşılaştırma → Müşteri Profili → Chatbot"
+                "Banka Profili → Karşılaştırma → Müşteri Profili → Chatbot"
             )
         st.toggle(
             "Geliştirici Modu (API)",

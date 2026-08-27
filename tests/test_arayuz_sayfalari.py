@@ -38,6 +38,7 @@ SAYFALAR = [
     KOK / "app" / "pages" / "1_Karşılaştırma.py",
     KOK / "app" / "pages" / "2_Chatbot.py",
     KOK / "app" / "pages" / "3_Metin_Analizi.py",
+    KOK / "app" / "pages" / "5_Banka_Profili.py",
 ]
 
 # Yapısal yoldan cevaplanır: iki banka adı geçtiği için karşılaştırma niyeti,
