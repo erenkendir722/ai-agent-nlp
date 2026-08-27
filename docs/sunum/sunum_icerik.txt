@@ -111,7 +111,7 @@ Süresi geçmiş ve içeriksiz sayfalar ayıklandı
 12.391
 paragraf, asistan için indekslendi
 Yerel dosyada, harici vektör veritabanı yok
-98
+92
 altın set örneği
 Dört kişi
 elle
@@ -120,7 +120,7 @@ Toplama disiplini — beyan değil, kanıt
 robots.txt
 Sitenin “otomatik programlar neyi çekebilir” beyanı. Reddedilen sayfa çekilmez,
 dosya okunamıyorsa da çekilmez
-; 12 alan adının kararı günlükte
+; 16 alan adının kararı günlükte
 Kimlik beyanı
 İsteklerde kim olduğumuzu ve iletişimi bildiriyoruz; ağa giden başlık kaydedildi
 Hız sınırı
@@ -232,7 +232,7 @@ ekrandaki koşum kaydına
 bakarak görürsünüz. Hazır bir ajan çatısı kullanmadık — protokol
 30 satır
 , o çatının lisans ve bağımlılık denetimi ise günler sürerdi.
-Ablasyon · 1.024 ham kayıtlık ölçüm korpusu · 98 örnekli altın set
+Ablasyon · 1.024 ham kayıtlık ölçüm korpusu · altın sete karşı
 Yapılandırma
 Makro-F1
 Sayısal
@@ -395,7 +395,7 @@ Docker ile üç konteyner ayağa kalkıyor: arayüz, API ve yerel model. Adımla
 Hava boşluğu testi
 Dış ağa çıkışı olmayan bir ağda koşuldu: DNS ve internet
 anında engellendi
-, sistem çalışmaya devam etti. 6 sızıntı testi her koşuda kontrol ediyor.
+, sistem çalışmaya devam etti. 10 sızıntı testi her koşuda kontrol ediyor.
 Çevrimdışı paket
 Bağımlılıklar önceden indirilip
 ağsız
