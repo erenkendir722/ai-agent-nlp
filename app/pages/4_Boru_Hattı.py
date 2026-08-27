@@ -52,11 +52,6 @@ from src.izleme import (  # noqa: E402
   tazelik_denetle,
 )
 from src.izleme.dinleyici import taban_oku  # noqa: E402
-from src.extraction.saglayici import (  # noqa: E402
-  EVREN_MODEL,
-  OLLAMA_MODEL,
-  SAGLAYICI_ADI,
-)
 from app.akis import (  # noqa: E402
   akis_css,
   banka_izgarasi,
@@ -150,12 +145,6 @@ def _kaziyicili_bankalar() -> list[tuple[str, str]]:
 def _ham_kayit_sayisi(dizin: Path) -> int:
   """Dizindeki ham kayıt adedi — HTML okumadan, yalnız JSON sayarak."""
   return sum(1 for _ in dizin.rglob("*.json")) if dizin.is_dir() else 0
-
-
-def _saglayici_rozeti() -> tuple[str, str]:
-  if SAGLAYICI_ADI == "ollama":
-    return "Ollama (yerel)", OLLAMA_MODEL
-  return "EVREN (SSB)", EVREN_MODEL
 
 
 def _hedef_yazi(uretime: bool, *, cikarim: bool) -> str:
@@ -482,7 +471,6 @@ with sekme_toplama:
 # === SEKME 2 — ÇIKARIM =====================================================
 
 with sekme_cikarim:
-  saglayici_ad, saglayici_model = _saglayici_rozeti()
   oturum_urlleri = set(st.session_state.bh_oturum_urlleri)
   demo_adet = _ham_kayit_sayisi(DEMO_HAM_DIZIN)
   uretim_adet = _ham_kayit_sayisi(HAM_DIZIN)
@@ -540,16 +528,11 @@ with sekme_cikarim:
   )
   c_url = VERITABANI_URL if c_uretime else demo_veritabani()
 
-  st.caption(
-    f"Sağlayıcı: **{saglayici_ad} · `{saglayici_model}`** · "
-    f"hedef: **{_hedef_yazi(c_uretime, cikarim=True)}** · "
-    "eleştirmen, yüklem ajanı ve kanıt denetimi açık."
-  )
-  if SAGLAYICI_ADI == "ollama":
-    st.warning(
-      "Yerel model kullanılıyor — kayıt başına yaklaşık 2,5 dakika sürer. "
-      "Demo kipinde kayıt sayısını düşük tutun."
-    )
+  # «SAGLAYICI: …» SATIRI KALDIRILDI (27 Agustos). Model adi, saglayici,
+  # elestirmen/yuklem ajaninin acik olusu — hepsi SISTEMIN NASIL CALISTIGIDIR.
+  # Banka calisani cikarimin sonucuyla ilgilenir, hangi modelin hangi ucunda
+  # kostugu ile degil. Bilgi kaybolmadi: kosu bitince ozet panelinde yazma
+  # hedefi ve veritabani adresi zaten gosteriliyor, ayrinti `docs/MIMARI.md`de.
 
   e1, e2, _ = st.columns([1, 1, 3])
   c_basla = e1.button(
@@ -561,11 +544,11 @@ with sekme_cikarim:
     use_container_width=True, key="bh_c_iptal",
   )
 
-  if not havuz:
-    st.warning(
-      "Bu kaynakta kayıt yok. Önce 1. sekmeden toplama yapın ya da "
-      "koşu kipini «Tam koşu» olarak değiştirin."
-    )
+  # SARI UYARI KALDIRILDI: «bu kaynakta kayit yok» bir HATA degil, henuz
+  # toplama yapilmamis olmasinin dogal sonucu. Alarm rengi kullaniciya bir
+  # sey bozulmus izlenimi veriyordu. Ayni bilgi iki yerde zaten yaziyor:
+  # kaynak secim kutusu «(0)» diyor ve ustteki satir «Kaynakta 0 kayit var».
+  # Baslat dugmesi de zaten pasif.
   if MESGUL and st.session_state.bh_is_turu == "toplama":
     st.info("Şu an bir toplama koşusu sürüyor — aynı anda tek iş çalışır.")
 

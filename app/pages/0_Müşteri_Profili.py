@@ -26,9 +26,8 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili  # noqa: E402
-from src.ajanlar.orkestrator import BILINEN_ALANLAR  # noqa: E402
-from src.rag.chatbot import YASAL_UYARI, alan_goster  # noqa: E402
-from src.schema import TEK_BIRIMLI_ALANLAR, HedefKitle, alan_etiketi  # noqa: E402
+from src.rag.chatbot import YASAL_UYARI  # noqa: E402
+from src.schema import HedefKitle  # noqa: E402
 from app.ui_utils import (  # noqa: E402
     format_hedef_kitle,
     inject_custom_css,
@@ -180,52 +179,41 @@ def _kisalt(metin: str, sinir: int = 155) -> str:
     metin = " ".join(str(metin).split())
     return metin if len(metin) <= sinir else metin[: sinir - 1].rstrip() + "…"
 
-def _bilinen_alanlar(kampanya) -> list[tuple[str, str]]:
-    """Kâr payı yoksa kartın SUSMAMASI için bu kayıtta dolu olan alanlar.
-
-    LİSTE ELLE YAZILMAZ (CLAUDE.md, 27 Ağustos). Karşılaştırma motorunun
-    kıyasladığı alanlardan (`ALAN_YONLERI`) kâr payı çıkarılarak türeyen
-    `BILINEN_ALANLAR` kullanılır; yeni bir ölçüt oraya eklenince burada da
-    kendiliğinden görünür. Chatbot'un profil cevabı da aynı listeden okuyor —
-    iki ekranın aynı kayıt için farklı şey göstermesi böyle engellenir.
-
-    BİRİM ŞART: tek birimli alanlarda sözleşmeden (`TEK_BIRIMLI_ALANLAR`),
-    çok birimlide taşıyıcı `Alan`'dan çözülür. Birimsiz gösterim `%0,50`
-    olarak çıkarılmış bir tahsis ücretini «0,50 TL» yazardı.
-    """
-    if kampanya is None:
-        return []
-    satirlar: list[tuple[str, str]] = []
-    for alan_adi in BILINEN_ALANLAR:
-        alan = getattr(kampanya, alan_adi, None)
-        if alan is None or alan.deger is None:
-            continue
-        birim = TEK_BIRIMLI_ALANLAR.get(alan_adi) or alan.birim
-        satirlar.append(
-            (alan_etiketi(alan_adi), alan_goster(alan_adi, alan.deger, birim))
-        )
-    return satirlar
-
-
 st.subheader("Uygun kampanyalar")
-# SIRALAMA IDDIASI KOSULA BAGLI (CLAUDE.md, 27 Agustos): hicbir kalemin
-# maliyeti hesaplanamadiginda «toplam maliyete gore sirali» demek, yapilmamis
-# bir siralamayi yapilmis gibi sunmaktir.
+# YALNIZ MALIYETI HESAPLANABILENLER LISTELENIR (27 Agustos).
+#
+# Liste eskiden uygun olan HER kaydi basiyordu; %98'inde kar payi orani
+# yayimlanmadigi icin sayfa «maliyet hesaplanamiyor» diyen kartlarla
+# doluyordu. Banka calisani musteriye SUNULABILECEK teklifi ariyor —
+# rakami olmayan bir kart teklif degildir.
+#
+# «Suzuldu» ile «gizlendi» arasindaki fark tek satirlik bir beyandir:
+# kac kaydin neden dislandigi asagida yaziyor. O cumle olmadan kullanici
+# sistemde yalnizca birkac kampanya var saniyordu.
+gosterilecek = [s for s in uygunlar if s.maliyet]
+disarida = len(uygunlar) - len(gosterilecek)
+
 st.caption(
-    (
-        "Maliyeti hesaplanabilenler başta, toplam geri ödemeye göre sıralı. "
-        if maliyetli
-        else "Bu profilde hiçbir kampanyanın kâr payı oranı yayımlanmamış; "
-        "maliyet sıralaması yapılamadı. "
-    )
-    + "**Devam et** bankanın kendi sayfasını açar, **Detay** kampanyanın "
+    "Toplam geri ödemeye göre sıralı. "
+    "**Devam et** bankanın kendi sayfasını açar, **Detay** kampanyanın "
     "kayıt dökümüne götürür."
 )
 
-if not uygunlar:
-    st.info("Bu profile uyan kampanya bulunamadı. Tutarı ya da vadeyi değiştirip tekrar deneyin.")
+if not gosterilecek:
+    st.info(
+        f"Bu profile uyan {len(uygunlar)} kampanya var ama hiçbirinde kâr payı "
+        "oranı yayımlanmamış; toplam maliyet hesaplanamıyor. Bankaların çoğu "
+        "oranı başvuru ekranında veriyor. Tutarı ya da vadeyi değiştirip "
+        "tekrar deneyebilirsiniz."
+    )
+elif disarida:
+    st.caption(
+        f"{len(uygunlar)} uygun kampanyanın {len(gosterilecek)} tanesi listeleniyor; "
+        f"kalan {disarida} kampanyada kâr payı oranı kaynakta yayımlanmadığı için "
+        "maliyet hesaplanamadı."
+    )
 
-for sira, sonuc in enumerate(uygunlar[:15], 1):
+for sira, sonuc in enumerate(gosterilecek[:15], 1):
     kampanya = kayit_dizini.get(sonuc.kampanya_id)
     with st.container(border=True):
         sol, orta, sag = st.columns([4.1, 3.5, 1.7])
@@ -257,41 +245,22 @@ for sira, sonuc in enumerate(uygunlar[:15], 1):
                 )
 
         # -- ORTA: rakamlar ----------------------------------------------
+        #
+        # `sonuc.maliyet` burada HER ZAMAN dolu: liste yukarida suzuldu.
+        # Maliyetsiz dal kaldirildi — olu kod, «Belirtilmemis» yazan kart
+        # artik hic uretilmiyor.
         with orta:
-            if sonuc.maliyet:
-                d1, d2 = st.columns(2)
-                d1.markdown(
-                    '<div class="kl-kart-etiket">Toplam geri ödeme</div>'
-                    f'<div class="kl-kart-deger">{_tl(sonuc.maliyet["toplam_geri_odeme"])}</div>',
-                    unsafe_allow_html=True,
-                )
-                d2.markdown(
-                    '<div class="kl-kart-etiket">Aylık taksit</div>'
-                    f'<div class="kl-kart-deger">{_tl(sonuc.maliyet["aylik_taksit"])}</div>',
-                    unsafe_allow_html=True,
-                )
-            else:
-                # «BELIRTILMEMIS» DEV PUNTODA YAZILMIYOR ARTIK.
-                #
-                # Olculdu: uygun 183 kaydin 179'unda (%98) `kar_payi_orani`
-                # HIC YOK — bankalar orani kampanya sayfasinda degil basvuru
-                # ekraninda veriyor. Yani bu bir cikarim zaafi degil, kaynak
-                # verinin ozelligi. Paranin durdugu yerde dev puntoyla
-                # «Belirtilmemis» yazmak, olmayan bir kusuru ekranin en
-                # buyuk ogesi yapiyordu. Elimizde ne varsa o gosteriliyor.
-                bilinen = _bilinen_alanlar(kampanya)
-                if bilinen:
-                    for _s, (_e, _d) in zip(st.columns(2), bilinen[:2], strict=False):
-                        _s.markdown(
-                            f'<div class="kl-kart-etiket">{_e}</div>'
-                            f'<div class="kl-kart-deger">{_d}</div>',
-                            unsafe_allow_html=True,
-                        )
-                st.markdown(
-                    '<div class="kl-kart-alt">Kâr payı oranı bu sayfada '
-                    "yayımlanmamış — maliyet hesaplanamıyor.</div>",
-                    unsafe_allow_html=True,
-                )
+            d1, d2 = st.columns(2)
+            d1.markdown(
+                '<div class="kl-kart-etiket">Toplam geri ödeme</div>'
+                f'<div class="kl-kart-deger">{_tl(sonuc.maliyet["toplam_geri_odeme"])}</div>',
+                unsafe_allow_html=True,
+            )
+            d2.markdown(
+                '<div class="kl-kart-etiket">Aylık taksit</div>'
+                f'<div class="kl-kart-deger">{_tl(sonuc.maliyet["aylik_taksit"])}</div>',
+                unsafe_allow_html=True,
+            )
 
         # -- SAG: eylemler -----------------------------------------------
         with sag:
