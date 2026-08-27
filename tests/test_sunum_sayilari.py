@@ -213,3 +213,67 @@ class TestAnlatiSayilari:
             assert bayat not in metin, (
                 f"{bayat} 26 Ağustos öncesi ablasyon koşusundan kalma bayat sayı"
             )
+
+
+class TestSinirlarPaneli:
+    """«Bilinen sınırlar — saklamıyoruz» panelindeki sayılar da ölçüme bağlı.
+
+    NEDEN AYRI BİR SINIF:
+        27 Ağustos'ta korpus 1.024'ten 734 kayda indi (bozuk gövde, yinelenen
+        ve içeriksiz sayfalar ayıklandı). Kapanış tablosunu bir test yakaladı
+        ve düzeltildi; ama bu panelin ÜÇ sayısını hiçbir test denetlemiyordu ve
+        üçü birden sessizce bayat kaldı:
+
+            kâr payı doluluğu   %16  ->  %19
+            kapsam dengesizliği 11,9× -> 11,4×
+            «diğer» payı        %45  ->  %37
+
+        Panelin adı «saklamıyoruz» — bir dürüstlük iddiası. Yanlış tarafa
+        sapmış olsalardı (sınırı olduğundan küçük göstermek) iddia tersine
+        dönerdi. Denetimsiz bir dürüstlük beyanı, beyanın kendisini çürütür.
+    """
+
+    @pytest.mark.skipif(not SONUCLAR.exists(), reason="eval koşulmamış")
+    def test_kar_payi_dolulugu_sonuclarla_ayni(self) -> None:
+        sonuclar = SONUCLAR.read_text(encoding="utf-8")
+        olculen = re.search(r"`kar_payi_orani` \| %(\d+)", sonuclar)
+        assert olculen, "SONUCLAR.md doluluk tablosunda `kar_payi_orani` yok"
+
+        metin = SUNUM.read_text(encoding="utf-8")
+        slayt = re.search(r"Kâr payı oranı doluluğu <b[^>]*>%(\d+)</b>", metin)
+        assert slayt, "slaytta kâr payı doluluğu iddiası bulunamadı"
+        assert slayt.group(1) == olculen.group(1), (
+            f"slayt %{slayt.group(1)} diyor, ölçüm %{olculen.group(1)}. Slaytı düzeltin."
+        )
+
+    def test_kapsam_ve_diger_payi_canli_veriyle_ayni(self) -> None:
+        from src.depolama import tum_kayitlar
+
+        try:
+            kayitlar = tum_kayitlar()
+        except Exception:  # pragma: no cover - veritabanı yoksa atla
+            pytest.skip("veritabanı okunamadı")
+        if not kayitlar:
+            pytest.skip("veritabanı boş")
+
+        metin = SUNUM.read_text(encoding="utf-8")
+
+        # «diğer» payı — şartnamenin sekiz türüne girmeyen kampanyalar.
+        diger = sum(1 for k in kayitlar if (k.kampanya_turu or "") == "diger")
+        beklenen_pay = round(diger / len(kayitlar) * 100)
+        slayt_pay = re.search(r"Kayıtların <b[^>]*>%(\d+)'\w+</b> «diğer»", metin)
+        assert slayt_pay, "slaytta «diğer» payı iddiası bulunamadı"
+        assert int(slayt_pay.group(1)) == beklenen_pay, (
+            f"slayt %{slayt_pay.group(1)} diyor, gerçek %{beklenen_pay}. Slaytı düzeltin."
+        )
+
+        # Kapsam dengesizliği — en çok kayıtlı banka / en az kayıtlı banka.
+        sayim: dict[str, int] = {}
+        for k in kayitlar:
+            sayim[k.banka_adi] = sayim.get(k.banka_adi, 0) + 1
+        beklenen_kat = round(max(sayim.values()) / min(sayim.values()), 1)
+        slayt_kat = re.search(r"dengesiz \(<b[^>]*>([\d,]+)×</b>\)", metin)
+        assert slayt_kat, "slaytta kapsam dengesizliği iddiası bulunamadı"
+        assert abs(_sayi(slayt_kat.group(1)) - beklenen_kat) < 0.05, (
+            f"slayt {slayt_kat.group(1)}× diyor, gerçek {beklenen_kat}×. Slaytı düzeltin."
+        )

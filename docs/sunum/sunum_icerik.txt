@@ -16,7 +16,7 @@ işlenmiş kampanya
 katılım bankası (faal olanın tamamı)
 16
 alanlı kanıt zinciri
-1442
+1559
 geçen test
 0
 ticari dış servis bağımlılığı
@@ -572,14 +572,14 @@ Lisans
 Metrik
 Sonuç
 Hedef
-Makro-F1 (98 örnekli altın set)
-0,82
+Makro-F1 (92 örnekli altın set, %95 GA 0,75–0,87)
+0,81
 ≥ 0,78
 Sayısal alan doğruluğu
 0,93
 ≥ 0,90
 Halüsinasyon oranı
-%0,45
+%0,36
 ≤ %3
 Şema geçerliliği
 1,00
@@ -589,13 +589,13 @@ Kalkanın yanlış engellemesi
 0
 Bilinen sınırlar — saklamıyoruz
 • Kâr payı oranı doluluğu
-%16
+%19
 : çoğu banka oranı kampanya sayfasında değil başvuru ekranında veriyor. Uydurmak yerine “Belirtilmemiş” diyoruz.
 • Kapsam bankalar arasında dengesiz (
-11,9×
+11,4×
 ) — ölçtük, rapor ettik.
 • Kayıtların
-%45'i
+%37'si
 «diğer» türünde: şartnamenin sekiz türü finansman ve kart odaklı, bankaların kampanyalarının bir bölümü (döviz, sigorta, ücretsiz işlem) o sekizin dışında. Zorlama sınıflandırma yapmıyoruz.
 • Veri bir
 anlık görüntüdür
