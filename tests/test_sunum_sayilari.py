@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 import pytest
@@ -141,6 +142,70 @@ class TestSonucTablosu:
 
 
 @pytest.mark.skipif(not ABLASYON.exists(), reason="ablasyon koşulmamış")
+@pytest.mark.skipif(not SONUCLAR.exists(), reason="eval koşulmamış")
+class TestDurustlukSlayti:
+    """«Ölçümün dürüstlüğü» slaytı da ölçüme bağlı olmalı.
+
+    27 Ağustos'ta yakalandı. Korpus 1.024'ten 734 kayda inince altın set 98'den
+    92 örneğe düştü; `TestSonucTablosu` KAPANIŞ tablosunu yakaladı ve tablo
+    düzeltildi. Ama aynı sayı slaytta İKİNCİ bir yerde daha duruyordu:
+
+        kapanış tablosu       : 0,81 · «92 örnekli altın set»   (düzeltildi)
+        Ölçümün dürüstlüğü    : 0,82 · %95 GA 0,76–0,87 · n=98  (bayat kaldı)
+
+    Denetimsiz kalması `TestSinirlarPaneli`'nin anlattığı kapsam boşluğunun
+    aynısı — ve konusu bakımından daha kötüsü: bayat sayının durduğu slaytın
+    KENDİ BAŞLIĞI «Ölçümün dürüstlüğü». Ölçüsüz bir dürüstlük beyanı, beyanın
+    kendisini çürütür.
+
+    `n` ayrıca ÜÇ yerde birden geçiyor (rakam, aralık, «… örnekle» cümlesi);
+    üçünün de aynı sayıyı söylemesi denetlenir, çünkü bayatlayan tam olarak
+    bu tür tekrarlardır.
+    """
+
+    def _slayt(self) -> str:
+        metin = SUNUM.read_text(encoding="utf-8")
+        bas = metin.index("Ölçümün dürüstlüğü")
+        return metin[bas : bas + 700]
+
+    def test_makro_f1_ve_aralik_sonuclarla_ayni(self) -> None:
+        sonuclar = SONUCLAR.read_text(encoding="utf-8")
+        olculen = re.search(
+            r"\*\*Makro-F1\*\* \| ([\d.]+) _\(%95 GA: ([\d.]+)–([\d.]+)\)_", sonuclar
+        )
+        assert olculen, "SONUCLAR.md'de güven aralıklı makro-F1 satırı yok"
+
+        slayt = re.search(
+            r"Makro-F1 ([\d,]+)</b>.*?güven aralığı ([\d,]+)–([\d,]+)", self._slayt(), re.S
+        )
+        assert slayt, "slaytta «Makro-F1 … (%95 güven aralığı …)» cümlesi bulunamadı"
+
+        for sira, ad in enumerate(("makro-F1", "GA alt ucu", "GA üst ucu"), start=1):
+            # `round()` DEĞİL: ikilik gösterim yüzünden 0,865'i 0,86'ya
+            # yuvarlıyor. Slaytta insan konvansiyonu geçerli (yarım yukarı),
+            # ve kapanış tablosu da 0,87 yazıyor — iki slayt ayrışmamalı.
+            beklenen = float(
+                Decimal(olculen.group(sira)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            )
+            gorunen = _sayi(slayt.group(sira))
+            assert abs(gorunen - beklenen) < 0.005, (
+                f"slayt {ad} için {gorunen} diyor, ölçüm {beklenen}. Slaytı düzeltin."
+            )
+
+    def test_altin_set_boyutu_uc_yerde_de_ayni(self) -> None:
+        sonuclar = SONUCLAR.read_text(encoding="utf-8")
+        olculen = re.search(r"Altın set boyutu: \*\*(\d+)\*\*", sonuclar)
+        assert olculen, "SONUCLAR.md'de altın set boyutu yok"
+
+        slayt = self._slayt()
+        gecisler = re.findall(r"n=(\d+)", slayt) + re.findall(r"(\d+) örnekle", slayt)
+        assert len(gecisler) >= 2, "slaytta örnek sayısı iddiası bulunamadı"
+        assert set(gecisler) == {olculen.group(1)}, (
+            f"slayt {sorted(set(gecisler))} diyor, ölçüm {olculen.group(1)}. "
+            "Örnek sayısı slaytta birden çok yerde geçiyor; hepsi düzeltilmeli."
+        )
+
+
 class TestAnlatiSayilari:
     """Tablonun ALTINDAKİ düz metin de ölçüme bağlı olmalı.
 

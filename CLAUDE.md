@@ -169,6 +169,20 @@ değişiklik iddia etmez) · özet **bütün boşlukları atar**, çünkü Albar
 sayfayı tek boşluk farkıyla iki biçimde veriyor ve dakikada bir yanlış alarm
 üretiyordu. Ayrıntı: `docs/kararlar/018-tetikleyici-dinleyici.md`.
 
+**İndekslenemeyen sayfa kampanya sayılmaz (27 Ağu).** Korpustaki 8 kayıt
+Ziraat'in kategori LİSTELEME sayfasıydı (`/kampanyalar/market-ve-gida`,
+`/kart-kampanyalari`), gövdeleri baştan sona «Son Gün …» tekrarı. Zararsız
+değillerdi: `market-ve-gida` sayfasında dokuz ayrı tarih var ve
+`kampanya_bitis` onlardan biri seçilmişti — var olmayan bir kampanyanın keyfî
+bitiş tarihi, kaynak alıntısıyla birlikte. Ölçüt `vektor_db.paragraflara_ayir`
+— **ikinci bir eşik yazılmaz**: RAG katmanı bu sekizi zaten dışarıda
+bırakıyordu (indeks 726, veritabanı 734) ve ayrı bir eşik ikisinin sessizce
+ayrışmasını garanti ederdi. Uzunluk aldatır: en büyüğü 3.970 karakter, en uzun
+paragrafı 18. `make liste-sayfalarini-ele` (uygula=1 olmadan yalnız gösterir).
+Yedisi silindi, biri **altın set muafiyetiyle** kaldı — Esra etiketlemiş,
+silmek `make eval` zeminini kaydırırdı. `data/raw` DEĞİŞMEZ; `make extract`
+kayıtları geri getirir. Silme sonrası korpus izi değişir, `make vektor` şart.
+
 **Keşif diff'inin iki yönü AYRI tabana bakar (27 Ağu).** `src/izleme/kesif.py`
 «listede olup elimizde olmayan kampanya var mı» sorusunu cevaplar — tazelik
 dinleyicisi bunu yapısal olarak göremez. **YENİ** envantere (`data/raw`) karşı,
@@ -228,7 +242,49 @@ arasında bağ yoktu. «120 ay vadeli 1.000.000 TL konut finansmanı» → **120
 Profil ekranı bunu «120 TL · 120 ay» diye çözüp 357 kampanyayı uygun buluyordu.
 `_AY_DESENI` vadeyi ilk günden birimine bağlıyordu; tutar bağlanmamıştı.
 Çarpan sözcüğü de bağlıdır: «bin» artık metnin herhangi bir yerinden değil,
-sayının yanından okunur.
+sayının yanından okunur. Çarpan **`tr_kucult` ile** çözülür, düz `.lower()`
+ile değil — desen `MİLYON`u yakalıyor, `"MİLYON".lower()` `'mi̇lyon'` (i +
+U+0307) veriyor ve sözlükte öyle bir anahtar yok. Sonucu sessiz bir yanlış
+değil, `KeyError`'dı: kural katmanı çöküyor, `make kural-olc` altın sette hiç
+koşamıyordu. Aynı dosyanın 22. satırında «TUZAK 1» diye yazılı.
+
+**Türkçe ek listesi TEK KAYNAKTIR — `normalizasyon.TR_EKLER`.** Aday deseni
+(`kural.D_VADE`, `kural.D_TAKSIT`) ile ayrıştırıcı (`_AY_DESENI`) aynı ekleri
+tanımak zorunda: desen «6 taksitle»yi yakalayıp `vade_ayristir` onu tanımazsa
+aday sessizce düşer. Vasıta hâli (`le|la`) listede yoktu ve tam olarak bu
+oluyordu. İkinci bir kopya yazma.
+
+**«6 taksit» hem vadedir hem taksit sayısıdır — ayırmak DENENDİ, ölçüldü,
+geri alındı (27 Ağu).** `taksit_sayisi` 734 kaydın 734'ünde boştu ve sebebi
+`_tek_atama` hakemliğiydi: iki kural da aynı span'ı üretiyor, mesafe ikisinde
+de 0, beraberliği `KURALLAR` bildirim sırası çözüyor ve `vade_ay_max` önce
+bildirildiği için taksit **hiçbir zaman kazanamıyordu**.
+
+İlk çözüm «taksit»i `D_VADE`'den çıkarmaktı; gerekçe makuldü (353 vadenin
+181'inin `ham_ifade`'sinde «taksit» geçiyor, 173'ü kart kampanyası). **Altın
+set aksini söyledi:** dört etiketleyici bağımsız olarak «vade farksız 6
+taksit» ifadesine `vade_ay_max = 6` yazmış. `make kural-olc` (deterministik,
+LLM yok): vade F1 **0,7671 → 0,6866**, beş doğru pozitif yanlış negatife
+döndü. «N taksitle öde» katılım bankacılığında N ay ertelenmiş ödemedir; ikisi
+ayrı olgu değil, aynı olgunun iki adı.
+
+Doğru çözüm ayırmak değil, hakemliği delmekti: `KuralTanimi.sahiplik_disi`.
+`taksit_sayisi` vadeyle **yarışmaz, onu niteler** — makro-F1 birebir aynı
+kaldı (0,7018) ve alan 0'dan **216/734**'e çıktı, 30'unda değer vadeden
+farklı. Kazanç köken bilgisidir: `vade_ay_max=6` + `taksit_sayisi=6` «bu bir
+kart taksidi» der, `vade_ay_max=36` tek başına «bu gerçek bir vade» der.
+Bayrak DAR tutulur — sahiplik dışı kural kimsenin span'ını düşürmez de.
+
+**`ollama_json_semasi().required` bir ÜRETİM KAPISIDIR (ADR 025, 27 Ağu).**
+Liste yalnız `kampanya_turu` iken model 16 alandan 4'ünü döndürüyordu ve
+`urun_turu` · `masraf_bilgisi` 734/734 kayıtta boştu. Alanı **isteme tanıtmak
+tek başına yetmiyor** (10 kayıtta 0 dolu); kapının ikisi de açılmalı.
+`required`'a eklenince `urun_turu` 9/10 doldu ve çıktı temiz. `masraf_bilgisi`
+BİLEREK eklenmedi: zorlandığında 3/10 dolduruyor ve ikisi masraf değil vade
+bilgisi. Alan altın sette etiketlenmiyor (ADR 008), yani o gürültüyü kimse
+göremez — ölçülemeyen alanı zorlamak kanıtsız değer üretmektir. `SEMA_SURUMU`
+yükselmedi: `required` modele ne SORULACAĞINI belirler, kaydın ne taşıyacağını
+değil.
 
 **Müşteri tipi eksikse SORULMAZ, tutar ve vade eksikse sorulur.** Ayrım
 tahmin edilenin sonuca ne yaptığıdır: tutar ve vade taksit ile toplam maliyet
@@ -416,7 +472,7 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1585 test)
+make test         # testler (1604 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make chatbot-tarama # chatbot boşluk taraması (194 üretilmiş soru) [adet=N]
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk

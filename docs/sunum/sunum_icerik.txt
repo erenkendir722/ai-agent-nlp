@@ -16,7 +16,7 @@ işlenmiş kampanya
 katılım bankası (faal olanın tamamı)
 16
 alanlı kanıt zinciri
-1604
+1611
 geçen test
 0
 ticari dış servis bağımlılığı
@@ -395,9 +395,9 @@ Her alan için “doğru bulduklarımız / bulmamız gerekenler” dengesi; sonr
 Boş bırakılan hücreyi ödüllendirmez
 — hiçbir şey çıkarmayan bir sistem yüksek “doğruluk” alabilir ama F1 alamaz.
 Ölçümün dürüstlüğü
-Makro-F1 0,82
-(%95 güven aralığı 0,76–0,87 · n=98)
-. Aralığı da söylüyoruz: 98 örnekle tek bir ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
+Makro-F1 0,81
+(%95 güven aralığı 0,75–0,87 · n=92)
+. Aralığı da söylüyoruz: 92 örnekle tek bir ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
 Ayrıca ölçtük: model servisi
 bayt düzeyinde deterministik değil.
 Aynı kod, aynı girdi, iki koşu → 784 hücrenin 7'si oynadı. Yani sonuçlarımız
@@ -595,7 +595,7 @@ Bilinen sınırlar — saklamıyoruz
 11,4×
 ) — ölçtük, rapor ettik.
 • Kayıtların
-%37'si
+%36'sı
 «diğer» türünde: şartnamenin sekiz türü finansman ve kart odaklı, bankaların kampanyalarının bir bölümü (döviz, sigorta, ücretsiz işlem) o sekizin dışında. Zorlama sınıflandırma yapmıyoruz.
 • Veri bir
 anlık görüntüdür
