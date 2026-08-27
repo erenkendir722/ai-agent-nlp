@@ -9,8 +9,8 @@ kaynağına bağlar.
 
 İKİ TASARIM KARARI:
 
-1. **Uygun olmayanlar da gösterilir, sebebiyle.** Sessizce elemek, banka
-   çalışanını müşteriye ne diyeceğini bilmez hâlde bırakır.
+1. **Kart, bankanın kendi kampanya listesi gibi okunur.** Solda ne vaat
+   edildiği, ortada rakam, sağda eylem. Banka çalışanı bu düzeni tanır.
 2. **Ajan izleri panelde açıktır.** Jüri ajan mimarisinin iddiasını değil,
    koşum kaydını görür: hangi ajan LLM kullandı, hangisi kod. "Aritmetiği
    ajana yaptırmıyoruz" cümlesi burada ispatlanır.
@@ -26,18 +26,22 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili  # noqa: E402
-from src.rag.chatbot import YASAL_UYARI  # noqa: E402
-from src.schema import HedefKitle  # noqa: E402
+from src.ajanlar.orkestrator import BILINEN_ALANLAR  # noqa: E402
+from src.rag.chatbot import YASAL_UYARI, alan_goster  # noqa: E402
+from src.schema import TEK_BIRIMLI_ALANLAR, HedefKitle, alan_etiketi  # noqa: E402
 from app.ui_utils import (  # noqa: E402
     format_hedef_kitle,
     inject_custom_css,
     kampanyalari_yukle,
     ortak_kenar,
+    sayfa_gezinme,
+    sayfa_sonu,
 )
 
 st.set_page_config(page_title="Müşteri Profili", page_icon="", layout="wide")
 inject_custom_css()
 ortak_kenar()
+sayfa_gezinme()
 
 st.title("Müşteri Profiline Göre Uygunluk")
 
@@ -49,8 +53,8 @@ st.title("Müşteri Profiline Göre Uygunluk")
 # ekranlar arası tek görsel dil.
 st.markdown(
     '<div class="kl-serit">Önünüzdeki müşteriyi tanımlayın; hangi rakip '
-    "kampanyanın <b>gerçekten uygulanabilir</b> olduğunu, hangisinin neden "
-    "elendiğini ve toplam maliyeti görün.</div>",
+    "kampanyanın <b>gerçekten uygulanabilir</b> olduğunu ve müşteriye "
+    "söylenebilecek toplam maliyeti görün.</div>",
     unsafe_allow_html=True,
 )
 # Üstte YALNIZ kullanıcının bilmesi gereken kalır: sıralamanın neye göre
@@ -157,22 +161,11 @@ if toplam_uygun and maliyetli < toplam_uygun:
         "Maliyet sıralaması yalnız bunları kapsar."
     )
 
-if toplam_uygun > 0 and dogrulanmamis > 0:
-    # «1024 / 1024 kampanyada doğrulanamadı» tuhaf okunuyordu: hepsi
-    # doğrulanamadıysa oran vermek bilgi taşımaz, «hiçbirinde» taşır.
-    # Diğer ekranlardaki uyarılarla aynı dil: kalın başlık, altında detay.
-    kapsam = (
-        "Hiçbir kampanyada kısıt doğrulanamadı"
-        if dogrulanmamis == toplam_uygun
-        else f"{toplam_uygun} kampanyanın {dogrulanmamis} tanesinde kısıt doğrulanamadı"
-    )
-    st.warning(
-        f"**{kapsam}**  \n"
-        "Sebep kaynak veride eksik alan; kalkan arızası değil. "
-        "Bu kampanyalar listede kalır, yalnız kısıt kontrolü yapılamamıştır."
-    )
-elif uygunlar:
-    st.toast("Kısıt çözümü tamam — tüm koşullar değerlendirildi.")
+# UYARI KUTUSU KALDIRILDI (27 Agustos). Ayni bilgi «Maliyeti hesaplanan»
+# olcusunun altindaki aciklamada zaten yaziyor; sari kutu onu ikinci kez, iki
+# kat buyuk ve alarm renginde tekrarliyordu. Kisit dogrulanamamasi bir ARIZA
+# degil, kaynak verinin ozelligi — alarm rengi yanlis bilgi veriyordu.
+# Kart basina da yaziliyor (asagida `veri_eksik`), yani ucuncu kopyaydi.
 
 # ---------------------------------------------------------------------------
 # Uygun kampanyalar
@@ -183,75 +176,151 @@ def _tl(deger: float) -> str:
     return f"{deger:,.0f} TL".replace(",", ".")
 
 
-st.subheader("Uygun kampanyalar — toplam maliyete göre sıralı")
+def _kisalt(metin: str, sinir: int = 155) -> str:
+    metin = " ".join(str(metin).split())
+    return metin if len(metin) <= sinir else metin[: sinir - 1].rstrip() + "…"
+
+def _bilinen_alanlar(kampanya) -> list[tuple[str, str]]:
+    """Kâr payı yoksa kartın SUSMAMASI için bu kayıtta dolu olan alanlar.
+
+    LİSTE ELLE YAZILMAZ (CLAUDE.md, 27 Ağustos). Karşılaştırma motorunun
+    kıyasladığı alanlardan (`ALAN_YONLERI`) kâr payı çıkarılarak türeyen
+    `BILINEN_ALANLAR` kullanılır; yeni bir ölçüt oraya eklenince burada da
+    kendiliğinden görünür. Chatbot'un profil cevabı da aynı listeden okuyor —
+    iki ekranın aynı kayıt için farklı şey göstermesi böyle engellenir.
+
+    BİRİM ŞART: tek birimli alanlarda sözleşmeden (`TEK_BIRIMLI_ALANLAR`),
+    çok birimlide taşıyıcı `Alan`'dan çözülür. Birimsiz gösterim `%0,50`
+    olarak çıkarılmış bir tahsis ücretini «0,50 TL» yazardı.
+    """
+    if kampanya is None:
+        return []
+    satirlar: list[tuple[str, str]] = []
+    for alan_adi in BILINEN_ALANLAR:
+        alan = getattr(kampanya, alan_adi, None)
+        if alan is None or alan.deger is None:
+            continue
+        birim = TEK_BIRIMLI_ALANLAR.get(alan_adi) or alan.birim
+        satirlar.append(
+            (alan_etiketi(alan_adi), alan_goster(alan_adi, alan.deger, birim))
+        )
+    return satirlar
+
+
+st.subheader("Uygun kampanyalar")
+# SIRALAMA IDDIASI KOSULA BAGLI (CLAUDE.md, 27 Agustos): hicbir kalemin
+# maliyeti hesaplanamadiginda «toplam maliyete gore sirali» demek, yapilmamis
+# bir siralamayi yapilmis gibi sunmaktir.
+st.caption(
+    (
+        "Maliyeti hesaplanabilenler başta, toplam geri ödemeye göre sıralı. "
+        if maliyetli
+        else "Bu profilde hiçbir kampanyanın kâr payı oranı yayımlanmamış; "
+        "maliyet sıralaması yapılamadı. "
+    )
+    + "**Devam et** bankanın kendi sayfasını açar, **Detay** kampanyanın "
+    "kayıt dökümüne götürür."
+)
 
 if not uygunlar:
-    st.info("Aranan kriterlere uygun aktif bir katılım bankası kampanyası bulunamamıştır")
+    st.info("Bu profile uyan kampanya bulunamadı. Tutarı ya da vadeyi değiştirip tekrar deneyin.")
 
 for sira, sonuc in enumerate(uygunlar[:15], 1):
     kampanya = kayit_dizini.get(sonuc.kampanya_id)
     with st.container(border=True):
-        baslik, deger = st.columns([3, 2])
-        baslik.markdown(f"**{sira}. {sonuc.banka_adi}**")
-        if kampanya is not None:
-            baslik.markdown(f"[Kaynağa git]({kampanya.kaynak_url})")
+        sol, orta, sag = st.columns([4.1, 3.5, 1.7])
 
-        if sonuc.maliyet:
-            deger.metric(
-                "Toplam geri ödeme",
-                _tl(sonuc.maliyet["toplam_geri_odeme"]),
-                help=f"Aylık taksit: {_tl(sonuc.maliyet['aylik_taksit'])}",
+        # -- SOL: kurum ve kampanyanin ne vaat ettigi --------------------
+        #
+        # Eskiden burada yalniz banka adi ve «Kaynaga git» bagi vardi; kartin
+        # geri kalani «Belirtilmemis» diyordu. Oysa maliyeti hesaplanamayan
+        # 179 kaydin 148'inde `kampanya_avantaji` DOLU — kampanyanin ne
+        # verdigi yaziyor. Bos bir hucre gostermek yerine elimizdekini
+        # gosteriyoruz.
+        with sol:
+            st.markdown(
+                f'<div class="kl-kart-ad">{sira}. {sonuc.banka_adi}</div>',
+                unsafe_allow_html=True,
             )
-        else:
-            deger.metric("Toplam geri ödeme", "Belirtilmemiş")
-            deger.caption("Kâr payı oranı yok ya da makul aralık dışında.")
-
-        # TEKRAR EDEN CÜMLE KISALTILDI (27 Ağustos).
-        #
-        # Kısıt verisi olmayan kayıtta gerekçe her seferinde aynı uzun cümle
-        # oluyordu: «Uygun — Uygunluk kısıtı bu kayıtta yok — kampanya
-        # metninde belirtilmemiş ya da çıkarılamamış olabilir; kısıtlar
-        # doğrulanmadı.» 331 kartın 302'sinde birebir aynı. Üstelik aynı bilgi
-        # sayfanın başındaki uyarıda toplu hâlde zaten yazıyor; kart başına
-        # tekrar etmek listeyi okunmaz yapıyordu.
-        #
-        # Gerçekten DEĞERLENDİRİLMİŞ bir kısıt varsa gerekçe tam hâliyle
-        # gösterilir — asıl bilgi orada.
-        if sonuc.veri_eksik:
-            st.caption("Kısıt bilgisi bu kayıtta yok; koşullar doğrulanmadı.")
-        else:
-            for gerekce in sonuc.gerekceler:
-                st.markdown(str(gerekce))
-
-        # KANIT ZİNCİRİ: sayının hangi cümleden geldiği tek tıkla görünür.
-        if kampanya is not None and kampanya.kar_payi_orani.var_mi:
-            alan = kampanya.kar_payi_orani
-            with st.expander("Kaynak alıntısı"):
-                st.markdown(f"**Kâr payı oranı:** {alan.goster()}")
-                if alan.kaynak and alan.kaynak.alinti:
-                    st.markdown(f"> {alan.kaynak.alinti}")
-                st.caption(
-                    f"{kampanya.kaynak_url} · "
-                    f"{kampanya.cekim_tarihi:%d.%m.%Y} tarihinde alınmıştır"
+            aciklama = ""
+            if kampanya is not None and kampanya.kampanya_avantaji.var_mi:
+                aciklama = _kisalt(kampanya.kampanya_avantaji.deger)
+            if aciklama:
+                st.markdown(
+                    f'<div class="kl-kart-alt">{aciklama}</div>', unsafe_allow_html=True
+                )
+            elif sonuc.veri_eksik:
+                st.markdown(
+                    '<div class="kl-kart-alt">Kampanya koşulları kaynak sayfada '
+                    "ayrıntılı verilmemiş.</div>",
+                    unsafe_allow_html=True,
                 )
 
-# ---------------------------------------------------------------------------
-# Elenenler — sebebiyle
-# ---------------------------------------------------------------------------
+        # -- ORTA: rakamlar ----------------------------------------------
+        with orta:
+            if sonuc.maliyet:
+                d1, d2 = st.columns(2)
+                d1.markdown(
+                    '<div class="kl-kart-etiket">Toplam geri ödeme</div>'
+                    f'<div class="kl-kart-deger">{_tl(sonuc.maliyet["toplam_geri_odeme"])}</div>',
+                    unsafe_allow_html=True,
+                )
+                d2.markdown(
+                    '<div class="kl-kart-etiket">Aylık taksit</div>'
+                    f'<div class="kl-kart-deger">{_tl(sonuc.maliyet["aylik_taksit"])}</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                # «BELIRTILMEMIS» DEV PUNTODA YAZILMIYOR ARTIK.
+                #
+                # Olculdu: uygun 183 kaydin 179'unda (%98) `kar_payi_orani`
+                # HIC YOK — bankalar orani kampanya sayfasinda degil basvuru
+                # ekraninda veriyor. Yani bu bir cikarim zaafi degil, kaynak
+                # verinin ozelligi. Paranin durdugu yerde dev puntoyla
+                # «Belirtilmemis» yazmak, olmayan bir kusuru ekranin en
+                # buyuk ogesi yapiyordu. Elimizde ne varsa o gosteriliyor.
+                bilinen = _bilinen_alanlar(kampanya)
+                if bilinen:
+                    for _s, (_e, _d) in zip(st.columns(2), bilinen[:2], strict=False):
+                        _s.markdown(
+                            f'<div class="kl-kart-etiket">{_e}</div>'
+                            f'<div class="kl-kart-deger">{_d}</div>',
+                            unsafe_allow_html=True,
+                        )
+                st.markdown(
+                    '<div class="kl-kart-alt">Kâr payı oranı bu sayfada '
+                    "yayımlanmamış — maliyet hesaplanamıyor.</div>",
+                    unsafe_allow_html=True,
+                )
 
-if elenenler:
-    st.subheader("Uygun olmayanlar ve sebepleri")
-    st.caption(
-        "Sessizce elemek yerine sebebini göstermek, müşteriye ne söyleneceğini "
-        "de belirler."
-    )
-    for sonuc in elenenler[:15]:
-        with st.container(border=True):
-            st.markdown(f"**{sonuc.banka_adi}**")
-            for gerekce in sonuc.engelleyenler():
-                st.markdown(f"- {gerekce.aciklama}")
+        # -- SAG: eylemler -----------------------------------------------
+        with sag:
+            if kampanya is not None:
+                st.link_button(
+                    "Devam et", kampanya.kaynak_url, use_container_width=True, type="primary"
+                )
+                if st.button("Detay", key=f"mp_detay_{sonuc.kampanya_id}", use_container_width=True):
+                    # Banka Profili sayfasi bu iki anahtari okur: ilki banka
+                    # secicisini, ikincisi vurgulanacak kampanyayi kurar.
+                    st.session_state["bp_secili_banka"] = kampanya.banka_kodu
+                    st.session_state["bp_vurgu_kampanya"] = sonuc.kampanya_id
+                    st.switch_page("pages/5_Banka_Profili.py")
 
-# ---------------------------------------------------------------------------
+        # Gercekten DEGERLENDIRILMIS bir kisit varsa gerekce gosterilir.
+        # Kisit verisi olmayan kayitta cumle her kartta ayniydi (302/331) ve
+        # ayni bilgi zaten yukarida.
+        if not sonuc.veri_eksik:
+            for gerekce in sonuc.gerekceler:
+                st.caption(str(gerekce))
+
+# ELENENLER BOLUMU KALDIRILDI (27 Agustos).
+#
+# «Uygun olmayanlar ve sebepleri» 15 kart daha basiyordu ve sayfanin alt
+# yarisini kaplıyordu. Elenen sayisi ust olculerde duruyor; banka calisani
+# musteriye SUNULABILECEK teklifi ariyor, sunulamayacaklarin dokumunu degil.
+# Eleme mantiginin denetlenebilirligi kayboldu sayilmaz: `Elenen` olcusu,
+# ajan izleri paneli ve `make eval` ciktisi ayni bilgiyi tasiyor.
+
 # Ajan izleri — mimarinin kanıtı
 # ---------------------------------------------------------------------------
 
@@ -282,3 +351,5 @@ if uygunlar:
       mime="text/plain",
       type="primary"
   )
+
+sayfa_sonu()

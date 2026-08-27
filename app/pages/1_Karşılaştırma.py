@@ -23,7 +23,6 @@ from src.comparison.karsilastirma import ( # noqa: E402
   Agirliklar,
   Kriter,
   Senaryo,
-  avantaj_skorla,
   ortak_tabana_indir,
   sirala,
   toplam_maliyet,
@@ -43,12 +42,15 @@ from app.ui_utils import (  # noqa: E402
   ortak_kenar,
   sonuclari_oku,
   tr_sayi,
+  sayfa_gezinme,
+  sayfa_sonu,
   uyarilari_goster,
 )
 
 st.set_page_config(page_title="Karşılaştırma", page_icon="", layout="wide")
 inject_custom_css()
 ortak_kenar()
+sayfa_gezinme()
 
 
 def _halusinasyon_metni() -> str:
@@ -277,227 +279,173 @@ with col_e:
 
 sirali = sirala(suzulmus, secili_kriter, agirliklar)
 
-uyarilari_goster(uyarilar(sirali))
-
+# SARI KUTU KALDIRILDI: «tahsis ucreti siralamaya katilmadi» bir ARIZA
+# degil, olcut kapsaminin beyani. Alarm renginde gostermek kullaniciyi
+# bir sorun oldugunu sanmaya itiyordu. Bilgi silinmedi — katlanabilir
+# panele indi (`panelde_topla`), bir tiklama uzakta.
+uyarilari_goster(uyarilar(sirali), panelde_topla=True)
 # ---------------------------------------------------------------------------
-# Tablo
+# ES-08: Yan yana maliyet ve vade duyarliligi
 # ---------------------------------------------------------------------------
+#
+# BU IKI BOLUM SAYFANIN EN ALTINDAYDI (27 Agustos). Tablonun altinda, 270
+# satir asagida, kaydirmadan gorulmuyorlardi. Oysa banka calisaninin karar
+# cumlesini uretenler bunlar: «ayni tutarda su banka su kadar ucuz» ve
+# «vadeyi kisaltirsan su kadar kazanirsin». Tablo ham veriyi gosterir, bunlar
+# CEVABI uretir — cevap ustte durur.
+#
+# SEKME, ALT ALTA DEGIL: ikisi ayni secimi (kampanyalar, anapara, vade)
+# paylasiyor ve ayni anda ikisine birden bakilmiyor. Sekme, secimi bir kez
+# yapip iki farkli soruyu sormayi saglar. Genel Bakis'taki sekme duzeniyle
+# ayni gorsel dil.
+#
+# `secilen_adlar` sekmeden ONCE ilklendirilir: vade sekmesi onu maliyet
+# sekmesinden okur ve `sirali` bossa maliyet sekmesi ona hic deger atamaz.
 
-tablo = pd.DataFrame(
-  [
-    {
-      "Banka": format_bank_name(k.banka_adi),
-      "Tür": format_kategori(k.kampanya_turu),
-      "Kâr payı": _alan_yazi(k, "kar_payi_orani"),
-      "Azami vade": _alan_yazi(k, "vade_ay_max"),
-      "Azami tutar": _alan_yazi(k, "finansman_tutari_max"),
-      "Tahsis ücreti": _alan_yazi(k, "tahsis_ucreti"),
-      "Masrafsız": _alan_yazi(k, "masrafsiz_mi"),
-      "Ödül": _alan_yazi(k, "odul_miktari"),
-      "Güven": f"{k.ortalama_guven:.2f}",
-    }
-    for k in sirali
-  ]
-)
+secilen_adlar: list[str] = []
+_sk_maliyet, _sk_vade = st.tabs(["Yan yana toplam maliyet", "Vade duyarlılığı"])
 
-# Tamamı 'Belirtilmemiş' olan sütunları gizle (Temiz Görünüm)
-gizlenecek_sutunlar = []
-for col in tablo.columns:
-    if col not in ["Banka", "Tür", "Güven"]:
-        if (tablo[col] == "Belirtilmemiş").all() or (tablo[col] == "—").all():
-            gizlenecek_sutunlar.append(col)
+with _sk_maliyet:
+  st.caption("Aynı anapara ve vadede bankaları gerçek toplam maliyetle kıyaslayın.")
 
-if gizlenecek_sutunlar:
-    tablo.drop(columns=gizlenecek_sutunlar, inplace=True)
-
-def _renklendir_guven(val):
-  if val == "Belirtilmemiş" or pd.isna(val):
-    return ""
-  try:
-    v = float(str(val).replace(",", "."))
-    if v >= 0.90:
-      return "background-color: rgba(39, 174, 96, 0.2)"
-    elif v >= 0.70:
-      return "background-color: rgba(241, 196, 15, 0.2)"
-    else:
-      return "background-color: rgba(231, 76, 60, 0.2)"
-  except Exception:
-    return ""
-
-def _renklendir_kar(val):
-  if val == "Belirtilmemiş" or pd.isna(val):
-    return ""
-  try:
-    v = float(str(val).replace(",", "."))
-    if v < 1.50:
-      return "background-color: rgba(173, 216, 230, 0.4)" # LightBlue
-    elif v < 2.50:
-      return "background-color: rgba(135, 206, 235, 0.5)" # SkyBlue
-    elif v < 3.50:
-      return "background-color: rgba(70, 130, 180, 0.6)" # SteelBlue
-    else:
-      return "background-color: rgba(25, 25, 112, 0.5); color: white" # MidnightBlue
-  except Exception:
-    return ""
-
-def _highlight_biz(row):
-  hedef_ad = format_bank_name(benim_bankam)
-  if benim_bankam != "(Seçilmedi)" and row['Banka'] == hedef_ad:
-    return ['background-color: rgba(46, 204, 113, 0.15)'] * len(row)
-  return [''] * len(row)
-
-# pandas >= 2.1 için map, eski sürümler için applymap
-styler = tablo.style.apply(_highlight_biz, axis=1)
-kar_sutun = ["Kâr payı"] if "Kâr payı" in tablo.columns else []
-if hasattr(styler, "map"):
-  styled_tablo = styler.map(_renklendir_guven, subset=["Güven"])
-  if kar_sutun:
-    styled_tablo = styled_tablo.map(_renklendir_kar, subset=kar_sutun)
-else:
-  styled_tablo = styler.applymap(_renklendir_guven, subset=["Güven"])
-  if kar_sutun:
-    styled_tablo = styled_tablo.applymap(_renklendir_kar, subset=kar_sutun)
-
-st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
-
-# ---------------------------------------------------------------------------
-# ES-08: Yan Yana Karşılaştırma ve Maliyet
-# ---------------------------------------------------------------------------
-
-st.subheader("Yan Yana Toplam Maliyet Karşılaştırması")
-st.caption(
-  "Aynı anapara ve vadede bankaları gerçek toplam maliyetle kıyaslayın."
-)
-
-if not sirali:
-  st.info("Karşılaştırılacak kampanya yok.")
-else:
-  # Kampanya Seçimi
-  kampanya_secenekleri = {}
-  for k in sirali:
-    isim = f"{format_bank_name(k.banka_adi)} - {format_kategori(k.urun_turu or k.kampanya_turu)}"
-    # Aynı isimde birden fazla kampanya varsa, kâr payı olan (üstte çıkan) ezilmesin
-    if isim not in kampanya_secenekleri:
-      kampanya_secenekleri[isim] = k
+  if not sirali:
+    st.info("Karşılaştırılacak kampanya yok.")
+  else:
+    # Kampanya Seçimi
+    kampanya_secenekleri = {}
+    for k in sirali:
+      isim = f"{format_bank_name(k.banka_adi)} - {format_kategori(k.urun_turu or k.kampanya_turu)}"
+      # Aynı isimde birden fazla kampanya varsa, kâr payı olan (üstte çıkan) ezilmesin
+      if isim not in kampanya_secenekleri:
+        kampanya_secenekleri[isim] = k
       
-  secilen_adlar = st.multiselect(
-    "Karşılaştırmak istediğiniz kampanyaları seçin (En fazla 3)",
-    options=list(kampanya_secenekleri.keys()),
-    default=list(kampanya_secenekleri.keys())[:2],
-    max_selections=3
-  )
+    secilen_adlar = st.multiselect(
+      "Karşılaştırmak istediğiniz kampanyaları seçin (En fazla 3)",
+      options=list(kampanya_secenekleri.keys()),
+      default=list(kampanya_secenekleri.keys())[:2],
+      max_selections=3
+    )
 
-  if secilen_adlar:
-    h1, h2 = st.columns(2)
-    ortak_anapara = h1.number_input("İhtiyaç Duyulan Finansman (TL)", min_value=1000.0, value=500_000.0, step=10_000.0)
-    ortak_vade = h2.number_input("İstenen Vade (Ay)", min_value=1, value=120, step=6)
+    if secilen_adlar:
+      h1, h2 = st.columns(2)
+      ortak_anapara = h1.number_input("İhtiyaç Duyulan Finansman (TL)", min_value=1000.0, value=500_000.0, step=10_000.0)
+      ortak_vade = h2.number_input("İstenen Vade (Ay)", min_value=1, value=120, step=6)
     
-    st.write("") # Boşluk
+      st.write("") # Boşluk
     
-    # Kartları yan yana diz
-    cols = st.columns(len(secilen_adlar))
+      # Kartları yan yana diz
+      cols = st.columns(len(secilen_adlar))
     
-    maliyet_sonuclari = []
-    for i, ad in enumerate(secilen_adlar):
-      kayit = kampanya_secenekleri[ad]
-      with cols[i]:
-        st.markdown(f"### {format_bank_name(kayit.banka_adi)}")
-        st.caption(format_kategori(kayit.urun_turu or kayit.kampanya_turu))
-        
-        # Veri eksikliği kontrolü
-        if pd.isna(kayit.kar_payi_orani) or kayit.kar_payi_orani == "Belirtilmemiş":
-          st.warning("Kâr payı verisi eksik olduğu için hesaplanamıyor.")
-          maliyet_sonuclari.append(float('inf'))
-          continue
-          
-        # 1. İş Mantığı Zırhı: Limit Kontrolleri
-        limit_asti_mi = False
-        if kayit.finansman_tutari_max and kayit.finansman_tutari_max != "Belirtilmemiş":
-          if ortak_anapara > float(kayit.finansman_tutari_max):
-            st.error(f"Bankanın belirlediği azami finansman limitini ({kayit.finansman_tutari_max:,.0f} TL) aşıyor.")
-            limit_asti_mi = True
-        
-        if kayit.vade_ay_max and kayit.vade_ay_max != "Belirtilmemiş":
-          if ortak_vade > float(kayit.vade_ay_max):
-            st.error(f"Bankanın belirlediği azami vadeyi ({kayit.vade_ay_max:.0f} ay) aşıyor.")
-            limit_asti_mi = True
-            
-        if limit_asti_mi:
-          maliyet_sonuclari.append(float('inf'))
-          continue
-        
-        # TAHSİS ÜCRETİ ORTAK TABANA İNDİRİLİR (27 Ağustos).
-        #
-        # Alan HEM TL HEM YÜZDE taşıyor; ham değer doğrudan `toplam_maliyet`e
-        # verilirse yüzde, lira sanılıp toplama eklenir. Ölçüldü: `tahsis_ucreti`
-        # dolu 41 kaydın 40'ı (%98) yüzde birimli.
-        #
-        #     %0,5 tahsis · 500.000 TL finansman
-        #       gerçek  : 2.500 TL
-        #       hatalı  :     0,50 TL      → 5.000 kat sapma
-        #
-        # `ortak_tabana_indir` bu işi zaten yapıyor ve kullanıcıdan aldığımız
-        # anapara + vade tam olarak bir `Senaryo`. Birim çözülemezse `None`
-        # döner — o zaman sıfır varsaymak yerine DURUMU SÖYLERİZ; sessizce
-        # eksik masrafla hesaplanan bir «en uygun» yanıltıcıdır.
-        senaryo = Senaryo(anapara=float(ortak_anapara), vade_ay=int(ortak_vade))
-        tahsis = ortak_tabana_indir(kayit, "tahsis_ucreti", senaryo)
-        tahsis_cozulemedi = kayit.tahsis_ucreti is not None and tahsis is None
-        tahsis = tahsis or 0.0
-
-        sonuc = toplam_maliyet(ortak_anapara, float(kayit.kar_payi_orani), int(ortak_vade), tahsis)
-        maliyet_sonuclari.append(sonuc['toplam_geri_odeme'])
-        
-        st.metric("Aylık Taksit", f"{sonuc['aylik_taksit']:,.2f} TL".replace(",", "."))
-        st.metric("Toplam Geri Ödeme", f"{sonuc['toplam_geri_odeme']:,.2f} TL".replace(",", "."))
-
-        if tahsis_cozulemedi:
-          st.caption(
-            "Tahsis ücretinin birimi çözülemedi; toplama **dâhil edilmedi**. "
-            "Gerçek maliyet buradakinden yüksek olabilir."
-          )
-        elif tahsis:
-          st.caption(f"Tahsis ücreti dâhil: {tahsis:,.0f} TL".replace(",", "."))
-        
-        # Görsel Maliyet Dağılımı (Plotly Donut)
-        df_donut = pd.DataFrame({
-          "Kategori": ["Anapara", "Kâr Payı", "Masraflar"],
-          "Tutar": [ortak_anapara, sonuc['toplam_kar_payi'], tahsis]
-        })
-        fig = px.pie(df_donut, values='Tutar', names='Kategori', hole=0.6, 
-               color_discrete_sequence=['#1f77b4', '#aec7e8', '#ff7f0e'])
-        fig.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=150)
-        st.plotly_chart(fig, use_container_width=True, key=f"donut_karsilastirma_{i}")
-        
-    # Kazananı Vurgulama
-    gecerli_maliyetler = [m for m in maliyet_sonuclari if m != float('inf')]
-    if gecerli_maliyetler:
-      en_dusuk_maliyet = min(gecerli_maliyetler)
+      maliyet_sonuclari = []
       for i, ad in enumerate(secilen_adlar):
-        if maliyet_sonuclari[i] == en_dusuk_maliyet:
-          kazanan = kampanya_secenekleri[ad]
-          with cols[i]:
-            st.success("**En uygun seçenek**")
+        kayit = kampanya_secenekleri[ad]
+        with cols[i]:
+          st.markdown(f"### {format_bank_name(kayit.banka_adi)}")
+          st.caption(format_kategori(kayit.urun_turu or kayit.kampanya_turu))
+        
+          # Veri eksikliği kontrolü
+          if pd.isna(kayit.kar_payi_orani) or kayit.kar_payi_orani == "Belirtilmemiş":
+            st.warning("Kâr payı verisi eksik olduğu için hesaplanamıyor.")
+            maliyet_sonuclari.append(float('inf'))
+            continue
+          
+          # 1. İş Mantığı Zırhı: Limit Kontrolleri
+          limit_asti_mi = False
+          if kayit.finansman_tutari_max and kayit.finansman_tutari_max != "Belirtilmemiş":
+            if ortak_anapara > float(kayit.finansman_tutari_max):
+              st.error(f"Bankanın belirlediği azami finansman limitini ({kayit.finansman_tutari_max:,.0f} TL) aşıyor.")
+              limit_asti_mi = True
+        
+          if kayit.vade_ay_max and kayit.vade_ay_max != "Belirtilmemiş":
+            if ortak_vade > float(kayit.vade_ay_max):
+              st.error(f"Bankanın belirlediği azami vadeyi ({kayit.vade_ay_max:.0f} ay) aşıyor.")
+              limit_asti_mi = True
+            
+          if limit_asti_mi:
+            maliyet_sonuclari.append(float('inf'))
+            continue
+        
+          # TAHSİS ÜCRETİ ORTAK TABANA İNDİRİLİR (27 Ağustos).
+          #
+          # Alan HEM TL HEM YÜZDE taşıyor; ham değer doğrudan `toplam_maliyet`e
+          # verilirse yüzde, lira sanılıp toplama eklenir. Ölçüldü: `tahsis_ucreti`
+          # dolu 41 kaydın 40'ı (%98) yüzde birimli.
+          #
+          #     %0,5 tahsis · 500.000 TL finansman
+          #       gerçek  : 2.500 TL
+          #       hatalı  :     0,50 TL      → 5.000 kat sapma
+          #
+          # `ortak_tabana_indir` bu işi zaten yapıyor ve kullanıcıdan aldığımız
+          # anapara + vade tam olarak bir `Senaryo`. Birim çözülemezse `None`
+          # döner — o zaman sıfır varsaymak yerine DURUMU SÖYLERİZ; sessizce
+          # eksik masrafla hesaplanan bir «en uygun» yanıltıcıdır.
+          senaryo = Senaryo(anapara=float(ortak_anapara), vade_ay=int(ortak_vade))
+          tahsis = ortak_tabana_indir(kayit, "tahsis_ucreti", senaryo)
+          tahsis_cozulemedi = kayit.tahsis_ucreti is not None and tahsis is None
+          tahsis = tahsis or 0.0
+
+          sonuc = toplam_maliyet(ortak_anapara, float(kayit.kar_payi_orani), int(ortak_vade), tahsis)
+          maliyet_sonuclari.append(sonuc['toplam_geri_odeme'])
+        
+          st.metric("Aylık Taksit", f"{sonuc['aylik_taksit']:,.2f} TL".replace(",", "."))
+          st.metric("Toplam Geri Ödeme", f"{sonuc['toplam_geri_odeme']:,.2f} TL".replace(",", "."))
+
+          if tahsis_cozulemedi:
             st.caption(
-              "Manşet orana değil, tahsis ücreti dâhil TOPLAM geri ödemeye göre. "
-              "Düşük kâr payı her zaman düşük maliyet demek değildir."
+              "Tahsis ücretinin birimi çözülemedi; toplama **dâhil edilmedi**. "
+              "Gerçek maliyet buradakinden yüksek olabilir."
             )
+          elif tahsis:
+            st.caption(f"Tahsis ücreti dâhil: {tahsis:,.0f} TL".replace(",", "."))
+        
+          # Görsel Maliyet Dağılımı (Plotly Donut)
+          df_donut = pd.DataFrame({
+            "Kategori": ["Anapara", "Kâr Payı", "Masraflar"],
+            "Tutar": [ortak_anapara, sonuc['toplam_kar_payi'], tahsis]
+          })
+          fig = px.pie(df_donut, values='Tutar', names='Kategori', hole=0.6, 
+                 color_discrete_sequence=['#1f77b4', '#aec7e8', '#ff7f0e'])
+          fig.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10), height=150)
+          st.plotly_chart(fig, use_container_width=True, key=f"donut_karsilastirma_{i}")
+        
+      # Kazananı Vurgulama
+      gecerli_maliyetler = [m for m in maliyet_sonuclari if m != float('inf')]
+      if gecerli_maliyetler:
+        en_dusuk_maliyet = min(gecerli_maliyetler)
+        for i, ad in enumerate(secilen_adlar):
+          if maliyet_sonuclari[i] == en_dusuk_maliyet:
+            kazanan = kampanya_secenekleri[ad]
+            with cols[i]:
+              st.success("**En uygun seçenek**")
+              st.caption(
+                "Manşet orana değil, tahsis ücreti dâhil TOPLAM geri ödemeye göre. "
+                "Düşük kâr payı her zaman düşük maliyet demek değildir."
+              )
 
-            # DEVAM YOLU — karşılaştırma bir cevap verir, sonrası boşluktu.
-            # Kullanıcı «peki bu banka nasıl bir kurum» ya da «kaynağı nerede»
-            # diye sorduğunda gidecek yeri yoktu.
-            if st.button(
-              "Devam et — banka detayına git",
-              key=f"kars_devam_{i}",
-              type="primary",
-              use_container_width=True,
-            ):
-              # Anahtar, Banka Profili'ndeki `st.selectbox`'ın KEY'i ile aynı.
-              st.session_state["bp_secili_banka"] = kazanan.banka_adi
-              st.switch_page("pages/5_Banka_Profili.py")
+              # DEVAM YOLU — karşılaştırma bir cevap verir, sonrası boşluktu.
+              # Kullanıcı «peki bu banka nasıl bir kurum» ya da «kaynağı nerede»
+              # diye sorduğunda gidecek yeri yoktu.
+              if st.button(
+                "Devam et — banka detayına git",
+                key=f"kars_devam_{i}",
+                type="primary",
+                use_container_width=True,
+              ):
+                # Anahtar, Banka Profili'ndeki `st.selectbox`'ın KEY'i ile aynı.
+                st.session_state["bp_secili_banka"] = kazanan.banka_adi
+                st.switch_page("pages/5_Banka_Profili.py")
 
-            st.markdown(f"[Kampanyanın kaynak sayfası]({kazanan.kaynak_url})")
-            st.caption(f"{kazanan.cekim_tarihi:%d.%m.%Y} tarihinde alınmıştır")
+              st.markdown(f"[Kampanyanın kaynak sayfası]({kazanan.kaynak_url})")
+              st.caption(f"{kazanan.cekim_tarihi:%d.%m.%Y} tarihinde alınmıştır")
+
+
+with _sk_vade:
+  if not secilen_adlar:
+    st.info(
+      "Önce **Yan yana toplam maliyet** sekmesinden en az bir kampanya seçin; "
+      "vade duyarlılığı o seçim üzerinden hesaplanır."
+    )
+  else:
 
     # -----------------------------------------------------------------------
     # Vade duyarlılığı — karar desteği
@@ -634,6 +582,87 @@ else:
 
 
 # ---------------------------------------------------------------------------
+# Tablo
+# ---------------------------------------------------------------------------
+
+tablo = pd.DataFrame(
+  [
+    {
+      "Banka": format_bank_name(k.banka_adi),
+      "Tür": format_kategori(k.kampanya_turu),
+      "Kâr payı": _alan_yazi(k, "kar_payi_orani"),
+      "Azami vade": _alan_yazi(k, "vade_ay_max"),
+      "Azami tutar": _alan_yazi(k, "finansman_tutari_max"),
+      "Tahsis ücreti": _alan_yazi(k, "tahsis_ucreti"),
+      "Masrafsız": _alan_yazi(k, "masrafsiz_mi"),
+      "Ödül": _alan_yazi(k, "odul_miktari"),
+      "Güven": f"{k.ortalama_guven:.2f}",
+    }
+    for k in sirali
+  ]
+)
+
+# Tamamı 'Belirtilmemiş' olan sütunları gizle (Temiz Görünüm)
+gizlenecek_sutunlar = []
+for col in tablo.columns:
+    if col not in ["Banka", "Tür", "Güven"]:
+        if (tablo[col] == "Belirtilmemiş").all() or (tablo[col] == "—").all():
+            gizlenecek_sutunlar.append(col)
+
+if gizlenecek_sutunlar:
+    tablo.drop(columns=gizlenecek_sutunlar, inplace=True)
+
+def _renklendir_guven(val):
+  if val == "Belirtilmemiş" or pd.isna(val):
+    return ""
+  try:
+    v = float(str(val).replace(",", "."))
+    if v >= 0.90:
+      return "background-color: rgba(39, 174, 96, 0.2)"
+    elif v >= 0.70:
+      return "background-color: rgba(241, 196, 15, 0.2)"
+    else:
+      return "background-color: rgba(231, 76, 60, 0.2)"
+  except Exception:
+    return ""
+
+def _renklendir_kar(val):
+  if val == "Belirtilmemiş" or pd.isna(val):
+    return ""
+  try:
+    v = float(str(val).replace(",", "."))
+    if v < 1.50:
+      return "background-color: rgba(173, 216, 230, 0.4)" # LightBlue
+    elif v < 2.50:
+      return "background-color: rgba(135, 206, 235, 0.5)" # SkyBlue
+    elif v < 3.50:
+      return "background-color: rgba(70, 130, 180, 0.6)" # SteelBlue
+    else:
+      return "background-color: rgba(25, 25, 112, 0.5); color: white" # MidnightBlue
+  except Exception:
+    return ""
+
+def _highlight_biz(row):
+  hedef_ad = format_bank_name(benim_bankam)
+  if benim_bankam != "(Seçilmedi)" and row['Banka'] == hedef_ad:
+    return ['background-color: rgba(46, 204, 113, 0.15)'] * len(row)
+  return [''] * len(row)
+
+# pandas >= 2.1 için map, eski sürümler için applymap
+styler = tablo.style.apply(_highlight_biz, axis=1)
+kar_sutun = ["Kâr payı"] if "Kâr payı" in tablo.columns else []
+if hasattr(styler, "map"):
+  styled_tablo = styler.map(_renklendir_guven, subset=["Güven"])
+  if kar_sutun:
+    styled_tablo = styled_tablo.map(_renklendir_kar, subset=kar_sutun)
+else:
+  styled_tablo = styler.applymap(_renklendir_guven, subset=["Güven"])
+  if kar_sutun:
+    styled_tablo = styled_tablo.applymap(_renklendir_kar, subset=kar_sutun)
+
+st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
+
+# ---------------------------------------------------------------------------
 # Yapay Zeka Battlecard (Biz vs Onlar)
 # ---------------------------------------------------------------------------
 if benim_bankam != "(Seçilmedi)" and sirali:
@@ -702,33 +731,12 @@ Sadece analizi ver, profesyonel bir B2B dili kullan."""
 # Avantaj skorunun dökümü
 # ---------------------------------------------------------------------------
 
-if secili_kriter == Kriter.EN_AVANTAJLI:
-  with st.expander("«En Avantajlı» skoru nasıl hesaplandı?"):
-    st.markdown(
-      "Her kriter kendi içinde 0–1 aralığına ölçeklenir (min-maks "
-      "normalizasyon), sonra yukarıdaki ağırlıklarla toplanır. "
-      "Eksik veri nötr (0,5) sayılır ve *karşılaştırılabilirlik* oranı düşer.\n\n"
-      "**Not:** Vade ağırlığı kullanıcı tarafından belirlenir; uzun vade tek başına avantaj "
-      "sayılır, ama farklı vadeli ürünler için yukarıdaki uyarı çıkar ve karar toplam maliyete bırakılır."
-    )
-    for detay in avantaj_skorla(sirali, agirliklar):
-      st.markdown(
-        f"**{detay.banka_adi}** — {detay.aciklama()} \n"
-        f"Karşılaştırılabilirlik: {detay.karsilastirilabilirlik:.2f}"
-      )
-else:
-  with st.expander(f"«{KRITER_ETIKETLERI[secili_kriter]}» sıralaması nasıl yapıldı?"):
-    st.markdown(
-      "Sıralama kampanya kayıtlarındaki sayılara göre yapılır; "
-      "**bu adımda dil modeli çalışmaz.** "
-      f"Sıralanan alanların bir kısmı çıkarım katmanından geldiği için sistemin "
-      f"ölçülmüş halüsinasyon oranı sıfır değil, **{_halusinasyon_metni()}**'tir "
-      f"(`docs/SONUCLAR.md`); her satırın kaynak kanıtı aşağıda açılabilir.\n\n"
-      "- **Kural 1 (Şeffaflık):** İlgili veriyi eksik ('Belirtilmemiş') sunan bankalar, "
-      "karşılaştırılamaz oldukları için doğrudan **en alta** itilir.\n"
-      "- **Kural 2 (Denge):** Eşit değerli kampanyalarda Python'un kararlı "
-      "sıralama garantisi girdi sırasını korur — öngörülebilir, tekrarlanabilir sonuç."
-    )
+# «NASIL HESAPLANDI» PANELLERI KALDIRILDI (27 Agustos). Iki panel de
+# yontem anlatiyordu: min-maks normalizasyon, notr deger, kararli
+# siralama garantisi. Banka calisani hangi bankanin avantajli oldugunu
+# ariyor, skorun nasil olctuklendigini degil. Yontem kaybolmadi:
+# `docs/MIMARI.md` ve `src/comparison/karsilastirma.py` ayni seyi
+# yaziyor, kaynak kaniti da asagidaki «Kayit detaylari» bolumunde.
 
 st.divider()
 
@@ -780,3 +788,5 @@ if st.session_state.get("dev_mode", False):
 """
   st.code(curl_cmd, language="bash")
   st.divider()
+
+sayfa_sonu()

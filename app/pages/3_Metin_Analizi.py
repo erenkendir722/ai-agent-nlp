@@ -19,11 +19,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.extraction.uzlastirici import kampanya_cikar  # noqa: E402
 from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import BIRIM_GOSTERIMLERI, HamKayit  # noqa: E402
-from app.ui_utils import format_kategori, inject_custom_css, ortak_kenar  # noqa: E402
+from app.ui_utils import format_kategori, inject_custom_css, ortak_kenar, sayfa_gezinme, sayfa_sonu # noqa: E402
 
 st.set_page_config(page_title="Metin Analizi", page_icon="", layout="wide")
 inject_custom_css()
 ortak_kenar()
+sayfa_gezinme()
 st.title("Canlı Metin Analizi")
 
 st.caption(
@@ -221,3 +222,5 @@ if ham:
       ham,
       "2. Hibrit sonuç (kural + LLM + uzlaştırıcı)",
     )
+
+sayfa_sonu()

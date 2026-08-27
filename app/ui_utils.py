@@ -295,6 +295,7 @@ def uyarilari_goster(
     uyari_listesi,
     *,
     baslik: str = "Karşılaştırma notları",
+    panelde_topla: bool = False,
 ) -> None:
     """Uyarıları ÖNEMİNE göre ayırarak çizer.
 
@@ -315,8 +316,19 @@ def uyarilari_goster(
     if not uyari_listesi:
         return
 
-    engelleyiciler = [u for u in uyari_listesi if getattr(u, "engelleyici", False)]
-    notlar = [u for u in uyari_listesi if not getattr(u, "engelleyici", False)]
+    # `panelde_topla` — ENGELLEYICI UYARI DA PANELE GIRER (27 Agustos).
+    #
+    # Ayrim normalde dogru: engelleyici uyari bir olcutu siralamadan dusurur,
+    # kullanici onu gormeden karar veremez. Ama Karsilastirma ekraninda o uyari
+    # SABIT: tahsis ucreti alani her zaman karisik birimde oldugu icin kutu her
+    # acilista cikiyordu. Her koside cikan bir uyari, uyari olmaktan cikip
+    # arayuzun bir parcasi olur ve okunmaz. Bilgi silinmez, panele iner.
+    if panelde_topla:
+        engelleyiciler = []
+        notlar = list(uyari_listesi)
+    else:
+        engelleyiciler = [u for u in uyari_listesi if getattr(u, "engelleyici", False)]
+        notlar = [u for u in uyari_listesi if not getattr(u, "engelleyici", False)]
 
     for uyari in engelleyiciler:
         st.warning(_uyari_metni(uyari))
@@ -380,14 +392,86 @@ def inject_custom_css():
         footer {visibility: hidden;}
         /* Üst çubuğu gizleme: projeksiyonda sayfa adı ve menü okunur kalsın. */
 
+        /* SAYFA ALT BASLIGI — eskiden yesil gradyanli bir SERITTI.
+           Banka arayuzunde uyari renkleri (yesil/sari) DURUM bildirir: islem
+           basarili, dikkat gerekiyor. Sayfanin ne ise yaradigini anlatan sabit
+           bir metni yesile boyamak, o rengin durum anlamini tuketir ve gercek
+           bir uyari geldiginde kullanici artik fark etmez. Alt baslik alt
+           basliktir: sakin renk, okunur punto. */
         .kl-serit {
-            background: linear-gradient(90deg, rgba(0,168,107,0.18), transparent);
-            border: 1px solid rgba(0, 168, 107, 0.35);
-            border-radius: 10px;
-            padding: 10px 16px;
-            margin-bottom: 12px;
-            color: #E0E0E0;
-            font-size: 0.92rem;
+            border-left: 3px solid rgba(0, 168, 107, 0.55);
+            padding: 2px 0 2px 14px;
+            margin: -4px 0 18px 0;
+            color: #A8A8B3;
+            font-size: 0.95rem;
+            line-height: 1.55;
+            letter-spacing: 0.1px;
+        }
+        .kl-serit b { color: #D8D8E0; font-weight: 600; }
+
+        /* BANKA URUN KARTI — bankalarin kendi kampanya listeleriyle ayni
+           duzen: solda kurum ve aciklama, ortada rakamlar, sagda eylem. */
+        .kl-kart {
+            background: #1E1E24;
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .kl-kart:hover {
+            border-color: rgba(0,168,107,0.45);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+        }
+        .kl-kart-ad { font-size: 1.02rem; font-weight: 600; color: #F0F0F4; }
+        .kl-kart-alt { font-size: 0.86rem; color: #9A9AA5; margin-top: 3px; line-height: 1.5; }
+        .kl-kart-etiket {
+            font-size: 0.74rem; color: #8A8A95; text-transform: uppercase;
+            letter-spacing: 0.6px; margin-bottom: 2px;
+        }
+        .kl-kart-deger { font-size: 1.16rem; font-weight: 650; color: #FFFFFF; }
+        .kl-kart-deger.yok { font-size: 0.92rem; font-weight: 500; color: #8A8A95; }
+        .kl-rozet {
+            display: inline-block; font-size: 0.72rem; font-weight: 600;
+            padding: 2px 9px; border-radius: 20px; margin-left: 8px;
+            background: rgba(0,168,107,0.16); color: #4FD1A0;
+            border: 1px solid rgba(0,168,107,0.3);
+        }
+
+        /* HIZLI MENU — kucuk, tek kenarda. Tam genislikte dev dugmeler
+           sayfanin en onemli seyinin gezinme oldugunu soyluyordu; degil. */
+        .kl-menu .stButton > button {
+            padding: 3px 10px !important;
+            font-size: 0.82rem !important;
+            font-weight: 500 !important;
+            min-height: 0 !important;
+            height: 30px !important;
+            background: #22222A !important;
+            border: 1px solid rgba(255,255,255,0.12) !important;
+            color: #C8C8D2 !important;
+        }
+        .kl-menu .stButton > button:hover {
+            border-color: rgba(0,168,107,0.5) !important;
+            color: #FFFFFF !important;
+        }
+
+        /* SAYFA GEZINME — sag altta sabit yukari/asagi. */
+        .kl-gezinme {
+            position: fixed; right: 22px; bottom: 26px; z-index: 999;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .kl-gezinme a {
+            width: 34px; height: 34px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(34,34,42,0.94);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: #C8C8D2; text-decoration: none;
+            font-size: 0.95rem; line-height: 1;
+        }
+        .kl-gezinme a:hover {
+            background: rgba(0,168,107,0.22);
+            border-color: rgba(0,168,107,0.5);
+            color: #FFFFFF;
         }
         
         /* Metric Cards Styling (Glassmorphism & Elevation) */
@@ -484,3 +568,31 @@ def inject_custom_css():
         unsafe_allow_html=True
     )
 
+
+def sayfa_gezinme() -> None:
+    """Sağ altta sabit «başa dön / sona git» düğmeleri.
+
+    NEDEN ÇAPA, NEDEN JAVASCRIPT DEĞİL:
+        `st.markdown` script etiketlerini temizler — Streamlit'in güvenlik
+        kısıtı. Kaydırma bu yüzden saf HTML çapasıyla yapılır: burası `#kl-ust`
+        çapasını ve düğmeleri basar, sayfanın sonundaki `sayfa_sonu()` de
+        `#kl-alt` çapasını. İkisi ayrı çağrı çünkü çapaların ARASINDA sayfanın
+        kendi içeriği var.
+
+        Sayfa `sayfa_sonu()` çağırmayı unutursa aşağı oku çalışmaz, sayfa
+        bozulmaz — bilinçli olarak bu yönde başarısız oluyor. Nöbetçi:
+        `tests/test_arayuz_gezinme.py`.
+    """
+    st.markdown(
+        '<div id="kl-ust"></div>'
+        '<div class="kl-gezinme">'
+        '<a href="#kl-ust" title="Sayfa başı">&#8593;</a>'
+        '<a href="#kl-alt" title="Sayfa sonu">&#8595;</a>'
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def sayfa_sonu() -> None:
+    """`sayfa_gezinme()` aşağı okunun hedefi. Sayfanın EN SONUNDA çağrılır."""
+    st.markdown('<div id="kl-alt"></div>', unsafe_allow_html=True)

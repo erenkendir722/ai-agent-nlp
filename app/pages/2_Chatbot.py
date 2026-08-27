@@ -19,6 +19,8 @@ from src.ajanlar.orkestrator import Orkestrator # noqa: E402
 from src.rag.chatbot import YASAL_UYARI, Niyet, sayi_goster # noqa: E402
 from src.rag.chatbot import _OLCUT_ETIKETLERI as OLCUT_ETIKETLERI # noqa: E402
 from app.ui_utils import (  # noqa: E402
+  sayfa_gezinme,
+  sayfa_sonu,
   inject_custom_css,
   kayitlari_yukle,
   ortak_kenar,
@@ -28,6 +30,7 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
 inject_custom_css()
 ortak_kenar(demo_ipuclari=True)
+sayfa_gezinme()
 st.title("Kampanya Asistanı")
 
 st.caption(
@@ -278,3 +281,5 @@ if soru:
   # yazdığı metinde değil, cevabın kullandığı kayıtlarda duruyor.
   st.session_state.baglam = cevap.baglam
   st.session_state.gecmis.append({"soru": soru, "cevap": cevap, "gecen_sure": gecen_sure})
+
+sayfa_sonu()

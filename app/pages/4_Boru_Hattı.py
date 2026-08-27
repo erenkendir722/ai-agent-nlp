@@ -80,6 +80,8 @@ from app.boru_durumu import (  # noqa: E402
 )
 from app.is_yurutucu import baslat, olaylari_cek  # noqa: E402
 from app.ui_utils import (  # noqa: E402
+  sayfa_gezinme,
+  sayfa_sonu,
   format_bank_name,
   format_kategori,
   inject_custom_css,
@@ -89,6 +91,7 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Canlı Boru Hattı", page_icon="", layout="wide")
 inject_custom_css()
 ortak_kenar()
+sayfa_gezinme()
 st.markdown(akis_css(), unsafe_allow_html=True)
 
 st.title("Canlı Boru Hattı")
@@ -1152,3 +1155,5 @@ with sekme_tazelik:
       )
   else:
     _tazelik_ciz(z_durum, akiyor=False, gecen=0.0)
+
+sayfa_sonu()

@@ -45,12 +45,15 @@ from app.ui_utils import (  # noqa: E402
   inject_custom_css,
   kayitlari_yukle,
   ortak_kenar,
+  sayfa_gezinme,
+  sayfa_sonu,
   tr_sayi,
 )
 
 st.set_page_config(page_title="Banka Profili", page_icon="", layout="wide")
 inject_custom_css()
 ortak_kenar()
+sayfa_gezinme()
 
 st.title("Banka Profili")
 st.markdown(
@@ -233,6 +236,39 @@ st.divider()
 
 st.subheader(f"Kampanyalar ({len(banka)})")
 
+# MUSTERI PROFILI'NDEN GELEN KAMPANYA (27 Agustos). O ekrandaki «Detay»
+# dugmesi `bp_vurgu_kampanya` anahtarini yazip buraya yonlendiriyor. Kullanici
+# tek bir kampanyanin detayini istedi; onu 183 satirlik tablonun icinde
+# aratmak, dugmenin verdigi sozu tutmamak olur.
+#
+# Anahtar OKUNUR OKUNMAZ SILINIR: kalici olsaydi kullanici bankayi elle
+# degistirdiginde alakasiz bir kampanya vurgulu kalirdi.
+_vurgu_id = st.session_state.pop("bp_vurgu_kampanya", None)
+_vurgu = next((k for k in banka if k.kampanya_id == _vurgu_id), None) if _vurgu_id else None
+
+if _vurgu is not None:
+  with st.container(border=True):
+    st.markdown(
+      "<div class='kl-kart-ad'>Müşteri Profili'nden seçilen kampanya"
+      "<span class='kl-rozet'>seçili</span></div>",
+      unsafe_allow_html=True,
+    )
+    v1, v2, v3, v4 = st.columns(4)
+    v1.metric("Tür", format_kategori(_vurgu.urun_turu or _vurgu.kampanya_turu))
+    v2.metric(
+      "Kâr payı",
+      f"%{tr_sayi(_vurgu.kar_payi_orani)}" if _vurgu.kar_payi_orani is not None else "—",
+    )
+    v3.metric("Azami vade", f"{_vurgu.vade_ay_max} ay" if _vurgu.vade_ay_max is not None else "—")
+    v4.metric("Güven", round(_vurgu.ortalama_guven or 0.0, 2))
+    if _vurgu.kampanya_avantaji:
+      st.markdown(
+        f'<div class="kl-kart-alt">{" ".join(str(_vurgu.kampanya_avantaji).split())}</div>',
+        unsafe_allow_html=True,
+      )
+    st.link_button("Bankanın kampanya sayfasını aç", _vurgu.kaynak_url, type="primary")
+
+
 tablo = []
 for k in sorted(banka, key=lambda x: x.doluluk_orani, reverse=True):
   tablo.append({
@@ -271,3 +307,5 @@ if eksikler:
     )
     for satir in eksikler:
       st.markdown(f"- {satir}")
+
+sayfa_sonu()

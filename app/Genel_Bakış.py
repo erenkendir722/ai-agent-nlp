@@ -36,12 +36,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.collector.toplayici import bankalari_yukle # noqa: E402
 from src.depolama import istatistikler # noqa: E402
+from src.schema import BankaDurumu # noqa: E402
 from app.ui_utils import (  # noqa: E402
   format_bank_name,
   format_kategori,
   inject_custom_css,
   kayitlari_yukle,
   ortak_kenar,
+  sayfa_gezinme,
+  sayfa_sonu,
   sonuclari_oku,
   tr_sayi,
 )
@@ -54,6 +57,7 @@ st.set_page_config(
 
 inject_custom_css()
 ortak_kenar()
+sayfa_gezinme()
 
 
 @st.cache_data(ttl=60)
@@ -68,13 +72,10 @@ def _bankalar():
 
 st.title("Katılım Bankacılığı Kampanya Analizi")
 st.markdown(
-  '<div class="kl-serit">Banka çalışanı aracı — rakip kampanyalar, kanıt zinciri, '
-  "karşılaştırma. Tüketici uygulaması değil.</div>",
+  '<div class="kl-serit">Dokuz katılım bankasının güncel kampanyaları tek ekranda: '
+  "koşullarıyla, kaynağıyla ve <b>müşteriye söylenebilecek karşılaştırmalı "
+  "maliyetiyle</b>. Her sayının geldiği cümle görülebilir.</div>",
   unsafe_allow_html=True,
-)
-st.caption(
-  "TEKNOFEST 2026 · Yapay Zekâ Dil Ajanları · Katılım Bankacılığı Finansal Metin Madenciliği · "
-  "Takım SVARTAL"
 )
 
 
@@ -91,16 +92,16 @@ HIZLI_MENU = [
   ("Müşteri Profili", "pages/0_Müşteri_Profili.py"),
   ("Chatbot", "pages/2_Chatbot.py"),
   ("Metin Analizi", "pages/3_Metin_Analizi.py"),
-  ("Canlı Boru Hattı", "pages/4_Boru_Hattı.py"),
+  ("Boru Hattı", "pages/4_Boru_Hattı.py"),
 ]
 
-st.markdown("**Hızlı menü**")
-for _satir_bas in range(0, len(HIZLI_MENU), 3):
-  for _sutun, (_etiket, _sayfa) in zip(
-    st.columns(3), HIZLI_MENU[_satir_bas : _satir_bas + 3], strict=False
-  ):
-    if _sutun.button(_etiket, key=f"gb_menu_{_sayfa}", use_container_width=True):
-      st.switch_page(_sayfa)
+# Alti dugme TAM GENISLIKTE iki satirdi ve ekranin ustunu kaplıyordu; bu
+# duzen sayfanin en onemli seyinin gezinme oldugunu soyluyor. Degil — en
+# onemli sey rakamlar. Menu tek satirda, dar sutunlarda, sagi bos.
+_menu_sutunlari = st.columns([1, 1, 1, 1, 1, 1, 2.4])
+for _sutun, (_etiket, _sayfa) in zip(_menu_sutunlari, HIZLI_MENU, strict=False):
+  if _sutun.button(_etiket, key=f"gb_menu_{_sayfa}", use_container_width=True):
+    st.switch_page(_sayfa)
 
 st.divider()
 
@@ -301,11 +302,19 @@ st.divider()
 # Banka kayıt defteri — şartname 5.1 kanıtı
 # ---------------------------------------------------------------------------
 
-st.subheader("Banka kayıt defteri (BDDK listesi)")
-st.caption(
-  "Faaliyete geçmemiş bankalar da listede tutulur ve işaretlenir. "
-  "Bu bankaların sitesinde kampanya bulunmaması bir veri eksikliği değildir."
-)
+st.subheader("Kapsanan bankalar")
+
+# YALNIZ FAAL BANKALAR (27 Agustos). Defter eskiden 15 satirdi: 9 faal banka
+# ile birlikte kurulus asamasindaki 4 ve faaliyete gecmemis 2 banka da
+# listeleniyor, altisi da «Kampanya 0 · Site —» diye goruluyordu. Sifir
+# satirlari tablonun uctebirini kaplayip okuyani «veri eksik mi?» diye
+# dusundururken hicbir sey anlatmiyordu.
+#
+# Kayit defterinin TAMAMI silinmedi, yalniz suzuldu: sartname 5.1'in istedigi
+# «BDDK listesinin tamami tarandi» kaniti yan taraftaki sayacta ve
+# `data/banks.yaml` dosyasinda duruyor. Ust gostergelerdeki «Kayit
+# defterindeki banka» rakami da 15 demeye devam ediyor.
+faal_bankalar = [b for b in bankalar if b.durum == BankaDurumu.FAAL]
 
 kampanya_sayaci: dict[str, int] = {}
 for k in kayitlar:
@@ -316,19 +325,21 @@ defter = pd.DataFrame(
     {
       "Kod": {"0211": "0208", "0212": "0302"}.get(b.kod, b.kod),
       "Banka": b.ad,
-      "Durum": b.durum.value.replace('_', ' ').title(),
       "Kampanya": kampanya_sayaci.get(b.kod, 0),
       "Site": b.site or "—",
     }
-    for b in bankalar
+    for b in sorted(
+      faal_bankalar, key=lambda b: kampanya_sayaci.get(b.kod, 0), reverse=True
+    )
   ]
 )
 st.dataframe(defter, use_container_width=True, hide_index=True)
 
-durum_sayaci = defter["Durum"].value_counts().to_dict()
+_kurulus = len(bankalar) - len(faal_bankalar)
 st.caption(
-  " · ".join(f"**{durum}**: {adet}" for durum, adet in durum_sayaci.items())
-  + f" · Toplam **{len(bankalar)}** banka"
+  f"Faaliyetteki **{len(faal_bankalar)}** katılım bankasının tamamı tarandı. "
+  f"BDDK listesindeki diğer {_kurulus} banka henüz faaliyete geçmedi; "
+  "kampanya yayınlamadıkları için listede yer almıyor."
 )
 
 with st.expander("Veri toplama metodolojisi ve etik ilkeler"):
@@ -347,3 +358,5 @@ with st.expander("Veri toplama metodolojisi ve etik ilkeler"):
  alıntı parçası yer alır. Telif riski böyle sıfırlanır.
     """
   )
+
+sayfa_sonu()
