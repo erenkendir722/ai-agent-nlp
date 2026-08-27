@@ -305,6 +305,27 @@ def niyet_belirle(soru: str) -> Niyet:
 # ---------------------------------------------------------------------------
 
 
+def _bitisik_anahtar(metin: str) -> str:
+    """Ad eşleştirme için boşluksuz-noktasız biçim: «Kuveyt Türk» -> «kuveytturk».
+
+    NEDEN VAR — ölçüldü (27 Ağustos): kullanıcı banka adını BİTİŞİK yazıyor
+    («kuveyttürk», «albarakatürk», «vakıfkatılım») ve `_bankalari_bul` hiçbir
+    kayıt döndürmüyordu. `sor` içindeki `or kayitlar` yedeği devreye girip
+    soruyu dokuz bankanın 931 kaydına birden soruyordu:
+
+        soru  : «kuveyttürk ve albarakatürk arasında hangisinin kâr payı...»
+        cevap : «... Türkiye Finans ... daha avantajlıdır»   ← sorulmayan banka
+
+    Yedek doğru bir yedektir («en düşük oran hangi bankada?» soruda banka
+    adlandırmaz), yanlış olan ona buradan düşmekti: iki banka adlandırılmıştı.
+
+    Nokta da aynı sebeple atılır: «T.O.M. Katılım» adı korpusta noktalı
+    duruyor, kullanıcı «TOM Katılım» yazıyor — o banka adıyla hiç
+    çağrılamıyordu.
+    """
+    return arama_anahtari(metin).replace(".", "").replace(" ", "")
+
+
 def _benzersiz_ilk_sozcukler(kayitlar: list[KampanyaKaydi]) -> dict[str, str]:
     """İlk sözcüğü TEK bir bankaya ait olan adları döndürür: sözcük -> banka.
 
@@ -336,6 +357,7 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
         ikinci sözcük gerekir. Böylece kolaylık, karışıklık pahasına gelmiyor.
     """
     anahtar = arama_anahtari(soru)
+    bitisik = _bitisik_anahtar(soru)
     tekil_adlar = _benzersiz_ilk_sozcukler(kayitlar)
     sozcukler = set(anahtar.replace("?", " ").replace(",", " ").replace("'", " ").split())
 
@@ -344,7 +366,10 @@ def _bankalari_bul(soru: str, kayitlar: list[KampanyaKaydi]) -> list[KampanyaKay
         banka_anahtari = arama_anahtari(kayit.banka_adi)
         parcalar = banka_anahtari.split()
         cekirdek = " ".join(parcalar[:2])
-        if cekirdek and cekirdek in anahtar:
+        # İki yazım da kabul: «kuveyt türk» ve «kuveyttürk» (bkz. `_bitisik_anahtar`).
+        if cekirdek and (
+            cekirdek in anahtar or _bitisik_anahtar(cekirdek) in bitisik
+        ):
             eslesen.append(kayit)
             continue
         ilk = parcalar[0] if parcalar else ""
@@ -827,6 +852,44 @@ def _sorulan_olcut(soru: str) -> str | None:
     return None
 
 
+# SORULAN UÇ — «daha yüksek mi?» ile «daha düşük mü?» aynı ölçütün İKİ UCUDUR.
+#
+# 27 Ağustos'ta ölçüldü: `_sorulan_olcut` hangi ALANIN sorulduğunu buluyordu
+# ama hangi UCUN sorulduğunu kimse okumuyordu. Cevap her zaman avantajlı ucu
+# yazıyordu:
+#
+#     soru  : «hangisinin kâr payı daha YÜKSEK?»
+#     cevap : «Albaraka daha avantajlıdır, çünkü oran aylık %0'dir»   ← en düşük
+#
+# Kullanıcı bir olguyu soruyor, bir tavsiye alıyordu — üstelik sorduğunun tam
+# tersi uçtan. Yön yalnız ODAK ölçüte uygulanır: sorudaki «daha yüksek» kâr
+# payına aittir, vadeye ya da ödüle değil.
+_YON_ISARETLERI: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("yuksek", ("en yuksek", "daha yuksek", "en fazla", "daha fazla",
+                "en cok", "daha cok", "en uzun", "daha uzun", "en buyuk")),
+    ("dusuk", ("en dusuk", "daha dusuk", "en az", "daha az", "en ucuz",
+               "daha ucuz", "en kisa", "daha kisa", "en kucuk")),
+)
+
+_YON_SOZU = {"yuksek": "yüksek", "dusuk": "düşük"}
+
+
+def _sorulan_yon(soru: str) -> str | None:
+    """Soru ölçütün hangi ucunu istiyor? Belirtilmemişse None.
+
+    Soruda iki işaret birden geçerse İLK geçen kazanır: «en yüksek kâr payını
+    en az masrafla kim veriyor?» sorusunun öznesi baştaki ölçüttür.
+    """
+    anahtar = arama_anahtari(soru)
+    en_erken: tuple[int, str] | None = None
+    for yon, ipuclari in _YON_ISARETLERI:
+        for ipucu in ipuclari:
+            yer = anahtar.find(ipucu)
+            if yer >= 0 and (en_erken is None or yer < en_erken[0]):
+                en_erken = (yer, yon)
+    return None if en_erken is None else en_erken[1]
+
+
 # LİSTE SORUSU İŞARETLERİ — «hangi bankalar X sunuyor?» bir SIRALAMA sorusu değil.
 #
 # 26 Ağustos'ta ölçüldü: bu sorular karşılaştırma niyetine düşüyor (doğrusu da
@@ -969,6 +1032,7 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         ("Ek ödül", "odul_miktari", "yuksek", "{} ödül vermektedir"),
     ]
     odak = _sorulan_olcut(soru)
+    sorulan_yon = _sorulan_yon(soru) if odak is not None else None
     if odak is not None:
         # Kararlı sıralama: odak öne geçer, kalanların göreli sırası korunur.
         olcutler.sort(key=lambda olcut: olcut[1] != odak)
@@ -992,14 +1056,25 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
             olcut_satirlari.append(f"- **{etiket}** açısından karşılaştırma yapılamıyor: bu bilgi hiçbir kampanyada belirtilmemiş.")
             continue
 
-        kazanan = min(adaylar, key=lambda k: getattr(k, alan)) if yon == "dusuk" \
+        # Sorulan uç avantajlı uçtan farklıysa soru kazanır (bkz. `_sorulan_yon`).
+        istenen = sorulan_yon if (alan == odak and sorulan_yon is not None) else yon
+        kazanan = min(adaylar, key=lambda k: getattr(k, alan)) if istenen == "dusuk" \
             else max(adaylar, key=lambda k: getattr(k, alan))
         deger = getattr(kazanan, alan)
         gosterilen.append(kazanan)
-        satir = (
-            f"- **{etiket}** açısından **{kazanan.banka_adi}** daha avantajlıdır, "
-            f"çünkü {kalip.format(alan_goster(alan, deger, kazanan.birim(alan)))}"
-        )
+        if istenen == yon:
+            satir = (
+                f"- **{etiket}** açısından **{kazanan.banka_adi}** daha avantajlıdır, "
+                f"çünkü {kalip.format(alan_goster(alan, deger, kazanan.birim(alan)))}"
+            )
+        else:
+            # «Daha avantajlıdır» YAZILMAZ: kullanıcı dezavantajlı ucu sordu,
+            # onu avantaj diye sunmak veriyle değil sözle yanıltmak olurdu.
+            satir = (
+                f"- **{etiket}** en {_YON_SOZU[istenen]} olan banka "
+                f"**{kazanan.banka_adi}**: "
+                f"{alan_goster(alan, deger, kazanan.birim(alan))}"
+            )
 
         # İKİ BANKA KIYASINDA KAYBEDENİN DEĞERİ DE YAZILIR (26 Ağustos).
         #
@@ -1017,7 +1092,7 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
         # yanına bütün rakiplerin değerini dizmek satırı tekrar okunmaz yapardı.
         rakipler = [k for k in adaylar if k.banka_adi != kazanan.banka_adi]
         if rakipler and len({k.banka_adi for k in adaylar}) == 2:
-            rakip = (min if yon == "dusuk" else max)(
+            rakip = (min if istenen == "dusuk" else max)(
                 rakipler, key=lambda k: getattr(k, alan)
             )
             gosterilen.append(rakip)  # kanıt zinciri: adı geçen her banka kaynaklı
@@ -1063,6 +1138,25 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     # karşı denetler.
     veri_bolumu = "\n".join(satirlar)
 
+    # KÂR PAYI TUZAĞI — yüksek oran müşteri için İYİ DEĞİLDİR.
+    #
+    # Soru dezavantajlı ucu istediğinde cevap onu verir (yukarıda), ama sessiz
+    # vermez: «Kuveyt Türk aylık %3,49» satırını okuyan kullanıcı bunu bir
+    # üstünlük sanabilir. Finansmanda oran maliyettir; katılma hesabında
+    # getiridir. İkisi aynı alanda (`kar_payi_orani`) duruyor, bu yüzden
+    # ayrımı cümleyle söylemek gerekiyor.
+    notlar: list[CevapParcasi] = []
+    if odak == "kar_payi_orani" and sorulan_yon == "yuksek":
+        notlar.append(CevapParcasi(
+            "\n_Kâr payı oranı finansmanda **maliyettir**: yüksek oran müşteri "
+            "için daha pahalı demektir, bu yüzden avantaj sıralamasında düşük "
+            "uç kazanır — şartnamenin «En Düşük Kâr Payı Oranı» ölçütü. Katılma "
+            "hesabı "
+            "gibi birikim ürünlerinde ise oran getiridir; orada yüksek olan "
+            "lehinizedir._",
+            Koken.DUZ,
+        ))
+
     en_iyi = kimlik_kayit[skorlar[0].kampanya_id]
     gosterilen.append(en_iyi)  # «genel degerlendirme» satirinda adi geciyor
     agirliklar = Agirliklar().normalize()
@@ -1085,6 +1179,7 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
     return Cevap(
         parcalar=[
             CevapParcasi(veri_bolumu, Koken.YAPISAL),
+            *notlar,
             # Ağırlık ve skor veri iddiası DEĞİL, bizim hesabımız. Muaf
             # tutulmuyor: `hesap` girdilerinden yeniden üretilebilmeleri
             # şart. Açıklamaya elle yazılmış bir skor burada yakalanır.

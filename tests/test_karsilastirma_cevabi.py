@@ -23,7 +23,7 @@ from datetime import datetime
 import pytest
 
 from src.depolama import KampanyaKaydi
-from src.rag.chatbot import Niyet, _karsilastirma_cevabi
+from src.rag.chatbot import Niyet, _bankalari_bul, _karsilastirma_cevabi
 
 CEKIM = datetime(2026, 8, 26, 12, 0)
 
@@ -358,3 +358,144 @@ def test_olcute_uyan_kayit_yoksa_uydurmaz() -> None:
     )
     assert "bulunmuyor" in cevap.metin
     assert not cevap.kaynaklar
+
+
+# ---------------------------------------------------------------------------
+# Bitişik yazılan banka adı (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# Ölçülen kusur: kullanıcı «kuveyttürk ve albarakatürk arasında hangisinin kâr
+# payı daha yüksek» diye sordu; `_bankalari_bul` HİÇ eşleşme döndürmedi, `sor`
+# içindeki `or kayitlar` yedeği devreye girdi ve soru dokuz bankanın 931
+# kaydına birden soruldu. Cevapta sorulmayan Türkiye Finans «daha avantajlıdır»
+# diye yazıyordu.
+
+
+_GERCEK_BANKALAR = (
+    "Albaraka Türk Katılım Bankası A.Ş.",
+    "Kuveyt Türk Katılım Bankası A.Ş.",
+    "Türkiye Finans Katılım Bankası A.Ş.",
+    "Vakıf Katılım Bankası A.Ş.",
+    "Ziraat Katılım Bankası A.Ş.",
+    "T.O.M. Katılım Bankası A.Ş.",
+)
+
+
+@pytest.fixture
+def korpus() -> list[KampanyaKaydi]:
+    return [
+        _kayit(f"{i:04d}-x", ad, kar_payi=1.0 + i, vade=12 * (i + 1))
+        for i, ad in enumerate(_GERCEK_BANKALAR)
+    ]
+
+
+@pytest.mark.parametrize(
+    ("soru", "beklenen"),
+    [
+        ("kuveyttürk kampanyaları", {"Kuveyt Türk Katılım Bankası A.Ş."}),
+        ("albarakatürk kâr payı", {"Albaraka Türk Katılım Bankası A.Ş."}),
+        ("vakıfkatılım masrafsız mı", {"Vakıf Katılım Bankası A.Ş."}),
+        ("ziraatkatılım vade", {"Ziraat Katılım Bankası A.Ş."}),
+        # Ad korpusta noktalı duruyor, kullanıcı noktasız yazıyor.
+        ("TOM Katılım kampanyaları", {"T.O.M. Katılım Bankası A.Ş."}),
+        # Boşluklu yazım eskiden de çalışıyordu; kırılmamalı.
+        ("kuveyt türk mü albaraka mı", {
+            "Kuveyt Türk Katılım Bankası A.Ş.",
+            "Albaraka Türk Katılım Bankası A.Ş.",
+        }),
+    ],
+)
+def test_bitisik_yazilan_banka_adi_eslesir(korpus, soru: str, beklenen: set[str]) -> None:
+    bulunan = {k.banka_adi for k in _bankalari_bul(soru, korpus)}
+    assert bulunan == beklenen, f"{soru!r} -> {sorted(bulunan)}"
+
+
+def test_bitisik_yazimda_sorulmayan_banka_cevaba_girmez(korpus) -> None:
+    """Kusurun ta kendisi: iki banka soruluyor, üçüncüsü cevapta boy gösteriyordu."""
+    soru = "kuveyttürk ve albarakatürk arasında hangisinin kâr payı daha yüksek"
+    ilgili = _bankalari_bul(soru, korpus)
+
+    cevap = _karsilastirma_cevabi(soru, ilgili)
+    assert "Türkiye Finans" not in cevap.metin
+    assert {k.banka_adi for k in cevap.kaynaklar} <= {
+        "Kuveyt Türk Katılım Bankası A.Ş.",
+        "Albaraka Türk Katılım Bankası A.Ş.",
+    }
+
+
+@pytest.mark.parametrize(
+    "soru",
+    [
+        "hangi banka daha avantajlı",
+        "tüm katılım bankaları arasında en düşük kâr payı hangisinde",
+        "masrafsız kampanya sunan bankalar hangileri",
+    ],
+)
+def test_banka_adlandirmayan_soru_eslesmez(korpus, soru: str) -> None:
+    """`or kayitlar` yedeği bu sorular İÇİN var; bitişik eşleşme onu çalmamalı.
+
+    Boşluk atılarak eşleştirme yapıldığı için bitişen sözcüklerin sahte bir
+    banka adı üretmediği burada denetlenir.
+    """
+    assert _bankalari_bul(soru, korpus) == []
+
+
+# ---------------------------------------------------------------------------
+# Sorulan UÇ — «daha yüksek mi?» ile «daha düşük mü?» (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# Ölçülen kusur: hangi ALANIN sorulduğu okunuyor, hangi UCUN sorulduğu
+# okunmuyordu. «Hangisinin kâr payı daha yüksek?» sorusuna en DÜŞÜK oran
+# «daha avantajlıdır» diye dönüyordu.
+
+
+def _olcut_satiri(metin: str, etiket: str) -> str:
+    return next(s for s in metin.splitlines() if s.startswith(f"- **{etiket}**"))
+
+
+def test_daha_yuksek_sorusu_yuksek_ucu_verir(kayitlar) -> None:
+    cevap = _karsilastirma_cevabi("Hangisinin kâr payı daha yüksek?", kayitlar)
+    satir = _olcut_satiri(cevap.metin, "Kâr payı oranı")
+
+    assert "Z Katılım Bankası A.Ş." in satir, f"en yüksek oran yazılmamış: {satir!r}"
+    assert "A Katılım Bankası A.Ş." not in satir
+
+
+def test_yuksek_uc_avantaj_diye_sunulmaz(kayitlar) -> None:
+    """Kullanıcı dezavantajlı ucu sordu; onu «avantaj» diye sunmak yanıltmadır."""
+    cevap = _karsilastirma_cevabi("Hangisinin kâr payı daha yüksek?", kayitlar)
+    satir = _olcut_satiri(cevap.metin, "Kâr payı oranı")
+
+    assert "daha avantajlıdır" not in satir, f"dezavantajlı uç avantaj diye yazılmış: {satir!r}"
+    assert "en yüksek olan banka" in satir
+    assert "maliyettir" in cevap.metin, "kâr payının maliyet olduğu notu düşmüş"
+
+
+def test_dusuk_uc_sorusu_avantaj_bicimini_korur(kayitlar) -> None:
+    """Sorulan uç avantajlı uçla aynıysa cümle değişmez."""
+    cevap = _karsilastirma_cevabi("En düşük kâr payı oranı hangi bankada?", kayitlar)
+    satir = _olcut_satiri(cevap.metin, "Kâr payı oranı")
+
+    assert "A Katılım Bankası A.Ş." in satir
+    assert "daha avantajlıdır" in satir
+    assert "maliyettir" not in cevap.metin, "gereksiz not eklenmiş"
+
+
+def test_yon_yalniz_odak_olcute_uygulanir(kayitlar) -> None:
+    """«En düşük kâr payı» sorusu vadeyi de en kısaya çevirmemeli.
+
+    Yön sorudaki ÖLÇÜTE aittir. Bütün ölçütlere uygulanırsa vade 240 aylık
+    Z yerine 12 aylık A ile cevaplanır — kullanıcının sormadığı bir sıralama.
+    """
+    cevap = _karsilastirma_cevabi("En düşük kâr payı oranı hangi bankada?", kayitlar)
+    vade_satiri = _olcut_satiri(cevap.metin, "Vade")
+
+    assert "Z Katılım Bankası A.Ş." in vade_satiri, f"vade ucu ters dönmüş: {vade_satiri!r}"
+
+
+def test_yon_belirtilmeyen_soru_avantajli_ucta_kalir(kayitlar) -> None:
+    cevap = _karsilastirma_cevabi("Kâr payı oranını karşılaştır", kayitlar)
+    satir = _olcut_satiri(cevap.metin, "Kâr payı oranı")
+
+    assert "daha avantajlıdır" in satir
+    assert "A Katılım Bankası A.Ş." in satir
