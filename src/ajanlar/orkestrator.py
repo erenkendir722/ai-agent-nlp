@@ -29,6 +29,7 @@ from src.rag.chatbot import (
     Kaynakca,
     Koken,
     Niyet,
+    eksik_nicelikler,
     kalkandan_gecir,
     niyet_belirle,
     sayi_goster,
@@ -463,6 +464,12 @@ class Orkestrator:
             return cevap, defter
 
         soru = devir.soru
+        if kayitlar is None:
+            # Bağlam bankayı SORUDAN çözüyor (cevabın yapısal parçası yok);
+            # bunun için ad kümesi gerekiyor. API kolu kayıt geçirmiyor.
+            from src.depolama import tum_kayitlar
+
+            kayitlar = tum_kayitlar()
         profil, eksikler = self._profil_izi(soru, defter)
         if profil is None:
             # KÖKEN `SISTEM`, `DUZ` DEĞİL — kalkan bu hatayı kuruluşta yakaladı.
@@ -492,6 +499,8 @@ class Orkestrator:
                     )
                 ],
                 niyet=Niyet.KOSUL_SORGUSU,
+                # SORULAN YUVA BEYAN EDİLİR — sonraki tur duyabilsin.
+                beklenen_yuvalar=eksik_nicelikler(soru),
             )
             # EKSİK BİLGİ DALI DA KALKANDAN GEÇER. İki sebep: devir beyanı
             # devralınan TUTARI yazabiliyor (sayı taşıyan bir iddia), ve bu
@@ -503,6 +512,7 @@ class Orkestrator:
                 soru,
                 eksik_cevap,
                 baglam,
+                kayitlar=kayitlar,
                 profil_kipi=True,
                 tutar=para_ayristir(soru, birim_zorunlu=True),
                 vade_ay=vade_ayristir(soru),
@@ -559,6 +569,7 @@ class Orkestrator:
             soru,
             cevap,
             baglam,
+            kayitlar=kayitlar,
             profil_kipi=True,
             tutar=profil.tutar,
             vade_ay=profil.vade_ay,

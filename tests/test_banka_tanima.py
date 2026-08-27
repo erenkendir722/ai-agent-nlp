@@ -27,6 +27,7 @@ import pytest
 from src.depolama import KampanyaKaydi
 from src.preprocessing.normalizasyon import arama_anahtari
 from src.rag.chatbot import (
+    sifat_fiil_mi,
     Niyet,
     _bankalari_bul,
     _bilinen_bankalar,
@@ -309,3 +310,53 @@ def test_kesme_ayrimi_ek_serbestligi_getirmez(korpus) -> None:
     """
     assert _bankalari_bul("emlakçı kredisi var mı", korpus) == []
     assert _bankalari_bul("ziraatçilik hakkında", korpus) == []
+
+
+# ---------------------------------------------------------------------------
+# SIFAT-FİİL — «olan banka» bir kurumu ADLANDIRMAZ (27 Ağustos)
+# ---------------------------------------------------------------------------
+#
+#     soru  : «Kâr payı oranı en düşük OLAN BANKA aynı zamanda en uzun vadeyi
+#              de veriyor mu?»
+#     cevap : «Sorduğunuz banka bir katılım bankası değil…» + dokuz banka
+#
+# Soruda hiçbir banka adlandırılmamıştı. `_BELIRTEC_SOZCUKLERI` sabit bir
+# liste olduğu için «olan» orada yoktu; listeye eklemek aynı hatayı «sunan»,
+# «veren», «sağlayan» için tekrar ederdi.
+
+
+@pytest.mark.parametrize(
+    "soru",
+    [
+        "kâr payı oranı en düşük olan banka en uzun vadeyi de veriyor mu",
+        "masrafsız finansman sunan banka hangisi",
+        "en uzun vadeyi veren bankanın oranı ne",
+        "kampanya düzenleyen bankalar hangileri",
+        "en çok ödül sağlayan bankada vade kaç ay",
+        "bu oranı uyguladığı bankada masraf var mı",
+    ],
+)
+def test_sifat_fiil_nitelemesi_yabanci_banka_sayilmaz(korpus, soru: str) -> None:
+    assert not yabanci_banka_soruluyor(soru, korpus), soru
+
+
+@pytest.mark.parametrize(
+    ("sozcuk", "beklenen"),
+    [
+        ("olan", True), ("sunan", True), ("veren", True),
+        ("verdigi", True), ("sundugu", True), ("verecek", True),
+        ("en", False),      # iki harf — sıfat-fiil değil, belirteç
+        ("garanti", False), ("ziraat", False), ("kuveyt", False),
+    ],
+)
+def test_sifat_fiil_kurali(sozcuk: str, beklenen: bool) -> None:
+    """Kural EK arar, sözcük listesi değil — `MUHATAP_EKLERI` ile aynı refleks."""
+    assert sifat_fiil_mi(sozcuk) is beklenen
+
+
+def test_yabanci_banka_hala_yakalaniyor(korpus) -> None:
+    """Muafiyet kapıyı açmadı: adlandırılan yabancı banka hâlâ reddedilir."""
+    for soru in ("Garanti Bankası'nın konut kredisi faizi kaç",
+                 "Akbank ne kadar vade veriyor",
+                 "Denizbank kampanyaları neler"):
+        assert yabanci_banka_soruluyor(soru, korpus), soru

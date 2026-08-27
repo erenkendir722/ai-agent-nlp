@@ -114,7 +114,12 @@ def test_coklu_olcut_ozgullukten_siralanir() -> None:
 
 
 def test_hesaplanan_olcut_tutari_sorar() -> None:
-    """«Toplam maliyet» bir sütun değil formüldür; anapara ister."""
+    """«Toplam maliyet» bir sütun değil formüldür; anapara ister.
+
+    YALNIZ EKSİK OLANI SORAR (27 Ağustos): soruda vade zaten var («48 ay»)
+    ve eski metin her koşulda «anapara ve vade» istiyordu — kullanıcının
+    söylediğini görmezden gelip yeniden sormak, soruyu anlamamış görünmektir.
+    """
     assert "finansman maliyeti" in hesaplanan_olcutler()
 
     cevap = sor(
@@ -123,7 +128,29 @@ def test_hesaplanan_olcut_tutari_sorar() -> None:
         [_kayit("a", kar_payi_orani=1.9), _kayit("b", banka="L Katılım Bankası A.Ş.")],
     )
     assert "hesaplanan bir ölçüt" in cevap.metin
-    assert "anapara ve vade" in cevap.metin
+    assert "anapara" in cevap.metin
+    assert "vade (örn." not in cevap.metin, "vade soruda vardı, yeniden sorulmamalı"
+    assert cevap.beklenen_yuvalar == ("tutar",)
+
+
+def test_hesaplanan_olcut_sorulan_yuvayi_beyan_eder() -> None:
+    """Sorulan yuva bildirilmezse bir sonraki tur cevabı DUYAMAZ.
+
+        tur 1: «48 ay vadeli … en düşük toplam maliyet?» -> «anapara gerekiyor»
+        tur 2: «1.000.000 TL»                            -> «kapsam dışı»   ✗
+
+    Çıplak nicelikte hiçbir alan sözcüğü geçmez; dayanak kapısı onu haklı
+    olarak reddeder. Muafiyetin dayanağı metin değil, sistemin kendi sorusu.
+    """
+    from src.rag.baglam import soruyu_tamamla
+
+    kayitlar = [_kayit("a", kar_payi_orani=1.9)]
+    ilk = sor("en düşük toplam maliyet hangi bankada", kayitlar)
+    assert ilk.beklenen_yuvalar == ("tutar", "vade")
+    assert ilk.baglam is not None and ilk.baglam.beklenen_yuvalar == ("tutar", "vade")
+
+    devir = soruyu_tamamla("1.000.000 TL", ilk.baglam, kayitlar)
+    assert devir.beklenen_yuva_dolduruldu
 
 
 def test_karisan_olcut_siralanmaz_beyan_edilir() -> None:
@@ -301,3 +328,32 @@ def test_veri_istegi_isareti_sozcuk_sinirina_baglidir() -> None:
         "filtreleyebiliyor musun",
         kayitlar,
     )
+
+
+# ---------------------------------------------------------------------------
+# Sistem sorusu KİBAR RET DEĞİLDİR — kendi niyeti var (27 Ağustos)
+# ---------------------------------------------------------------------------
+
+
+def test_sistem_cevabi_kapsam_disi_etiketlenmez() -> None:
+    """`_sistem_cevabi`'nin kendi açıklaması «kibar ret DEĞİL» diyordu.
+
+    Etiket `KAPSAM_DISI`'ydı; arayüzdeki rozet «⑥ Kapsam dışı — Kibar ret»
+    yazıyor, cevap ise dokümantasyon adresi veriyordu. Jüri «Hangi modeli
+    kullanıyorsunuz?» diye sorup cevabını alırken ekranda reddedildiğini
+    görüyordu. Etiket cevabın kendisiyle çelişemez.
+    """
+    kayitlar = [_kayit("a", kar_payi_orani=1.9)]
+    for soru in ("verileri nasıl topluyorsunuz",
+                 "hangi modeli kullanıyorsunuz",
+                 "kaynak gösteriyor musunuz"):
+        cevap = sor(soru, kayitlar)
+        assert cevap.niyet is Niyet.SISTEM_SORGUSU, f"{soru} -> {cevap.niyet}"
+        assert "docs/MIMARI.md" in cevap.metin
+
+
+def test_gercek_kapsam_disi_hala_reddediliyor() -> None:
+    """Yeni niyet kapıyı gevşetmedi."""
+    kayitlar = [_kayit("a", kar_payi_orani=1.9)]
+    for soru in ("bugün hava nasıl", "bana bir şiir yaz", "bitcoin fiyatı kaç"):
+        assert sor(soru, kayitlar).niyet is Niyet.KAPSAM_DISI, soru

@@ -65,7 +65,7 @@ mal veya hizmet üzerinden oluşan kâr payı oranını ifade eder.
   %15 üstünü aylık oran saymaz (`AYLIK_KAR_PAYI_UST_SINIRI`) — "Yıllık Maliyet
   Oranı %82,44" gibi ifadeler bu alana düşmesin diye.
 
-### Finansman Maliyeti
+### Finansman Maliyeti / Toplam Maliyet
 Kullandırılan finansman kapsamında oluşan **toplam geri ödeme tutarını** ve
 müşterinin katlandığı toplam maliyeti ifade eder.
 

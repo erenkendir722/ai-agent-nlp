@@ -44,7 +44,8 @@ NIYET_ETIKETLERI = {
   Niyet.KOSUL_SORGUSU: ("③", "Koşul sorgusu", "Metin arama (RAG)"),
   Niyet.KORPUS_SORGUSU: ("④", "Veri seti sorgusu", "Korpus kapsamı — sayım"),
   Niyet.TANIM_SORGUSU: ("⑤", "Terim sorgusu", "Terim sözlüğü (şartname 5.5)"),
-  Niyet.KAPSAM_DISI: ("⑥", "Kapsam dışı", "Kibar ret"),
+  Niyet.SISTEM_SORGUSU: ("⑥", "Sistem sorusu", "Dokümantasyon adresi — ret değil"),
+  Niyet.KAPSAM_DISI: ("⑦", "Kapsam dışı", "Kibar ret"),
 }
 
 ORNEK_SORULAR = [

@@ -81,6 +81,9 @@ tazelik:  ## kampanya sayfaları değişmiş mi (G-17 dinleyicisi) [adet=N demo=
 chatbot-test:  ## chatbot 31 soruluk test seti (S-10): doğruluk + kaynak gösterme
 	$(PYTHON) -m eval.chatbot_testi
 
+chatbot-tarama:  ## chatbot boşluk taraması — sorular korpustan üretilir [adet=N]
+	$(PYTHON) -m eval.soru_taramasi $(if $(adet),--adet $(adet),)
+
 paket:  ## çevrimdışı kurulum paketi (E-14) — bağımlılıkları paketler/ altına indir
 	$(PYTHON) -m pip download -r requirements.txt -d paketler/
 	@echo ""

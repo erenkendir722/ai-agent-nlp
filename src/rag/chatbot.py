@@ -39,7 +39,12 @@ from src.comparison.karsilastirma import (
     uyarilar,
 )
 from src.depolama import KampanyaKaydi, tum_kayitlar
-from src.preprocessing.normalizasyon import arama_anahtari, kesmeden_ayir
+from src.preprocessing.normalizasyon import (
+    arama_anahtari,
+    kesmeden_ayir,
+    para_ayristir,
+    vade_ayristir,
+)
 from src.terim_sozlugu import (
     alan_eslemesi,
     hesaplanan_olcutler,
@@ -76,6 +81,15 @@ class Niyet(StrEnum):
     KOSUL_SORGUSU = "kosul_sorgusu"
     KORPUS_SORGUSU = "korpus_sorgusu"
     TANIM_SORGUSU = "tanim_sorgusu"
+    SISTEM_SORGUSU = "sistem_sorgusu"
+    """Soru BANKALARA değil BİZE soruluyor — kibar ret DEĞİL, doğru adres.
+
+    27 Ağustos'ta ölçüldü: bu cevap `KAPSAM_DISI` etiketiyle dönüyordu ve
+    `_sistem_cevabi`'nin kendi açıklaması onu yalanlıyordu («Kibar ret
+    DEĞİL, DOĞRU ADRES»). Arayüzdeki rozet «⑥ Kapsam dışı — Kibar ret»
+    yazıyor, cevap ise dokümantasyon adresi veriyordu; jüri «Hangi modeli
+    kullanıyorsunuz?» diye sorup cevabını alırken ekranda reddedildiğini
+    görüyordu. Etiket cevabın kendisiyle çelişemez."""
     KAPSAM_DISI = "kapsam_disi"
 
 
@@ -174,6 +188,13 @@ class Cevap:
     dogrulama_gecti: bool = True
     reddedilen_sayilar: list[str] = field(default_factory=list)
     baglam: "SohbetBaglami | None" = None
+    beklenen_yuvalar: tuple[str, ...] = ()
+    """Bu cevap kullanıcıdan HANGİ YUVALARI istedi? Boşsa hiçbirini.
+
+    Bir arayüzün kullanıcıya soru sorması, o cevabın gideceği yuvanın var
+    olduğunu taahhüt etmektir (ADR 022). Cevabın kendisi neyi sorduğunu
+    bildirmezse, bir sonraki tur o cevabı duyamaz: `baglam_guncelle` bu
+    alana bakarak sohbeti «yuva bekleniyor» kipine alır."""
     """Bu turdan SONRAKİ sohbet bağlamı — çağıranın saklayıp bir sonraki
     `sor()` çağrısına geri vereceği yuvalar (bkz. `src/rag/baglam.py`).
 
@@ -192,6 +213,7 @@ class Cevap:
         reddedilen_sayilar: list[str] | None = None,
         *,
         baglam: "SohbetBaglami | None" = None,
+        beklenen_yuvalar: tuple[str, ...] = (),
         metin: str | None = None,
         dogrulanacak_metin: str | None = None,
     ) -> None:
@@ -219,6 +241,7 @@ class Cevap:
             reddedilen_sayilar if reddedilen_sayilar is not None else []
         )
         self.baglam = baglam
+        self.beklenen_yuvalar = beklenen_yuvalar
 
     @property
     def metin(self) -> str:
@@ -622,6 +645,43 @@ _BELIRTEC_SOZCUKLERI = frozenset(
 «Garanti Bankası» tek bir kurumu adlandırır. Ayrım yapılmazsa meşru
 karşılaştırma soruları kapsam dışına düşer."""
 
+SIFAT_FIIL_EKLERI = ("an", "en", "digi", "dugu", "tigi", "tugu",
+                     "acak", "ecek", "mis", "mus")
+"""SIFAT-FİİL ekleri — banka sözcüğünü NİTELEYEN, adlandırmayan sözcükler.
+
+BU BİR SÖZCÜK LİSTESİ DEĞİL, BİR DİLBİLGİSİ KURALI — `MUHATAP_EKLERI` ile
+aynı refleks. Türkçe'de bir fiil bu eklerle sıfata dönüşür ve ardındaki adı
+niteler: «sunan banka», «veren banka», «düzenlediği banka». Nitelenen ad bir
+KURUM adı değil, bir TARİFTİR.
+
+27 Ağustos'ta ölçüldü — `_BELIRTEC_SOZCUKLERI` sabit bir liste olduğu için
+«olan» orada yoktu ve kapı masum soruyu reddediyordu:
+
+    soru  : «Kâr payı oranı en düşük OLAN BANKA aynı zamanda en uzun vadeyi
+             de veriyor mu?»
+    cevap : «Sorduğunuz banka bir katılım bankası değil…» + dokuz bankanın listesi
+
+Soruda hiçbir banka adlandırılmamıştı. Listeye «olan» eklemek aynı hatayı
+«sunan», «veren», «sağlayan», «uygulayan» için tekrar ederdi; ek bir liste
+değil, ekin KENDİSİ aranıyor.
+
+`_BELIRTEC_SOZCUKLERI` yine de duruyor: «hangi», «her», «tüm» sıfat-fiil
+değildir, onlar belirteçtir. İki kural iki farklı dilbilgisi olgusunu tutar."""
+
+ASGARI_SIFAT_FIIL_UZUNLUGU = 4
+"""«an» ve «en» iki harf; tek başına aranırsa ad olan sözcükleri de yakalar.
+
+Dört harf sınırı «olan»ı (4) içeri, «en»i (2) dışarı alır. Sınır olmadan
+kural, sıfat-fiil olmayan her -an/-en sonlu adı da niteleme sayardı."""
+
+
+def sifat_fiil_mi(sozcuk: str) -> bool:
+    """Sözcük bir sıfat-fiil mi? «olan», «sunan», «verdiği» -> True."""
+    return (
+        len(sozcuk) >= ASGARI_SIFAT_FIIL_UZUNLUGU
+        and sozcuk.endswith(SIFAT_FIIL_EKLERI)
+    )
+
 
 def yabanci_banka_soruluyor(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
     """Soru, korpusta OLMAYAN bir bankayı adlandırıyor mu?
@@ -662,7 +722,10 @@ def yabanci_banka_soruluyor(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
             break
         if sozcuk not in _BANKA_SOZCUKLERI or i == 0:
             continue
-        if sozcukler[i - 1] not in _BELIRTEC_SOZCUKLERI:
+        onceki = sozcukler[i - 1]
+        # Belirteç mi (hangi/her/tüm) yoksa sıfat-fiil mi (olan/sunan/veren)?
+        # İkisi de bankayı NİTELER, adlandırmaz.
+        if onceki not in _BELIRTEC_SOZCUKLERI and not sifat_fiil_mi(onceki):
             adlandirildi = True
             break
 
@@ -1491,7 +1554,7 @@ def _sistem_cevabi() -> Cevap:
             "- Ölçüm sonuçları: `docs/SONUCLAR.md`",
             Koken.DUZ,
         )],
-        niyet=Niyet.KAPSAM_DISI,
+        niyet=Niyet.SISTEM_SORGUSU,
     )
 
 
@@ -1889,6 +1952,32 @@ def _ozel_olcut(soru: str) -> tuple[str, object] | None:
     return (tur, terim) if uzunluk >= en_uzun_normal else None
 
 
+NICELIK_YUVALARI: tuple[tuple[str, str], ...] = (
+    ("tutar", "anapara (örn. 1.000.000 TL)"),
+    ("vade", "vade (örn. 120 ay veya 10 yıl)"),
+)
+"""Hesaba GİREN nicelikler — eksikse sorulur, tahmin edilmez.
+
+İkisi de taksit ve toplam maliyet formülüne girer; uydurulan bir değer
+cevaptaki her sayıyı yanlışlar. Müşteri tipi bu listede YOK, çünkü hiçbir
+hesaba girmez, yalnız süzer (bkz. `orkestrator.profil_ayristir`)."""
+
+
+def eksik_nicelikler(soru: str) -> tuple[str, ...]:
+    """Soruda BULUNMAYAN hesap girdileri: («tutar», «vade») altkümesi.
+
+    Tek yerde duruyor, çünkü iki ayrı cevap üreticisi aynı soruyu soruyor:
+    profil kolu («uygunluk için eksik…») ve hesaplanan ölçüt cevabı
+    («toplam maliyet için anapara ve vade gerekiyor»). İkisi ayrı ayrı
+    ölçseydi, biri düzelirken diğeri geride kalırdı.
+    """
+    bulunan = {
+        "tutar": para_ayristir(soru, birim_zorunlu=True) is not None,
+        "vade": vade_ayristir(soru) is not None,
+    }
+    return tuple(ad for ad, _ in NICELIK_YUVALARI if not bulunan[ad])
+
+
 def _ozel_olcut_cevabi(soru: str) -> Cevap | None:
     """Sıralanamayan ölçütü SIRALAMAK YERİNE beyan eder.
 
@@ -1916,12 +2005,23 @@ def _ozel_olcut_cevabi(soru: str) -> Cevap | None:
             "bankalar arasında sıralayamıyorum."
         )
     else:
+        # NE EKSİKSE O SORULUR. Eskiden metin her koşulda «anapara ve vade»
+        # istiyordu; «48 ay vadeli … toplam maliyet» sorusunda vade zaten
+        # verilmişti ve sistem onu görmezden gelip yeniden soruyordu.
+        eksikler = eksik_nicelikler(soru)
+        istenen = ", ".join(
+            etiket for ad, etiket in NICELIK_YUVALARI if ad in eksikler
+        )
         govde = (
             f"**{terim.ad}** tek bir alan değil, hesaplanan bir ölçüttür: "
             f"{terim.tanim} ({terim.karsilik}).\n\n"
-            "Hesap için **anapara ve vade** gerekiyor. Tutarı da söylerseniz "
-            "kampanyaları toplam geri ödemeye göre sıralayabilirim — örnek: "
-            "«mevcut müşteri, bir milyon TL, yüz yirmi ay konut finansmanı»."
+            + (
+                f"Hesap için şu bilgi gerekiyor: **{istenen}**. Söylerseniz "
+                "kampanyaları toplam geri ödemeye göre sıralarım."
+                if eksikler
+                else "Anapara ve vade elimde; kampanyaları toplam geri "
+                "ödemeye göre sıralayabilirim."
+            )
         )
 
     return Cevap(
@@ -1934,6 +2034,8 @@ def _ozel_olcut_cevabi(soru: str) -> Cevap | None:
             ),
         ],
         niyet=Niyet.TANIM_SORGUSU,
+        # SORULAN YUVA BEYAN EDİLİR — bir sonraki tur bu cevabı duyabilsin.
+        beklenen_yuvalar=() if tur == "karisan" else eksik_nicelikler(soru),
     )
 
 
@@ -2370,7 +2472,7 @@ def sor(
     kayitlar = tum_kayitlar() if kayitlar is None else kayitlar
     devir = soruyu_tamamla(soru, baglam, kayitlar)
     cevap = _cevapla(soru, kayitlar, devir)
-    cevap.baglam = baglam_guncelle(devir.soru, cevap, baglam)
+    cevap.baglam = baglam_guncelle(devir.soru, cevap, baglam, kayitlar=kayitlar)
     return cevap
 
 
@@ -2418,7 +2520,20 @@ def _cevapla(
 
     # Alan dışı mı? Yasak listesi yerine DAYANAK aranıyor — gerekçe
     # `alan_disi_soru`'nun notunda.
-    if niyet == Niyet.KAPSAM_DISI or alan_disi_soru(soru, kayitlar):
+    # DAYANAK KAPISI, SİSTEM BİR YUVA SORDUYSA UYGULANMAZ.
+    #
+    #     tur 1: «48 ay vadeli … en düşük toplam maliyet?»
+    #              -> «Hesap için anapara gerekiyor»
+    #     tur 2: «1.000.000 TL»
+    #              -> «Bu soru sistemin kapsamı dışında»            ✗
+    #
+    # Muafiyet DAR: yalnız `alan_disi_soru` (dayanak yokluğu) yarısını
+    # kapsar, `Niyet.KAPSAM_DISI` (açık kapsam dışı işaret) yarısını değil;
+    # ve yalnız sistemin SORDUĞU yuvayı dolduran bir nicelik geldiyse açılır
+    # (bkz. `baglam.soruyu_tamamla`).
+    if niyet == Niyet.KAPSAM_DISI or (
+        alan_disi_soru(soru, kayitlar) and not devir.beklenen_yuva_dolduruldu
+    ):
         return Cevap(
             parcalar=[CevapParcasi(
                 "Bu soru sistemin kapsamı dışında. Ben yalnızca Türkiye'deki "
@@ -2511,10 +2626,12 @@ __all__ = [
     "Kaynakca",
     "Koken",
     "alan_goster",
+    "eksik_nicelikler",
     "Niyet",
     "kalkandan_gecir",
     "niyet_belirle",
     "sayisal_dogrulama",
+    "sifat_fiil_mi",
     "sor",
     "sorulan_bankalar",
 ]

@@ -83,6 +83,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Karşılaştırma | `src/comparison/karsilastirma.py` |
 | Chatbot + kalkan | `src/rag/chatbot.py` |
 | Çok turlu sohbet (yuva devri) | `src/rag/baglam.py` |
+| Chatbot boşluk taraması | `eval/soru_taramasi.py` |
 | RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
 | Tetikleyici · dinleyici · keşif | `src/izleme/{tetikleyici,dinleyici,kesif}.py` |
@@ -244,6 +245,38 @@ sözlüğündeki «ev» (konut) «ters çEVrilir» içinde bulunuyor ve «Python
 nasıl ters çevrilir?» sorusu üç kaynakla konut kampanyası dökümü alıyordu.
 Üç harf ve altı tam sözcük aranır, yoksa «ev» «evrak»ı da yakalar.
 
+**Kullanıcıdan bilgi isteyen cevap, HANGİ YUVAYI istediğini beyan eder
+(ADR 024, 27 Ağu).** `Cevap.beklenen_yuvalar` — iki üretici var (profil kolu
+ve hesaplanan ölçüt cevabı) ve ikisi de aynı ölçüyü kullanır
+(`chatbot.eksik_nicelikler`). Beyan olmadan sistem kendi sorduğu sorunun
+cevabını duyamıyordu: «toplam maliyet için anapara gerekiyor» → «1.000.000 TL»
+→ *«bu soru sistemin kapsamı dışında»*. Dayanak kapısının muafiyeti DAR —
+yalnız `alan_disi_soru` yarısı, yalnız SORULAN yuvayı dolduran nicelik geldiğinde.
+Muafiyetin dayanağı metin değil, konuşma durumudur.
+
+**Kapılar dilbilgisine bağlanır, sözcük listesine değil (ADR 024).**
+`SIFAT_FIIL_EKLERI` — «olan banka», «sunan banka», «veren banka» bir kurumu
+ADLANDIRMAZ, niteler. Liste tutulsaydı «olan» eklenir, «sunan» unutulurdu;
+nitekim `_BELIRTEC_SOZCUKLERI`'nde «olan» yoktu ve «kâr payı en düşük OLAN
+BANKA…» sorusu dokuz bankalık kibar ret alıyordu. `MUHATAP_EKLERI` ile aynı
+refleks. Dört harf sınırı şart: «en» iki harftir.
+
+**Sistem sorusunun kendi niyeti var: `Niyet.SISTEM_SORGUSU`.** Etiket cevabın
+kendisiyle çelişemez — `_sistem_cevabi` «kibar ret DEĞİL, doğru adres» diyor
+ama `KAPSAM_DISI` etiketiyle dönüyordu ve arayüzdeki rozet «Kibar ret» yazıyordu.
+
+**Yeni ölçüt yazımı SÖZLÜĞE eklenir, koda değil.** «Toplam maliyet» tanınmıyordu
+çünkü sözlükte yalnız resmî ad vardı («Finansman Maliyeti»); eğik çizgi zaten eş
+anlamlı yazım ayıracıdır. **Sözlük gövdesi kullanıcıya OKUNUR** — oraya gerekçe
+yazma, chatbot onu cevap diye okur. Tanım sözlükte, gerekçe ADR'de.
+
+**`make chatbot-tarama` — sorular korpustan ÜRETİLİR.** 194 soru (dokuz banka ×
+beş ölçüt × altı ürün × yazım biçimleri), beklenen cevap bilinmez, yalnız
+patoloji aranır (kapsam dışı reddedilen meşru soru · ölçüt kayması · yanlış
+banka · kalkan reddi · sızan kapsam dışı). Elle yazılan 31 soruluk set
+(`make chatbot-test`) derindir ama kapsamı yazıldığı kadardır; ADR 024'ün iki
+kusurunu da göremezdi. Ağ kullanır, o yüzden `eval/` altında.
+
 **Eşleştirme ve yön TEK KAYNAKTAN okunur (ADR 023, 27 Ağu).** Üç kopya
 temizlendi, üçü de aynı deseni tekrarlıyordu:
 
@@ -371,8 +404,9 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1544 test)
+make test         # testler (1566 test)
 make eval         # metrikler -> docs/SONUCLAR.md
+make chatbot-tarama # chatbot boşluk taraması (194 üretilmiş soru) [adet=N]
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)
 make kapsam       # banka bazlı kapsam raporu -> docs/KAPSAM_RAPORU.md

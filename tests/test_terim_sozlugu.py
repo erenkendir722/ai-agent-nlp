@@ -53,6 +53,11 @@ def resmi_terimler(satirlar: list[str]) -> list[str]:
 
     Yalnız `## 1.` ile `## 2.` arası taranır: §10'da da `### ` başlıkları var
     ve onlar terim değil, bölüm başlığıdır.
+
+    Başlık EŞ ANLAMLI YAZIM taşıyabilir («Finansman Maliyeti / Toplam
+    Maliyet»); burada ayrılmaz, çünkü bu liste TERİM SAYAR ve iki yazım tek
+    terimdir. Yazımları ayıran yer `_resmi_yazimlar` — şartname 5.5 denetimi
+    oradan geçer.
     """
     icinde, bulunan = False, []
     for satir in satirlar:
@@ -64,6 +69,21 @@ def resmi_terimler(satirlar: list[str]) -> list[str]:
         if icinde and satir.startswith("### "):
             bulunan.append(satir[4:].strip())
     return bulunan
+
+
+def _resmi_yazimlar(satirlar: list[str]) -> set[str]:
+    """§1 başlıklarındaki BÜTÜN yazımlar — `terim_sozlugu._adlari_ayir` kuralı.
+
+    Eğik çizgi sözlükte eş anlamlı yazımları ayırır ve ayrıştırıcı da öyle
+    okur. Denetim aynı kuralı kullanmazsa, resmî ad yerinde dururken bir
+    takma ad eklemek şartname 5.5 uyumunu yanlışlıkla kırık gösterir.
+    """
+    return {
+        tr_kucult(parca.strip())
+        for baslik in resmi_terimler(satirlar)
+        for parca in baslik.split("/")
+        if parca.strip()
+    }
 
 
 def tablo_terimleri(satirlar: list[str]) -> list[list[str]]:
@@ -129,7 +149,7 @@ def test_sartname_5_5_besi_de_var(satirlar) -> None:
         "masrafsız finansman",
         "avantajlı finansman",
     }
-    bulunan = {tr_kucult(b) for b in resmi_terimler(satirlar)}
+    bulunan = _resmi_yazimlar(satirlar)
     assert beklenen <= bulunan, f"Şartname 5.5 kavramı eksik: {beklenen - bulunan}"
 
 

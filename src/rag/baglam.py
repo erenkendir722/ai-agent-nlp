@@ -71,6 +71,8 @@ from src.rag.chatbot import (
     _bankalari_bul,
     _sorulan_olcut,
     _sorulan_yon,
+    eksik_nicelikler,
+    sorulan_bankalar,
     Cevap,
     CevapParcasi,
     Koken,
@@ -88,7 +90,12 @@ bankalar taşıt finansmanı sunuyor?» dokuzunu birden döndürür. Dokuzunu
 devretmek sonraki soruya hiçbir şey söylemez, yalnız soruyu uzatır."""
 
 BAGLAM_TASIMAYAN_NIYETLER = frozenset(
-    {Niyet.TANIM_SORGUSU, Niyet.KORPUS_SORGUSU, Niyet.KAPSAM_DISI}
+    {
+        Niyet.TANIM_SORGUSU,
+        Niyet.KORPUS_SORGUSU,
+        Niyet.SISTEM_SORGUSU,
+        Niyet.KAPSAM_DISI,
+    }
 )
 """Bu turlar bağlamı ne KURAR ne de BOZAR.
 
@@ -117,6 +124,14 @@ class SohbetBaglami:
     vade_ay: int | None = None
     profil_kipi: bool = False
     """Önceki tur muhakeme ajanına gitti mi? `tutar`/`vade_ay` devrinin kapısı."""
+    beklenen_yuvalar: tuple[str, ...] = ()
+    """Sistemin önceki turda SORDUĞU yuvalar («tutar», «vade»).
+
+    Dolu olması sohbeti «yuva bekleniyor» kipine alır ve tek bir kapıyı
+    gevşetir: kullanıcının cevabı çıplak bir nicelikten ibaret olabilir
+    («1.000.000 TL») ve o metinde hiçbir alan sözcüğü geçmez. Dayanak
+    kapısı onu haklı olarak kapsam dışı sayardı — sistemin kendi sorusuna
+    verilen cevabı."""
 
     def bos_mu(self) -> bool:
         return not (
@@ -126,6 +141,7 @@ class SohbetBaglami:
             or self.yon
             or self.tutar
             or self.vade_ay
+            or self.beklenen_yuvalar
         )
 
 
@@ -138,6 +154,12 @@ class Devir:
     """(yuva etiketi, gösterim) — cevabın altındaki beyan bundan yazılır."""
     hesap: dict[str, float] = field(default_factory=dict)
     """Beyandaki sayıların kaynağı — `Koken.SISTEM` sözleşmesi bunu istiyor."""
+    beklenen_yuva_dolduruldu: bool = False
+    """Bu tur, sistemin ÖNCEKİ TURDA SORDUĞU yuvayı dolduruyor mu?
+
+    Dayanak kapısının tek muafiyeti buna bağlı (bkz. `chatbot._cevapla`).
+    Muafiyet metne değil, KONUŞMA DURUMUNA dayanıyor: sistem «anapara
+    söyle» dediyse, gelen «1.000.000 TL» o sorunun cevabıdır."""
 
     def var_mi(self) -> bool:
         return bool(self.yuvalar)
@@ -235,8 +257,16 @@ def soruyu_tamamla(
     """
     if baglam is None or baglam.bos_mu():
         return Devir(soru)
+
+    # SİSTEMİN SORDUĞU YUVA DOLDURULDU MU? Kapsam muafiyetinin tek dayanağı.
+    # «vade» soruldu ve bu tur bir vade taşıyor -> cevap, sorunun cevabıdır.
+    dolduruldu = bool(
+        baglam.beklenen_yuvalar
+        and set(baglam.beklenen_yuvalar) - set(eksik_nicelikler(soru))
+    )
+
     if korpusa_soruluyor(soru):
-        return Devir(soru)
+        return Devir(soru, beklenen_yuva_dolduruldu=dolduruldu)
 
     ekler: list[str] = []
     yuvalar: list[tuple[str, str]] = []
@@ -288,8 +318,10 @@ def soruyu_tamamla(
             hesap["devralinan_vade_ay"] = float(baglam.vade_ay)
 
     if not ekler:
-        return Devir(soru)
-    return Devir(f"{soru} {' '.join(ekler)}", tuple(yuvalar), hesap)
+        return Devir(soru, beklenen_yuva_dolduruldu=dolduruldu)
+    return Devir(
+        f"{soru} {' '.join(ekler)}", tuple(yuvalar), hesap, dolduruldu
+    )
 
 
 def baglam_guncelle(
@@ -297,6 +329,7 @@ def baglam_guncelle(
     cevap: Cevap,
     onceki: SohbetBaglami | None,
     *,
+    kayitlar: list[KampanyaKaydi] | None = None,
     profil_kipi: bool = False,
     tutar: float | None = None,
     vade_ay: int | None = None,
@@ -313,12 +346,38 @@ def baglam_guncelle(
     cevap Albaraka'yı adlandırır — devredilmesi gereken şey odur.
     """
     onceki = onceki or SohbetBaglami()
-    if cevap.niyet in BAGLAM_TASIMAYAN_NIYETLER:
+
+    # SİSTEM BİR YUVA SORDUYSA, NİYETİ NE OLURSA OLSUN bağlam kurulur.
+    # «Toplam maliyet hesaplanan bir ölçüttür, anapara gerekiyor» cevabının
+    # niyeti `TANIM_SORGUSU`'dur ve o niyet normalde bağlamı taşımaz — ama
+    # bu cevap bir SORU sorar ve cevabının gideceği yuva vardır.
+    if cevap.beklenen_yuvalar:
+        profil_kipi = True
+    elif cevap.niyet in BAGLAM_TASIMAYAN_NIYETLER:
         return onceki
 
     bankalar = tuple(dict.fromkeys(k.banka_adi for k in cevap.kullanilan_kayitlar))
     if len(bankalar) > AZAMI_DEVIR_BANKASI:
         bankalar = ()
+    elif not cevap.kullanilan_kayitlar and kayitlar:
+        # CEVAP HİÇ KAYIT KULLANMADIYSA banka SORUDAN okunur.
+        #
+        # Kullanıcıdan bilgi isteyen cevapların yapısal parçası yoktur:
+        # «Albaraka'dan 1.000.000 TL konut» -> «vade eksik» cevabı hiçbir
+        # kayıt göstermez. Banka yalnız `kullanilan_kayitlar`'dan okunsaydı
+        # sohbet o bankayı unuturdu ve sonraki tur dokuz bankayı sıralardı —
+        # tam da kullanıcının adlandırdığı bankayı yok sayarak.
+        adlandirilan = sorulan_bankalar(soru, (k.banka_adi for k in kayitlar))
+        if len(adlandirilan) <= AZAMI_DEVIR_BANKASI:
+            bankalar = tuple(adlandirilan)
+
+    if cevap.beklenen_yuvalar:
+        # Sorulan yuvanın DEĞERİ henüz yok; soruda geçen nicelikler saklanır
+        # ki sonraki tur yalnız eksik olanı söylemek zorunda kalsın.
+        from src.preprocessing.normalizasyon import para_ayristir, vade_ayristir
+
+        tutar = tutar if tutar is not None else para_ayristir(soru, birim_zorunlu=True)
+        vade_ay = vade_ay if vade_ay is not None else vade_ayristir(soru)
 
     return SohbetBaglami(
         bankalar=bankalar,
@@ -328,6 +387,7 @@ def baglam_guncelle(
         tutar=tutar,
         vade_ay=vade_ay,
         profil_kipi=profil_kipi,
+        beklenen_yuvalar=cevap.beklenen_yuvalar,
     )
 
 

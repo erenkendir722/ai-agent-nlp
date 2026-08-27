@@ -316,3 +316,35 @@ def test_api_bilinmeyen_baglam_alanini_reddeder() -> None:
         _baglam_coz({"banka": [ALBARAKA]})
     assert hata.value.status_code == 400
     assert "banka" in str(hata.value.detail)
+
+
+def test_kayit_kullanmayan_cevapta_banka_sorudan_devrolur(
+    korpus: list[KampanyaKaydi],
+) -> None:
+    """Kullanıcıdan bilgi isteyen cevabın YAPISAL PARÇASI YOKTUR.
+
+    «Albaraka'dan 1.000.000 TL konut» -> «vade eksik» cevabı hiçbir kayıt
+    göstermez. Banka yalnız `kullanilan_kayitlar`'dan okunsaydı sohbet o
+    bankayı unuturdu ve sonraki tur dokuz bankayı sıralardı — tam da
+    kullanıcının adlandırdığı bankayı yok sayarak.
+    """
+    ork = Orkestrator()
+    ilk, _ = ork.calistir(
+        "Albaraka'dan 1.000.000 TL konut finansmanı istiyorum", [], kayitlar=korpus
+    )
+    assert ilk.kullanilan_kayitlar == []
+    assert ilk.baglam.bankalar == (ALBARAKA,), "banka sorudan devralınmadı"
+
+
+def test_hesaplanan_olcut_iki_bankayi_da_devreder(korpus: list[KampanyaKaydi]) -> None:
+    """Amiral gemisi soru: iki banka + hesaplanan ölçüt + eksik anapara."""
+    ork = Orkestrator()
+    ilk, _ = ork.calistir(
+        "Albaraka'nın 120 ay vadeli konut finansmanında toplam maliyeti "
+        "Kuveyt Türk'ünkinden düşük mü?",
+        [],
+        kayitlar=korpus,
+    )
+    assert ilk.beklenen_yuvalar == ("tutar",), "vade soruda vardı"
+    assert set(ilk.baglam.bankalar) == {ALBARAKA, KUVEYT}
+    assert ilk.baglam.vade_ay == 120
