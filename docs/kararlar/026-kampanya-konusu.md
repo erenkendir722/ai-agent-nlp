@@ -144,6 +144,56 @@ geçirilir: süzgeç bir ölçüyle daraltıp sıralama başka bir ölçüyle ka
 verirse, «akaryakıt» sorusuna akaryakıt kampanyalarını süzüp içinden başka
 bir kaydı vitrine koymak olurdu.
 
+### 8. Sohbette KONU bir yuvadır — ve devir sorunun şeklini değiştirmez
+
+Konu süzgeci tek turda doğru çalışıyordu ama sohbet onu unutuyordu; sonuç,
+kullanıcının «hafıza sağlıklı çalışmıyor» dediği davranıştı:
+
+```
+tur 1: «TOM'un AKARYAKIT kampanyasında ne kadar iade var?»
+         -> Hadi Black, akaryakıt kampanyası, 500 TL                    ✓
+tur 2: «peki vadesi ne kadar?»
+         -> Alışveriş Kredisi, 36 ay · kaynak: …/istikbal               ✗
+```
+
+Devralınan yalnız bankaydı; ikinci tur o bankanın 123 kaydına açılıyordu.
+Birinci cevap doğru, ikincisi alakasız — kusurun en can sıkıcı biçimi.
+`SohbetBaglami.konu` eklendi ([ADR 022](022-sohbet-baglami.md)'nin dört
+kuralı aynen geçerli):
+
+* **Yuva ÇÖZÜLMÜŞ sözcükle dolar.** «peki vadesi ne kadar?» sorusundaki
+  «peki» dört harflidir ve konu sözcüğü sanılıyordu; korpusta karşılığı
+  olmayan sözcük yuvayı dolu göstermez (`gecerli_konu_sozcukleri`). «peki»
+  ayrıca `ISLEV_SOZCUKLERI`'ne girdi — söylem belirteci, kapalı sınıf.
+* **Ürün adlandırılırsa konu düşer.** «akaryakıt» konuşulurken gelen «peki
+  konut finansmanı vadesi?» yeni bir ürüne geçer; iki kısıtı birden
+  uygulamak boş küme üretir ve beyan olmayan bir daralmayı iddia ederdi.
+  **Banka değişimi konuyu düşürmez** — «peki Kuveyt Türk?» aynı konuyu
+  başka bankada sorar ve doğrusu da budur.
+* **Beyan gösterim biçimiyle yazılır** (`gosterim_bicimi`): yuva anahtarı
+  ASCII, kullanıcıya yazılan «akaryakıt». `segment_dagarcigi`'nin ölçerek
+  düzelttiği hatanın aynısı.
+
+Aynı sohbet taramasında ikinci bir kusur çıktı ve o ADR 022'nin **kendi
+kuralının** eksik yarısıydı — *«devir bir yuvayı DOLDURUR, sorunun ŞEKLİNİ
+değiştirmez»*:
+
+```
+tur 1: «Ziraat'in Karaca kampanyası kaç taksit?»   -> Vade: 3 ay
+tur 2: «ne kadar indirim var?»
+         -> devralınan «Vade» soruya eklendi, cevap yine VADE oldu       ✗
+```
+
+Yuvanın boş olup olmadığını `_sorulan_olcut` tek başına söyleyemiyor: o beş
+kıyas ölçütünü tanır (`OLCUT_ALANLARI`), kullanıcı ise şemanın herhangi bir
+alanını sorabilir. `indirim_orani` o beşten biri değil, dolayısıyla yuva boş
+sanılıyor ve kullanıcının **açıkça yazdığı alan** devralınanla eziliyordu.
+Kapı `alan_adlandirilmis` ile kapandı; dağarcığı yine türetilmiş: sözlüğün
+şema eşlemesi + **etiketlerde yalnız bir kez geçen sözcükler**
+(`_benzersiz_sozcukler`'in banka adları için yaptığının aynısı). Sezgi
+burada yanıltıyordu — «kampanya» dört etikette geçer ve hiçbir alanı
+adlandırmaz, «azami» ikisinde; ikisi de listeden kendiliğinden düşüyor.
+
 ## Reddedilen
 
 **Konu sözlüğü yazmak** («akaryakıt», «restoran», «market» → etiket).
@@ -177,9 +227,11 @@ zorunda.
 | 260 mevcut soruda değişen cevap | — | **6** (4 iyileşme · 1 nötr · 1 tartışmalı) |
 | `make chatbot-tarama` | 194 soru, 0 bulgu | **248 soru, 0 bulgu** |
 | aynı tarama, konu süzgeci kapalı | — | **49 P9 bulgusu** (nöbetçi boş değil) |
+| «TOM akaryakıt» → «peki vadesi ne kadar?» | Alışveriş Kredisi, 36 ay | **akaryakıt kayıtları, «vade yayımlanmamış»** |
+| «Karaca kampanyası» → «ne kadar indirim var?» | ECA kombi kampanyası | **Karaca kampanyası** |
 | `make chatbot-test` (elle yazılan 31 soru) | 31/31 | 31/31 |
 | `eval/kalkan` köken dağılımı | düz 22 · alıntı 44 · yapısal 36 · sistem 9 | **birebir aynı** |
-| `make test` | 1654 | **1697** |
+| `make test` | 1654 | **1707** |
 | kalkan reddi | 0 | **0** |
 
 Köken dağılımı HEAD'e dönülerek ölçüldü: yanlış blok oranı da denetimsiz

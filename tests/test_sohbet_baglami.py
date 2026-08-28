@@ -348,3 +348,145 @@ def test_hesaplanan_olcut_iki_bankayi_da_devreder(korpus: list[KampanyaKaydi]) -
     assert ilk.beklenen_yuvalar == ("tutar",), "vade soruda vardı"
     assert set(ilk.baglam.bankalar) == {ALBARAKA, KUVEYT}
     assert ilk.baglam.vade_ay == 120
+
+
+# ---------------------------------------------------------------------------
+# KAMPANYA KONUSU YUVASI — 28 Ağustos (ADR 026)
+#
+#     tur 1: «TOM'un AKARYAKIT kampanyasında ne kadar iade var?»
+#              -> akaryakıt kampanyası, 500 TL                          ✓
+#     tur 2: «peki vadesi ne kadar?»
+#              -> BAŞKA bir kampanya (Alışveriş Kredisi, 36 ay)         ✗
+#
+# Devralınan yalnız bankaydı; ikinci tur o bankanın bütün kayıtlarına
+# açılıyordu. Kullanıcı için «hafızası yok» tam olarak bu: birinci cevap
+# doğru, ikincisi alakasız.
+
+
+DOLGU_KAYIT = 67
+"""Konu korpusunun dolgusu — `KONU_TAVANI` bir ORANDIR, mutlak sayı değil.
+
+Üç kayıtlık bir kümede tavan 1'e iner ve iki bankada birden geçen «akaryakıt»
+kampanyacılık sözcüğü sayılır: %67'sinde geçen bir sözcük gerçekten de bir
+kampanyayı adlandırmaz. Kural doğru, korpus küçüktü. Dolgu, oranın gerçek
+korpustaki karşılığını (979 kayıt, tavan 29) sınamaya taşır."""
+
+
+@pytest.fixture
+def konulu_korpus() -> list[KampanyaKaydi]:
+    """Aynı bankada iki konu (akaryakıt · market) + oranı gerçekçi kılan dolgu."""
+    dolgu = [
+        _kayit(f"dolgu-{i}", ZIRAAT,
+               kaynak_url=f"https://ornek.test/kampanyalar/dolgu-kampanyasi-{i}",
+               doluluk_orani=0.1)
+        for i in range(DOLGU_KAYIT)
+    ]
+    return dolgu + [
+        _kayit("alba-akaryakit", ALBARAKA, odul_miktari=500.0,
+               kaynak_url="https://ornek.test/kampanyalar/akaryakit-harcamalarina-500-tl-iade",
+               kampanya_turu="kart", urun_turu="Kredi Kartı", doluluk_orani=0.2),
+        _kayit("alba-market", ALBARAKA, odul_miktari=250.0, vade_ay_max=12,
+               kaynak_url="https://ornek.test/kampanyalar/market-alisverislerine-250-tl",
+               kampanya_turu="kart", urun_turu="Kredi Kartı", doluluk_orani=0.9),
+        _kayit("kuvt-akaryakit", KUVEYT, odul_miktari=600.0,
+               kaynak_url="https://ornek.test/kampanyalar/akaryakit-harcamalariniza-600-tl",
+               kampanya_turu="kart", urun_turu="Kredi Kartı", doluluk_orani=0.3),
+    ]
+
+
+def test_takip_sorusu_kampanya_konusunu_devralir(
+    konulu_korpus: list[KampanyaKaydi],
+) -> None:
+    ilk = sor("Albaraka'nın akaryakıt kampanyasında ne kadar iade var?", konulu_korpus)
+    assert ilk.baglam.konu == ("akaryakıt",), ilk.baglam
+
+    takip = sor("peki vadesi ne kadar?", konulu_korpus, baglam=ilk.baglam)
+    assert {k.kampanya_id for k in takip.kullanilan_kayitlar} == {"alba-akaryakit"}
+
+
+def test_devralinan_konu_gosterim_bicimiyle_beyan_edilir(
+    konulu_korpus: list[KampanyaKaydi],
+) -> None:
+    """Yuva anahtarı ASCII, gösterim şapkalı — `segment_dagarcigi` ile aynı kural."""
+    ilk = sor("Albaraka'nın akaryakıt kampanyası", konulu_korpus)
+    takip = sor("peki vadesi?", konulu_korpus, baglam=ilk.baglam)
+
+    assert "Konu: akaryakıt" in takip.metin, takip.metin
+    assert "akaryakit" not in takip.metin, "anahtar biçimi kullanıcıya gösterildi"
+
+
+def test_soruda_adlandirilan_konu_devralinani_ezer(
+    konulu_korpus: list[KampanyaKaydi],
+) -> None:
+    ilk = sor("Albaraka'nın akaryakıt kampanyası", konulu_korpus)
+    # Takip sorusu bir ÖLÇÜT taşımalı: ölçütsüz soru metin aramasına gider ve
+    # sınama korpusunun vektör indeksi yoktur (ağsız test).
+    takip = sor(
+        "peki market kampanyasında ne kadar ödül var?", konulu_korpus, baglam=ilk.baglam
+    )
+
+    assert {k.kampanya_id for k in takip.kullanilan_kayitlar} == {"alba-market"}
+
+
+def test_banka_degisince_konu_kalir(konulu_korpus: list[KampanyaKaydi]) -> None:
+    """«peki Kuveyt Türk?» aynı konuyu BAŞKA bankada sorar."""
+    ilk = sor("Albaraka'nın akaryakıt kampanyası", konulu_korpus)
+    takip = sor(
+        "peki Kuveyt Türk ne kadar ödül veriyor?", konulu_korpus, baglam=ilk.baglam
+    )
+
+    assert {k.kampanya_id for k in takip.kullanilan_kayitlar} == {"kuvt-akaryakit"}
+
+
+def test_urun_adlandirilinca_konu_duser(korpus: list[KampanyaKaydi]) -> None:
+    """Yeni bir ürün sınıfı konuyu geçersiz kılar; iki kısıt birden boş küme üretir."""
+    baglam = SohbetBaglami(bankalar=(ALBARAKA,), konu=("akaryakıt",))
+    devir = soruyu_tamamla("taşıt finansmanı vadesi kaç ay?", baglam, korpus)
+
+    assert "akaryak" not in devir.soru, devir.soru
+
+
+def test_cozulmemis_sozcuk_konu_yuvasini_doldurmaz(
+    konulu_korpus: list[KampanyaKaydi],
+) -> None:
+    """«peki» bir konu adı değildir; korpusta karşılığı olmayan sözcük yuvayı
+    dolu göstermemeli, yoksa devir hiç çalışmaz."""
+    baglam = SohbetBaglami(bankalar=(ALBARAKA,), konu=("akaryakıt",))
+    devir = soruyu_tamamla("peki vadesi ne kadar?", baglam, konulu_korpus)
+
+    assert "akaryakıt" in devir.soru, devir.soru
+
+
+# ---------------------------------------------------------------------------
+# DEVİR SORUNUN ŞEKLİNİ DEĞİŞTİRMEZ — kullanıcının adlandırdığı alan ezilmez
+#
+#     tur 1: «Ziraat'in Karaca kampanyası kaç taksit?»  -> Vade: 3 ay
+#     tur 2: «ne kadar indirim var?»
+#              -> devralınan «Vade» soruya eklendi, cevap yine VADE oldu  ✗
+#
+# `indirim_orani` beş kıyas ölçütünden biri değil; `_sorulan_olcut` onu
+# göremediği için yuva BOŞ sanılıyordu (bkz. `alan_adlandirilmis`).
+
+
+@pytest.mark.parametrize(
+    "soru",
+    ["ne kadar indirim var?", "ne kadar puan veriyor?", "kaç taksit?"],
+)
+def test_kullanicinin_adlandirdigi_alan_devirle_ezilmez(
+    soru: str, korpus: list[KampanyaKaydi]
+) -> None:
+    baglam = SohbetBaglami(bankalar=(ALBARAKA,), olcut="vade_ay_max")
+    devir = soruyu_tamamla(soru, baglam, korpus)
+
+    assert _OLCUT_ETIKETLERI["vade_ay_max"] not in devir.soru, devir.soru
+    assert ALBARAKA in devir.soru, "banka yuvası boştu, devralmalıydı"
+
+
+def test_alan_adlandirilmayan_takip_sorusu_olcutu_devralir(
+    korpus: list[KampanyaKaydi],
+) -> None:
+    """Kapı yalnız ALANI adlandıran soruyu tutar; «peki Kuveyt Türk?» devralır."""
+    baglam = SohbetBaglami(bankalar=(ALBARAKA,), olcut="vade_ay_max")
+    devir = soruyu_tamamla("peki Kuveyt Türk?", baglam, korpus)
+
+    assert _OLCUT_ETIKETLERI["vade_ay_max"] in devir.soru, devir.soru

@@ -408,6 +408,22 @@ gelen «120 ay vade» cevabı muhakeme ajanına hiç ulaşmıyordu. **Bir arayü
 kullanıcıya soru sorması, o cevabın gideceği yuvanın var olduğunu taahhüt
 etmektir.**
 
+**Yuvalar: banka · ürün · KONU · ölçüt · yön · tutar · vade.** Konu yuvası
+28 Ağustos'ta eklendi (ADR 026 §8): tek turda doğru kampanyayı bulan sistem
+ikinci turda onu unutuyor, bankanın 123 kaydına geri açılıyordu — «hafızası
+yok» denen davranış buydu. Üç kısıt: yuva ÇÖZÜLMÜŞ sözcükle dolar
+(«peki» konu değildir, korpusta karşılığı yok) · ürün adlandırılırsa konu
+DÜŞER, banka değişirse DÜŞMEZ · beyan gösterim biçimiyle yazılır
+(«akaryakıt», «akaryakit» değil).
+
+**Devir yuvayı DOLDURUR, sorunun ŞEKLİNİ değiştirmez — kapı `_sorulan_olcut`
+DEĞİL, `alan_adlandirilmis`.** «Karaca kampanyası kaç taksit?» → «ne kadar
+indirim var?» sorusunda devralınan «Vade» kullanıcının açıkça yazdığı alanı
+eziyordu: `indirim_orani` beş kıyas ölçütünden biri olmadığı için yuva BOŞ
+sanılıyor. Alan dağarcığı türetilir — sözlüğün şema eşlemesi + etiketlerde
+YALNIZ BİR KEZ geçen sözcükler; «kampanya» dört etikette geçtiği için
+kendiliğinden düşer.
+
 Dört kısıt gevşetilmez: devir yalnız BOŞ yuvaya (soruda yazılan kazanır) ·
 kapsam kapıları HAM soruya çalışır, devir sonradan (yoksa alakasız soru banka
 devralıp kapsam içi sayılır) · tutar/vade yalnız PROFİL KİPİNDE devrolur ·
@@ -501,7 +517,7 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1697 test)
+make test         # testler (1707 test)
 make eval         # metrikler -> docs/SONUCLAR.md
 make chatbot-tarama # chatbot boşluk taraması (248 üretilmiş soru) [adet=N]
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk

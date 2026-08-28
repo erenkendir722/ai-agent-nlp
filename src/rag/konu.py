@@ -178,6 +178,22 @@ def sozcuklere_ayir(metin: str) -> list[str]:
     ]
 
 
+def gosterim_bicimi(sozcuk: str, ham_metin: str) -> str:
+    """Normalize edilmiş sözcüğün METİNDEKİ yazımı — şapkalar yerinde.
+
+    Eşleştirme ASCII'ye indirgenmiş anahtarla yapılır, ekrana yazılan ad ham
+    biçimiyle kalmalı: `segment_dagarcigi` aynı ayrımı yapıyor ve gerekçesi
+    orada yazılı — anahtarı göstermek «çiftçi»yi «ciftci» diye yazdırıyordu.
+
+    >>> gosterim_bicimi("akaryakit", "TOM'un akaryakıt kampanyası")
+    'akaryakıt'
+    """
+    for ham in re.split(r"[^0-9A-Za-zÇĞİÖŞÜçğıöşü]+", ham_metin):
+        if ham and arama_anahtari(ham) == sozcuk:
+            return ham
+    return sozcuk
+
+
 def kayit_sozcukleri(kayit: object) -> frozenset[str]:
     """Kaydın konu sözcükleri."""
     return frozenset(sozcuklere_ayir(konu_metni(kayit)))
@@ -217,6 +233,35 @@ def eslesen_kampanyalar(sozcuk: str, dagarcik: dict[str, set[str]]) -> set[str]:
     return eslesen
 
 
+def _konu_eslesmeleri(
+    sozcukler: Iterable[str], korpus: list[object]
+) -> list[tuple[str, set[str]]]:
+    """GEÇERLİ konu sözcükleri ve eşleştikleri kampanyalar.
+
+    Geçerli olmak iki şart: korpusta karşılığı olacak ve `KONU_TAVANI`'nı
+    aşmayacak. Ağırlık hesabı da sohbet bağlamı da buradan okur — bağlam,
+    çözülmemiş bir sözcüğü sonraki tura devretmemeli (`SohbetBaglami`
+    ÇÖZÜLMÜŞ yuvaları taşır, kullanıcının yazdığı ham metni değil).
+    """
+    dagarcik = konu_dagarcigi(korpus)
+    tavan = konu_tavani(len(korpus))
+    eslesmeler: list[tuple[str, set[str]]] = []
+    for sozcuk in sozcukler:
+        eslesen = eslesen_kampanyalar(sozcuk, dagarcik)
+        if eslesen and len(eslesen) <= tavan:
+            eslesmeler.append((sozcuk, eslesen))
+    return eslesmeler
+
+
+def gecerli_konu_sozcukleri(
+    sozcukler: Iterable[str], korpus: list[object]
+) -> tuple[str, ...]:
+    """Korpusta gerçekten bir kampanyayı adlandıran sözcükler."""
+    if not korpus:
+        return ()
+    return tuple(sozcuk for sozcuk, _ in _konu_eslesmeleri(sozcukler, korpus))
+
+
 def konu_agirliklari(
     sozcukler: Iterable[str], korpus: list[object]
 ) -> dict[str, float]:
@@ -231,14 +276,8 @@ def konu_agirliklari(
     """
     if not korpus:
         return {}
-    dagarcik = konu_dagarcigi(korpus)
-    tavan = konu_tavani(len(korpus))
-
     agirlik: dict[str, float] = defaultdict(float)
-    for sozcuk in sozcukler:
-        eslesen = eslesen_kampanyalar(sozcuk, dagarcik)
-        if not eslesen or len(eslesen) > tavan:
-            continue
+    for _, eslesen in _konu_eslesmeleri(sozcukler, korpus):
         puan = math.log(len(korpus) / len(eslesen))
         for kimlik in eslesen:
             agirlik[kimlik] += puan
@@ -268,6 +307,8 @@ __all__ = [
     "ORTAK_KOK_UZUNLUGU",
     "ayni_kok",
     "eslesen_kampanyalar",
+    "gecerli_konu_sozcukleri",
+    "gosterim_bicimi",
     "kayit_sozcukleri",
     "konu_agirliklari",
     "konu_dagarcigi",

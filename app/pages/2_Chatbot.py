@@ -90,6 +90,8 @@ with st.sidebar:
       st.caption("Banka: " + ", ".join(baglam.bankalar))
     if baglam.urun:
       st.caption(f"Ürün: {baglam.urun}")
+    if baglam.konu:
+      st.caption("Konu: " + ", ".join(baglam.konu))
     if baglam.olcut:
       st.caption(f"Ölçüt: {OLCUT_ETIKETLERI.get(baglam.olcut, baglam.olcut)}")
     if baglam.tutar:

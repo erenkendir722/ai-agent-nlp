@@ -71,7 +71,9 @@ from src.rag.chatbot import (
     _bankalari_bul,
     _sorulan_olcut,
     _sorulan_yon,
+    alan_adlandirilmis,
     eksik_nicelikler,
+    konu_sozcukleri,
     sorulan_bankalar,
     Cevap,
     CevapParcasi,
@@ -81,6 +83,7 @@ from src.rag.chatbot import (
     sorulan_urun,
     terim_gecer,
 )
+from src.rag.konu import gecerli_konu_sozcukleri, gosterim_bicimi
 
 AZAMI_DEVIR_BANKASI = 2
 """Bundan fazla banka kullanan cevap bir KONU değil, korpusun kendisidir.
@@ -118,6 +121,25 @@ class SohbetBaglami:
 
     bankalar: tuple[str, ...] = ()
     urun: str | None = None
+    konu: tuple[str, ...] = ()
+    """Önceki turda ÇÖZÜLMÜŞ kampanya konusu — «akaryakıt», «karaca».
+
+    Ürün sınıfından (`urun`) ayrı bir yuvadır ve ADR 026 ile geldi. Ölçüldü
+    (28 Ağustos), konu devredilmediğinde sohbet ilk turdan sonra kampanyayı
+    unutuyordu:
+
+        tur 1: «TOM'un AKARYAKIT kampanyasında ne kadar iade var?»
+                 -> Hadi Black, akaryakıt kampanyası, 500 TL           ✓
+        tur 2: «peki vadesi ne kadar?»
+                 -> Alışveriş Kredisi, 36 ay — kaynak: …/istikbal      ✗
+
+    Devralınan yalnız bankaydı; ikinci tur o bankanın 123 kaydına açılıp
+    başka bir kampanyaya düşüyordu. Kullanıcı için bu, «hafızası yok»un ta
+    kendisi: birinci cevap doğru, ikincisi alakasız.
+
+    Sözcükler ÇÖZÜLMÜŞ olanlardır (`gecerli_konu_sozcukleri`): korpusta
+    karşılığı olmayan bir sözcüğü devretmek, beyanda olmayan bir daralmayı
+    iddia etmek olurdu."""
     olcut: str | None = None
     yon: str | None = None
     tutar: float | None = None
@@ -137,6 +159,7 @@ class SohbetBaglami:
         return not (
             self.bankalar
             or self.urun
+            or self.konu
             or self.olcut
             or self.yon
             or self.tutar
@@ -282,8 +305,38 @@ def soruyu_tamamla(
         ekler.append(_urun_sozcugu(baglam.urun))
         yuvalar.append(("Ürün", baglam.urun))
 
+    # KAMPANYA KONUSU — soru yeni bir konu adlandırmıyorsa (ADR 026).
+    #
+    # YUVA «ÇÖZÜLMÜŞ» SÖZCÜKLE DOLAR, herhangi bir sözcükle değil: karşılığı
+    # olmayan bir sözcük yuvayı doldurmuş sayılırsa devir hiç çalışmaz.
+    # Ölçüldü: «peki vadesi ne kadar?» sorusundaki «peki» konu sözcüğü
+    # sanılıyor, akaryakıt kampanyası devrolmuyordu.
+    #
+    # ÜRÜN ADLANDIRILDIYSA KONU DÜŞER. «akaryakıt kampanyası» konuşulurken
+    # gelen «peki konut finansmanı vadesi?» yeni bir ürüne geçiyor; iki
+    # kısıtı birden uygulamak boş küme üretir ve beyan, olmayan bir daralmayı
+    # iddia ederdi. Banka değişimi konuyu düşürmez — «peki Kuveyt Türk?»
+    # aynı konuyu başka bankada sorar.
+    if (
+        baglam.konu
+        and sorulan_urun(soru) is None
+        and not gecerli_konu_sozcukleri(konu_sozcukleri(soru, kayitlar), kayitlar)
+    ):
+        ekler += list(baglam.konu)
+        yuvalar.append(("Konu", ", ".join(baglam.konu)))
+
     # ÖLÇÜT — sorulan alan. Etiket hem eklenen metin hem beyan: tek kaynak.
-    olcut_devroldu = baglam.olcut is not None and _sorulan_olcut(soru) is None
+    #
+    # KULLANICININ ADLANDIRDIĞI ALAN EZİLMEZ. Yuvanın boş olup olmadığını
+    # `_sorulan_olcut` tek başına söyleyemiyor: o beş kıyas ölçütünü tanır,
+    # kullanıcı ise şemanın herhangi bir alanını sorabilir (bkz.
+    # `alan_adlandirilmis`). «ne kadar indirim var?» sorusuna devralınan
+    # «Vade» eklenince cevap yine vade oluyordu.
+    olcut_devroldu = (
+        baglam.olcut is not None
+        and _sorulan_olcut(soru) is None
+        and not alan_adlandirilmis(soru)
+    )
     if olcut_devroldu:
         etiket = _OLCUT_ETIKETLERI[baglam.olcut]
         ekler.append(etiket)
@@ -321,6 +374,21 @@ def soruyu_tamamla(
         return Devir(soru, beklenen_yuva_dolduruldu=dolduruldu)
     return Devir(
         f"{soru} {' '.join(ekler)}", tuple(yuvalar), hesap, dolduruldu
+    )
+
+
+def _cozulmus_konu(soru: str, kayitlar: list[KampanyaKaydi]) -> tuple[str, ...]:
+    """Bu turda ÇÖZÜLMÜŞ konu sözcükleri — kullanıcının yazdığı biçimde.
+
+    Yuvada normalize anahtar değil gösterim biçimi durur: değer hem cevaptaki
+    devir beyanına hem arayüzdeki bağlam rozetine yazılıyor ve «akaryakıt»ı
+    «akaryakit» diye göstermek `segment_dagarcigi`'nin ölçerek düzelttiği
+    hatanın aynısı olurdu. Eşleştirme zaten sonraki turda yeniden normalize
+    ediliyor; sözcük soru metnine eklendiği için ayrıca bir dönüşüm gerekmiyor.
+    """
+    return tuple(
+        gosterim_bicimi(sozcuk, soru)
+        for sozcuk in gecerli_konu_sozcukleri(konu_sozcukleri(soru, kayitlar), kayitlar)
     )
 
 
@@ -382,6 +450,7 @@ def baglam_guncelle(
     return SohbetBaglami(
         bankalar=bankalar,
         urun=sorulan_urun(soru),
+        konu=_cozulmus_konu(soru, kayitlar) if kayitlar else onceki.konu,
         olcut=_sorulan_olcut(soru),
         yon=_sorulan_yon(soru),
         tutar=tutar,

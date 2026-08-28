@@ -1018,9 +1018,9 @@ ISLEV_SOZCUKLERI = frozenset(
         # edat
         "için", "gibi", "kadar", "göre", "üzere", "rağmen", "yerine",
         "dolayı", "ilgili", "sonra", "önce",
-        # bağlaç
+        # bağlaç ve söylem belirteci
         "veya", "yahut", "ancak", "fakat", "çünkü", "yani", "ayrıca",
-        "ise", "oysa", "halbuki", "dolayısıyla",
+        "ise", "oysa", "halbuki", "dolayısıyla", "peki",
         # kalıplaşmış belirteç
         "olarak", "şekilde", "biçimde", "sadece",
     )
@@ -1889,6 +1889,67 @@ def _sorulan_olcutler(soru: str) -> list[str]:
         if alan not in sirali:
             sirali.append(alan)
     return sirali
+
+
+ASGARI_ALAN_SOZCUGU = 4
+"""Etiket sözcüğü en az dört harf — `ASGARI_KONU_UZUNLUGU` ile aynı sebep."""
+
+
+@lru_cache(maxsize=1)
+def _etiketi_belirleyen_sozcukler() -> frozenset[str]:
+    """Şema etiketlerinde YALNIZ BİR KEZ geçen sözcükler: «indirim», «vade».
+
+    `_benzersiz_sozcukler`'in (banka adları) refleksinin aynısı, bu sefer
+    alan etiketleri için: bir sözcük tek bir etikette geçiyorsa o alanı
+    ADLANDIRIR, birden çok etikette geçiyorsa etmez.
+
+    Ayrım elle yapılamaz, çünkü sezgi yanıltıyor: «kampanya» dört etikette
+    geçer (türü · avantajı · bitişi · koşulları) ve hiçbir alanı
+    adlandırmaz; «azami» ikisinde (vade · finansman tutarı), «oranı»
+    ikisinde (kâr payı · indirim). Üçü de listeden kendiliğinden düşer,
+    «indirim», «vade», «taksit», «ödül» kalır.
+    """
+    sayac: dict[str, int] = {}
+    for etiket in ALAN_ETIKETLERI.values():
+        for sozcuk in set(arama_anahtari(etiket).split()):
+            sayac[sozcuk] = sayac.get(sozcuk, 0) + 1
+    return frozenset(
+        sozcuk
+        for sozcuk, adet in sayac.items()
+        if adet == 1 and len(sozcuk) >= ASGARI_ALAN_SOZCUGU
+    )
+
+
+def alan_adlandirilmis(soru: str) -> bool:
+    """Soru bir ŞEMA ALANINI adlandırıyor mu? «ne kadar indirim var» -> evet.
+
+    `_sorulan_olcut`'ten farkı KAPSAMI: o, kıyaslanabilir BEŞ ölçütü tanır
+    (`OLCUT_ALANLARI`); bu, şemanın tamamını. Ayrım sohbet bağlamında ölçüldü
+    (28 Ağustos):
+
+        tur 1: «Ziraat'in Karaca kampanyası kaç taksit?»  -> Vade: 3 ay
+        tur 2: «ne kadar indirim var?»
+                 -> devralınan «Vade» soruya eklendi, cevap yine VADE oldu ✗
+
+    `indirim_orani` beş ölçütten biri değil, dolayısıyla `_sorulan_olcut`
+    onu göremiyor ve yuva BOŞ sanılıyordu. Oysa kullanıcı sorduğu alanı
+    açıkça yazmıştı. **Devir bir yuvayı DOLDURUR, sorunun ŞEKLİNİ
+    değiştirmez** (ADR 022) — bu kapı o kuralın eksik kalan yarısı.
+
+    İki kaynak, ikisi de zaten beyan edilmiş: sözlüğün şema eşlemesi
+    (`alan_eslemesi`, çok sözcüklü terimler için) ve şema etiketlerinin
+    ayırt edici sözcükleri (`_etiketi_belirleyen_sozcukler`). Eşleşme
+    `ayni_kok` ile: kullanıcı «puan» yazarken etiket «puanı» diyor.
+    """
+    anahtar = arama_anahtari(soru)
+    if any(terim_gecer(anahtar, ad) for ad in alan_eslemesi()):
+        return True
+    belirleyenler = _etiketi_belirleyen_sozcukler()
+    return any(
+        ayni_kok(sozcuk, belirleyen)
+        for sozcuk in sozcuklere_ayir(anahtar)
+        for belirleyen in belirleyenler
+    )
 
 
 # ---------------------------------------------------------------------------
