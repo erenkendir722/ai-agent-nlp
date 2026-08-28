@@ -167,3 +167,58 @@ def test_banka_profili_secimi_bilinen_bir_bankayi_acar() -> None:
         f"«{hedef}» seçilmesi bekleniyordu, sayfa "
         f"«{at.session_state[BP_ANAHTARI]}» ile açıldı"
     )
+
+
+def test_banka_profili_vurgulanan_kampanyayi_cizer() -> None:
+    """«Detay»ın vurgu kartı istisnasız çizilmeli.
+
+    NEDEN YOKTU — bu blok BUGÜNE KADAR HİÇ KOŞMADI: «Detay» yanlış bankayı
+    açtığı için vurgulanan kayıt o bankanın listesinde bulunamıyor, kart hiç
+    üretilmiyordu. Banka seçimi düzelince blok ilk kez koştu ve
+    `AttributeError: 'KampanyaKaydi' object has no attribute
+    'kampanya_avantaji'` ile çöktü — metinsel alanlar satır nesnesinde değil,
+    JSON kanıt zincirinde duruyor.
+
+    İki anahtar BİRLİKTE kurulur; ayrı ayrı kurmak gerçek akışı taklit etmez.
+    """
+    pytest.importorskip("streamlit.testing.v1")
+    from streamlit.testing.v1 import AppTest
+
+    try:
+        from src.depolama import tum_kayitlar
+
+        kayitlar = tum_kayitlar()
+    except Exception:  # noqa: BLE001
+        pytest.skip("veritabanı okunamadı")
+    if not kayitlar:
+        pytest.skip("veritabanı boş")
+
+    hedef = kayitlar[0]
+    at = AppTest.from_file(str(APP / "pages" / "5_Banka_Profili.py"), default_timeout=300)
+    at.session_state[BP_ANAHTARI] = hedef.banka_adi
+    at.session_state["bp_vurgu_kampanya"] = hedef.kampanya_id
+    at.run()
+
+    assert not at.exception, (
+        "vurgu kartı istisna fırlattı: "
+        + " | ".join(str(e.value)[:200] for e in at.exception)
+    )
+    metinler = " ".join(str(m.value) for m in at.markdown)
+    assert "seçilen kampanya" in metinler, "vurgu kartı hiç çizilmedi"
+
+
+def test_alan_dolulugu_metinsel_alanlari_sayar() -> None:
+    """Doluluk grafiği METİNSEL alanları da saymalı.
+
+    `getattr(satir, "kampanya_avantaji", None)` sessizce `None` döner —
+    alan satır nesnesinde yok, JSON'da var. Grafik bu yüzden üç metinsel
+    alanı HER BANKADA %0 çiziyordu; ölçüldü, Ziraat'in 219 kaydının 170'inde
+    `kampanya_avantaji` doluydu. Dolu veriyi boş göstermek, sistemin
+    «neyi bilmiyoruz» iddiasını yanlışlar.
+    """
+    metin = (APP / "pages" / "5_Banka_Profili.py").read_text(encoding="utf-8")
+    assert "getattr(k, alan, None) is not None" not in metin, (
+        "doluluk satır nesnesinden okunuyor; metinsel alanlar orada yok ve "
+        "sessizce %0 çizilir"
+    )
+    assert ".var_mi" in metin, "doluluk `Alan.var_mi` üzerinden okunmuyor"

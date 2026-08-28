@@ -71,6 +71,31 @@ YAKIN_GUN = 7
 kayitlar = kayitlari_yukle()
 
 
+# SATIR NESNESİ ŞEMANIN TAMAMI DEĞİL (28 Ağustos).
+#
+# `tum_kayitlar()` `KampanyaKaydi` döndürür: sorgulanabilir sütunlar. Üç
+# METİNSEL alan (`kampanya_avantaji` · `kampanya_kosullari` ·
+# `masraf_bilgisi`) sütun taşımaz, JSON kanıt zincirinde (`tam_kayit`)
+# durur. Bu sayfa ikisini karıştırıyordu ve iki ayrı kusur üretiyordu:
+#
+#   1. Vurgu kartı `_vurgu.kampanya_avantaji` okuyup AttributeError ile
+#      çöküyordu. Görünmez kalmasının sebebi başka bir hataydı: «Detay»
+#      yanlış bankayı açtığı için vurgulanan kayıt hiç bulunamıyor, blok
+#      hiç koşmuyordu. Banka seçimi düzelince bu ortaya çıktı.
+#   2. «Alan doluluğu» grafiği `getattr(k, alan, None)` kullanıyordu —
+#      olmayan alan sessizce `None` döner, yani üç metinsel alan HER
+#      BANKADA %0 çiziliyordu. Ölçüldü: Ziraat'in 219 kaydının 170'inde
+#      `kampanya_avantaji` DOLU. Grafik dolu veriyi boş gösteriyordu.
+#
+# Çözüm tek: doluluk `Kampanya` nesnesinden `var_mi` ile okunur. Bedeli
+# ölçüldü — en kalabalık bankada (219 kayıt) 8 ms.
+@st.cache_data(ttl=60, show_spinner=False)
+def _sema_nesneleri(kampanya_idleri: tuple[str, ...]):
+  """Satırları tam şema nesnesine çevirir. Anahtar id'ler — önbellek tutar."""
+  dizin = {k.kampanya_id: k for k in kayitlar}
+  return {kid: dizin[kid].kampanyaya_cevir() for kid in kampanya_idleri if kid in dizin}
+
+
 # ---------------------------------------------------------------------------
 # Banka seçimi — ana alanın üstünde
 # ---------------------------------------------------------------------------
@@ -212,9 +237,10 @@ with sol:
 
 with sag:
   st.subheader("Alan doluluğu")
+  _nesneler = _sema_nesneleri(tuple(k.kampanya_id for k in banka))
   satirlar = []
   for alan in ALAN_ADLARI:
-    dolu = sum(1 for k in banka if getattr(k, alan, None) is not None)
+    dolu = sum(1 for n in _nesneler.values() if getattr(n, alan).var_mi)
     satirlar.append({"Alan": alan_etiketi(alan) or alan, "Doluluk": dolu / len(banka) * 100})
   doluluk = pd.DataFrame(satirlar).sort_values("Doluluk")
   st.plotly_chart(
@@ -262,9 +288,12 @@ if _vurgu is not None:
     )
     v3.metric("Azami vade", f"{_vurgu.vade_ay_max} ay" if _vurgu.vade_ay_max is not None else "—")
     v4.metric("Güven", round(_vurgu.ortalama_guven or 0.0, 2))
-    if _vurgu.kampanya_avantaji:
+    # `.deger` ŞART: `Alan` nesnesinin `str()`i değeri değil temsilini verir.
+    _avantaj = _sema_nesneleri((_vurgu.kampanya_id,)).get(_vurgu.kampanya_id)
+    if _avantaj is not None and _avantaj.kampanya_avantaji.var_mi:
       st.markdown(
-        f'<div class="kl-kart-alt">{" ".join(str(_vurgu.kampanya_avantaji).split())}</div>',
+        f'<div class="kl-kart-alt">'
+        f'{" ".join(str(_avantaj.kampanya_avantaji.deger).split())}</div>',
         unsafe_allow_html=True,
       )
     st.link_button("Bankanın kampanya sayfasını aç", _vurgu.kaynak_url, type="primary")
