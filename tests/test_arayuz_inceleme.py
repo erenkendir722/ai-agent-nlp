@@ -23,12 +23,15 @@ def test_ust_gostergelerin_hepsi_kendini_acikliyor() -> None:
     için, ölçünün kendisinin açık olmaması iddiayı zayıflatır.
     """
     metin = GENEL_BAKIS.read_text(encoding="utf-8")
-    bas = metin.index("s1, s2, s3, s4, s5 = st.columns(5)")
+    bas = metin.index("s1, s2, s3, s4 = st.columns(4)")
     son = metin.index("son = ozet[", bas)
     bolge = metin[bas:son]
 
+    # Beşinciydi: «Ortalama güven» 28 Ağustos'ta kaldırıldı — modelin kendi
+    # bildirdiği güvenin ortalaması kalibrasyon değil, okuyana ne yapacağını
+    # söylemiyordu. Alan bazındaki güven «Kayıt detayları»nda duruyor.
     cagrilar = re.findall(r"s\d\.metric\((.*?)\n\)", bolge, flags=re.S)
-    assert len(cagrilar) == 5, f"beş üst gösterge bekleniyordu, {len(cagrilar)} bulundu"
+    assert len(cagrilar) == 4, f"dört üst gösterge bekleniyordu, {len(cagrilar)} bulundu"
     for cagri in cagrilar:
         etiket = re.search(r'"([^"]+)"', cagri)
         assert "help=" in cagri, (

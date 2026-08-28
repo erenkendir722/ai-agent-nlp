@@ -78,6 +78,47 @@ def sonuclari_oku(yol: Path | None = None) -> EvalOzeti:
     )
 
 
+# ---------------------------------------------------------------------------
+# Renk paleti — TEK KAYNAK
+# ---------------------------------------------------------------------------
+#
+# NEDEN VAR: altı ekranda beş ayrı renk dili vardı. Genel Bakış yeşil
+# (`#00A86B`) çiziyor, Banka Profili plotly'nin varsayılan mavisiyle ve AÇIK
+# temayla çiziyordu (koyu sayfada beyaz bir kutu), karşılaştırma tablosu
+# güven skorunu yeşil/sarı/kırmızı, kâr payını dört tonda maviye boyuyordu.
+# Aynı uygulamanın iki ekranı birbirine benzemiyordu.
+#
+# Kural: renk YALNIZ üç şey söyler — vurgu (ana), ikinci seri (ikincil),
+# dikkat (uyarı). Bir SAYIYI ölçeğe göre boyamak bunlardan hiçbiri değil:
+# «0,82 güven» sarı olunca kullanıcı bir kusur arıyor, oysa eşik yok.
+RENK_ANA = "#00A86B"
+RENK_IKINCIL = "#2E7D9A"
+RENK_UYARI = "#D9A441"
+RENK_SOLUK = "#6E6E78"
+GRAFIK_SIRASI = [RENK_ANA, RENK_IKINCIL, RENK_UYARI, "#8E7CC3", "#C4707A"]
+
+
+def grafik_duzeni(sekil, *, yukseklik: int | None = None, baslik: str | None = None):
+    """Her grafiğe aynı zemin, aynı kenar boşluğu, aynı ızgara.
+
+    Sayfalar bunu ELLE yazıyordu ve her biri başka yazıyordu: kimi
+    `template="plotly_dark"` veriyor kimi vermiyor, kenar boşlukları dört
+    farklı değerdeydi. Tek çağrı — grafikler birbirine benzesin.
+    """
+    sekil.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        margin={"l": 0, "r": 8, "t": 30 if baslik else 10, "b": 0},
+        height=yukseklik,
+        title=baslik,
+        font={"size": 12},
+    )
+    sekil.update_xaxes(showgrid=False)
+    sekil.update_yaxes(showgrid=False)
+    return sekil
+
+
 def tr_sayi(deger: float, basamak: int = 2) -> str:
     """0.724 → '0,72' — sunumda sahte kesinlik yok."""
     return f"{deger:.{basamak}f}".replace(".", ",")
@@ -331,15 +372,30 @@ def uyarilari_goster(
         engelleyiciler = [u for u in uyari_listesi if getattr(u, "engelleyici", False)]
         notlar = [u for u in uyari_listesi if not getattr(u, "engelleyici", False)]
 
+    # SARI ALARM KUTUSU YERİNE SAKİN NOT ŞERİDİ (28 Ağustos).
+    #
+    # `st.warning` bankacılık arayüzünde bir ŞEY BOZULDU der: tam genişlikte,
+    # sarı zemin, ünlem simgesi. Buradaki uyarıların hiçbiri arıza değil —
+    # «tahsis ücreti karışık birimde, sıralamaya katılmadı» bir ÖLÇÜM
+    # beyanıdır. Alarm rengi kullanıcıyı olmayan bir sorunu aramaya itiyordu.
+    #
+    # Bilgi aynen duruyor, yalnız tonu düştü: ince amber çizgi + koyu zemin.
+    # Rengin alarm anlamı böylece gerçek hatalara (`st.error`) saklanır.
     for uyari in engelleyiciler:
-        st.warning(_uyari_metni(uyari))
+        st.markdown(
+            f'<div class="kl-not">{_uyari_metni(uyari, html=True)}</div>',
+            unsafe_allow_html=True,
+        )
 
     if not notlar:
         return
 
     # Tek not için panel açıp kapamak gereksiz tıklama; doğrudan gösterilir.
     if len(notlar) == 1:
-        st.info(_uyari_metni(notlar[0]))
+        st.markdown(
+            f'<div class="kl-not kl-not-soluk">{_uyari_metni(notlar[0], html=True)}</div>',
+            unsafe_allow_html=True,
+        )
         return
 
     with st.expander(f"{baslik} ({len(notlar)})", expanded=False):
@@ -347,12 +403,16 @@ def uyarilari_goster(
             st.markdown(_uyari_metni(uyari))
 
 
-def _uyari_metni(uyari) -> str:
-    """Başlığı kalın, detayı alt satırda. Markdown'da satır sonu iki boşluktur."""
+def _uyari_metni(uyari, *, html: bool = False) -> str:
+    """Başlığı kalın, detayı alt satırda. Markdown'da satır sonu iki boşluktur.
+
+    `html=True` aynı metni not şeridi için üretir: şerit bir `<div>` olduğu
+    için Streamlit markdown'ı orada ÇÖZMEZ — `**kalın**` olduğu gibi görünür.
+    """
     baslik = getattr(uyari, "baslik", None)
     detay = getattr(uyari, "detay", None)
     if baslik and detay:
-        return f"**{baslik}**  \n{detay}"
+        return f"<b>{baslik}</b><br>{detay}" if html else f"**{baslik}**  \n{detay}"
     return str(uyari)
 
 
@@ -484,6 +544,23 @@ def inject_custom_css():
         [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {
             color: #ADADB8 !important;
         }
+        /* NOT ŞERİDİ — `st.warning`ın sakin karşılığı. Tam genişlikte sarı
+           kutu «bir şey bozuldu» der; buradaki notların hiçbiri arıza değil,
+           ölçümün sınırının beyanı. */
+        .kl-not {
+            border-left: 3px solid rgba(217,164,65,0.55);
+            background: rgba(217,164,65,0.06);
+            padding: 9px 14px; border-radius: 0 8px 8px 0;
+            margin: 0 0 10px 0; color: #C4C4CE;
+            font-size: 0.88rem; line-height: 1.55;
+        }
+        .kl-not b { color: #E0D3B0; font-weight: 600; }
+        .kl-not-soluk {
+            border-left-color: rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.03);
+        }
+        .kl-not-soluk b { color: #D8D8E0; }
+
         /* CEVAP ÜSTBİLGİSİ — niyet ve doğrulama tek satırda, küçük çip.
            Eskiden ikisi de ayrı kutuydu: yeşil `st.success` kutusu üç satır
            kaplayıp «doğrulama geçti» diye HER cevapta çıkıyordu. Her koşuda
@@ -497,6 +574,10 @@ def inject_custom_css():
             background: rgba(255,255,255,0.05); color: #B4B4BE;
             border: 1px solid rgba(255,255,255,0.10);
             cursor: help;
+        }
+        .kl-cip-uyari {
+            background: rgba(217,164,65,0.16); color: #E0B85E;
+            border-color: rgba(217,164,65,0.38);
         }
         .kl-cip-onay {
             background: rgba(0,168,107,0.14); color: #4FD1A0;

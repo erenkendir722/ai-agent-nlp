@@ -40,7 +40,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.schema import ALAN_ADLARI, alan_etiketi  # noqa: E402
 from app.ui_utils import (  # noqa: E402
+  RENK_ANA,
+  RENK_IKINCIL,
   format_bank_name,
+  grafik_duzeni,
   format_kategori,
   inject_custom_css,
   kayitlari_yukle,
@@ -147,7 +150,11 @@ u4.metric("Masrafsız kampanya", len(masrafsizlar))
 
 # VERİ TAZELİĞİ — diğer ekranlarda hiç görünmüyordu.
 if tazelik is not None and tazelik > 3:
-  st.warning(f"Veri {tazelik} gün önce çekildi — site o tarihten sonra değişmiş olabilir.")
+  st.markdown(
+    f'<div class="kl-not">Veri <b>{tazelik} gün</b> önce çekildi — banka '
+    "sayfası o tarihten sonra değişmiş olabilir.</div>",
+    unsafe_allow_html=True,
+  )
 
 st.divider()
 
@@ -193,7 +200,13 @@ with sol:
     turler[ad] = turler.get(ad, 0) + 1
   cizim = pd.DataFrame({"Tür": list(turler), "Adet": list(turler.values())})
   st.plotly_chart(
-    px.bar(cizim.sort_values("Adet"), x="Adet", y="Tür", orientation="h"),
+    grafik_duzeni(
+      px.bar(
+        cizim.sort_values("Adet"), x="Adet", y="Tür", orientation="h",
+        text="Adet", color_discrete_sequence=[RENK_ANA],
+      ),
+      yukseklik=max(300, len(cizim) * 34),
+    ),
     use_container_width=True,
   )
 
@@ -205,7 +218,13 @@ with sag:
     satirlar.append({"Alan": alan_etiketi(alan) or alan, "Doluluk": dolu / len(banka) * 100})
   doluluk = pd.DataFrame(satirlar).sort_values("Doluluk")
   st.plotly_chart(
-    px.bar(doluluk, x="Doluluk", y="Alan", orientation="h", range_x=[0, 100]),
+    grafik_duzeni(
+      px.bar(
+        doluluk, x="Doluluk", y="Alan", orientation="h",
+        color_discrete_sequence=[RENK_IKINCIL],
+      ),
+      yukseklik=max(300, len(doluluk) * 26),
+    ).update_layout(xaxis_range=[0, 100]),
     use_container_width=True,
   )
 

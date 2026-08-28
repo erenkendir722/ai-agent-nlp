@@ -22,8 +22,12 @@ import html
 from dataclasses import dataclass
 from typing import Literal
 
-# Palet `ui_utils.inject_custom_css` ile aynı — sayfa diğerlerinden farklı durmasın.
-YESIL = "#00A86B"
+from app.ui_utils import RENK_ANA
+
+# Palet TEK KAYNAKTAN. Burada `YESIL = "#00A86B"` diye elle yazılıydı ve
+# «ui_utils ile aynı» diyen bir yorum taşıyordu — o yorumun kendisi ikinci
+# kopyanın itirafıydı: birini değiştiren diğerini unutur.
+YESIL = RENK_ANA
 KART_ZEMIN = "rgba(37, 37, 45, 0.7)"
 KENAR = "rgba(255, 255, 255, 0.15)"
 METIN = "#E0E0E0"

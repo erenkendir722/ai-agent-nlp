@@ -187,12 +187,16 @@ def cevap_renderla(cevap) -> None:
 
   uyarilari_goster(cevap.uyarilar, baslik="Bu cevapla ilgili notlar")
 
-  # KAYNAKLAR AÇILIR KUTUDA (28 Ağustos). Her cevabın altında üç kart açık
-  # duruyordu: alıntılarıyla birlikte cevaptan uzun oluyor, ikinci soruyu
-  # ekranın dışına itiyordu. Kaynak GÖSTERİLİYOR olmalı — sürekli AÇIK
-  # olması gerekmiyor; sayı düğmenin üzerinde yazılı.
+  # KAYNAKLAR AÇILIR PANELDE. Her cevabın altında üç kart açık duruyordu:
+  # alıntılarıyla birlikte cevaptan uzun oluyor, ikinci soruyu ekranın
+  # dışına itiyordu.
+  #
+  # `st.popover` DENENDİ, GERİ ALINDI: üstteki notlar `st.expander` ile
+  # açılıyor ve iki kutu yan yana iki farklı biçimde açılınca aynı ekranda
+  # iki ayrı etkileşim dili oluyordu — biri sayfayı iterek, diğeri üstüne
+  # binerek. Aynı işi yapan iki öge aynı görünmeli.
   if cevap.kaynaklar:
-    with st.popover(f"Kaynaklar ({len(cevap.kaynaklar)})", use_container_width=False):
+    with st.expander(f"Kaynaklar ({len(cevap.kaynaklar)})", expanded=False):
       for sira, kaynak in enumerate(cevap.kaynaklar):
         if sira:
           st.divider()
@@ -273,7 +277,15 @@ if soru:
         hide_index=True,
       )
       if iz_defteri.llm_cagrisi_sayisi() == 0:
-        st.success("Bu cevapta hiçbir ajan dil modeli çağırmadı.")
+        # Yeşil `st.success` kutusu değil: bu bir «işlem başarılı» bildirimi
+        # değil, tablonun ÖZETİ. Kutu, altındaki tabloyla aynı şeyi iki kat
+        # büyük söylüyordu.
+        st.markdown(
+          '<div class="kl-meta"><span class="kl-cip kl-cip-onay" title="Motor '
+          'sütununun tamamı «kod»: aritmetik ve karşılaştırma dil modeline '
+          'yaptırılmadı.">Bu cevapta dil modeli çağrısı yok</span></div>',
+          unsafe_allow_html=True,
+        )
 
     # Geliştirici Modu (API)
     if st.session_state.get("dev_mode", False):

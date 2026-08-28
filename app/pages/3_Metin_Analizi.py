@@ -20,6 +20,7 @@ from src.extraction.uzlastirici import kampanya_cikar  # noqa: E402
 from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import BIRIM_GOSTERIMLERI, METINSEL_ALANLAR, HamKayit  # noqa: E402
 from app.ui_utils import (  # noqa: E402
+  RENK_ANA,
   format_alan_adi,
   format_kategori,
   inject_custom_css,
@@ -185,9 +186,13 @@ def _karsilastirma_ciz(kural_k, hibrit_k) -> None:
         h = _alan_ozeti(hibrit_k, ad)
 
         if k is None and h is not None:
-            katki, yeni_alan = "<b style='color:#4FD1A0;'>dil modeli ekledi</b>", yeni_alan + 1
+            katki = f"<b style='color:{RENK_ANA};'>dil modeli ekledi</b>"
+            yeni_alan += 1
         elif k is not None and h is not None and h[2] > k[2] + 0.001:
-            katki = f"<b style='color:#4FD1A0;'>güven +{(h[2] - k[2]) * 100:.0f} puan</b>"
+            katki = (
+                f"<b style='color:{RENK_ANA};'>güven "
+                f"+{(h[2] - k[2]) * 100:.0f} puan</b>"
+            )
             guven_artan += 1
         elif k is not None and h is None:
             katki = "<span style='color:#D98A8A;'>hibritte düştü</span>"

@@ -40,7 +40,9 @@ from src.collector.toplayici import bankalari_yukle # noqa: E402
 from src.depolama import istatistikler # noqa: E402
 from src.schema import BankaDurumu # noqa: E402
 from app.ui_utils import (  # noqa: E402
+  RENK_ANA,
   format_bank_name,
+  grafik_duzeni,
   format_kategori,
   inject_custom_css,
   kayitlari_yukle,
@@ -94,15 +96,9 @@ kayitlar = kayitlari_yukle()
 ozet = _ozet()
 bankalar = _bankalar()
 
-# HIZLI MENU KALDIRILDI, YERINE VERIDEN TUREYEN AKSIYON (27 Agu incelemesi).
-#
-# Menu sol kenar cubugunun BIREBIR KOPYASIYDI: ayni alti sayfa, ayni sira,
-# ayni etiket. Ikinci bir kopya gezinmeyi kolaylastirmaz — hangisinin dogru
-# oldugunu sorgulatir ve ekranin ustunde bedava yer kaplar.
-#
-# Yerine gecen sey bir menu DEGIL: bugun bakilmasi gereken seyi VERIDEN
-# hesaplayip oraya goturuyor. Sayilar sabit yazilmadi; korpus degisince
-# kartlar da degisir. Sayfa adi tasiyan tek sey hedef dugmesidir.
+# ÜÇ KART, ALTI SAYFA DEĞİL. Kenar çubuğu zaten altı sayfayı listeliyor;
+# buradaki üç düğme onun kopyası değil, demonun izlediği yol. Açıklamalardaki
+# sayılar sabit yazılmadı, korpustan hesaplanır.
 
 _bugun = date.today()
 _yakinda_bitenler = [
@@ -111,47 +107,39 @@ _yakinda_bitenler = [
 ]
 _oranli = [k for k in kayitlar if k.kar_payi_orani is not None]
 
-st.markdown("**Bugün önerilen aksiyon**")
+# KART YAZILARI «?» ARKASINA GİRDİ (28 Ağustos). Her kartın üstünde iki
+# satır metin vardı: veriden hesaplanan bir başlık ve bir öneri cümlesi. Üç
+# kart = altı satır, ekranın en üstünde, her açılışta aynı. Sayı kaybolmadı —
+# «?» içinde, soran görsün diye duruyor; ekranda yalnız gidilecek yer kaldı.
+st.markdown("**Nereden başlansın?**")
 _a1, _a2, _a3 = st.columns(3)
 
-with _a1:
-  with st.container(border=True):
-    if _yakinda_bitenler:
-      st.markdown(
-        f'<div class="kl-kart-ad">{len(_yakinda_bitenler)} kampanya bu hafta bitiyor</div>'
-        '<div class="kl-kart-alt">Süresi dolmadan rakip teklifini kontrol edin.</div>',
-        unsafe_allow_html=True,
-      )
-    else:
-      st.markdown(
-        '<div class="kl-kart-ad">Bu hafta biten kampanya yok</div>'
-        '<div class="kl-kart-alt">Bitiş tarihlerini banka bazında görün.</div>',
-        unsafe_allow_html=True,
-      )
-    if st.button("Banka Profili", key="gb_aksiyon_biten", use_container_width=True):
-      st.switch_page("pages/5_Banka_Profili.py")
+_KARTLAR = [
+  (
+    _a1, "Banka Profili", "pages/5_Banka_Profili.py", "gb_kart_banka",
+    f"Tek bankanın tüm kampanyaları, verinin ne kadar taze olduğu ve neyi "
+    f"bilmediğimiz. Bu hafta biten kampanya: {len(_yakinda_bitenler)}.",
+  ),
+  (
+    _a2, "Karşılaştırma", "pages/1_Karşılaştırma.py", "gb_kart_kiyas",
+    f"Bankaları yan yana koyar, toplam maliyeti hesaplar. Kâr payı oranı "
+    f"yayımlanmış {len(_oranli)} kampanya sıralanabilir; kalanında oran "
+    "kaynakta yok.",
+  ),
+  (
+    _a3, "Müşteri Profili", "pages/0_Müşteri_Profili.py", "gb_kart_teklif",
+    f"Önünüzdeki müşterinin tutar, vade ve segmentine göre {ozet['kampanya_sayisi']} "
+    "kampanyayı süzer, sunulabilecek teklifi verir.",
+  ),
+]
 
-with _a2:
-  with st.container(border=True):
-    st.markdown(
-      f'<div class="kl-kart-ad">{len(_oranli)} kampanyada kâr payı oranı var</div>'
-      '<div class="kl-kart-alt">Sıralanabilir olanlar bunlar; kalanında oran '
-      "kaynakta yayımlanmamış.</div>",
-      unsafe_allow_html=True,
-    )
-    if st.button("Karşılaştırma", key="gb_aksiyon_kiyas", use_container_width=True):
-      st.switch_page("pages/1_Karşılaştırma.py")
-
-with _a3:
-  with st.container(border=True):
-    st.markdown(
-      f'<div class="kl-kart-ad">Önünüzdeki müşteriye teklif hazırlayın</div>'
-      f'<div class="kl-kart-alt">{ozet["kampanya_sayisi"]} kampanya tutar, vade ve '
-      "segment kısıtlarıyla süzülür.</div>",
-      unsafe_allow_html=True,
-    )
-    if st.button("Müşteri Profili", key="gb_aksiyon_teklif", use_container_width=True):
-      st.switch_page("pages/0_Müşteri_Profili.py")
+for _sutun, _ad, _hedef, _anahtar, _aciklama in _KARTLAR:
+  with _sutun:
+    _d, _s = st.columns([5, 1])
+    if _d.button(_ad, key=_anahtar, use_container_width=True):
+      st.switch_page(_hedef)
+    with _s.popover("?", use_container_width=True):
+      st.caption(_aciklama)
 
 st.divider()
 
@@ -160,7 +148,7 @@ st.divider()
 # Üst göstergeler
 # ---------------------------------------------------------------------------
 
-s1, s2, s3, s4, s5 = st.columns(5)
+s1, s2, s3, s4 = st.columns(4)
 
 # HER OLCU KENDINI ACIKLAR (27 Agu incelemesi, madde 2).
 #
@@ -194,13 +182,10 @@ s4.metric(
        "zaafı değil, bankaların kampanya sayfasında az bilgi yayımlaması: "
        "kâr payı oranı çoğu bankada başvuru ekranının arkasında.",
 )
-s5.metric(
-  "Ortalama güven", f"{ozet['ortalama_guven']:.2f}",
-  help="Yalnız DOLU alanların güven skorlarının ortalaması (0–1). Her alan "
-       "hangi katmandan geldiğini taşır: kural eşleşmesi mi, dil modeli mi, "
-       "ikisinin uzlaşması mı. Boş alanlar bu ortalamaya girmez — girseydi "
-       "veri azlığı güven düşüklüğü gibi görünürdü.",
-)
+# «ORTALAMA GÜVEN» KALDIRILDI (28 Ağustos). Modelin KENDİ bildirdiği güvenin
+# ortalaması bir kalibrasyon değil; «0,79» rakamı okuyana ne yapacağını
+# söylemiyordu. Alan bazındaki güven kaybolmadı — «Kayıt detayları» bölümünde
+# her alanın yanında, kaynağıyla birlikte duruyor.
 
 son = ozet["son_guncelleme"]
 st.caption(
@@ -215,7 +200,7 @@ st.divider()
 # Piyasa ve Sistem Sekmeleri (B2B SaaS Görünümü)
 # ---------------------------------------------------------------------------
 
-tab_piyasa, tab_sistem = st.tabs(["Piyasa Görünümü", "Yapay Zeka Sistem Kalitesi"])
+tab_piyasa, tab_sistem = st.tabs(["Piyasa", "Sistem kalitesi"])
 
 with tab_piyasa:
   sol, sag = st.columns(2)
@@ -235,10 +220,11 @@ with tab_piyasa:
         {"Tür": list(dagilim.keys()), "Adet": list(dagilim.values())}
       ).sort_values("Adet", ascending=True)
       dinamik_yukseklik_bar = max(380, len(cerceve) * 35)
-      grafik = px.bar(cerceve, x="Adet", y="Tür", orientation="h", text="Adet", color_discrete_sequence=["#00A86B"])
-      grafik.update_layout(height=dinamik_yukseklik_bar, margin={"l": 0, "r": 0, "t": 10, "b": 0}, template="plotly_dark")
-      grafik.update_xaxes(showgrid=False)
-      grafik.update_yaxes(showgrid=False)
+      grafik = px.bar(
+        cerceve, x="Adet", y="Tür", orientation="h", text="Adet",
+        color_discrete_sequence=[RENK_ANA],
+      )
+      grafik_duzeni(grafik, yukseklik=dinamik_yukseklik_bar)
       grafik.update_traces(
         textposition="outside",
         hovertemplate="<b>%{y}</b><br>Adet: %{x}<extra></extra>"
@@ -277,10 +263,8 @@ with tab_piyasa:
       isi = px.imshow(
         capraz, text_auto=True, aspect="auto", color_continuous_scale=_notr_yesil
       )
+      grafik_duzeni(isi, yukseklik=dinamik_yukseklik_isi)
       isi.update_layout(
-        height=dinamik_yukseklik_isi,
-        margin={"l": 0, "r": 8, "t": 10, "b": 0},
-        template="plotly_dark",
         coloraxis_colorbar={
           "title": {"text": "Kampanya", "side": "right"},
           "thickness": 12,
@@ -297,7 +281,7 @@ with tab_piyasa:
 
 with tab_sistem:
   # ES-05 Veri Kalitesi ve Şeffaflık
-  st.subheader("Veri Kalitesi ve Şeffaflık")
+  st.subheader("Veri kalitesi ve şeffaflık")
 
   eval_ozet = sonuclari_oku()
   k1, k2, k3 = st.columns(3)
@@ -353,21 +337,24 @@ with tab_sistem:
   st.write("") # Boşluk
   q1, q2 = st.columns(2)
   with q1:
-    st.markdown("**Model Güven Skoru Dağılımı**")
+    st.markdown("**Güven skoru dağılımı**")
     
     guvenler = [k.ortalama_guven for k in kayitlar if k.ortalama_guven > 0]
     if guvenler:
       hist_df = pd.DataFrame({"Güven Skoru": guvenler})
-      fig_hist = px.histogram(hist_df, x="Güven Skoru", nbins=10, color_discrete_sequence=["#00A86B"])
-      fig_hist.update_layout(height=300, margin={"l": 0, "r": 0, "t": 10, "b": 0}, xaxis_title="Güven Skoru", yaxis_title="Kampanya Adedi", bargap=0.1, template="plotly_dark")
-      fig_hist.update_xaxes(showgrid=False)
-      fig_hist.update_yaxes(showgrid=False)
+      fig_hist = px.histogram(
+        hist_df, x="Güven Skoru", nbins=10, color_discrete_sequence=[RENK_ANA]
+      )
+      grafik_duzeni(fig_hist, yukseklik=300)
+      fig_hist.update_layout(
+        xaxis_title="Güven Skoru", yaxis_title="Kampanya Adedi", bargap=0.1
+      )
       st.plotly_chart(fig_hist, use_container_width=True, theme=None)
     else:
       st.info("Güven skoru hesaplanabilen kampanya yok.")
 
   with q2:
-    st.markdown("**Kritik Alan Doluluk Oranları**")
+    st.markdown("**Alan doluluğu**")
     
     # Basitçe dolulukları veri yapısından sayıyoruz
     alan_doluluk = {
@@ -384,10 +371,12 @@ with tab_sistem:
         for k, v in alan_doluluk.items()
       ]).sort_values("Doluluk (%)", ascending=True)
       
-      fig_bar = px.bar(doluluk_df, x="Doluluk (%)", y="Alan", orientation='h', text_auto='.0f', color_discrete_sequence=["#00A86B"])
-      fig_bar.update_layout(height=300, margin={"l": 0, "r": 0, "t": 10, "b": 0}, xaxis_range=[0, 100], template="plotly_dark")
-      fig_bar.update_xaxes(showgrid=False)
-      fig_bar.update_yaxes(showgrid=False)
+      fig_bar = px.bar(
+        doluluk_df, x="Doluluk (%)", y="Alan", orientation="h",
+        text_auto=".0f", color_discrete_sequence=[RENK_ANA],
+      )
+      grafik_duzeni(fig_bar, yukseklik=300)
+      fig_bar.update_layout(xaxis_range=[0, 100])
       st.plotly_chart(fig_bar, use_container_width=True, theme=None)
     else:
       st.info("Hesaplanacak veri yok.")
@@ -431,7 +420,7 @@ defter = pd.DataFrame(
 )
 st.dataframe(defter, use_container_width=True, hide_index=True)
 
-with st.expander("Veri toplama metodolojisi ve etik ilkeler"):
+with st.expander("Veri toplama yöntemi ve etik ilkeler"):
   st.markdown(
     """
 - **BDDK listesi manuel alınmıştır.** BDDK sitesi `robots.txt` ile otomatik

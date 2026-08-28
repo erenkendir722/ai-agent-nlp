@@ -33,7 +33,11 @@ from src.comparison.karsilastirma import ( # noqa: E402
 from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import HedefKitle, Kampanya  # noqa: E402
 from app.ui_utils import (  # noqa: E402
+  RENK_ANA,
+  RENK_IKINCIL,
+  RENK_UYARI,
   format_bank_name,
+  grafik_duzeni,
   format_alan_adi,
   format_hedef_kitle,
   format_kategori,
@@ -117,24 +121,33 @@ with f2:
     )
 
 st.markdown("<br>", unsafe_allow_html=True)
-with st.expander("Gelişmiş Filtreler (Piyasa Özeti)", expanded=False):
+with st.expander("Gelişmiş filtreler", expanded=False):
   c1, c2, c3 = st.columns(3)
   with c1:
-    arama_metni = st.text_input("Serbest Metin Arama (Ad, içerik, avantaj)")
+    arama_metni = st.text_input("Metin ara", placeholder="Banka, ürün ya da kampanya metni")
     
     hedef_kitleler = [h.value for h in HedefKitle]
     # Streamlit'in varsayilan «Choose an option» metni Turkce arayuzde
     # kaliyordu (27 Agu, 2. inceleme).
     secili_hedef_kitle = st.multiselect(
-      "Hedef Kitle (Segment İzolasyonu)", hedef_kitleler, placeholder="Seçim yapın"
+      "Hedef kitle", hedef_kitleler, placeholder="Seçim yapın"
     )
   with c2:
-    tarih_filtresi = st.date_input("Geçerlilik Tarihi (Bu tarihten önce bitenleri gizle)", value=datetime.date.today())
+    tarih_filtresi = st.date_input(
+      "Şu tarihte geçerli", value=datetime.date.today(),
+      help="Bu tarihten önce biten kampanyalar gizlenir.",
+    )
     
-    min_guven = st.slider("Minimum Yapay Zeka Güven Skoru", 0.0, 1.0, 0.0, 0.05, help="Modelin çıkardığı verilere olan güvenini filtreler. %100 doğru çalışma için yüksek tutun.")
+    min_guven = st.slider(
+      "Asgari güven skoru", 0.0, 1.0, 0.0, 0.05,
+      help="Çıkarılan alanların ortalama güveni. Sıfır bırakılırsa hiçbir kayıt elenmez.",
+    )
   with c3:
-    sadece_masrafsiz = st.toggle("Yalnızca Masrafsız (Dosya masrafı yok)")
-    tam_dolu_mu = st.toggle("Veri Bütünlüğü (Kritik alanları eksiksiz olanlar)", help="Kâr payı, vade gibi temel bilgileri 'Belirtilmemiş' olan kampanyaları gizler.")
+    sadece_masrafsiz = st.toggle("Yalnız masrafsız kampanyalar")
+    tam_dolu_mu = st.toggle(
+      "Yalnız eksiksiz kayıtlar",
+      help="Kâr payı ya da vadesi yayımlanmamış kampanyaları gizler.",
+    )
 
 suzulmus = []
 gorulen_kampanyalar = set()
@@ -206,53 +219,61 @@ if not suzulmus:
 # Ağırlıklar — "en avantajlı" kara kutu değil
 # ---------------------------------------------------------------------------
 
-with st.sidebar:
-  st.header("Skor ağırlıkları")
-  st.caption("«En avantajlı» sıralamasını siz belirlersiniz.")
-
-  # HAZIR PROFILLER (27 Agu incelemesi, madde 7).
-  #
-  # Dort kaydirici vardi ve ilk bakista yalniz biri goruluyordu; digerlerinin
-  # varligi kaydirmadan anlasilmiyordu. Ustelik demo sirasinda «simdi fiyata
-  # agirlik verelim» demek dort kaydiriciyi elle oynatmak demekti.
-  #
-  # Profiller kaydiricilarin YERINE GECMEZ, onlari KURAR: tiklandiginda
-  # degerler yazilir ve kaydiricilar guncel degeri gosterir. Kullanici
-  # oradan ince ayar yapmaya devam edebilir.
-  ONAYAR = {
-    "Dengeli": (0.40, 0.25, 0.20, 0.15),
-    "Fiyat odaklı": (0.70, 0.20, 0.05, 0.05),
-    "Masraf odaklı": (0.20, 0.60, 0.10, 0.10),
-    "Vade odaklı": (0.20, 0.10, 0.60, 0.10),
-  }
-  _p1, _p2 = st.columns(2)
-  for _i, (_ad, _degerler) in enumerate(ONAYAR.items()):
-    if (_p1 if _i % 2 == 0 else _p2).button(_ad, key=f"ks_onayar_{_ad}", use_container_width=True):
-      for _anahtar, _deger in zip(
-        ("ks_a_kar", "ks_a_masraf", "ks_a_vade", "ks_a_odul"), _degerler, strict=True
-      ):
-        st.session_state[_anahtar] = _deger
-      st.rerun()
-
-  a_kar = st.slider("Kâr payı oranı", 0.0, 1.0, 0.40, 0.05, key="ks_a_kar")
-  a_masraf = st.slider("Masraf", 0.0, 1.0, 0.25, 0.05, key="ks_a_masraf")
-  a_vade = st.slider("Vade", 0.0, 1.0, 0.20, 0.05, key="ks_a_vade")
-  a_odul = st.slider("Ödül", 0.0, 1.0, 0.15, 0.05, key="ks_a_odul")
-  agirliklar = Agirliklar(a_kar, a_masraf, a_vade, a_odul)
-  st.caption(f"Toplam {agirliklar.toplam():.2f} — otomatik dengelenir.")
-
 # ---------------------------------------------------------------------------
 # Kriter butonları (şartname 5.7)
 # ---------------------------------------------------------------------------
 
-st.subheader("Hızlı sıralama")
+st.subheader("Neye göre sıralansın?")
 if "kriter" not in st.session_state:
   st.session_state.kriter = Kriter.EN_AVANTAJLI
 
 sutunlar = st.columns(len(KRITER_ETIKETLERI))
 for sutun, (kriter, etiket) in zip(sutunlar, KRITER_ETIKETLERI.items(), strict=True):
-  if sutun.button(etiket, use_container_width=True):
+  if sutun.button(etiket, use_container_width=True, key=f"ks_kriter_{kriter.value}"):
     st.session_state.kriter = kriter
+
+# AĞIRLIKLAR KENAR ÇUBUĞUNDAN BURAYA TAŞINDI (28 Ağustos).
+#
+# Dört kaydırıcı sol kenarda, seçili ölçütten 400 piksel uzakta duruyordu ve
+# ekranda hiçbir şey ikisini birbirine bağlamıyordu: kullanıcı ne işe
+# yaradıklarını göremiyordu. Oysa bağ dar — ağırlıklar YALNIZ «En avantajlı»
+# sıralamasını etkiler; «En düşük kâr payı» seçiliyken hiçbir şey yapmazlar.
+#
+# Şimdi tam da o ölçüt seçiliyken, onun altında ve KAPALI bir panelde
+# çıkıyorlar. Panelin başlığı ne yaptıklarını söylüyor; açmayan kullanıcı
+# dengeli varsayılanla devam eder.
+ONAYAR = {
+  "Dengeli": (0.40, 0.25, 0.20, 0.15),
+  "Fiyat odaklı": (0.70, 0.20, 0.05, 0.05),
+  "Masraf odaklı": (0.20, 0.60, 0.10, 0.10),
+  "Vade odaklı": (0.20, 0.10, 0.60, 0.10),
+}
+
+if st.session_state.kriter == Kriter.EN_AVANTAJLI:
+  with st.expander("«En avantajlı» neye göre? — ağırlıkları siz belirlersiniz", expanded=False):
+    _p = st.columns(len(ONAYAR))
+    for _i, (_ad, _degerler) in enumerate(ONAYAR.items()):
+      if _p[_i].button(_ad, key=f"ks_onayar_{_ad}", use_container_width=True):
+        for _anahtar, _deger in zip(
+          ("ks_a_kar", "ks_a_masraf", "ks_a_vade", "ks_a_odul"), _degerler, strict=True
+        ):
+          st.session_state[_anahtar] = _deger
+        st.rerun()
+
+    _k1, _k2, _k3, _k4 = st.columns(4)
+    a_kar = _k1.slider("Kâr payı oranı", 0.0, 1.0, 0.40, 0.05, key="ks_a_kar")
+    a_masraf = _k2.slider("Masraf", 0.0, 1.0, 0.25, 0.05, key="ks_a_masraf")
+    a_vade = _k3.slider("Vade", 0.0, 1.0, 0.20, 0.05, key="ks_a_vade")
+    a_odul = _k4.slider("Ödül", 0.0, 1.0, 0.15, 0.05, key="ks_a_odul")
+else:
+  # Panel çizilmese de değerler okunur: `session_state` kaydırıcıların son
+  # hâlini tutuyor, yoksa varsayılan. Ölçüt değişince ağırlık sıfırlanmaz.
+  a_kar = st.session_state.get("ks_a_kar", 0.40)
+  a_masraf = st.session_state.get("ks_a_masraf", 0.25)
+  a_vade = st.session_state.get("ks_a_vade", 0.20)
+  a_odul = st.session_state.get("ks_a_odul", 0.15)
+
+agirliklar = Agirliklar(a_kar, a_masraf, a_vade, a_odul)
 
 def _alan_yazi(kayit, alan_adi: str) -> str:
   """Sayısal alanı birimine göre yazar — tahsis hem TL hem yüzde olabilir."""
@@ -326,7 +347,7 @@ with col_c:
 sirali_export = sirala(suzulmus, secili_kriter, agirliklar)
 with col_d:
   st.download_button(
-    label="CSV İndir",
+    label="CSV indir",
     data=_csv_olustur(sirali_export),
     file_name="kampanyalar_export.csv",
     mime="text/csv",
@@ -334,7 +355,7 @@ with col_d:
   )
 with col_e:
   st.download_button(
-    label="Excel İndir",
+    label="Excel indir",
     data=_excel_html(sirali_export),
     file_name="kampanyalar_export.xls",
     mime="application/vnd.ms-excel",
@@ -382,7 +403,7 @@ with _sk_maliyet:
         kampanya_secenekleri[isim] = k
       
     secilen_adlar = st.multiselect(
-      "Karşılaştırmak istediğiniz kampanyaları seçin (En fazla 3)",
+      "Karşılaştırılacak kampanyalar (en fazla 3)",
       options=list(kampanya_secenekleri.keys()),
       default=list(kampanya_secenekleri.keys())[:2],
       max_selections=3,
@@ -391,8 +412,8 @@ with _sk_maliyet:
 
     if secilen_adlar:
       h1, h2 = st.columns(2)
-      ortak_anapara = h1.number_input("İhtiyaç Duyulan Finansman (TL)", min_value=1000.0, value=500_000.0, step=10_000.0)
-      ortak_vade = h2.number_input("İstenen Vade (Ay)", min_value=1, value=120, step=6)
+      ortak_anapara = h1.number_input("Finansman tutarı (TL)", min_value=1000.0, value=500_000.0, step=10_000.0)
+      ortak_vade = h2.number_input("Vade (ay)", min_value=1, value=120, step=6)
     
       st.write("") # Boşluk
     
@@ -408,7 +429,11 @@ with _sk_maliyet:
         
           # Veri eksikliği kontrolü
           if pd.isna(kayit.kar_payi_orani) or kayit.kar_payi_orani == "Belirtilmemiş":
-            st.warning("Kâr payı verisi eksik olduğu için hesaplanamıyor.")
+            st.markdown(
+              '<div class="kl-not kl-not-soluk">Kâr payı oranı kaynakta '
+              "yayımlanmamış; toplam maliyet hesaplanamıyor.</div>",
+              unsafe_allow_html=True,
+            )
             maliyet_sonuclari.append(float('inf'))
             continue
           
@@ -416,12 +441,21 @@ with _sk_maliyet:
           limit_asti_mi = False
           if kayit.finansman_tutari_max and kayit.finansman_tutari_max != "Belirtilmemiş":
             if ortak_anapara > float(kayit.finansman_tutari_max):
-              st.error(f"Bankanın belirlediği azami finansman limitini ({kayit.finansman_tutari_max:,.0f} TL) aşıyor.")
+              st.markdown(
+                '<div class="kl-not">Bu kampanyanın azami tutarı '
+                f"<b>{kayit.finansman_tutari_max:,.0f} TL</b>".replace(",", ".")
+                + " — istenen tutar üstünde kalıyor.</div>",
+                unsafe_allow_html=True,
+              )
               limit_asti_mi = True
         
           if kayit.vade_ay_max and kayit.vade_ay_max != "Belirtilmemiş":
             if ortak_vade > float(kayit.vade_ay_max):
-              st.error(f"Bankanın belirlediği azami vadeyi ({kayit.vade_ay_max:.0f} ay) aşıyor.")
+              st.markdown(
+                '<div class="kl-not">Bu kampanyanın azami vadesi '
+                f"<b>{kayit.vade_ay_max:.0f} ay</b> — istenen vade üstünde kalıyor.</div>",
+                unsafe_allow_html=True,
+              )
               limit_asti_mi = True
             
           if limit_asti_mi:
@@ -450,8 +484,8 @@ with _sk_maliyet:
           sonuc = toplam_maliyet(ortak_anapara, float(kayit.kar_payi_orani), int(ortak_vade), tahsis)
           maliyet_sonuclari.append(sonuc['toplam_geri_odeme'])
         
-          st.metric("Aylık Taksit", f"{sonuc['aylik_taksit']:,.2f} TL".replace(",", "."))
-          st.metric("Toplam Geri Ödeme", f"{sonuc['toplam_geri_odeme']:,.2f} TL".replace(",", "."))
+          st.metric("Aylık taksit", f"{sonuc['aylik_taksit']:,.2f} TL".replace(",", "."))
+          st.metric("Toplam geri ödeme", f"{sonuc['toplam_geri_odeme']:,.2f} TL".replace(",", "."))
 
           if tahsis_cozulemedi:
             st.caption(
@@ -472,9 +506,9 @@ with _sk_maliyet:
           # Sifir kalemler artik hic cizilmiyor; kalanlar adiyla ve tutariyla
           # etiketli.
           _kalemler = [
-            ("Anapara", ortak_anapara, "#2E7D9A"),
-            ("Kâr payı", sonuc["toplam_kar_payi"], "#4FD1A0"),
-            ("Masraflar", tahsis, "#D9A441"),
+            ("Anapara", ortak_anapara, RENK_IKINCIL),
+            ("Kâr payı", sonuc["toplam_kar_payi"], RENK_ANA),
+            ("Masraflar", tahsis, RENK_UYARI),
           ]
           _dolu = [(ad, tutar, renk) for ad, tutar, renk in _kalemler if tutar and tutar > 0]
           if _dolu:
@@ -490,12 +524,11 @@ with _sk_maliyet:
               textposition="inside", textinfo="percent",
               hovertemplate="<b>%{label}</b><br>%{value:,.0f} TL<br>%{percent}<extra></extra>",
             )
+            grafik_duzeni(fig, yukseklik=190)
             fig.update_layout(
               showlegend=True,
               legend={"orientation": "h", "y": -0.12, "font": {"size": 10}},
               margin={"t": 6, "b": 6, "l": 6, "r": 6},
-              height=190,
-              template="plotly_dark",
             )
             st.plotly_chart(fig, use_container_width=True, key=f"donut_karsilastirma_{i}")
         
@@ -560,7 +593,7 @@ with _sk_vade:
     # bu bölümde dil modeli çalışmaz.
 
     st.divider()
-    st.subheader("Vade Duyarlılığı — kısa vade ne kazandırır?")
+    st.subheader("Kısa vade ne kazandırır?")
 
     v1, v2 = st.columns(2)
     duyarlilik_kampanyasi = v1.selectbox(
@@ -569,7 +602,7 @@ with _sk_vade:
       help="Yukarıda seçtiğiniz kampanyalar arasından.",
     )
     taksit_tavani_acik = v2.toggle(
-      "Müşterinin aylık ödeme tavanı belli",
+      "Aylık ödeme tavanı belli",
       help="Tavan olmadan «en iyi vade» hep en kısa vade çıkar; "
            "sistem o yüzden tavsiye vermez.",
     )
@@ -581,10 +614,11 @@ with _sk_vade:
 
     d_kayit = kampanya_secenekleri[duyarlilik_kampanyasi]
     if pd.isna(d_kayit.kar_payi_orani) or d_kayit.kar_payi_orani == "Belirtilmemiş":
-      st.warning(
-        f"**{format_bank_name(d_kayit.banka_adi)}** için kâr payı oranı "
-        "«Belirtilmemiş» — vade tablosu üretilemez. Eksik veriyi varsayımla "
-        "doldurmuyoruz."
+      st.markdown(
+        f'<div class="kl-not"><b>{format_bank_name(d_kayit.banka_adi)}</b> için kâr '
+        "payı oranı yayımlanmamış; vade tablosu üretilemez. Eksik veriyi "
+        "varsayımla doldurmuyoruz.</div>",
+        unsafe_allow_html=True,
       )
     else:
       d_tahsis = (
@@ -614,16 +648,16 @@ with _sk_vade:
         if not sec.uygun_mu:
           satirlar.append({
             "Vade (ay)": sec.vade_ay,
-            "Aylık Taksit": None,
-            "Toplam Geri Ödeme": None,
+            "Aylık taksit": None,
+            "Toplam geri ödeme": None,
             f"{int(ortak_vade)} aya göre fark": None,
             "Durum": f"Uygulanamaz — {sec.engel}",
           })
           continue
         satirlar.append({
           "Vade (ay)": sec.vade_ay,
-          "Aylık Taksit": sec.aylik_taksit,
-          "Toplam Geri Ödeme": sec.toplam_geri_odeme,
+          "Aylık taksit": sec.aylik_taksit,
+          "Toplam geri ödeme": sec.toplam_geri_odeme,
           f"{int(ortak_vade)} aya göre fark": sec.toplam_farki,
           "Durum": "Seçili vade" if sec.referans_mi else "",
         })
@@ -633,8 +667,8 @@ with _sk_vade:
         use_container_width=True,
         hide_index=True,
         column_config={
-          "Aylık Taksit": st.column_config.NumberColumn(format="%.0f TL"),
-          "Toplam Geri Ödeme": st.column_config.NumberColumn(format="%.0f TL"),
+          "Aylık taksit": st.column_config.NumberColumn(format="%.0f TL"),
+          "Toplam geri ödeme": st.column_config.NumberColumn(format="%.0f TL"),
           f"{int(ortak_vade)} aya göre fark": st.column_config.NumberColumn(
             format="%.0f TL",
             help="Negatif = bu vade seçili vadeden daha ucuz.",
@@ -646,25 +680,23 @@ with _sk_vade:
       if len(cizilebilir) > 1:
         cizim = pd.DataFrame({
           "Vade (ay)": [s.vade_ay for s in cizilebilir],
-          "Toplam Geri Ödeme": [s.toplam_geri_odeme for s in cizilebilir],
-          "Aylık Taksit": [s.aylik_taksit for s in cizilebilir],
+          "Toplam geri ödeme": [s.toplam_geri_odeme for s in cizilebilir],
+          "Aylık taksit": [s.aylik_taksit for s in cizilebilir],
         })
         g1, g2 = st.columns(2)
         with g1:
           fig_toplam = px.line(
-            cizim, x="Vade (ay)", y="Toplam Geri Ödeme", markers=True,
-            color_discrete_sequence=["#00A86B"],
+            cizim, x="Vade (ay)", y="Toplam geri ödeme", markers=True,
+            color_discrete_sequence=[RENK_ANA],
           )
-          fig_toplam.update_layout(margin=dict(t=30, b=10, l=10, r=10), height=260,
-                                   title="Vade uzadıkça toplam maliyet")
+          grafik_duzeni(fig_toplam, yukseklik=260, baslik="Vade uzadıkça toplam maliyet")
           st.plotly_chart(fig_toplam, use_container_width=True)
         with g2:
           fig_taksit = px.line(
-            cizim, x="Vade (ay)", y="Aylık Taksit", markers=True,
-            color_discrete_sequence=["#ff7f0e"],
+            cizim, x="Vade (ay)", y="Aylık taksit", markers=True,
+            color_discrete_sequence=[RENK_IKINCIL],
           )
-          fig_taksit.update_layout(margin=dict(t=30, b=10, l=10, r=10), height=260,
-                                   title="Vade uzadıkça aylık taksit")
+          grafik_duzeni(fig_taksit, yukseklik=260, baslik="Vade uzadıkça aylık taksit")
           st.plotly_chart(fig_taksit, use_container_width=True)
 
 
@@ -703,89 +735,71 @@ for col in tablo.columns:
 if gizlenecek_sutunlar:
     tablo.drop(columns=gizlenecek_sutunlar, inplace=True)
 
-def _renklendir_guven(val):
-  if val == "Belirtilmemiş" or pd.isna(val):
-    return ""
-  try:
-    v = float(str(val).replace(",", "."))
-    if v >= 0.90:
-      return "background-color: rgba(39, 174, 96, 0.2)"
-    elif v >= 0.70:
-      return "background-color: rgba(241, 196, 15, 0.2)"
-    else:
-      return "background-color: rgba(231, 76, 60, 0.2)"
-  except Exception:
-    return ""
-
-def _renklendir_kar(val):
-  if val == "Belirtilmemiş" or pd.isna(val):
-    return ""
-  try:
-    v = float(str(val).replace(",", "."))
-    if v < 1.50:
-      return "background-color: rgba(173, 216, 230, 0.4)" # LightBlue
-    elif v < 2.50:
-      return "background-color: rgba(135, 206, 235, 0.5)" # SkyBlue
-    elif v < 3.50:
-      return "background-color: rgba(70, 130, 180, 0.6)" # SteelBlue
-    else:
-      return "background-color: rgba(25, 25, 112, 0.5); color: white" # MidnightBlue
-  except Exception:
-    return ""
-
-def _highlight_biz(row):
+# DEĞER BAZLI RENKLENDİRME KALDIRILDI (28 Ağustos).
+#
+# Tablo iki sütunu ölçeğe göre boyuyordu: güven skoru yeşil/sarı/kırmızı,
+# kâr payı dört tonda mavi. İkisi de yanlış bilgi veriyordu.
+#
+# Güven skoru KIRMIZI olunca kullanıcı bir hata arıyor; oysa eşik yok —
+# 0,68 «yanlış» demek değil, «bu alanı yalnız bir katman doğruladı» demek.
+# Renk bir yargı bildirir, orada bir yargı yoktu. Kâr payının mavi tonları
+# ise sıralamayı ikinci kez, daha bulanık biçimde anlatıyordu; tablo zaten
+# seçili ölçüte göre sıralı.
+#
+# Kalan tek renk KENDİ BANKAN: karşılaştırma onun gözünden yapılıyor,
+# satırın nerede olduğunu görmek kararın kendisi.
+def _kendi_bankam(satir):
   hedef_ad = format_bank_name(benim_bankam)
-  if benim_bankam != "(Seçilmedi)" and row['Banka'] == hedef_ad:
-    return ['background-color: rgba(46, 204, 113, 0.15)'] * len(row)
-  return [''] * len(row)
+  if benim_bankam != "(Seçilmedi)" and satir["Banka"] == hedef_ad:
+    return ["background-color: rgba(0, 168, 107, 0.13)"] * len(satir)
+  return [""] * len(satir)
 
-# pandas >= 2.1 için map, eski sürümler için applymap
-styler = tablo.style.apply(_highlight_biz, axis=1)
-kar_sutun = ["Kâr payı"] if "Kâr payı" in tablo.columns else []
-if hasattr(styler, "map"):
-  styled_tablo = styler.map(_renklendir_guven, subset=["Güven"])
-  if kar_sutun:
-    styled_tablo = styled_tablo.map(_renklendir_kar, subset=kar_sutun)
-else:
-  styled_tablo = styler.applymap(_renklendir_guven, subset=["Güven"])
-  if kar_sutun:
-    styled_tablo = styled_tablo.applymap(_renklendir_kar, subset=kar_sutun)
 
-st.dataframe(styled_tablo, use_container_width=True, hide_index=True)
+st.dataframe(
+  tablo.style.apply(_kendi_bankam, axis=1),
+  use_container_width=True,
+  hide_index=True,
+)
 
 # ---------------------------------------------------------------------------
-# Yapay Zeka Battlecard (Biz vs Onlar)
+# Satış notu taslağı
 # ---------------------------------------------------------------------------
+#
+# BÖLÜM NE İŞE YARIYOR: yukarıdaki tablo rakamı verir, bu bölüm o rakamdan
+# müşteriye SÖYLENECEK CÜMLEYİ yazar — nerede öndeyiz, nerede geride,
+# görüşmede hangi sırayla anlatılır. Satış ekibinin «battlecard» dediği şey.
+#
+# Adı «Rakip analizi taslağı (yapay zekâ)» idi ve ne ürettiğini söylemiyordu;
+# kullanıcı düğmeye basmadan ne çıkacağını bilemiyordu. Başlık artık çıktıyı
+# adlandırıyor, panel kapalı açılıyor: isteyen açar.
+#
+# ROZET KALIYOR ama küçüldü. Sayfadaki her şey ölçülmüş yapısal veridir;
+# burası tek istisna — dil modeli serbest metin yazar ve sayısal kalkandan
+# GEÇMEZ. Ayrım silinemez (nöbetçi: `test_ai_ciktisi_rozetle_ayriliyor`),
+# ama tam genişlikte amber kutu olmasına da gerek yok: çip aynı şeyi söyler.
 if benim_bankam != "(Seçilmedi)" and sirali:
-  st.subheader("Rakip analizi taslağı (yapay zekâ)")
-
-  # ROZET BUYUK VE ONDE (27 Agu, 2. inceleme). Sayfadaki HER SEY olculmus
-  # yapisal veriden gelir; burasi tek istisnadir — dil modeli serbest metin
-  # yazar ve sayisal kalkandan GECMEZ. Ayrimin kucuk bir sari kutuda
-  # kalmasi, juri onunde «bu da mi olculmus?» sorusunu doguruyordu.
-  #
-  # «EVREN API» adi dugmeden kalkti: kullaniciya hangi servise gidildigi
-  # degil, ciktinin ne oldugu lazim. Servis adi ipucunda duruyor.
+  st.subheader("Satış notu taslağı")
   st.markdown(
-    '<div style="border-left:3px solid #D9A441;background:rgba(217,164,65,0.10);'
-    'padding:10px 14px;border-radius:8px;margin-bottom:10px;">'
-    '<span style="background:#D9A441;color:#1A1A1F;font-weight:700;font-size:0.72rem;'
-    'padding:2px 8px;border-radius:20px;letter-spacing:0.4px;">AI ÜRETİMİ — DOĞRULANMAMIŞ</span>'
-    '<div style="margin-top:7px;color:#C4C4CE;font-size:0.88rem;line-height:1.55;">'
-    "Sayfadaki tek serbest metin çıktısı; sayısal kalkandan <b>geçmez</b>. "
-    "Rakam için yukarıdaki tabloyu esas alın.</div></div>",
+    '<div class="kl-meta"><span class="kl-cip kl-cip-uyari" title="Bu metni dil '
+    'modeli yazar; sayfadaki tek serbest metin çıktısıdır ve sayısal kalkandan '
+    'geçmez. Rakam için yukarıdaki tabloyu esas alın.">AI ÜRETİMİ — DOĞRULANMAMIŞ'
+    "</span></div>",
     unsafe_allow_html=True,
   )
-  if st.button("Rakip analizi taslağı üret"):
+  st.caption(
+    "Tablodaki rakamlardan müşteriye söylenecek cümleyi yazar: nerede "
+    "öndeyiz, nerede gerideyiz, görüşmede ne anlatılır."
+  )
+  if st.button("Satış notu üret", type="primary"):
     biz_data = [k for k in sirali if format_bank_name(k.banka_adi) == format_bank_name(benim_bankam)]
     onlar_data = [k for k in sirali if format_bank_name(k.banka_adi) != format_bank_name(benim_bankam) and format_bank_name(k.banka_adi) in [format_bank_name(b) for b in secili_bankalar]]
     
     if not biz_data:
-      st.warning(f"{benim_bankam} bankasına ait filtrelenmiş kampanya bulunamadı.")
+      st.info(f"{format_bank_name(benim_bankam)} için süzgeçlerden geçen kampanya yok.")
     elif not onlar_data:
-      st.warning("Karşılaştırma yapılacak Rakip Seti kampanyası bulunamadı.")
+      st.info("Rakip setinde süzgeçlerden geçen kampanya yok.")
     else:
-      with st.spinner("EVREN API analiz ediyor..."):
+      with st.spinner("Satış notu yazılıyor…"):
         import os
         from openai import OpenAI
         
@@ -826,7 +840,10 @@ Sadece analizi ver, profesyonel bir B2B dili kullan."""
           st.info(response.choices[0].message.content)
           st.caption(f"{model_adi} modeliyle üretildi.")
         except Exception as e:
-          st.error(f"EVREN API'sine ulaşılamadı: {str(e)}")
+          st.info("Dil modeli servisine şu anda ulaşılamıyor; sayfanın geri "
+                  "kalanı bundan etkilenmez.")
+          if st.session_state.get("dev_mode", False):
+            st.code(str(e))
 
 # ---------------------------------------------------------------------------
 # Avantaj skorunun dökümü
@@ -845,38 +862,81 @@ st.divider()
 # Kanıt panelleri — her sayının kaynağı
 # ---------------------------------------------------------------------------
 
-st.subheader("Kayıt detayları ve kaynak kanıtı")
+# ---------------------------------------------------------------------------
+# Kayıt kanıtı — YİRMİ PANEL YERİNE TEK KAYIT (28 Ağustos)
+# ---------------------------------------------------------------------------
+#
+# Burada `sirali[:20]` üzerinde dönen yirmi katlanabilir panel vardı. Her
+# panel açıldığında alanlar üç sütunlu bir ızgaraya dökülüyor, her alanın
+# altına kaynak alıntısı `st.caption` olarak giriyordu: tek bir kayıt için
+# 40'a yakın satır. Yirmi panel yan yana durunca bölüm, sayfanın en karışık
+# yeriydi ve hangisine bakılacağı belli değildi.
+#
+# Kanıtın kendisi kalkmadı — bankacılıkta izlenebilirlik olmadan sistem
+# kabul edilmez. Değişen şey ERİŞİM BİÇİMİ: önce hangi kaydın kanıtına
+# bakılacağı seçilir, sonra o kayıt tek ve düzenli bir tabloda açılır.
+# Alıntılar ayrı bir panelde toplanır; alan listesini bölmezler.
 
-for kayit in sirali[:20]:
-  baslik = (
-    f"{format_bank_name(kayit.banka_adi)} — "
-    f"{format_kategori(kayit.urun_turu or kayit.kampanya_turu) if (kayit.urun_turu or kayit.kampanya_turu) else 'Kampanya'} "
-    f"(doluluk %{kayit.doluluk_orani * 100:.0f})"
+st.subheader("Kayıt kanıtı")
+st.caption("Her alanın hangi katmandan geldiği, güveni ve kaynaktaki karşılığı.")
+
+_kanit_secenekleri = {
+  f"{format_bank_name(k.banka_adi)} — "
+  f"{format_kategori(k.urun_turu or k.kampanya_turu) if (k.urun_turu or k.kampanya_turu) else 'Kampanya'}"
+  f"  (doluluk %{k.doluluk_orani * 100:.0f})": k
+  for k in sirali[:20]
+}
+
+if _kanit_secenekleri:
+  _secili_kanit = st.selectbox(
+    "Kayıt", list(_kanit_secenekleri), label_visibility="collapsed"
   )
-  with st.expander(baslik):
-    kampanya: Kampanya = kayit.kampanyaya_cevir()
-    st.markdown(f"**Kaynak:** [{kayit.kaynak_url}]({kayit.kaynak_url})")
-    st.markdown("---")
-    st.caption(f"Çekim tarihi: {kayit.cekim_tarihi:%d.%m.%Y %H:%M}")
+  kayit = _kanit_secenekleri[_secili_kanit]
+  kampanya: Kampanya = kayit.kampanyaya_cevir()
 
-    for alan_adi, alan in kampanya.cikarilan_alanlar().items():
-      if not alan.var_mi:
-        continue
-      c1, c2, c3 = st.columns([2, 2, 1])
-      c1.markdown(f"**{format_alan_adi(alan_adi)}**")
-      c2.markdown(_enum_yazi(alan))
-      c3.markdown(f"`{alan.yontem}` · {alan.guven:.2f}")
-      if alan.kaynak and alan.kaynak.alinti:
-        st.caption(f" Kaynak alıntısı: _{alan.kaynak.alinti[:280]}_")
+  _b1, _b2 = st.columns([3, 1])
+  _b1.markdown(f"**Kaynak:** [{kayit.kaynak_url}]({kayit.kaynak_url})")
+  _b2.caption(f"Çekim: {kayit.cekim_tarihi:%d.%m.%Y %H:%M}")
 
-    bos = [format_alan_adi(ad) for ad, a in kampanya.cikarilan_alanlar().items() if not a.var_mi]
-    if bos:
-      st.caption(f"**Belirtilmemiş alanlar:** {', '.join(bos)}")
-    
-    # Geliştirici Modu açıksa, o kampanyanın ham JSON halini göster
-    if st.session_state.get("dev_mode", False):
-      st.markdown("---")
-      st.caption("**API Yanıtı (JSON)**")
+  # ALANLAR TABLODA, `st.columns` YIĞINI DEĞİL. Üç sütunlu markdown ızgarası
+  # her alan için üç ayrı Streamlit ögesi üretiyordu; tablo tek öge ve
+  # hizalaması kendiliğinden doğru.
+  _dolu_alanlar = [
+    {
+      "Alan": format_alan_adi(alan_adi),
+      "Değer": _enum_yazi(alan),
+      "Katman": alan.yontem,
+      "Güven": f"{alan.guven:.2f}",
+    }
+    for alan_adi, alan in kampanya.cikarilan_alanlar().items()
+    if alan.var_mi
+  ]
+  if _dolu_alanlar:
+    st.dataframe(
+      pd.DataFrame(_dolu_alanlar), use_container_width=True, hide_index=True
+    )
+
+  _alintilar = [
+    (format_alan_adi(ad), alan.kaynak.alinti)
+    for ad, alan in kampanya.cikarilan_alanlar().items()
+    if alan.var_mi and alan.kaynak and alan.kaynak.alinti
+  ]
+  if _alintilar:
+    with st.expander(f"Kaynak alıntıları ({len(_alintilar)})", expanded=False):
+      for _ad, _alinti in _alintilar:
+        st.markdown(f"**{_ad}**")
+        st.markdown(f"> {_alinti[:280]}")
+
+  _bos = [
+    format_alan_adi(ad)
+    for ad, alan in kampanya.cikarilan_alanlar().items()
+    if not alan.var_mi
+  ]
+  if _bos:
+    st.caption(f"Kaynakta yayımlanmamış: {', '.join(_bos)}")
+
+  if st.session_state.get("dev_mode", False):
+    with st.expander("Kaydın ham JSON'u"):
       st.json(kampanya.model_dump())
 
 st.divider()

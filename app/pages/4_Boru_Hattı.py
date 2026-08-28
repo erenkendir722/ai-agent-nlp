@@ -75,6 +75,7 @@ from app.boru_durumu import (  # noqa: E402
 )
 from app.is_yurutucu import baslat, olaylari_cek  # noqa: E402
 from app.ui_utils import (  # noqa: E402
+  RENK_ANA,
   sayfa_gezinme,
   sayfa_sonu,
   format_bank_name,
@@ -265,7 +266,7 @@ MESGUL = bool(st.session_state.bh_is and st.session_state.bh_is.calisiyor_mu())
 # ---------------------------------------------------------------------------
 
 sekme_toplama, sekme_cikarim, sekme_tazelik = st.tabs(
-  ["1 · Veri Toplama", "2 · Çıkarım", "3 · Veri Denetimi"]
+  ["1 · Topla (veri yazar)", "2 · Çıkar (veri yazar)", "3 · Denetle (yalnız bakar)"]
 )
 
 
@@ -445,7 +446,7 @@ with sekme_toplama:
         px.bar(
           df_banka, x="Banka", y="Sayfa",
           title="Banka başına toplanan sayfa (ölçülen)",
-          color_discrete_sequence=["#00A86B"],
+          color_discrete_sequence=[RENK_ANA],
         ),
         use_container_width=True,
       )
@@ -693,7 +694,7 @@ with sekme_cikarim:
         px.bar(
           df_katman, x="Katman", y="Alan",
           title="Katman katkısı — çıkarılan alan sayısı (ölçülen)",
-          color_discrete_sequence=["#00A86B"],
+          color_discrete_sequence=[RENK_ANA],
         ),
         use_container_width=True,
       )
@@ -727,10 +728,17 @@ with sekme_cikarim:
 # === SEKME 3 — VERİ DENETİMİ (A: keşif G-19 · B: tazelik G-17) =============
 
 with sekme_tazelik:
+  st.markdown(
+    '<div class="kl-serit">Bu sekme <b>hiçbir veri yazmaz</b>; yalnız iki '
+    "soruyu sorar. Değişen bir şey bulunursa toplamayı 1. sekmeden siz "
+    "başlatırsınız.</div>",
+    unsafe_allow_html=True,
+  )
+
   # ---------------------------------------------------------------------
   # A) YENİ KAMPANYA KEŞFİ (G-19) — «elimizde OLMAYAN kampanya çıktı mı?»
   # ---------------------------------------------------------------------
-  st.subheader("A · Yeni Kampanya Keşfi")
+  st.subheader("A · Listede yeni kampanya var mı?")
   st.markdown(
     "Kampanya listeleri yeniden taranır: **elimizde olmayan yeni kampanya "
     "çıkmış mı?** Yalnız liste taranır, sayfalar indirilmez."
@@ -929,15 +937,12 @@ with sekme_tazelik:
   # ---------------------------------------------------------------------
   # B) VERİ TAZELİĞİ (G-17) — «elimizdekiler bayatladı mı?»  DEĞİŞMEDİ
   # ---------------------------------------------------------------------
-  st.subheader("B · Elimizdekiler Güncel mi")
+  st.subheader("B · Elimizdeki sayfalar değişmiş mi?")
 
   tetikleyici = Tetikleyici()
   taban = taban_oku()
 
-  st.markdown(
-    "Elimizdeki kampanya sayfaları **son bakıştan beri değişmiş mi?** Bu tarama "
-    "yalnız tespit eder; yeniden toplamak 1. sekmeden, sizin kararınızla yapılır."
-  )
+  st.markdown("Elimizdeki kampanya sayfaları **son bakıştan beri değişmiş mi?**")
 
   z1, z2, z3 = st.columns(3)
   z1.metric("Taban çizgisi", f"{len(taban)} adres")
