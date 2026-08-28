@@ -34,7 +34,6 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Metin Analizi", page_icon="", layout="wide")
 inject_custom_css()
 gelistirici_anahtari()
-mimari_kenari("Çıkarım")
 sayfa_gezinme()
 st.title("Canlı Metin Analizi")
 
@@ -270,4 +269,5 @@ if ham:
     st.divider()
     _sonucu_ciz(hibrit_k, iz, ham, "Kural + dil modeli + uzlaştırıcı")
 
+mimari_kenari("Çıkarım")
 sayfa_sonu()

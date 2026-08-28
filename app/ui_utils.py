@@ -488,7 +488,11 @@ def mimari_kenari(aktif: str | None = None) -> None:
             f'<div><div class="kl-adim-ad">{ad}</div>'
             f'<div class="kl-adim-alt">{alt}</div></div></div>'
         )
+    # Kenar çubuğunun EN ALTINDA çağrılır (sayfalar `sayfa_sonu()`dan hemen
+    # önce çağırıyor): şerit bir konum göstergesi, sayfanın ana aracı değil.
+    # Ayıraç onu sayfanın kendi kenar içeriğinden ayırır.
     with st.sidebar:
+        st.divider()
         st.caption("Sistem akışı")
         st.markdown(
             f'<div class="kl-mimari">{"".join(satirlar)}</div>',

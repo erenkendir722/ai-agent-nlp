@@ -40,7 +40,6 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
 inject_custom_css()
 gelistirici_anahtari()
-mimari_kenari("Arayüz")
 sayfa_gezinme()
 st.title("Kampanya Asistanı")
 
@@ -129,13 +128,20 @@ with st.sidebar:
     st.session_state.aktif_sohbet = len(sohbetler) - 1
     st.rerun()
 
-  # Boş sohbetler listelenmez (aktif olan hariç): adı olmayan bir satır
-  # tıklanacak bir şey sunmaz. Yeni sohbet ilk sorusuyla birlikte adlanır.
+  # BOŞ SOHBET HİÇ LİSTELENMEZ — aktif olan da (28 Ağustos).
+  #
+  # Aktif sohbet listeye giriyordu ve boşken adı «Yeni sohbet» oluyordu:
+  # ekranda üstteki düğmeyle BİREBİR aynı yazıyı taşıyan ikinci bir satır.
+  # Kullanıcı hangisinin gerçek düğme olduğunu ayırt edemiyordu; üstelik
+  # o satıra tıklamak hiçbir şey yapmıyor (zaten oradasınız).
+  #
+  # Liste artık yalnız ADI OLAN sohbetleri taşır — adı ilk soru veriyor.
+  # Aktif sohbet boşsa hiçbir satır vurgulu olmaz; nerede olduğunuzu boş
+  # sohbet alanının kendisi zaten söylüyor.
   listelenecek = [
-    (no, sohbet) for no, sohbet in enumerate(sohbetler)
-    if sohbet["gecmis"] or no == aktif_no
+    (no, sohbet) for no, sohbet in enumerate(sohbetler) if sohbet["gecmis"]
   ]
-  if any(sohbet["gecmis"] for _, sohbet in listelenecek):
+  if listelenecek:
     st.caption("Sohbetler")
     for no, sohbet in reversed(listelenecek):
       if st.button(
@@ -320,4 +326,5 @@ if soru:
 if aktif["gecmis"]:
   en_alta_kaydir(len(aktif["gecmis"]))
 
+mimari_kenari("Arayüz")
 sayfa_sonu()

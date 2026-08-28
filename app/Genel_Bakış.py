@@ -62,7 +62,6 @@ st.set_page_config(
 
 inject_custom_css()
 gelistirici_anahtari()
-mimari_kenari()
 sayfa_gezinme()
 
 
@@ -439,4 +438,5 @@ with st.expander("Veri toplama yöntemi ve etik ilkeler"):
     """
   )
 
+mimari_kenari()
 sayfa_sonu()

@@ -55,7 +55,6 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Karşılaştırma", page_icon="", layout="wide")
 inject_custom_css()
 gelistirici_anahtari()
-mimari_kenari("Motor")
 sayfa_gezinme()
 
 
@@ -951,4 +950,5 @@ if st.session_state.get("dev_mode", False):
   st.code(curl_cmd, language="bash")
   st.divider()
 
+mimari_kenari("Motor")
 sayfa_sonu()
