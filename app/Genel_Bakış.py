@@ -43,6 +43,7 @@ from app.ui_utils import (  # noqa: E402
   RENK_ANA,
   format_bank_name,
   grafik_duzeni,
+  ipucu_simgesi,
   format_kategori,
   inject_custom_css,
   kayitlari_yukle,
@@ -136,11 +137,16 @@ _KARTLAR = [
 
 for _sutun, _ad, _hedef, _anahtar, _aciklama in _KARTLAR:
   with _sutun:
-    _d, _s = st.columns([5, 1])
+    # AÇIKLAMA TIKLANMAZ, ÜZERİNE GELİNİR (28 Ağustos). Burada `st.popover`
+    # vardı: «?» tam boy bir DÜĞMEYDİ ve açmak için tıklamak gerekiyordu —
+    # yanındaki gerçek düğmeyle aynı ağırlıkta görünüyor, «hangisi asıl
+    # eylem?» diye sordurtuyordu. Açıklama bir eylem değil; ölçülerin
+    # yanındaki «?» simgesi ne yapıyorsa o: üzerine gelince açılır, ekranda
+    # yalnız 15 piksel yer kaplar.
+    _d, _s = st.columns([8, 1])
     if _d.button(_ad, key=_anahtar, use_container_width=True):
       st.switch_page(_hedef)
-    with _s.popover("?", use_container_width=True):
-      st.caption(_aciklama)
+    _s.markdown(ipucu_simgesi(_aciklama), unsafe_allow_html=True)
 
 st.divider()
 

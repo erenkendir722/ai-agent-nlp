@@ -473,6 +473,16 @@ _ASAMALAR = (
 )
 
 
+def ipucu_simgesi(metin: str) -> str:
+    """Etiket yanına konan «?» simgesinin HTML'i — üzerine gelince açılır.
+
+    `st.markdown(..., unsafe_allow_html=True)` ile basılır. Metindeki tırnak
+    işareti `data-ipucu` özniteliğini kapatıp balonu kırardı; kaçırılıyor.
+    """
+    guvenli = metin.replace('"', "&quot;")
+    return f'<div class="kl-ipucu-kutu"><span class="kl-ipucu" data-ipucu="{guvenli}">?</span></div>'
+
+
 def mimari_kenari(aktif: str | None = None) -> None:
     """Kenar çubuğuna beş aşamalı zinciri çizer, `aktif` olanı vurgular.
 
@@ -607,6 +617,43 @@ def inject_custom_css():
             font-size: 0.78rem !important;
             color: #9A9AA5 !important;
         }
+
+        /* İPUCU SİMGESİ — `st.metric`in etiket yanındaki «?» simgesinin
+           karşılığı. Streamlit o simgeyi yalnız ETİKETLİ widget'larda
+           çiziyor; `st.button`da `help=` verilince ayrı bir simge çıkmıyor,
+           tooltip düğmenin kendisine bağlanıyor. Aynı görüntüyü elde etmenin
+           yolu simgeyi kendimiz çizmek.
+           `title` KULLANILMADI: yerleşik ipucu ~1 sn gecikmeyle açılıyor ve
+           açık temada beyaz bir kutu veriyor — sayfanın geri kalanıyla
+           uyumsuz. Balon anında açılır ve paletin rengini taşır. */
+        .kl-ipucu-kutu {
+            display: flex; align-items: center; justify-content: flex-start;
+            height: 2.4rem;
+        }
+        .kl-ipucu {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 15px; height: 15px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.28);
+            color: #9A9AA5; font-size: 0.62rem; font-weight: 700;
+            cursor: help; position: relative;
+        }
+        .kl-ipucu:hover { color: #FFFFFF; border-color: rgba(0,168,107,0.65); }
+        .kl-ipucu::after {
+            content: attr(data-ipucu);
+            position: absolute; top: calc(100% + 8px); right: -6px;
+            width: 258px; padding: 9px 12px; border-radius: 8px;
+            background: #0E0E12; color: #D8D8E0;
+            border: 1px solid rgba(255,255,255,0.14);
+            font-size: 0.76rem; font-weight: 400; line-height: 1.5;
+            text-align: left; white-space: normal;
+            opacity: 0; visibility: hidden; transition: opacity 0.14s ease;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.55);
+            z-index: 1001;
+        }
+        .kl-ipucu:hover::after { opacity: 1; visibility: visible; }
+        /* Balon sütun sınırında kırpılmasın. */
+        div[data-testid="stHorizontalBlock"]:has(.kl-ipucu),
+        div[data-testid="stColumn"]:has(.kl-ipucu) { overflow: visible; }
 
         /* MİMARİ ŞERİDİ — kenar çubuğunda, sayfanın hangi aşamayı gösterdiği
            vurgulu. Beş satır, sabit sıra: aynı diyagram her ekranda. */
