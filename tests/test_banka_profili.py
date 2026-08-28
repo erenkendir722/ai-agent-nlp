@@ -98,24 +98,81 @@ class TestKapsam:
         assert int(str(kampanya_olcusu.value).replace(".", "")) == beklenen
 
     def test_kar_payi_araligi_gercek_degerlerden(self, kayitlar) -> None:
-        """Aralık uydurulmaz: ekrandaki uçlar veritabanındaki uçlar olmalı."""
+        """Aralık uydurulmaz: ekrandaki uçlar veritabanındaki uçlar olmalı.
+
+        KAPSAM KAPISI (28 Ağustos): uçlar artık TÜM kayıtlardan değil,
+        `OLCUT_KAPSAMI['kar_payi_orani']` içindeki finansman kampanyalarından
+        gelir. Ölçü öncesinde dokuz bankanın dokuzunda «%0,00 – …» diye
+        açılıyordu, çünkü `kar_payi_orani` dolu kayıtların çoğu kart
+        kampanyası ve neredeyse hepsi sıfır (ADR 020). O sıfır doğru bir
+        veri; yanlış olan onu bir finansman oranıyla aynı aralığa sokmaktı.
+
+        Test hâlâ aynı şeyi ölçüyor — ekrandaki uç, veritabanındaki uç mu —
+        yalnız hangi kayıt kümesine baktığı sözleşmeyle hizalandı.
+        """
+        from src.comparison.karsilastirma import OLCUT_KAPSAMI
+
+        kapsam = OLCUT_KAPSAMI.get("kar_payi_orani", frozenset())
+
+        def _kapsamdaki(banka_adi: str) -> list[float]:
+            return [
+                k.kar_payi_orani for k in kayitlar
+                if k.banka_adi == banka_adi
+                and k.kar_payi_orani is not None
+                and k.kampanya_turu in kapsam
+            ]
+
+        # ARALIK gösteren bir banka gerek: tek değerli bankada ölçü «%1,69»
+        # yazar ve iki uç denetlenemez.
         adaylar = [
-            b for b in {k.banka_adi for k in kayitlar}
-            if sum(1 for k in kayitlar if k.banka_adi == b and k.kar_payi_orani is not None) >= 2
+            b for b in sorted({k.banka_adi for k in kayitlar})
+            if len(set(_kapsamdaki(b))) >= 2
         ]
-        assert adaylar, "kâr payı taşıyan banka yok — test kurgusu bozuk"
+        assert adaylar, "kapsam içinde aralık gösteren banka yok — kurgu bozuk"
         banka = adaylar[0]
-        oranlar = [
-            k.kar_payi_orani for k in kayitlar
-            if k.banka_adi == banka and k.kar_payi_orani is not None
-        ]
+        oranlar = _kapsamdaki(banka)
 
         at = _kos(banka)
-        yazi = str(next(m for m in at.metric if m.label == "Kâr payı oranı").value)
+        yazi = str(next(m for m in at.metric if m.label == "Finansman kâr payı").value)
         for uc in (min(oranlar), max(oranlar)):
-            assert f"{uc:.2f}".replace(".", ",") in yazi, (
-                f"{uc} ekranda yok: {yazi!r}"
+            # Tam sıfır ondalıksız yazılır: «%0,00» bozuk bir alan gibi okunur.
+            beklenen = "%0" if uc == 0 else f"{uc:.2f}".replace(".", ",")
+            assert beklenen in yazi, f"{uc} ekranda yok: {yazi!r}"
+
+    def test_kar_payi_kapsam_disi_kayitlari_saymaz(self, kayitlar) -> None:
+        """Kart kampanyasının sıfırı finansman aralığını AŞAĞI ÇEKMEMELİ.
+
+        Kapının asıl işi bu. Ölçüldü: üç bankada alt sınır düzeldi —
+        TOM %0,00→%1,99 · Emlak %0,00→%1,69 · Vakıf %0,00→%3,45.
+        """
+        from src.comparison.karsilastirma import OLCUT_KAPSAMI
+
+        kapsam = OLCUT_KAPSAMI.get("kar_payi_orani", frozenset())
+
+        # Kapsam DIŞI sıfırı olan ama kapsam İÇİ tabanı sıfırdan büyük banka.
+        for banka in sorted({k.banka_adi for k in kayitlar}):
+            ici = [
+                k.kar_payi_orani for k in kayitlar
+                if k.banka_adi == banka and k.kar_payi_orani is not None
+                and k.kampanya_turu in kapsam
+            ]
+            disi_sifir = any(
+                k.kar_payi_orani == 0 for k in kayitlar
+                if k.banka_adi == banka and k.kar_payi_orani is not None
+                and k.kampanya_turu not in kapsam
             )
+            if not ici or not disi_sifir or min(ici) == 0:
+                continue
+
+            yazi = str(
+                next(m for m in _kos(banka).metric if m.label == "Finansman kâr payı").value
+            )
+            assert not yazi.startswith("%0 "), (
+                f"{banka}: kapsam dışı sıfır aralığa sızdı — {yazi!r}"
+            )
+            return
+
+        pytest.skip("bu korpusta kapıyı ayırt eden banka yok")
 
 
 class TestYakindaBitenler:

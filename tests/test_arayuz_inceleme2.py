@@ -99,15 +99,26 @@ def test_turkce_arayuzde_ingilizce_yer_tutucu_yok() -> None:
     )
 
 
-def test_ai_ciktisi_rozetle_ayriliyor() -> None:
+def test_ai_ciktisi_isaretle_ayriliyor() -> None:
     """Serbest metin üretimi ölçülmüş veriden görsel olarak ayrılmalı.
 
-    Sayfadaki her şey yapısal kayıttan gelir; rakip analizi taslağı tek
-    istisnadır ve sayısal doğrulama kalkanından geçmez. Ayrım küçük bir
-    uyarı kutusunda kalırsa jüri «bu da mı ölçülmüş?» diye sorar.
+    Sayfadaki her şey yapısal kayıttan gelir; satış notu taslağı tek
+    istisnadır ve sayısal doğrulama kalkanından geçmez. İşaret silinirse
+    jüri «bu da mı ölçülmüş?» diye sorar.
+
+    İŞARETİN SÖZCÜĞÜ 28 Ağustos'ta değişti: «AI ÜRETİMİ — DOĞRULANMAMIŞ»
+    büyük harfle, uyarı renginde ve «doğrulanmamış» kelimesiyle duruyordu;
+    kullanıcı düğmeye basmaya çekiniyordu. Oysa çıktı zaten bir taslak.
+    Test AYRIMIN VARLIĞINI denetler, belirli bir cümleyi değil — yoksa her
+    ton düzeltmesinde kırılır ve düzeltmeyi zorlaştırdığı için işaretin
+    komple silinmesini teşvik ederdi.
     """
     metin = _kodu_oku(KARSILASTIRMA)
-    assert "AI ÜRETİMİ — DOĞRULANMAMIŞ" in metin, "AI çıktısı rozetle ayrılmamış"
+    assert "AI taslak" in metin, (
+        "dil modeli çıktısı işaretle ayrılmamış — ölçülmüş veriden ayırt "
+        "edilemez hâle gelir"
+    )
+    assert "kl-cip" in metin, "işaret çip biçiminde çizilmiyor"
     assert "EVREN API)" not in metin, (
         "düğme hâlâ servis adı taşıyor — kullanıcıya hangi servise gidildiği "
         "değil, çıktının ne olduğu lazım"

@@ -21,6 +21,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -28,11 +29,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from src.ajanlar.muhakeme import MuhakemeAjani, MusteriProfili  # noqa: E402
 from src.schema import HedefKitle  # noqa: E402
 from app.ui_utils import (  # noqa: E402
+    disa_aktar,
     format_hedef_kitle,
+    gelistirici_anahtari,
     inject_custom_css,
     kampanyalari_yukle,
-    gelistirici_anahtari,
-  mimari_kenari,
+    mimari_kenari,
     sayfa_gezinme,
     sayfa_sonu,
 )
@@ -365,20 +367,37 @@ with st.expander(f"Nasıl hesaplandı? — {iz.ajan_adi} · {iz.sure_ms} ms", ex
     )
 
 st.divider()
-if uygunlar:
+if gosterilecek:
   st.subheader("Teklif raporu")
 
-  rapor_metni = f"MÜŞTERİ TEKLİF FORMU\n------------------\nFinansman Tutarı: {_tl(profil.tutar)}\nVade: {profil.vade_ay} Ay\nMüşteri Tipi: {tip.value}\n\nUYGUN KAMPANYALAR:\n"
-  for i, s in enumerate(uygunlar[:5], 1):
-      maliyet_str = _tl(s.maliyet['toplam_geri_odeme']) if s.maliyet else "Belirtilmemiş"
-      rapor_metni += f"{i}. {s.banka_adi} - Toplam Geri Ödeme: {maliyet_str}\n"
-  
-  st.download_button(
-      label="Teklif raporunu indir (TXT)",
-      data=rapor_metni,
-      file_name="musteri_teklif_formu.txt",
-      mime="text/plain",
-      type="primary"
+  # RAPOR ORTAK YARDIMCIDAN (28 Ağustos). Burada elle kurulmuş bir TXT
+  # vardı: kendi başlığı, kendi hizalaması, kendi kodlaması. Beş ekranın
+  # beşinde ayrı bir çıktı biçimi olmasın diye `disa_aktar`a bağlandı —
+  # hangi ekrandan indirilirse indirilsin dosya aynı görünüyor.
+  #
+  # Listelenen kalemler RAPORA GİRENLERLE AYNI: eskiden `uygunlar[:5]`
+  # yazıyordu ve maliyeti hesaplanamayan kayıtlar rapora «Belirtilmemiş»
+  # diye giriyordu — ekranda gösterilmeyen bir teklifi müşteriye veren
+  # bir belge.
+  _rapor = pd.DataFrame([
+    {
+      "Sıra": sira,
+      "Banka": s.banka_adi,
+      "Toplam geri ödeme": _tl(s.maliyet["toplam_geri_odeme"]),
+      "Aylık taksit": _tl(s.maliyet["aylik_taksit"]),
+      "Kaynak": getattr(kayit_dizini.get(s.kampanya_id), "kaynak_url", ""),
+    }
+    for sira, s in enumerate(gosterilecek[:15], 1)
+  ])
+  st.dataframe(_rapor, use_container_width=True, hide_index=True)
+  disa_aktar(
+    _rapor,
+    dosya_adi="musteri_teklif_formu",
+    anahtar="mp_teklif",
+    baslik=(
+      f"Müşteri teklif formu — {_tl(profil.tutar)} · {profil.vade_ay} ay · "
+      f"{format_hedef_kitle(tip)}"
+    ),
   )
 
 mimari_kenari("Motor")

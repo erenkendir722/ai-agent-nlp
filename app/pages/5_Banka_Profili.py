@@ -38,10 +38,12 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+from src.comparison.karsilastirma import OLCUT_KAPSAMI  # noqa: E402
 from src.schema import ALAN_ADLARI, alan_etiketi  # noqa: E402
 from app.ui_utils import (  # noqa: E402
   RENK_ANA,
   RENK_IKINCIL,
+  disa_aktar,
   format_bank_name,
   grafik_duzeni,
   format_kategori,
@@ -151,7 +153,28 @@ def _tazelik_gun() -> int | None:
 # Üst göstergeler
 # ---------------------------------------------------------------------------
 
-oranlar = [k.kar_payi_orani for k in banka if k.kar_payi_orani is not None]
+# KÂR PAYI ARALIĞI YALNIZ FİNANSMAN KAMPANYALARINDAN (28 Ağustos).
+#
+# Ölçü «%0,00 – %4,82» diye çıkıyordu ve dokuz bankanın dokuzunda alt sınır
+# sıfırdı. Sebep ADR 020'de yazılı: `kar_payi_orani` dolu kayıtların çoğu
+# kart/alışveriş kampanyası ve neredeyse hepsi sıfır («vade farksız 6
+# taksit»). O sıfır DOĞRU bir veridir, yanlış olan onu bir ihtiyaç
+# finansmanının oranıyla aynı aralığa sokmaktı.
+#
+# Kapı `karsilastirma.OLCUT_KAPSAMI` — sıralama, avantaj skoru ve chatbot
+# aynı kapıdan geçiyor; burada ikinci bir eşik YAZILMAZ. Ölçüldü, kapı üç
+# bankada aralığı düzeltti: TOM %0,00–%1,99 → %1,99 · Emlak %0,00–%1,69 →
+# %1,69 · Vakıf %0,00–%3,47 → %3,45–%3,47.
+_KAPSAM = OLCUT_KAPSAMI.get("kar_payi_orani", frozenset())
+oranlar = [
+  k.kar_payi_orani for k in banka
+  if k.kar_payi_orani is not None and k.kampanya_turu in _KAPSAM
+]
+
+
+def _oran_yazi(deger: float) -> str:
+  """Tam sıfırda ondalık YAZILMAZ: «%0,00» bozuk bir alan gibi okunuyor."""
+  return "%0" if deger == 0 else f"%{tr_sayi(deger)}"
 vadeler = [k.vade_ay_max for k in banka if k.vade_ay_max is not None]
 masrafsizlar = [k for k in banka if k.masrafsiz_mi]
 pay = len(banka) / len(kayitlar) * 100
@@ -160,11 +183,23 @@ tazelik = _tazelik_gun()
 u1, u2, u3, u4 = st.columns(4)
 u1.metric("Kampanya", len(banka))
 
-if oranlar:
-  u2.metric("Kâr payı oranı", f"%{tr_sayi(min(oranlar))} – %{tr_sayi(max(oranlar))}")
+if not oranlar:
+  u2.metric("Finansman kâr payı", "Belirtilmemiş")
+  u2.caption("Finansman kampanyasında oran yayımlanmamış")
+elif min(oranlar) == max(oranlar):
+  # Tek değerde «%1,69 – %1,69» yazmak aralık olmayan şeyi aralık gösterir.
+  u2.metric("Finansman kâr payı", _oran_yazi(oranlar[0]))
+  u2.caption(f"{len(oranlar)} finansman kampanyası")
 else:
-  u2.metric("Kâr payı oranı", "Belirtilmemiş")
-  u2.caption("Bu bankanın hiçbir kampanyasında yok")
+  u2.metric(
+    "Finansman kâr payı",
+    f"{_oran_yazi(min(oranlar))} – {_oran_yazi(max(oranlar))}",
+  )
+  _sifirli = sum(1 for o in oranlar if o == 0)
+  u2.caption(
+    f"{_sifirli} kampanyada kâr payı yok" if _sifirli
+    else f"{len(oranlar)} finansman kampanyası"
+  )
 
 if vadeler:
   u3.metric("En uzun vade", f"{max(vadeler)} ay")
@@ -224,16 +259,22 @@ with sol:
     ad = format_kategori(k.kampanya_turu)
     turler[ad] = turler.get(ad, 0) + 1
   cizim = pd.DataFrame({"Tür": list(turler), "Adet": list(turler.values())})
-  st.plotly_chart(
-    grafik_duzeni(
-      px.bar(
-        cizim.sort_values("Adet"), x="Adet", y="Tür", orientation="h",
-        text="Adet", color_discrete_sequence=[RENK_ANA],
-      ),
-      yukseklik=max(300, len(cizim) * 34),
+  _tur_grafik = grafik_duzeni(
+    px.bar(
+      cizim.sort_values("Adet"), x="Adet", y="Tür", orientation="h",
+      text="Adet", color_discrete_sequence=[RENK_ANA],
     ),
-    use_container_width=True,
+    yukseklik=max(300, len(cizim) * 34),
   )
+  # İPUCU AÇIKÇA YAZILIR: plotly'nin üretttiği varsayılan şablon sütun
+  # adlarını ham hâliyle basıyor ve `text` alanına bağlandığında imlecin
+  # altında tanımsız değer gösterebiliyordu.
+  _tur_grafik.update_traces(
+    textposition="outside",
+    hovertemplate="<b>%{y}</b><br>Kampanya: %{x}<extra></extra>",
+  )
+  _tur_grafik.update_layout(xaxis_title=None, yaxis_title=None)
+  st.plotly_chart(_tur_grafik, use_container_width=True, theme=None)
 
 with sag:
   st.subheader("Alan doluluğu")
@@ -243,16 +284,18 @@ with sag:
     dolu = sum(1 for n in _nesneler.values() if getattr(n, alan).var_mi)
     satirlar.append({"Alan": alan_etiketi(alan) or alan, "Doluluk": dolu / len(banka) * 100})
   doluluk = pd.DataFrame(satirlar).sort_values("Doluluk")
-  st.plotly_chart(
-    grafik_duzeni(
-      px.bar(
-        doluluk, x="Doluluk", y="Alan", orientation="h",
-        color_discrete_sequence=[RENK_IKINCIL],
-      ),
-      yukseklik=max(300, len(doluluk) * 26),
-    ).update_layout(xaxis_range=[0, 100]),
-    use_container_width=True,
+  _doluluk_grafik = grafik_duzeni(
+    px.bar(
+      doluluk, x="Doluluk", y="Alan", orientation="h",
+      color_discrete_sequence=[RENK_IKINCIL],
+    ),
+    yukseklik=max(300, len(doluluk) * 26),
   )
+  _doluluk_grafik.update_layout(xaxis_range=[0, 100], xaxis_title=None, yaxis_title=None)
+  _doluluk_grafik.update_traces(
+    hovertemplate="<b>%{y}</b><br>Doluluk: %{x:.0f}%<extra></extra>"
+  )
+  st.plotly_chart(_doluluk_grafik, use_container_width=True, theme=None)
 
 st.divider()
 
@@ -310,11 +353,18 @@ for k in sorted(banka, key=lambda x: x.doluluk_orani, reverse=True):
     "Kaynak": k.kaynak_url,
   })
 
+_tablo_cerceve = pd.DataFrame(tablo)
 st.dataframe(
-  pd.DataFrame(tablo),
+  _tablo_cerceve,
   use_container_width=True,
   hide_index=True,
   column_config={"Kaynak": st.column_config.LinkColumn("Kaynak", display_text="sayfaya git")},
+)
+disa_aktar(
+  _tablo_cerceve,
+  dosya_adi=f"{format_bank_name(secili).lower().replace(' ', '_')}_kampanyalar",
+  anahtar="bp_kampanyalar",
+  baslik=f"{secili} — kampanyalar",
 )
 
 

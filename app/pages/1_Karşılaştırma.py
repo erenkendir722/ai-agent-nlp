@@ -34,6 +34,7 @@ from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import HedefKitle, Kampanya  # noqa: E402
 from app.ui_utils import (  # noqa: E402
   RENK_ANA,
+  disa_aktar,
   RENK_IKINCIL,
   RENK_UYARI,
   format_bank_name,
@@ -128,10 +129,15 @@ with st.expander("Gelişmiş filtreler", expanded=False):
     arama_metni = st.text_input("Metin ara", placeholder="Banka, ürün ya da kampanya metni")
     
     hedef_kitleler = [h.value for h in HedefKitle]
+    # ETİKET, ENUM DEĞERİ DEĞİL (28 Ağustos). Liste `mevcut_musteri`,
+    # `maas_musterisi`, `tum_musteriler` diye yazıyordu — veritabanı yazımı,
+    # kullanıcı yazımı değil. `format_hedef_kitle` sözlüğü zaten var ve
+    # sayfanın başka üç yerinde kullanılıyordu; süzgeç onu atlıyordu.
     # Streamlit'in varsayilan «Choose an option» metni Turkce arayuzde
     # kaliyordu (27 Agu, 2. inceleme).
     secili_hedef_kitle = st.multiselect(
-      "Hedef kitle", hedef_kitleler, placeholder="Seçim yapın"
+      "Hedef kitle", hedef_kitleler,
+      format_func=format_hedef_kitle, placeholder="Seçim yapın",
     )
   with c2:
     tarih_filtresi = st.date_input(
@@ -774,17 +780,20 @@ st.dataframe(
 # kullanıcı düğmeye basmadan ne çıkacağını bilemiyordu. Başlık artık çıktıyı
 # adlandırıyor, panel kapalı açılıyor: isteyen açar.
 #
-# ROZET KALIYOR ama küçüldü. Sayfadaki her şey ölçülmüş yapısal veridir;
-# burası tek istisna — dil modeli serbest metin yazar ve sayısal kalkandan
-# GEÇMEZ. Ayrım silinemez (nöbetçi: `test_ai_ciktisi_rozetle_ayriliyor`),
-# ama tam genişlikte amber kutu olmasına da gerek yok: çip aynı şeyi söyler.
+# ROZET «AI TASLAK» OLDU (28 Ağustos). Öncesi «AI ÜRETİMİ — DOĞRULANMAMIŞ»
+# idi: büyük harfle, uyarı renginde, üstelik «doğrulanmamış» kelimesiyle.
+# Ayrım doğruydu ama tonu yanlıştı — kullanıcı düğmeye BASMAYA çekiniyordu,
+# oysa çıktı bir taslak; zaten düzeltilmek üzere üretiliyor.
+#
+# Ayrım SİLİNMEDİ, sözcüğü değişti: «taslak» hem dil modelinin yazdığını
+# hem de olduğu gibi kullanılmayacağını söylüyor, korkutmadan.
+# Nöbetçi: `test_ai_ciktisi_isaretle_ayriliyor`.
 if benim_bankam != "(Seçilmedi)" and sirali:
   st.subheader("Satış notu taslağı")
   st.markdown(
-    '<div class="kl-meta"><span class="kl-cip kl-cip-uyari" title="Bu metni dil '
-    'modeli yazar; sayfadaki tek serbest metin çıktısıdır ve sayısal kalkandan '
-    'geçmez. Rakam için yukarıdaki tabloyu esas alın.">AI ÜRETİMİ — DOĞRULANMAMIŞ'
-    "</span></div>",
+    '<div class="kl-meta"><span class="kl-cip" title="Bu metni dil modeli '
+    "yazar. Sayfadaki tek serbest metin çıktısı; rakam için yukarıdaki "
+    'tabloyu esas alın.">AI taslak</span></div>',
     unsafe_allow_html=True,
   )
   st.caption(
@@ -838,13 +847,33 @@ Sadece analizi ver, profesyonel bir B2B dili kullan."""
               ],
               temperature=0.3
           )
-          st.info(response.choices[0].message.content)
-          st.caption(f"{model_adi} modeliyle üretildi.")
+          # ÜRETİLEN TASLAK OTURUMDA SAKLANIR. `st.download_button` sayfayı
+          # yeniden koşturur; taslak yalnız bu blokta yaşasaydı indirme
+          # tıklandığı anda kaybolur ve düğme boş dosya verirdi.
+          st.session_state["ks_satis_notu"] = {
+            "metin": response.choices[0].message.content,
+            "banka": format_bank_name(benim_bankam),
+            "model": model_adi,
+          }
         except Exception as e:
           st.info("Dil modeli servisine şu anda ulaşılamıyor; sayfanın geri "
                   "kalanı bundan etkilenmez.")
           if st.session_state.get("dev_mode", False):
             st.code(str(e))
+
+  # Taslak, üretildiği koşuda da sonrakilerde de BURADA çizilir — tek yer.
+  _not = st.session_state.get("ks_satis_notu")
+  if _not:
+    st.info(_not["metin"])
+    _i1, _i2 = st.columns([3, 1])
+    with _i1:
+      disa_aktar(
+        pd.DataFrame([{"Banka": _not["banka"], "Satış notu": _not["metin"]}]),
+        dosya_adi=f"satis_notu_{_not['banka'].lower().replace(' ', '_')}",
+        anahtar="ks_satis_notu_indir",
+        baslik=f"{_not['banka']} — satış notu taslağı",
+      )
+    _i2.caption(f"{_not['model']} modeliyle üretildi.")
 
 # ---------------------------------------------------------------------------
 # Avantaj skorunun dökümü

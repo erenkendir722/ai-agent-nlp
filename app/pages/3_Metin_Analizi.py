@@ -21,6 +21,7 @@ from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import BIRIM_GOSTERIMLERI, METINSEL_ALANLAR, HamKayit  # noqa: E402
 from app.ui_utils import (  # noqa: E402
   RENK_ANA,
+  disa_aktar,
   RENK_IKINCIL,
   format_alan_adi,
   format_kategori,
@@ -84,6 +85,7 @@ def _deger_yazi(alan_ismi: str, alan_obj) -> str:
 def _tablo_kur(kampanya):
   satirlar = []
   alintilar = []
+  yontemler = {}
   clean_json = {}
   for alan_ismi in kampanya.model_fields:
     if alan_ismi in _ATLANAN:
@@ -106,17 +108,22 @@ def _tablo_kur(kampanya):
       and str(alan_obj.yontem).upper() != "KURAL"
       else ""
     )
+    # «YÖNTEM» SÜTUNU KALDIRILDI (28 Ağustos). KURAL / LLM / HİBRİT ayrımı
+    # bizim iç muhasebemiz: kullanıcı «bu değer doğru mu» diye soruyor,
+    # «hangi katman buldu» diye değil. Güven sütunu kaldı — o, değerin
+    # kendisi hakkında bir şey söylüyor. Katman bilgisi kaybolmadı, kanıt
+    # panelinde her alanın yanında duruyor.
     satirlar.append({
       "Alan": format_alan_adi(alan_ismi) + isaret,
       "Değer": _deger_yazi(alan_ismi, alan_obj),
       "Birim": birim_str or "—",
       "Güven": f"%{alan_obj.guven * 100:.0f}",
-      "Yöntem": str(alan_obj.yontem).upper(),
     })
+    yontemler[alan_ismi] = str(alan_obj.yontem).upper()
     clean_json[alan_ismi] = alan_obj.deger
     if alan_obj.kaynak and alan_obj.kaynak.alinti:
       alintilar.append((alan_ismi, alan_obj.kaynak.alinti))
-  return satirlar, alintilar, clean_json
+  return satirlar, alintilar, clean_json, yontemler
 
 
 def _motor_rozet(x: str) -> str:
@@ -167,27 +174,43 @@ def _guven_ipucu(yazi: str) -> str:
 
 def _sonucu_ciz(kampanya, rapor_iz, ham, baslik: str):
   st.subheader(baslik)
-  satirlar, alintilar, clean_json = _tablo_kur(kampanya)
-  if rapor_iz:
-    with st.expander("Süre izi (ölçülen)", expanded=False):
-      st.json(rapor_iz)
+  satirlar, alintilar, clean_json, yontemler = _tablo_kur(kampanya)
   if not satirlar:
     st.warning("Metin incelendi; yapısal kampanya alanı bulunamadı.")
     return
   col1, col2 = st.columns([1, 1.2])
   with col1:
     df = pd.DataFrame(satirlar)
-    df["Yöntem"] = df["Yöntem"].map(_motor_rozet)
     df["Güven"] = df["Güven"].map(_guven_ipucu)
-    st.markdown(_lejant(), unsafe_allow_html=True)
     st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)
-    with st.expander("Yapısal JSON"):
+
+    # DIŞA AKTARMA — çıkarılan alanlar tabloyla aynı sırada.
+    disa_aktar(
+      pd.DataFrame(satirlar),
+      dosya_adi="metin_analizi",
+      anahtar="ma_alanlar",
+      baslik="Metinden çıkarılan alanlar",
+    )
+
+    # KANIT ZİNCİRİ TEK PANELDE (28 Ağustos). Her alıntı AYRI bir açılır
+    # panelde duruyordu: on alan = on kutu, hepsi kapalı, hangisinde ne
+    # olduğu ancak tek tek açarak anlaşılıyordu. Zincir bir bütün — bir
+    # kez açılır, tamamı okunur. Katman bilgisi (KURAL/LLM/HİBRİT) buraya
+    # taşındı; tabloda gürültüydü, kanıtın yanında bilgi.
+    if alintilar:
+      with st.expander(f"Kanıt zinciri ({len(alintilar)} alan)", expanded=False):
+        st.markdown(_lejant(), unsafe_allow_html=True)
+        for alan_isim, alinti in alintilar:
+          st.markdown(
+            f"**{format_alan_adi(alan_isim)}** "
+            + _motor_rozet(yontemler.get(alan_isim, "")),
+            unsafe_allow_html=True,
+          )
+          st.markdown(f"> {alinti}")
+
+    with st.expander("Yapısal JSON", expanded=False):
       st.json(clean_json)
     st.caption("Bu metin veritabanına yazılmaz.")
-    st.subheader("Kanıt zinciri")
-    for alan_isim, alinti in alintilar:
-      with st.expander(alan_isim.replace("_", " ").title()):
-        st.markdown(f"> {alinti}")
   with col2:
     st.subheader("Metin içi vurgu")
     vurgulu = ham
@@ -244,10 +267,16 @@ if ham:
   kelime = len(ham.split())
   iz = st.session_state.get("analiz_iz") or {}
 
-  # SURE DOKUMU AYRISTIRILDI (5. madde). Eskiden «hibrit 3,45 s · LLM 3,45 s»
-  # yaziyordu: iki sayi birebir ayni oldugu icin kural motorunun suresi
-  # gorunmuyor, «milisaniye» iddiasi metinde kaliyordu. `kural_suresi` zaten
-  # OLCULUYOR (`uzlastirici` trace'i) — yalnizca ekrana yazilmiyordu.
+  # SÜRE DÖKÜMÜ PANELE İNDİ (28 Ağustos). Ekranın en üstünde «47 kelime ·
+  # kural 2 ms · dil modeli 46,62 s · toplam 46,63 s» yazıyordu. Sayılar
+  # ÖLÇÜLMÜŞ ve doğru, ama analizin sonucunu bekleyen kullanıcıya söyledikleri
+  # şey yok: milisaniye kıyası bizim iddiamız, onun sorusu değil. Sayı
+  # silinmedi — jüri «kural motoru milisaniye» iddiasını hâlâ rakamla
+  # denetleyebilsin diye katlanabilir panelde duruyor (nöbetçi:
+  # `test_kural_suresi_ekranda_gosteriliyor`).
+  #
+  # Yerine geçen özet kullanıcının sorusunu cevaplıyor: bu metinden kaç alan
+  # çıktı ve kaçının kaynakta karşılığı bulundu.
   kural_s = iz.get("kural_suresi")
   llm_s = iz.get("llm_toplam_suresi")
   toplam = iz.get("toplam_sure")
@@ -262,10 +291,26 @@ if ham:
     parcalar.append(f"dil modeli **{_sure(llm_s)}**")
   if toplam is not None:
     parcalar.append(f"toplam **{_sure(toplam)}**")
-  st.info(" · ".join(parcalar))
 
   hibrit_k = st.session_state.get("analiz_kampanya")
   if hibrit_k is not None:
+    _alanlar = hibrit_k.cikarilan_alanlar()
+    _dolu = sum(1 for a in _alanlar.values() if a.var_mi)
+    _kanitli = sum(
+      1 for a in _alanlar.values() if a.var_mi and a.kaynak and a.kaynak.alinti
+    )
+    st.markdown(
+      f'<div class="kl-meta"><span class="kl-cip kl-cip-onay" title="Şemadaki '
+      f'{len(_alanlar)} alandan kaçı bu metinden doldurulabildi.">'
+      f"{_dolu} alan çıkarıldı</span>"
+      f'<span class="kl-cip" title="Değerin metindeki karşılığı alıntı olarak '
+      f'saklandı; aşağıdaki kanıt zincirinde görülebilir.">'
+      f"{_kanitli} kaynak alıntısı</span></div>",
+      unsafe_allow_html=True,
+    )
+    with st.expander("Ölçülen süreler", expanded=False):
+      st.markdown(" · ".join(parcalar))
+      st.caption("Kural motoru regex'tir; dil modeli EVREN ya da yerel Ollama.")
     st.divider()
     _sonucu_ciz(hibrit_k, iz, ham, "Kural + dil modeli + uzlaştırıcı")
 

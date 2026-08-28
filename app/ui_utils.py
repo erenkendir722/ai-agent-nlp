@@ -114,8 +114,14 @@ def grafik_duzeni(sekil, *, yukseklik: int | None = None, baslik: str | None = N
         title=baslik,
         font={"size": 12},
     )
-    sekil.update_xaxes(showgrid=False)
-    sekil.update_yaxes(showgrid=False)
+    # `automargin` ŞART (28 Ağustos). Kenar boşluğu `l: 0` verildiği için
+    # yatay çubuk grafiklerinde uzun kategori etiketleri («Azami finansman
+    # tutarı», «İhtiyaç Finansmanı») sola taşıp KIRPILIYORDU: ekranda yarım
+    # kelimeler ve boşluklar görünüyordu. `automargin` etiketin gerçek
+    # genişliğini ölçüp yer açar — sabit bir sol boşluk yazmak, en uzun
+    # etiket değiştiğinde yine kırpardı.
+    sekil.update_xaxes(showgrid=False, automargin=True)
+    sekil.update_yaxes(showgrid=False, automargin=True)
     return sekil
 
 
@@ -473,6 +479,66 @@ _ASAMALAR = (
 )
 
 
+def _csv_bayt(cerceve) -> bytes:
+    """Excel'in Türkçe yerelinde doğru açtığı CSV.
+
+    Ayraç NOKTALI VİRGÜL, kodlama BOM'lu UTF-8: Türkçe Windows'ta Excel
+    virgülü ondalık ayracı sayıyor ve virgülle ayrılmış dosyayı tek sütuna
+    yığıyor; BOM olmadan da «Ş» ve «ğ» bozuluyor. İkisi de ölçülmüş değil,
+    bilinen Excel davranışı — ama bedeli sıfır.
+    """
+    return cerceve.to_csv(index=False, sep=";").encode("utf-8-sig")
+
+
+def _word_bayt(cerceve, baslik: str) -> bytes:
+    """Word'ün açtığı HTML tablo — `.doc` uzantısıyla.
+
+    `python-docx` EKLENMEDİ. Yeni bağımlılık `make lisanslar` gerektirir ve
+    hava boşluklu kurulumda bir paket daha taşımak demektir; Word, HTML'i
+    `.doc` uzantısıyla sorunsuz açıyor. Aynı hile Excel çıktısında 27
+    Ağustos'tan beri kullanılıyor (`_excel_html`), yani ikinci bir yol
+    açmıyoruz.
+    """
+    return (
+        "<html><head><meta charset='utf-8'>"
+        "<style>body{font-family:Calibri,sans-serif;font-size:11pt;}"
+        "table{border-collapse:collapse;}"
+        "th,td{border:1px solid #999;padding:5px 8px;text-align:left;}"
+        "th{background:#EFEFEF;}</style></head><body>"
+        f"<h2>{baslik}</h2>"
+        + cerceve.to_html(index=False)
+        + "</body></html>"
+    ).encode("utf-8")
+
+
+def disa_aktar(cerceve, *, dosya_adi: str, anahtar: str, baslik: str = "") -> None:
+    """CSV ve Word indirme düğmelerini yan yana çizer.
+
+    NEDEN ORTAK: Karşılaştırma ekranı kendi CSV/Excel üreticisini yazmıştı,
+    Müşteri Profili elle kurduğu bir TXT veriyordu, kalan üç ekranda hiç
+    çıktı yoktu. Üç ayrı biçim, üç ayrı ayraç kararı, üç ayrı kodlama.
+    Tek yardımcı — hangi ekrandan indirilirse indirilsin dosya aynı.
+    """
+    ad = baslik or dosya_adi
+    s1, s2 = st.columns(2)
+    s1.download_button(
+        "CSV indir",
+        data=_csv_bayt(cerceve),
+        file_name=f"{dosya_adi}.csv",
+        mime="text/csv",
+        use_container_width=True,
+        key=f"{anahtar}_csv",
+    )
+    s2.download_button(
+        "Word indir",
+        data=_word_bayt(cerceve, ad),
+        file_name=f"{dosya_adi}.doc",
+        mime="application/msword",
+        use_container_width=True,
+        key=f"{anahtar}_doc",
+    )
+
+
 def ipucu_simgesi(metin: str) -> str:
     """Etiket yanına konan «?» simgesinin HTML'i — üzerine gelince açılır.
 
@@ -616,6 +682,28 @@ def inject_custom_css():
         div[data-testid="stHorizontalBlock"]:has(.kl-dev-isaret) label p {
             font-size: 0.78rem !important;
             color: #9A9AA5 !important;
+        }
+
+        /* SAYI/METİN KUTUSU İPUCU — Streamlit bu satırı İngilizce basıyor
+           ve dilini yapılandırmanın yolu yok: «Press Enter to apply».
+           Türkçe arayüzün ortasında tek İngilizce cümleydi. Metin CSS ile
+           değiştiriliyor; gizlemek yerine ÇEVİRİYORUZ, çünkü ipucunun
+           kendisi doğru — değer Enter'a basılmadan uygulanmıyor. */
+        [data-testid="InputInstructions"] {
+            visibility: hidden;
+            position: relative;
+        }
+        [data-testid="InputInstructions"]::after {
+            content: "Uygulamak için Enter'a basın";
+            visibility: visible;
+            position: absolute;
+            left: 0; top: 0;
+            white-space: nowrap;
+        }
+        /* Çok satırlı kutuda Streamlit Ctrl+Enter istiyor; tek çeviri
+           ikisine birden yanlış olurdu. */
+        [data-testid="stTextArea"] [data-testid="InputInstructions"]::after {
+            content: "Uygulamak için Ctrl+Enter'a basın";
         }
 
         /* İPUCU SİMGESİ — `st.metric`in etiket yanındaki «?» simgesinin
