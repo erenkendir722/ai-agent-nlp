@@ -70,91 +70,137 @@ st.title("Bankalar Arası Karşılaştırma")
 kayitlar = kayitlari_yukle()
 
 # ---------------------------------------------------------------------------
-# Süzgeçler
+# Süzgeçler — ÜÇ KARAR ÜSTTE, GERİSİ PANELDE (28 Ağustos)
 # ---------------------------------------------------------------------------
+#
+# Sayfanın tepesinde dokuz kontrol vardı: üçü açıkta, altısı «Gelişmiş
+# filtreler» panelinde, hemen altında beş sıralama düğmesi ve bir ağırlık
+# paneli daha. Ekranın ilk yarısı, henüz tek bir kampanya görmeden
+# doldurulması gereken bir forma benziyordu.
+#
+# Ayrım şu: KİMİ karşılaştırdığın bir KARAR, geri kalanı bir RAFİNAJ.
+# Karar üstte ve tek çerçevede durur; rafinaj panele iner ve panel kaç
+# süzgecin etkin olduğunu BAŞLIĞINDA söyler — kapalı bir panelin arkasında
+# sessizce çalışan süzgeç, kullanıcının «kampanyalar nereye gitti» dediği
+# yerdir.
+#
+# «Asgari güven skoru» GELİŞTİRİCİ MODUNA taşındı: modelin kendi bildirdiği
+# güvene göre süzmek bir bankacının işi değil, bizim iç ölçümümüz. Kapalı
+# modda süzgeç yok sayılır (eşik 0), yani davranış değişmez.
 
-f1, f2 = st.columns([2, 3])
+bankalar = sorted({k.banka_adi for k in kayitlar})
 
-with f1:
-  turler = sorted({k.kampanya_turu for k in kayitlar if k.kampanya_turu})
-  secili_tur = st.selectbox("Ürün / kampanya türü", ["(tümü)", *turler], format_func=lambda x: format_kategori(x) if x != "(tümü)" else x)
+# VARSAYILAN BANKA SECILI GELIR (27 Agu incelemesi, madde 5).
+#
+# «(Secilmedi)» ile aciliyordu: kullanici once bir banka secmeden
+# «Biz vs Onlar» bolumu hic cizilmiyor, ekranin yarisi bos duruyordu. Bir
+# bankacilik aracinda «kendi bankam» bos baslamaz.
+#
+# Hangisi? EN COK KAMPANYASI OLAN — demoda en dolu ekrani veren, elle
+# secilmis degil veriden turetilmis.
+_sayim: dict[str, int] = {}
+for _k in kayitlar:
+  _sayim[_k.banka_adi] = _sayim.get(_k.banka_adi, 0) + 1
+_varsayilan = max(bankalar, key=lambda b: _sayim.get(b, 0))
 
-with f2:
-  bankalar = sorted({k.banka_adi for k in kayitlar})
+with st.container(border=True):
+  f1, f2, f3 = st.columns([2, 3, 2])
 
-  # VARSAYILAN BANKA SECILI GELIR (27 Agu incelemesi, madde 5).
-  #
-  # «(Secilmedi)» ile aciliyordu: kullanici once bir banka secmeden
-  # «Biz vs Onlar» bolumu hic cizilmiyor, ekranin yarisi bos duruyordu. Bir
-  # bankacilik aracinda «kendi bankam» bos baslamaz.
-  #
-  # Hangisi? EN COK KAMPANYASI OLAN — demoda en dolu ekrani veren, elle
-  # secilmis degil veriden turetilmis. Kullanici degistirebilir; «(Secilmedi)»
-  # secenegi listede kaldi.
-  _sayim: dict[str, int] = {}
-  for _k in kayitlar:
-    _sayim[_k.banka_adi] = _sayim.get(_k.banka_adi, 0) + 1
-  _varsayilan = max(bankalar, key=lambda b: _sayim.get(b, 0))
-
-  c_biz, c_onlar = st.columns([1, 2])
-  with c_biz:
+  with f1:
     _secenekler = ["(Seçilmedi)", *bankalar]
     benim_bankam = st.selectbox(
-      "Benim Bankam (Biz)",
+      "Benim bankam",
       _secenekler,
       index=_secenekler.index(_varsayilan),
       format_func=format_bank_name,
-      help="Karşılaştırma bu bankanın gözünden yapılır. En çok kampanyası "
-           "olan banka önceden seçildi; değiştirebilirsiniz.",
+      help="Karşılaştırma bu bankanın gözünden yapılır.",
     )
-  with c_onlar:
+  with f2:
     # KESIK ETIKET DUZELTMESI (madde 6): secim kutusu tam yasal unvani
     # gosteriyordu («Albaraka Turk Katilim Ba…»), etiketler tasip okunmaz
     # oluyordu. `format_bank_name` kayit defterindeki kisa adi verir; deger
     # yine tam unvandir, yalniz GOSTERIM kisalir.
     _rakipler = [b for b in bankalar if b != benim_bankam]
     secili_bankalar = st.multiselect(
-      "Rakip Seti (Onlar)",
+      "Rakipler",
       bankalar,
       default=_rakipler,
       format_func=format_bank_name,
       placeholder="Banka seçin",
-      help="Kendi bankanız listeden çıkarıldı; karşılaştırmaya ayrıca katılır.",
+      help="Kendi bankanız ayrıca katılır.",
+    )
+  with f3:
+    turler = sorted({k.kampanya_turu for k in kayitlar if k.kampanya_turu})
+    secili_tur = st.selectbox(
+      "Ürün türü", ["(tümü)", *turler],
+      format_func=lambda x: format_kategori(x) if x != "(tümü)" else x,
     )
 
-st.markdown("<br>", unsafe_allow_html=True)
-with st.expander("Gelişmiş filtreler", expanded=False):
-  c1, c2, c3 = st.columns(3)
+# PANEL BAŞLIĞI ETKİN SÜZGEÇ SAYISINI TAŞIR. Değerler `session_state`ten
+# OKUNUR, widget'lar çizilmeden önce: başlık widget'ın kendi dönüş değerine
+# bağlansaydı, sayı bir çizim geriden gelirdi (süzgeci açarsınız, başlık
+# hâlâ «0 etkin» yazar).
+_ETKIN_SORULARI = (
+  ("ks_arama", lambda d: bool(d)),
+  ("ks_hedef_kitle", lambda d: bool(d)),
+  ("ks_gecmisi_gizle", lambda d: not d),   # varsayılan AÇIK — kapalıysa etkin
+  ("ks_masrafsiz", lambda d: bool(d)),
+  ("ks_tam_dolu", lambda d: bool(d)),
+)
+_VARSAYILANLAR = {"ks_gecmisi_gizle": True}
+_etkin = sum(
+  1 for _anahtar, _olcut in _ETKIN_SORULARI
+  if _olcut(st.session_state.get(_anahtar, _VARSAYILANLAR.get(_anahtar, None)))
+)
+_panel_basligi = "Gelişmiş filtreler"
+if _etkin:
+  _panel_basligi += f"  ·  {_etkin} etkin"
+
+with st.expander(_panel_basligi, expanded=False):
+  c1, c2, c3 = st.columns([2, 2, 1.6])
   with c1:
-    arama_metni = st.text_input("Metin ara", placeholder="Banka, ürün ya da kampanya metni")
-    
+    arama_metni = st.text_input(
+      "Metin ara", key="ks_arama",
+      placeholder="Banka, ürün ya da kampanya metni",
+    )
+  with c2:
     hedef_kitleler = [h.value for h in HedefKitle]
     # ETİKET, ENUM DEĞERİ DEĞİL (28 Ağustos). Liste `mevcut_musteri`,
     # `maas_musterisi`, `tum_musteriler` diye yazıyordu — veritabanı yazımı,
     # kullanıcı yazımı değil. `format_hedef_kitle` sözlüğü zaten var ve
     # sayfanın başka üç yerinde kullanılıyordu; süzgeç onu atlıyordu.
-    # Streamlit'in varsayilan «Choose an option» metni Turkce arayuzde
-    # kaliyordu (27 Agu, 2. inceleme).
     secili_hedef_kitle = st.multiselect(
-      "Hedef kitle", hedef_kitleler,
+      "Hedef kitle", hedef_kitleler, key="ks_hedef_kitle",
       format_func=format_hedef_kitle, placeholder="Seçim yapın",
     )
-  with c2:
-    tarih_filtresi = st.date_input(
-      "Şu tarihte geçerli", value=datetime.date.today(),
-      help="Bu tarihten önce biten kampanyalar gizlenir.",
-    )
-    
-    min_guven = st.slider(
-      "Asgari güven skoru", 0.0, 1.0, 0.0, 0.05,
-      help="Çıkarılan alanların ortalama güveni. Sıfır bırakılırsa hiçbir kayıt elenmez.",
-    )
   with c3:
-    sadece_masrafsiz = st.toggle("Yalnız masrafsız kampanyalar")
+    # TAKVİM YERİNE ANAHTAR. Burada bir tarih seçici vardı ve varsayılanı
+    # «bugün»dü — yani aslında tek bir soruyu soruyordu: «süresi geçmişleri
+    # görmek istiyor musunuz?» Takvim, o soruyu sormanın en pahalı yoluydu.
+    st.toggle("Süresi geçenleri gizle", key="ks_gecmisi_gizle", value=True)
+    sadece_masrafsiz = st.toggle("Yalnız masrafsız", key="ks_masrafsiz")
     tam_dolu_mu = st.toggle(
-      "Yalnız eksiksiz kayıtlar",
+      "Yalnız eksiksiz kayıtlar", key="ks_tam_dolu",
       help="Kâr payı ya da vadesi yayımlanmamış kampanyaları gizler.",
     )
+
+  # TEMİZLE DÜĞMESİ PANELİN İÇİNDE. Ana ekrana konsaydı, hiç süzgeç
+  # kullanmayan kullanıcıya da bir düğme daha göstermiş olurduk; süzgeci
+  # açan zaten burayı açıyor.
+  if _etkin and st.button("Süzgeçleri temizle", key="ks_temizle"):
+    for _anahtar, _ in _ETKIN_SORULARI:
+      st.session_state.pop(_anahtar, None)
+    st.rerun()
+
+tarih_filtresi = datetime.date.today() if st.session_state.get("ks_gecmisi_gizle", True) else None
+
+# Modelin kendi güvenine göre süzmek bankacının işi değil — geliştirici modu.
+min_guven = 0.0
+if st.session_state.get("dev_mode", False):
+  min_guven = st.slider(
+    "Asgari güven skoru", 0.0, 1.0, 0.0, 0.05,
+    help="Çıkarılan alanların ortalama güveni. Sıfırda hiçbir kayıt elenmez.",
+  )
 
 suzulmus = []
 gorulen_kampanyalar = set()

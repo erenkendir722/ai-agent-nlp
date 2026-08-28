@@ -684,6 +684,22 @@ def inject_custom_css():
             color: #9A9AA5 !important;
         }
 
+        /* STREAMLIT İPUCU BALONU — genişlik sınırı.
+           Kenar çubuğunun dar sütununda açılan balon ekranın dışına taşıyor
+           ve metnin bir kısmı okunmuyordu. Balon açıldığı ögeye göre
+           konumlanıyor; sınır olmadan uzun bir `help=` metni sağa doğru
+           büyümeye devam ediyor. */
+        [data-testid="stTooltipContent"] {
+            max-width: 300px;
+            white-space: normal;
+            overflow-wrap: break-word;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+        [data-testid="stSidebar"] [data-testid="stTooltipContent"] {
+            max-width: 230px;
+        }
+
         /* SAYI/METİN KUTUSU İPUCU — Streamlit bu satırı İngilizce basıyor
            ve dilini yapılandırmanın yolu yok: «Press Enter to apply».
            Türkçe arayüzün ortasında tek İngilizce cümleydi. Metin CSS ile

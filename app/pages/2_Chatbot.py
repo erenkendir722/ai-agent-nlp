@@ -157,12 +157,15 @@ with st.sidebar:
   for sira, ornek in enumerate(ORNEK_SORULAR):
     if st.button(ornek, key=f"cb_ornek_{sira}", use_container_width=True):
       st.session_state.bekleyen_soru = ornek
-  if st.button(
-    KALKAN_ORNEGI,
-    key="cb_kalkan",
-    use_container_width=True,
-    help="Kalkan gösterimi: sistemin kendini nasıl frenlediğini gösterir.",
-  ):
+  # AÇIKLAMA İPUCUNDA DEĞİL, ÜSTTEKİ ETİKETTE (28 Ağustos).
+  #
+  # Bu düğmede `help=` vardı ve Streamlit'in ipucu balonu kenar çubuğunun
+  # dar sütununda açıldığı için EKRANDAN TAŞIYORDU: metnin bir kısmı
+  # görünmüyordu. Balonun genişliği artık sınırlı (`ui_utils` CSS'i), ama
+  # asıl çözüm başka — iki kelimelik bir açıklama için balon açmak zaten
+  # gereksizdi. Etiket düğmenin üstünde, hep görünür.
+  st.caption("Kalkan gösterimi")
+  if st.button(KALKAN_ORNEGI, key="cb_kalkan", use_container_width=True):
     st.session_state.bekleyen_soru = KALKAN_ORNEGI
 
 
