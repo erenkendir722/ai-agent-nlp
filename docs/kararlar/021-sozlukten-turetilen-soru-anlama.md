@@ -91,7 +91,7 @@ Veri soruları etkilenmez: «vade veriyor mu?» üçüncü şahıstır.
   aynısı. Bütün ipuçları `terim_gecer` ile sözcük başına bağlanır.
 
 Cevap kibar ret değil **doğru adrestir**: soru meşru, cevabı depoda yazılı —
-`docs/MIMARI.md`, `docs/SARTNAME_UYUM.md`, `docs/kararlar/`.
+`docs/MIMARI.md`, `docs/kararlar/`.
 
 ## Reddedilenler
 

@@ -1,7 +1,7 @@
 # ADR 011 — Ablasyon tek süreçte, tek kod izinde koşar
 
 **Tarih:** 19 Ağustos 2026 · **Durum:** kabul edildi · **Sorumlu:** Eren
-**İlgili bulgu:** `docs/DUZELTME_TASARIMI.md` § 2.2
+**İlgili bulgu:** düzeltme tasarımı § 2.2
 **Şema etkisi:** yok
 
 ## Bağlam

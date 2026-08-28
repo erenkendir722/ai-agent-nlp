@@ -1,15 +1,15 @@
-"""Terim sözlüğü biçim ve içerik testleri (G-09).
+"""Terim sözlüğü biçim ve içerik testleri.
 
 `docs/TERIM_SOZLUGU.md` iki işi birden görüyor: insan başvuru belgesi ve
 LLM isteminin kaynağı. İkincisi yüzünden dosyanın biçimi bir SÖZLEŞMEDİR —
-G-10'da `src/extraction/llm.py` içindeki `TERIMLER` sabiti bu dosyadan
+`src/extraction/llm.py` içindeki `TERIMLER` sabiti bu dosyadan
 üretilecek. Biri tabloya beşinci sütun eklerse ya da başlığı değiştirirse
 ayrıştırma sessizce boş liste döndürür ve istem alan bilgisi olmadan koşar:
 çıkarım bozulur ama hiçbir şey hata vermez.
 
 Bu testler o sessiz bozulmayı gürültülü hâle getirir.
 
-Şartname 5.5 ayrıca sözlüğün kapsamını bağlıyor; `G-09` en az 60 terim
+Şartname 5.5 ayrıca sözlüğün kapsamını bağlıyor; en az 60 terim
 istiyor. Terim sayısının eşiği de burada denetleniyor.
 """
 
@@ -26,7 +26,7 @@ KOK = Path(__file__).resolve().parents[1]
 SOZLUK = KOK / "docs" / "TERIM_SOZLUGU.md"
 
 ASGARI_TERIM = 60
-"""G-09'un bitti sayılma ölçütü. Düşürülürse görev şartı ihlal edilir."""
+"""Sözlüğün bitti sayılma ölçütü. Düşürülürse şartname şartı ihlal edilir."""
 
 TERIM_TABLOSU_BASLIGI = "| Terim | Tanım | Sistemdeki karşılığı | İstem |"
 """Terim tablolarının değişmez başlığı — ayrıştırıcının tutunduğu yer.
@@ -40,7 +40,7 @@ AYIRICI = re.compile(r"\|[\s:|-]+\|")
 
 
 # ---------------------------------------------------------------------------
-# Ayrıştırma — G-10 bu sözleşmeye yaslanacak
+# Ayrıştırma — istem bloğu bu sözleşmeye yaslanır
 # ---------------------------------------------------------------------------
 
 
@@ -118,7 +118,7 @@ def _ad(hucre: str) -> str:
 @pytest.fixture(scope="module")
 def satirlar() -> list[str]:
     if not SOZLUK.exists():
-        pytest.fail(f"{SOZLUK} yok — G-09'un çıktısı eksik")
+        pytest.fail(f"{SOZLUK} yok — terim sözlüğü eksik")
     return _satirlar()
 
 
@@ -133,10 +133,10 @@ def terimler(satirlar) -> list[list[str]]:
 
 
 def test_asgari_terim_sayisi(satirlar, terimler) -> None:
-    """G-09: en az 60 terim."""
+    """En az 60 terim."""
     toplam = len(resmi_terimler(satirlar)) + len(terimler)
     assert toplam >= ASGARI_TERIM, (
-        f"Sözlükte {toplam} terim var, en az {ASGARI_TERIM} gerekiyor (G-09)."
+        f"Sözlükte {toplam} terim var, en az {ASGARI_TERIM} gerekiyor."
     )
 
 
@@ -154,14 +154,14 @@ def test_sartname_5_5_besi_de_var(satirlar) -> None:
 
 
 def test_fikhi_sozlesme_turleri_var(terimler) -> None:
-    """G-09 bu terimleri adıyla istiyor — katılım bankacılığının çekirdeği."""
+    """Şartname bu terimleri adıyla istiyor — katılım bankacılığının çekirdeği."""
     metin = " ".join(_ad(t[0]) for t in terimler)
     for terim in ("murabaha", "muşaraka", "mudaraba", "icara", "sukuk", "tekafül"):
-        assert terim in metin, f"Sözlükte '{terim}' yok (G-09 açıkça istiyor)"
+        assert terim in metin, f"Sözlükte '{terim}' yok (şartname açıkça istiyor)"
 
 
 # ---------------------------------------------------------------------------
-# Biçim sözleşmesi — G-10'un ayrıştırıcısı buna güvenecek
+# Biçim sözleşmesi — istem ayrıştırıcısı buna güvenir
 # ---------------------------------------------------------------------------
 
 
@@ -266,7 +266,7 @@ def test_istem_sayisi_guncel(satirlar, terimler) -> None:
 
 
 # ---------------------------------------------------------------------------
-# G-10 — istem bloğu sözlükten okunuyor (26 Ağustos)
+# İstem bloğu sözlükten okunuyor (26 Ağustos)
 # ---------------------------------------------------------------------------
 
 

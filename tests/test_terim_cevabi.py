@@ -65,7 +65,7 @@ def korpus() -> list[KampanyaKaydi]:
 
 
 def test_sozluk_okunuyor() -> None:
-    """G-09 en az 60 terim istiyor; ayrıştırıcı hepsini görmeli."""
+    """Sözlük en az 60 terim taşır; ayrıştırıcı hepsini görmeli."""
     assert len(terimler()) >= 60
 
 

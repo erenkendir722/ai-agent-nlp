@@ -1,4 +1,4 @@
-"""Tetikleyici + dinleyici sözleşmesi (G-17).
+"""Tetikleyici + dinleyici sözleşmesi.
 
 AĞ KULLANILMAZ: `httpx.MockTransport` ile sahte sunucu kurulur. Sınanan şey
 banka sitesi değil dinleyicinin kararı — neyi «değişti» sayıyor, neyi
@@ -236,7 +236,7 @@ class TestNezaketVeKenarDurumlar:
         assert _kos(tmp_path, _tasiyici()).ilk_kayit == 1
 
     def test_uretim_verisine_dokunulmaz(self, tmp_path: Path) -> None:
-        """Dinleyici yalnız taban dosyasına yazar (G-17 uyarısı)."""
+        """Dinleyici yalnız taban dosyasına yazar."""
         _kos(tmp_path, _tasiyici())
         assert {y.name for y in tmp_path.iterdir()} == {"tazelik.json"}
 

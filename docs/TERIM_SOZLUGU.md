@@ -353,13 +353,13 @@ bu alanın neredeyse tamamını kaçırırdı; sistemin morfolojik yaklaşımı
 2. **İstem sütununu ölçmeden ✓ yapma.** Derlemde geçmeyen terim isteme girmez
    (§10). Şüpheliysen ham metinde ara.
 3. **İsteme girecek terimi §12'deki bloğa yaz.** Kod o bloğu bu dosyadan
-   okur (G-10, 26 Ağustos); artık `src/extraction/llm.py` içinde elle tutulan
+   okur (26 Ağustos); artık `src/extraction/llm.py` içinde elle tutulan
    bir kopya yoktur. Bloğu değiştirdiysen çıkarım değişir: `make extract &&
    make eval` koşmadan sonuç yayımlama.
 
 ---
 
-## 12. İsteme beslenen blok (G-10)
+## 12. İsteme beslenen blok
 
 Aşağıdaki blok, dil modeline gönderilen sistem isteminin içine **bu dosyadan
 okunarak** yerleştirilir (`src/extraction/llm.py::terimleri_yukle`). Yani sözlük

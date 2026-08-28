@@ -1,4 +1,4 @@
-# Hata Analizi (S-14)
+# Hata Analizi
 
 _17 Ağustos 2026 · altın set: 60 örnek · ölçüm: `make eval` + `make eval-robust`_
 
@@ -157,16 +157,16 @@ verirdi. Bu bir sınıflandırıcı hatası olduğu kadar bir **taksonomi** soru
 Sınıf gereğinden geniş tanımlanmış.
 
 **Aksiyon:** ikisi de açık. Ama dikkat — `kampanya_turu`'nun bir kısmı
-**model değil veri** sorunu: S-03 `diger` oranının %38 olduğunu söylüyor ve
-o **G-05**'e (kampanya olmayan sayfaların ayıklanması) bağlı. Genel ürün
+**model değil veri** sorunu: `diger` oranı %38 ve bu, kampanya olmayan
+sayfaların ayıklanmasına bağlı. Genel ürün
 sayfaları korpustan çıkmadan sınıflandırıcıyı zorlamak, gürültüyü
-ezberletmek olur. **Sıra: önce G-05, sonra S-03/bu madde.**
+ezberletmek olur. **Sıra: önce ayıklama, sonra bu madde.**
 
 ---
 
 ## Dayanıklılık tarafında hata var mı?
 
-`make eval-robust` (S-07) ayrı bir soruyu cevaplıyor ve tablosu temiz:
+`make eval-robust` ayrı bir soruyu cevaplıyor ve tablosu temiz:
 
 - **Biçim bozmada %100** (318 varyant) — `%1,89`→`1,89 %`, `TL`→`₺`, tamamı
   büyük harf, boşluk kaydırma. Normalizasyon katmanı işini yapıyor.
@@ -211,7 +211,7 @@ ezberlemeye denk ve jürinin *"kaç örnek üzerinde ölçtünüz?"* sorusunda �
 
 Doğru yol sırayla:
 
-1. **G-04** — korpus 96 → 300+. Seyrek alanları içeren kayıt havuzu olmadan
+1. **Korpus genişletmesi** — 96 → 300+. Seyrek alanları içeren kayıt havuzu olmadan
    altın set büyüyemez.
 2. **Hedefli katmanlı örneklem** — rastgele değil, seyrek alanları içeren
    kayıtlara özel katman; alan başına ~25-30 pozitif hücre hedefi.

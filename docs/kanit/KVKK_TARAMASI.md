@@ -2,7 +2,7 @@
 
 _Otomatik üretildi: 2026-08-28T09:44:36+03:00 · `tools/kvkk_taramasi.py`_
 
-Bu rapor **G-14** (veri toplama etiği kanıtı) kapsamındadır ve
+Bu rapor veri toplama etiği kanıtı kapsamındadır ve
 `docs/kanit/VERI_TOPLAMA_ETIGI.md` tarafından kanıt olarak gösterilir.
 
 Taranan ham kayıt: **1019** (`data/raw/*/*.json` — başlık + gövde metni).

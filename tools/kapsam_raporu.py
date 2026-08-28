@@ -1,4 +1,4 @@
-"""Banka bazlı kapsam raporu — dengesizliği ölçer ve YAZAR (G-08).
+"""Banka bazlı kapsam raporu — dengesizliği ölçer ve YAZAR.
 
     python tools/kapsam_raporu.py     # docs/KAPSAM_RAPORU.md üret
 

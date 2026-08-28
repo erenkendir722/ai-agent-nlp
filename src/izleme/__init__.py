@@ -1,10 +1,10 @@
-"""Tetikleyici ve dinleyici katmanı (G-17) — «veri hâlâ güncel mi?».
+"""Tetikleyici ve dinleyici katmanı — «veri hâlâ güncel mi?».
 
 İki parça, bilerek ayrı:
 
     tetikleyici.py   NE ZAMAN denetleneceğinin takvimi — TANIMLI AMA KURULU DEĞİL
-    dinleyici.py     ELİMİZDEKİ kampanya sayfası değişmiş mi (G-17)
-    kesif.py         ELİMİZDE OLMAYAN yeni kampanya çıkmış mı (G-19)
+    dinleyici.py     ELİMİZDEKİ kampanya sayfası değişmiş mi
+    kesif.py         ELİMİZDE OLMAYAN yeni kampanya çıkmış mı
 
 İki soru farklıdır ve dinleyici ikincisini yapısal olarak göremez: yalnız
 bildiği URL'leri yoklar, envanterde olmayanın adresi hiç ziyaret edilmez.

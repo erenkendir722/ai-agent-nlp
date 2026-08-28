@@ -43,7 +43,7 @@ class AjanIzi(BaseModel):
     """İnsan-okur tek cümle: "3 kampanya elendi: min_tutar > 800.000".
 
     Boş bırakılmamalı. Gerekçesini tek cümlede anlatamayan bir ajanın var olma
-    sebebi de yoktur (bkz. Plan_Guncellemeleri_v3.md, "ajan tuzağı")."""
+    sebebi de yoktur — "ajan tuzağı" budur."""
 
     def satir(self) -> str:
         """Günlük ve panel için tek satırlık gösterim."""

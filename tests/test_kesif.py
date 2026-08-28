@@ -1,4 +1,4 @@
-"""Keşif sözleşmesi (G-19) — «elimizde olmayan yeni kampanya var mı?».
+"""Keşif sözleşmesi — «elimizde olmayan yeni kampanya var mı?».
 
 TARAYICI AÇILMAZ: `kaziyici_sinifi` ve `surucu_olustur` yamanır, sahte
 kazıyıcı sabit bir URL listesi döndürür. Sınanan şey banka sitesi değil

@@ -1,4 +1,4 @@
-"""Dayanıklılık seti üreteci ve ölçümü — `make eval-robust` (S-07).
+"""Dayanıklılık seti üreteci ve ölçümü — `make eval-robust`.
 
 Şartname 5.2: sistem *"eksik veya farklı yazılmış bilgiler karşısında doğru
 sonuç"* üretmeli. Bu modül o kriteri ÖLÇER: altın setteki 60 kaydın ham
@@ -25,7 +25,7 @@ başarı olarak sayardı.
 NEDEN YALNIZ KURAL KATMANI — 420 varyantı LLM ile koşmak ~2,5 saat sürer ve
 ölçüm her kod değişikliğinde tekrarlanamaz hâle gelir. Bozmaların hedefi
 zaten kural katmanının regex/bağlam mantığı; LLM katmanının biçim
-duyarlılığı ayrı bir soru (S-15'in konusu). `--llm` bayrağıyla açılabilir.
+duyarlılığı ayrı bir soru. `--llm` bayrağıyla açılabilir.
 """
 
 from __future__ import annotations
@@ -194,7 +194,7 @@ def olc(altin: list[dict], kampanyalar: dict[str, Kampanya]) -> list[Sonuc]:
             if beklenen is None:
                 continue  # altın boş — dayanıklılık sorusu yok
             if not _esit(beklenen, taban.get(alan)):
-                continue  # bozulmadan da bulamıyoruz; bu S-14'ün konusu
+                continue  # bozulmadan da bulamıyoruz; bu seçim katmanının konusu
 
             # --- biçim bozma ailesi: değer korunmalı ---
             for ad, fn in BICIM_BOZMALARI.items():
@@ -244,7 +244,7 @@ def rapor_yaz(sonuclar: list[Sonuc]) -> str:
     silme = [s for s in sonuclar if s.bozma == "alan_sil"]
 
     satir = [
-        "# Dayanıklılık ölçümü (S-07)",
+        "# Dayanıklılık ölçümü",
         "",
         "Şartname 5.2 — *«eksik veya farklı yazılmış bilgiler karşısında doğru sonuç»*.",
         "",
@@ -292,7 +292,7 @@ def rapor_yaz(sonuclar: list[Sonuc]) -> str:
             f"> **`uydurdu` = {dagilim['uydurdu']}.** Kanıt zinciri tutuyor: kural katmanı,",
             "> doğru cümle silindiğinde bile ham metinde karşılığı olmayan bir değer",
             "> ÜRETMİYOR. Kalan kusur uydurma değil, **seçim** kusuru — sayfadaki",
-            "> yanlış sayıya kayıyor. Bu ayrım S-14'ün çalışma alanını belirler:",
+            "> yanlış sayıya kayıyor. Bu ayrım seçim katmanının alanını belirler:",
             "> düzeltilecek şey çıkarım değil, adaylar arasından seçim.",
             "",
         "## Bozma türüne göre",
@@ -356,7 +356,7 @@ def calistir() -> int:
 
 
 def main() -> int:
-    argparse.ArgumentParser(description="Dayanıklılık ölçümü (S-07)").parse_args()
+    argparse.ArgumentParser(description="Dayanıklılık ölçümü").parse_args()
     return calistir()
 
 

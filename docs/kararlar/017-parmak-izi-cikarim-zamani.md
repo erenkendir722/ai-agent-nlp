@@ -98,5 +98,5 @@ rağmen yazmayı reddetti.
 Bayrak hâlâ gerçek bayatlığı yakalar. Aynı taramada sınandı: `kural.py`
 değişmiş bir referansla göç aracı reddetti. Daraltma, bayrağı zayıflatmadı;
 **yanlış pozitifini kaldırdı** — kalkanın yanlış pozitifine verilen cevabın
-aynısı (`CLAUDE.md`: *"çözüm kalkanı gevşetmek değil, denetlenecek metni doğru
+aynısı (proje kuralı: *"çözüm kalkanı gevşetmek değil, denetlenecek metni doğru
 seçmektir"*).

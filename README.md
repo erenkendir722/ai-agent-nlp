@@ -11,6 +11,30 @@
 
 ---
 
+## Sistem tek bakışta
+
+| | |
+|---|---|
+| **İşlenen kampanya** | **921** (9 faal katılım bankasının tamamı) |
+| **Ham gezilen sayfa** | 1.019 (95 kopya + 7 liste sayfası korpusa alınmaz) |
+| **Makro-F1** | **0,817** _(%95 GA: 0,756–0,868 · N=92 altın set örneği)_ |
+| **Sayısal alan doğruluğu** | **0,927** (hedef ≥ 0,90) |
+| **Halüsinasyon oranı** | **%0,21** (hedef ≤ %3) |
+| **Şema geçerliliği** | 1,00 |
+| **Kalkanın meşru soruyu bloklaması** | %0,0 (0/35) |
+| **Test** | 1.755 test yeşil · `ruff` temiz |
+
+Ölçümlerin tamamı ve yöntemi: [`docs/SONUCLAR.md`](docs/SONUCLAR.md) (`make eval`) ·
+[`docs/DEGERLENDIRME_YONTEMI.md`](docs/DEGERLENDIRME_YONTEMI.md)
+
+> **Sayıyı okurken:** çıkarım EVREN'de ortak bir vLLM sunucusunda koşuyor ve
+> `temperature=0` olmasına rağmen **bayt düzeyinde deterministik değil**. Ölçüldü:
+> aynı kod, aynı girdi, 98 kayıtta 7 hücre oynadı. Yani `make eval` sayısı ±0,01
+> gürültü taşır — «makro-F1 0,82» doğrudur, «0,817» yanlış bir kesinlik iddiasıdır.
+> Bayt düzeyinde tekrar üretilebilirlik gerekiyorsa: `make extract-yerel`.
+
+---
+
 ## 30 saniyede kurulum
 
 ```bash
@@ -23,8 +47,10 @@ Docker'sız:
 ```bash
 make kur                              # venv + bağımlılıklar
 ollama pull qwen3.5:4b-q4_K_M         # ~3,4 GB, tek seferlik
-make crawl && make extract && make run
+make extract && make run              # crawl GEREKMEZ: ham kayıtlar depoda
 ```
+
+Adım adım ve sorun giderme: [`docs/KURULUM.md`](docs/KURULUM.md)
 
 ---
 
@@ -43,8 +69,19 @@ flowchart LR
     F --> H[Chatbot<br/>+ sayısal doğrulama kalkanı]
     G --> I[Streamlit Dashboard]
     H --> I
-    G --> J[REST API<br/>3 uç nokta]
+    G --> J[REST API]
 ```
+
+Katman katman açıklama ve veri akışı: [`docs/MIMARI.md`](docs/MIMARI.md) ·
+kural/model yapısı: [`docs/MODEL_VE_KURAL_YAPISI.md`](docs/MODEL_VE_KURAL_YAPISI.md)
+
+**Alanların hangi katmandan geldiği** (ablasyonun temeli, 921 kayıt):
+
+| Yöntem | Alan sayısı |
+|---|---|
+| `llm` | 3.140 |
+| `kural` | 1.519 |
+| `hibrit` (iki katman uzlaştı) | 119 |
 
 ---
 
@@ -93,6 +130,11 @@ veritabanı sorgusundan gelir. Üstüne [sayısal doğrulama kalkanı](src/rag/c
 vardır: cevaptaki her sayının getirilen yapısal kayıtta karşılığı aranır,
 bulunamazsa cevap **reddedilir**.
 
+Kalkan iki yönlü ölçülür: **meşru cevabı engelleme 0/35**, uydurma sayıyı geçirme
+`tests/test_kalkan_kokenli.py` ile korunur. Cevap parçaları kökenine göre ayrı
+denetlenir — `yapisal` kayda karşı, `alinti` kaynak metne karşı, `sistem` kendi
+hesap girdilerine karşı, `duz` ise sayı içeremez.
+
 Aynı kısıt çıkarım katmanında da uygulanır: LLM'den değeri yorumlaması değil
 **metinde geçtiği hâliyle birebir kopyalaması** istenir, dönen ifade ham metinde
 aranır, bulunamazsa alan düşürülür.
@@ -101,13 +143,56 @@ aranır, bulunamazsa alan düşürülür.
 
 | Gereklilik (şartname 5.9) | Kanıt |
 |---|---|
-| Kurum içi sunucularda çalışabilme | `docker compose up` — tek komut |
-| Veri güvenliği | Tüm veri yerel diskte, dış servis çağrısı yok |
+| Kurum içi sunucularda çalışabilme | `docker compose up` — 18 Ağu'da koşuldu, 3 konteyner sağlıklı |
+| Veri güvenliği | Tüm veri yerel diskte, `tests/test_sizinti_yok.py` (6 test) |
 | Verinin kurum dışına çıkmaması | `internal: true` ağı + egress testi |
-| Dış servise bağımlı olmama | **Ağ kesilmiş demo** — hava boşluğu testi |
+| Dış servise bağımlı olmama | **Ağ kesilmiş demo** — hava boşluğunda çıkarım 24,4 sn'de koştu |
 
 Telemetri gönderen kütüphaneler tespit edilip kapatıldı (`HF_HUB_OFFLINE`,
 `ANONYMIZED_TELEMETRY`, `DO_NOT_TRACK` — bkz. [.env.example](.env.example)).
+
+Kurumsal yerleşim, LDAP/AD, vekil sunucu, veri ambarı beslemesi ve denetim izi:
+[`docs/KURUMSAL_ENTEGRASYON.md`](docs/KURUMSAL_ENTEGRASYON.md)
+
+---
+
+## Veri kapsamı
+
+Dokuz **faal** katılım bankasının dokuzunda da kampanya var. Kayıt defteri
+([`data/banks.yaml`](data/banks.yaml)) BDDK listesindeki **15 kuruluşu** taşır:
+9 faal · 2 faaliyete geçmemiş (Adil, İktisat) · 4 kuruluş aşamasında.
+
+| Banka | Kampanya |
+|---|---|
+| Ziraat Katılım | 211 |
+| Kuveyt Türk | 205 |
+| Albaraka Türk | 127 |
+| Türkiye Emlak Katılım | 109 |
+| Vakıf Katılım | 72 |
+| Türkiye Finans | 64 |
+| T.O.M. Katılım | 62 |
+| Dünya Katılım | 52 |
+| Hayat Finans | 19 |
+| **Toplam** | **921** |
+
+**Dengesizlik açıkça beyan edilir:** en geniş/en dar kapsam oranı **11,1×**.
+Bunun sıralamayı neden doğrudan bozmadığı ölçümle birlikte
+[`docs/KAPSAM_RAPORU.md`](docs/KAPSAM_RAPORU.md)'da (motor tekil ürün
+karşılaştırır, banka ortalaması almaz — şartname madde 15.1).
+
+Kampanya türü dağılımı (şartnamedeki 8 tür + `diger`): `diger` 330 ·
+`alisveris_puani` 191 · `kart` 172 · `finansman` 68 · `yatirim_urunu` 44 ·
+`tasit_finansmani` 44 · `ihtiyac_finansmani` 38 · `konut_finansmani` 27 ·
+`yeni_musteri` 7.
+
+**Alan doluluğu %32,4** (14.736 alanın 4.778'i dolu). Düşüklük kaynaktan
+geliyor, uydurmaktan kaçınmaktan: bankaların çoğu kâr payı oranını kampanya
+sayfasında değil başvuru ekranında veriyor. Kâr payı doluluğu **%17,4**
+(160/921). Boş alan `Belirtilmemiş` işaretlenir, tahmin edilmez.
+
+Bilinen sınırlar ve veri kalitesi denetimi:
+[`docs/VERI_KALITESI.md`](docs/VERI_KALITESI.md) ·
+[`docs/HATA_ANALIZI.md`](docs/HATA_ANALIZI.md)
 
 ---
 
@@ -122,6 +207,7 @@ hedefliyor; ikisini de **kullanmıyoruz**.
 | LLM — çıkarım (EVREN `llm-large`) | `Qwen/Qwen3.5-122B-A10B` | **Apache 2.0** |
 | LLM — seçilebilir hızlı uç, varsayılan değil (EVREN `llm-fast`) | `Qwen/Qwen3.6-35B-A3B` | **Apache 2.0** |
 | LLM — yerel yedek | `Qwen/Qwen3.5-4B` (Ollama) | **Apache 2.0** |
+| RAG gömme (EVREN `bge-m3-embed`) | `BAAI/bge-m3` | **MIT** |
 | Çıkarım sunucusu | Ollama | MIT |
 | Veritabanı | SQLite + SQLAlchemy | Public Domain / MIT |
 | Arayüz | Streamlit | Apache 2.0 |
@@ -132,8 +218,7 @@ Tam bağımlılık ve model lisans raporu: [`docs/LISANSLAR.md`](docs/LISANSLAR.
 (`make lisanslar`). **Kurulu 85 paketin tamamı izin verici (permissive)
 lisanslıdır** — 79'u `requirements.txt` kapanışında, kalanı ortamda kalmış ve
 teslim edilen koda dahil olmayan paketler; rapor ikisini ayırır. Kısıtlı kullanım
-şartı olan hiçbir bileşen yoktur. Rapor, seçmeli lisansların (`tld`,
-`python-dateutil`) hangi seçenekle kullanıldığını da gerekçesiyle belgeler.
+şartı olan hiçbir bileşen yoktur.
 
 **Model lisansları elle iddia edilmiyor, teyit ediliyor:** `make lisanslar-teyit`
 kullandığımız modellerin lisansını Hugging Face depo üst verisinden çeker ve
@@ -156,6 +241,7 @@ ve her arayüze bağlanabilir.
 | D — Düşük bellek | 8 GB RAM | Qwen3.5-2B Q4 (~1,9 GB) | Yedek |
 
 Model `.env` içindeki `OLLAMA_MODEL` ile değişir; kod aynı kalır.
+EVREN ile yerel arasında geçiş tek değişken: `LLM_SAGLAYICI`.
 
 ---
 
@@ -163,18 +249,25 @@ Model `.env` içindeki `OLLAMA_MODEL` ile değişir; kod aynı kalır.
 
 ```bash
 make kur          # kurulum
-make crawl        # banka sitelerinden kampanya topla
-make extract      # çıkarım (kural + LLM hibrit) -> SQLite
-make seed         # tohum veriden çıkarım (ağ gerekmez)
-make durum        # veritabanı özeti
+make crawl        # banka sitelerinden kampanya topla  [Chrome gerekir]
+make extract      # çıkarım (kural + LLM hibrit) -> SQLite   [EVREN]
+make extract-yerel      # aynı çıkarım, yerel Ollama ile (yedek / hava boşluğu)
+make durum        # kaç kampanya, kaç banka, RAG indeksi güncel mi
+make vektor       # RAG vektör indeksini kur (~70 sn)
 make run          # Streamlit arayüzü
 make api          # REST API
-make test         # testler
+make test         # testler (1.755)
+make lint         # kod denetimi
 make eval         # metrikler -> docs/SONUCLAR.md
-make lisanslar    # lisans raporu
+make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
+make kapsam       # banka bazlı kapsam raporu
+make veri-seti    # yayınlanabilir veri seti + veri kartı
+make lisanslar    # bağımlılık + model lisans raporu
+make kanit        # veri toplama etiği kanıtları (robots + KVKK)
+make sunum        # sunum PDF'i üret
 ```
 
-Ablasyon koşuları (aynı kod yolu, farklı yapılandırma):
+Ablasyon kolları (aynı kod yolu, farklı yapılandırma):
 
 ```bash
 make extract-kural   # yalnız kural katmanı
@@ -184,13 +277,26 @@ make extract         # hibrit (bizim)
 
 ---
 
+## REST API
+
+`make api` → http://localhost:8000/docs
+
+| Uç nokta | İş |
+|---|---|
+| `POST /extract` | Ham metin ver, kanıt zincirli yapısal çıktı al |
+| `GET /compare` | Beş ölçüte göre bankalar arası karşılaştırma |
+| `POST /ask` | Chatbot — kaynaklı ve kalkandan geçmiş cevap |
+| `GET /saglik` | Sağlık yoklaması |
+
+---
+
 ## Veri toplama etiği
 
 - **robots.txt uyumu zorunlu**, `crawl-delay` uygulanır
 - İstek arası en az **2 saniye**, eşzamanlı istek yok
 - Tanımlı User-Agent, iletişim adresiyle
 - Yalnız **kamuya açık** sayfalar; giriş gerektiren hiçbir alana erişilmez
-- **Kişisel veri toplanmaz** (KVKK) — 1019 ham kayıt tarandı, kimliği belirli
+- **Kişisel veri toplanmaz** (KVKK) — 1.019 ham kayıt tarandı, kimliği belirli
   gerçek kişiye ait veri bulunmadı
 - BDDK listesi **manuel** alınmıştır (şartname 5.1 izin veriyor); site otomatik
   taranmıyor, gerekçesi ölçümle belgeli
@@ -217,12 +323,17 @@ git clone https://github.com/erenkendir722/ai-agent-nlp.git
 
 | Yol | İçerik | Kayıt |
 |---|---|---|
-| [`data/exports/svartal_kampanyalar.csv`](data/exports/svartal_kampanyalar.csv) | **Yayın sürümü** — düz tablo: her alan + yöntemi + güven skoru (Excel'de açılır) | 931 |
-| [`data/exports/svartal_kampanyalar.jsonl`](data/exports/svartal_kampanyalar.jsonl) | **Yayın sürümü** — kanıt zinciriyle: değer + birim + ham ifade + kaynak alıntısı + uygunluk koşulları | 931 |
+| [`data/exports/svartal_kampanyalar.csv`](data/exports/svartal_kampanyalar.csv) | **Yayın sürümü** — düz tablo: her alan + yöntemi + güven skoru (`;` ayraçlı, Excel'de açılır) | 921 |
+| [`data/exports/svartal_kampanyalar.jsonl`](data/exports/svartal_kampanyalar.jsonl) | **Yayın sürümü** — kanıt zinciriyle: değer + birim + ham ifade + kaynak alıntısı + uygunluk koşulları | 921 |
 | [`data/exports/DATASET_CARD.md`](data/exports/DATASET_CARD.md) | **Veri kartı** — kapsam, dağılım, toplama yöntemi, bilinen sınırlar | — |
-| [`data/raw/<banka_kodu>/*.json`](data/raw/) | Toplanan sayfaların ham anlık görüntüsü: URL, çekim tarihi, HTTP durumu, başlık ve **çıkarılmış gövde metni** | 1.024 |
+| [`data/raw/<banka_kodu>/*.json`](data/raw/) | Toplanan sayfaların ham anlık görüntüsü: URL, çekim tarihi, HTTP durumu, başlık ve **çıkarılmış gövde metni** | 1.019 |
 | [`data/banks.yaml`](data/banks.yaml) | BDDK kayıt defteri — faal + kuruluş aşamasındaki tüm katılım bankaları | 15 |
-| [`data/gold/`](data/gold/) | Altın set etiketleme dosyaları (98 örnek, insan etiketli) | 98 |
+| [`data/gold/`](data/gold/) | Altın set — dört kişi bağımsız etiketledi, uyum ölçüldü | 92 |
+
+> **1.019 ile 921 iki ayrı sayıdır ve ikisi de doğrudur.** 1.019 *gezilen sayfa*,
+> 921 *kampanya*. Aradaki 98: bankalar aynı kampanyayı iki adresten yayımladığı
+> için oluşan 95 birebir kopya, artı indekslenemeyen 7 kategori listeleme sayfası.
+> `make durum` ikisini yan yana gösterir.
 
 Yayın sürümünde **tam sayfa metni yoktur**: yapısal alanlar, kaynak adresi ve
 değerin dayandığı kısa alıntı vardır. Bu tercih telif riskini sıfırlar,
@@ -252,18 +363,22 @@ URL'den deterministik üretildiği için aynı sayfa aynı kaydın üstüne yaza
 │   ├── schema.py              ← ŞEMA SÖZLEŞMESİ (donmuş, v1.2.0)
 │   ├── boru_hatti.py          ← CLI giriş noktası
 │   ├── depolama.py            ← SQLite + SQLAlchemy
+│   ├── vektor_db.py           ← yerel gömme + kosinüs arama (harici vektör DB yok)
+│   ├── terim_sozlugu.py       ← sözlüğün makine tarafı
 │   ├── collector/             ← kayıt defteri + nezaket + 9 banka kazıyıcısı
 │   ├── preprocessing/         ← Türkçe normalizasyon
-│   ├── extraction/            ← kural + LLM + uzlaştırıcı
+│   ├── extraction/            ← kural + LLM + uzlaştırıcı + sağlayıcı
 │   ├── comparison/            ← karşılaştırma motoru + toplam maliyet
 │   ├── ajanlar/               ← uygunluk · eleştirmen · yüklem · muhakeme · orkestratör
-│   ├── rag/                   ← chatbot + sayısal doğrulama kalkanı + yerel vektör arama
-│   └── api/                   ← FastAPI, 3 uç nokta
-├── app/                       ← Streamlit, 5 ekran
+│   ├── izleme/                ← tetikleyici · dinleyici · yeni kampanya keşfi
+│   ├── rag/                   ← chatbot + sayısal doğrulama kalkanı + sohbet bağlamı
+│   └── api/                   ← FastAPI
+├── app/                       ← Streamlit, 7 ekran
 ├── data/banks.yaml            ← banka kayıt defteri
 ├── data/exports/              ← yayınlanan veri seti + veri kartı
-├── docs/kararlar/             ← ADR'ler
-└── tests/  eval/
+├── docs/kararlar/             ← 26 ADR (mimari karar kayıtları)
+├── docs/kanit/                ← robots günlüğü · KVKK taraması · model lisansları
+└── tests/  eval/  tools/
 ```
 
 ---
@@ -277,26 +392,21 @@ URL'den deterministik üretildiği için aynı sayfa aynı kaydın üstüne yaza
 | Görkem | Veri toplama · veri kalitesi · terim sözlüğü |
 | Esra | Arayüz · dashboard · chatbot paneli |
 
-> 📋 **Görevini öğrenmek için → [`GOREVLER.md`](GOREVLER.md)**
-> Herkesin görevi kendi bölümünde, tikli listede. Bitirince `[ ]` → `[x]` yap
-> ve sıradakine geç; kimseye sormana gerek yok.
+---
 
 ## Teslimat kontrol listesi
 
-Şartname madde 6, 9 ve 10'un istediği her teslimat kalemi. Teslimden önce
-baştan sona taranır (görev E-17).
+Şartname madde 6, 9 ve 10'un istediği her teslimat kalemi.
 
 ### Kod ve depo
 
 - [x] Çalışan proje kodu, tüm kaynak kodlar depoda
-- [x] Depo **herkese açık** ve Apache 2.0 lisanslı — 28 Ağu 10:1x doğrulaması:
-      anonim istek **HTTP 200**, `private: false`, lisans `Apache-2.0`
-- [x] `BilisimVadisi2026` ve `turkiye-acik-kaynak-platformu` etiketleri —
-      GitHub API'de ikisi de görünüyor (28 Ağu)
+- [x] Depo **herkese açık** ve Apache 2.0 lisanslı
+- [x] `BilisimVadisi2026` ve `turkiye-acik-kaynak-platformu` etiketleri
 - [x] Kurulum adımları net: [`docs/KURULUM.md`](docs/KURULUM.md)
 - [x] Bağımlılıkların eksiksiz listesi: `requirements.txt` + [`docs/LISANSLAR.md`](docs/LISANSLAR.md)
-- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/) — 921 kayıt (28 Ağu)
-- [x] `v1.0` sürüm etiketi atıldı ve push'landı (28 Ağu)
+- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/) — 921 kayıt
+- [x] `v1.0` sürüm etiketi atıldı ve push'landı
 
 ### Dokümantasyon — madde 6'nın 10 başlığı
 
@@ -314,18 +424,22 @@ baştan sona taranır (görev E-17).
 ### Sunum ve video
 
 - [x] Sunum materyali PDF → [`docs/sunum/Svartal_Sunum.pdf`](docs/sunum/Svartal_Sunum.pdf) (`make sunum`)
-- [x] Sunum materyali PPTX → [`docs/sunum/Svartal_Sunum.pptx`](docs/sunum/Svartal_Sunum.pptx) (`make sunum-pptx`, 28 Ağu)
-- [x] Demo videosu — maks. 5 dakika (madde 6) · ES-17 — ⚠ **bağlantısı buraya eklenecek**
-- [x] Sunum videosu — 1 dakika (madde 10) · ES-18 — ⚠ **bağlantısı buraya eklenecek**
+- [x] Sunum materyali PPTX → [`docs/sunum/Svartal_Sunum.pptx`](docs/sunum/Svartal_Sunum.pptx) (`make sunum-pptx`)
 - [x] Sunumda tüm üyelerin görev tanımları
+- [x] Demo videosu — maks. 5 dakika (madde 6) → [`docs/sunum/SVARTAL_DEMO.mp4`](docs/sunum/SVARTAL_DEMO.mp4) (5:00 · 1920×1020 · 23,6 MB)
+- [ ] **Sunum videosu — 1 dakika (madde 10): ayrı çekim, henüz yok**
 
 ### Ölçüm ve uyum kanıtları
 
-- [x] Ölçüm sonuçları: [`docs/SONUCLAR.md`](docs/SONUCLAR.md) · ablasyon tablosu dahil
-- [x] Şartname madde madde uyum takibi: [`docs/SARTNAME_UYUM.md`](docs/SARTNAME_UYUM.md)
+- [x] Ölçüm sonuçları: [`docs/SONUCLAR.md`](docs/SONUCLAR.md)
+- [x] Değerlendirme yöntemi ve altın set: [`docs/DEGERLENDIRME_YONTEMI.md`](docs/DEGERLENDIRME_YONTEMI.md) · [`docs/ETIKETLEME_KILAVUZU.md`](docs/ETIKETLEME_KILAVUZU.md)
+- [x] Banka bazlı kapsam ve dengesizlik (madde 15.1): [`docs/KAPSAM_RAPORU.md`](docs/KAPSAM_RAPORU.md)
 - [x] Veri toplama etiği kanıtları: [`docs/kanit/`](docs/kanit/) (`make kanit`)
 - [x] Model ve paket lisansları teyitli: [`docs/LISANSLAR.md`](docs/LISANSLAR.md) (`make lisanslar-teyit`)
+- [x] Terim sözlüğü, 5 resmî kavram dahil: [`docs/TERIM_SOZLUGU.md`](docs/TERIM_SOZLUGU.md)
+- [x] Tasarım kararları ve gerekçeleri: [`docs/kararlar/`](docs/kararlar/) — 26 ADR
 - [x] Testler yeşil (`make test`) ve kod denetimi temiz (`make lint`)
+- [ ] Ablasyon tablosu `docs/SONUCLAR.md`'ye işlenecek (`make ablasyon`, ~25 dk)
 
 ---
 

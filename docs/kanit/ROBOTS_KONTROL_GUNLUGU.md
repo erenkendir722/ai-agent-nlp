@@ -2,7 +2,7 @@
 
 _Otomatik üretildi: 2026-08-28T09:45:09+03:00 · `tools/robots_kanit.py`_
 
-Bu günlük **G-14** (veri toplama etiği kanıtı) kapsamındadır;
+Bu günlük veri toplama etiği kanıtı kapsamındadır;
 `docs/kanit/VERI_TOPLAMA_ETIGI.md` onu kanıt olarak gösterir.
 
 Kararları üreten kod, toplamayı yapan kodun ta kendisidir:

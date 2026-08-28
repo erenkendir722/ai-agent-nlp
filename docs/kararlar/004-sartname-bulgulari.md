@@ -3,7 +3,7 @@
 **Tarih:** 9 Ağustos 2026
 **Durum:** Kabul edildi · tüm maddeler kapalı
 **Sahip:** Eren
-**Kaynak:** `2026_TYDA_SARTNAME_Ikinci_Senaryo_TR_1_1IAJb.pdf` (23 sayfa)
+**Kaynak:** TEKNOFEST 2026 TYDA teknik şartnamesi, 2. Senaryo (23 sayfa)
 
 ## 1. ✅ TESLİM TARİHİ ÇELİŞKİSİ — KAPANDI, ÖNEMİ YOK
 

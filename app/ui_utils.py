@@ -1119,7 +1119,7 @@ def inject_custom_css():
             border-color: rgba(0,168,107,0.5);
             color: #FFFFFF;
         }
-        
+
         /* Metric Cards Styling (Glassmorphism & Elevation) */
         [data-testid="stMetric"] {
             background: rgba(37, 37, 45, 0.7);
@@ -1130,13 +1130,13 @@ def inject_custom_css():
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
         }
-        
+
         [data-testid="stMetric"]:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 24px rgba(0, 168, 107, 0.3);
             border-color: rgba(0, 168, 107, 0.5);
         }
-        
+
         /* Metric Caption / Delta Visibility */
         [data-testid="stMetricDelta"] > div {
             font-size: 1.05rem !important;
@@ -1160,7 +1160,7 @@ def inject_custom_css():
             border-radius: 8px !important;
             overflow: hidden !important;
         }
-        
+
         th {
             background-color: #1A1A1F !important;
             color: #E0E0E0 !important;
@@ -1169,23 +1169,23 @@ def inject_custom_css():
             font-size: 0.85rem;
             letter-spacing: 0.5px;
         }
-        
+
         td {
             font-size: 0.95rem;
             color: #D3D3D3 !important;
         }
-        
+
         tr:hover td {
             background-color: rgba(0, 168, 107, 0.1) !important;
         }
-        
+
         /* Buttons */
         .stButton > button {
             border-radius: 8px !important;
             font-weight: 500 !important;
             transition: all 0.2s ease;
         }
-        
+
         /* Expanders */
         [data-testid="stExpander"] {
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
@@ -1193,17 +1193,17 @@ def inject_custom_css():
             background-color: #25252D !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
+
         /* Inputs & Selectboxes */
-        .stSelectbox div[data-baseweb="select"] > div, 
-        .stTextInput input, 
+        .stSelectbox div[data-baseweb="select"] > div,
+        .stTextInput input,
         .stNumberInput input {
             border-radius: 8px !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             background-color: #25252D !important;
             color: #E0E0E0 !important;
         }
-        
+
         /* Sidebar styling */
         [data-testid="stSidebar"] {
             background-color: #121212 !important;

@@ -1,7 +1,6 @@
 # ADR 015 — RAG indeksi depoya alındı, bayatlığı denetleniyor
 
 **Tarih:** 26 Ağustos 2026 · **Durum:** kabul edildi · **Sorumlu:** Esra
-**İlgili görev:** E-14 (çevrimdışı paket) · S-09 (RAG boru hattı)
 **Şema etkisi:** yok · **Önceki karar:** [ADR 014](014-vektor-db-yerine-yerel-kosinus.md)
 
 ## Bağlam
@@ -27,7 +26,7 @@ make chatbot-test    doğruluk 0,742  (hedef ≥0,88)   ❌
 ```
 
 31 sorunun 8'i başarısızdı ve **8'inin de sebebi aynıydı**: metin araması
-isteyen sorular kaynaksız cevaplanıyordu. `GOREVLER.md`'de S-10 aynı test için
+isteyen sorular kaynaksız cevaplanıyordu. Görev panosunda aynı test için
 **1,000 / 1,000** kayıtlıydı. Kodda gerileme yoktu — dosya yoktu.
 
 Bu, "her geliştirici kendi indeksini kursun" varsayımının maliyeti: indeksi
@@ -86,7 +85,7 @@ duruş: bilmemek, güncel varsaymak için gerekçe değildir.
 - `tests/test_vektor_db.py` — 14 → 21 test (sıra bağımsızlığı, silme, metin
   değişimi, denetlenmemiş durum)
 - `docs/KURULUM.md` — USB'ye kopyalanacaklar dörtten **ikiye** indi
-- `Makefile` `paket` hedefi ve `CLAUDE.md` aynı yönde güncellendi
+- `Makefile` `paket` hedefi aynı yönde güncellendi
 - ADR 014'ün «çevrimdışı paket indeksi elle içermeli» uyarısı **kapandı**
 
 ### Açık kalan

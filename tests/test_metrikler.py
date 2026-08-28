@@ -1,4 +1,4 @@
-"""Değerlendirme metrikleri — F1, makro-F1 ve «hep boş» tabanı (S-12).
+"""Değerlendirme metrikleri — F1, makro-F1 ve «hep boş» tabanı.
 
 NEDEN BU TESTLER VAR:
     Altın setin çoğu hücresi boş. Doğruluk metriği «iki taraf da boş»

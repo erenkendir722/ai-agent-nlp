@@ -1,4 +1,4 @@
-"""robots.txt kontrol günlüğü üreteci — veri toplama etiği kanıtı (G-14).
+"""robots.txt kontrol günlüğü üreteci — veri toplama etiği kanıtı.
 
 NEDEN ELLE YAZILAN BİR BEYAN DEĞİL:
     "robots.txt'e uyuyoruz" cümlesi bir iddiadır; jüri iddia değil KANIT ister.
@@ -226,7 +226,7 @@ def gunluk_uret(veri: dict) -> str:
         "",
         f"_Otomatik üretildi: {veri['uretildi']} · `{veri['uretici']}`_",
         "",
-        "Bu günlük **G-14** (veri toplama etiği kanıtı) kapsamındadır;",
+        "Bu günlük veri toplama etiği kanıtı kapsamındadır;",
         "`docs/kanit/VERI_TOPLAMA_ETIGI.md` onu kanıt olarak gösterir.",
         "",
         "Kararları üreten kod, toplamayı yapan kodun ta kendisidir:",
@@ -374,7 +374,7 @@ def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    ayristirici = argparse.ArgumentParser(description="robots.txt kontrol günlüğü (G-14)")
+    ayristirici = argparse.ArgumentParser(description="robots.txt kontrol günlüğü")
     ayristirici.add_argument(
         "--cevrimdisi",
         action="store_true",

@@ -21,7 +21,6 @@ NEDEN VAR:
     değildir, süreci komple öldürür — testin içinden görülemez, ancak
     çocuk sürecin çıkış kodundan anlaşılır.
 
-    Ayrıntı: docs/ARAYUZ_INCELEME.md — «Ortam» bölümü.
 """
 
 from __future__ import annotations

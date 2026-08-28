@@ -1,4 +1,4 @@
-"""Karşılaştırma motoru — beş kriter ve kenar durumları (E-05).
+"""Karşılaştırma motoru — beş kriter ve kenar durumları.
 
 Şartname 5.7 beş sıralama kriteri istiyor. Motor bunları uyguluyordu ama
 **kendi test dosyası yoktu**: `toplam_maliyet` dolaylı olarak

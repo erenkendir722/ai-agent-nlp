@@ -318,5 +318,4 @@ sistem onu doldurduğunu sanır.
    ablasyon tablosu — üçü de bir dönem ölçmeleri gereken şeyi ölçmüyordu.
 
 **İlgili belgeler:** [`kararlar/`](kararlar/) (14 ADR) ·
-[`SPRINT0_RAPORU.md`](SPRINT0_RAPORU.md) · [`HATA_ANALIZI.md`](HATA_ANALIZI.md) ·
-[`DUZELTME_TASARIMI.md`](DUZELTME_TASARIMI.md)
+[`HATA_ANALIZI.md`](HATA_ANALIZI.md)

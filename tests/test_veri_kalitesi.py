@@ -1,4 +1,4 @@
-"""Veri kalitesi denetiminin eşiklerini koruyan testler (G-07).
+"""Veri kalitesi denetiminin eşiklerini koruyan testler.
 
 NEDEN BU TESTLER VAR:
     Rapor, jürinin "bankalar sitelerini değiştirirse ne olur?" sorusunun

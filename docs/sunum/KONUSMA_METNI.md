@@ -25,7 +25,7 @@ Sağdaki tabloyu göster:
 
 ## 03 · Kapsam &nbsp;— Görkem &nbsp;· 30 sn
 
-> Dokuz faal katılım bankasının tamamı, 921 kampanya, 1.761 geçen test, sıfır
+> Dokuz faal katılım bankasının tamamı, 921 kampanya, 1.755 geçen test, sıfır
 > ticari dış servis bağımlılığı. Her kayıt **16 alanlı bir kanıt zinciri** taşır:
 > kaynak URL, dayandığı cümle, güven skoru ve hangi katmandan çıktığı.
 

@@ -50,3 +50,9 @@ docs/sunum/.p*.html
 docs/sunum/.p*.png
 docs/sunum/.bos.*
 docs/sunum/.son.*
+
+# Demo videosunun HAM kaydı (301 MiB) — depoya girmez, GitHub tek dosyada
+# 100 MB'ı reddeder. Yayın sürümü `docs/sunum/SVARTAL_DEMO.mp4` (23,6 MiB):
+# aynı çözünürlük ve süre, SSIM 0,999 — göz için ayırt edilemez.
+# Ham kayıt yeniden kodlama gerekirse diye yerelde saklanır.
+/SVARTAL_DEMO.mp4

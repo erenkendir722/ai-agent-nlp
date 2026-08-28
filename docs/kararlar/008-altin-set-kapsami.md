@@ -100,5 +100,5 @@ karşılığı yok.
 **`eval`'i bulanık eşleşmeye geçirmek** (F1 / token örtüşmesi). Metinsel
 alanları gerçekten ölçülebilir kılardı ve şemanın docstring'i zaten "alan bazlı
 F1" diyor — yani uygulama ile niyet arasında bir açık var. Ama bu ayrı bir iş
-ve kritik yolun (`H-01 → S-12 → S-13 → ES-13`) üstünde. Şimdilik boşluk dürüstçe
+ve kritik yolun üstünde. Şimdilik boşluk dürüstçe
 raporlanıyor; metrik düzeltilirse alanlar geri eklenebilir.

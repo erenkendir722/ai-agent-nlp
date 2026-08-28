@@ -63,7 +63,7 @@ class TestKosucuGarantileri:
         }
         assert katmanlar == {(True, False), (False, True), (True, True)}
 
-        # Ajan soruları (A-09): eleştirmensiz ve tam hiyerarşi kolları var.
+        # Ajan soruları: eleştirmensiz ve tam hiyerarşi kolları var.
         ajanlar = dict(ablasyon_modulu.YAPILANDIRMALAR)
         assert ajanlar["hibrit_elestirmensiz"]["elestirmen"] is False
         assert ajanlar["tam"]["elestirmen"] is True and ajanlar["tam"]["yuklem"] is True

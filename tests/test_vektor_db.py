@@ -1,4 +1,4 @@
-"""Gömme + kosinüs benzerliği RAG katmanı (S-09, ADR 014).
+"""Gömme + kosinüs benzerliği RAG katmanı (ADR 014).
 
 Bu testler AĞ İSTEMEZ: gömme çağrısı sahte bir işlevle değiştiriliyor.
 Ölçülen şey EVREN'in kalitesi değil, bizim indeks ve arama mantığımız —

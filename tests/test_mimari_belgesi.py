@@ -111,7 +111,7 @@ def test_semadaki_llm_etiketleri_kodla_tutuyor():
 
 
 def test_katman_sifir_selenium_diyor():
-    """Toplama yolu httpx değil Selenium — CLAUDE.md'nin 26 Ağustos düzeltmesi."""
+    """Toplama yolu httpx değil Selenium — 26 Ağustos düzeltmesi."""
     belge = _belge()
     assert "trafilatura" not in belge or "Jenerik Toplayıcı<br/>httpx" not in belge
     assert "Selenium" in belge

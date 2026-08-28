@@ -1,6 +1,6 @@
 """`data/banks.yaml` sözleşme testleri — şartname 5.1 kayıt defteri.
 
-G-01'de on bankanın `kod_dogrulandi` bayrağı `true`'ya çekildi ve Adil Katılım'a
+On bankanın `kod_dogrulandi` bayrağı `true`'ya çekildi ve Adil Katılım'a
 yeni bir EFT kodu (0215) atandı. O ana kadar kayıt defterini denetleyen hiçbir
 test yoktu: yer tutucu bir kod (`DOGRULA-ADIL`) "doğrulandı" işaretlenebilir,
 iki banka aynı kodu taşıyabilirdi. Kimlik çakışması kampanyaları yanlış bankaya

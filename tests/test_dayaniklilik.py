@@ -1,4 +1,4 @@
-"""Dayanıklılık ölçüm aracının kendi testleri (S-07).
+"""Dayanıklılık ölçüm aracının kendi testleri.
 
 Ölçüm aracı sessizce bozulursa, ürettiği "%100 dayanıklı" raporu sistemin
 gerçek durumunu değil aracın kırıldığını gösterir — ve bu, ölçmemekten

@@ -2,7 +2,7 @@
 
 **Tarih:** 27 Ağustos 2026
 **Durum:** kabul edildi
-**Bağlam:** G-19 · [`PLAN_YENI_KAMPANYA_KESFI.md`](../../PLAN_YENI_KAMPANYA_KESFI.md)
+**Bağlam:** yeni kampanya keşfi
 · devamı olduğu karar: [ADR 018](018-tetikleyici-dinleyici.md)
 
 ## Bağlam
@@ -94,8 +94,8 @@ sunucu ayırt edebilir, birleştirmek veri kaybıdır.
 
 - `make kesif [banka=0203] [gorunur=1]` · arayüzde **Boru Hattı → 3 · Veri
   Denetimi → A · Yeni Kampanya Keşfi**
-- Sekme 3 ikiye ayrıldı: **A** yeni kampanya keşfi (G-19), **B** veri tazeliği
-  (G-17, değişmeden korundu). Sekme adı «Veri Tazeliği» → «Veri Denetimi».
+- Sekme 3 ikiye ayrıldı: **A** yeni kampanya keşfi, **B** veri tazeliği
+  (değişmeden korundu). Sekme adı «Veri Tazeliği» → «Veri Denetimi».
 - Yazılan tek yer `data/izleme/kesif.json` (`.gitignore`'da). `data/raw` ve
   `data/katilim.db` **dokunulmaz** — uçtan uca doğrulandı.
 - Şemaya dokunulmadı, `SEMA_SURUMU` değişmedi.

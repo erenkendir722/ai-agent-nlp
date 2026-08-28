@@ -428,7 +428,7 @@ def kampanya_cikar(
     metin = kayit.govde_metin
     kural_alanlari: dict[str, Alan] = {}
     llm_alanlari: dict[str, Alan] = {}
-    
+
     trace = {}
 
     # SÜRE ÖLÇÜMÜ `perf_counter` İLE — `time.time()` DEĞİL (27 Ağustos).
@@ -461,7 +461,7 @@ def kampanya_cikar(
 
             llm_cikarici = LLMCikarici()
             trace["llm_load_suresi"] = time.perf_counter() - t_load
-        
+
         t_inf = time.perf_counter()
         llm_alanlari = llm_cikarici.cikar(metin, kayit.url, kayit.cekim_tarihi)  # type: ignore[attr-defined]
         trace["llm_cikarim_suresi"] = time.perf_counter() - t_inf
@@ -471,7 +471,7 @@ def kampanya_cikar(
     kampanya, rapor = uzlastir(kural_alanlari, llm_alanlari, kayit=kayit, yuklem=yuklem)
     trace["uzlastirma_suresi"] = time.perf_counter() - t_uz
 
-    # UYGUNLUK AJANI — uzlaştırmadan SONRA koşar (A-08).
+    # UYGUNLUK AJANI — uzlaştırmadan SONRA koşar.
     # Kısıtların çoğu uzlaştırılmış alanlardan türer (`max_tutar` ←
     # `finansman_tutari_max`); kural ve LLM katmanları ayrı ayrı çıkarım
     # yaparken türetmek, uzlaştırıcının seçmediği bir değeri kısıta yazma
@@ -482,7 +482,7 @@ def kampanya_cikar(
     kampanya.uygunluk = UygunlukAjani().cikar(kampanya)
     trace["uygunluk_suresi"] = time.perf_counter() - t_uygunluk
     trace["toplam_sure"] = time.perf_counter() - t0
-    
+
     rapor.trace_log = trace
     return kampanya, rapor
 

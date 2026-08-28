@@ -1,4 +1,4 @@
-"""Arayüz ekran görüntüleri — README ve dokümantasyon için (ES-14).
+"""Arayüz ekran görüntüleri — README ve dokümantasyon için.
 
     make ekran-goruntuleri              # çalışan arayüzden görüntü al
     make ekran-goruntuleri adres=...    # başka bir adresten

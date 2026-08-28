@@ -365,7 +365,7 @@ class TestOdulMiktariSecimi:
 
         "kisi basi"yi bağlam sözcüğü yapmak denendi ve ÖLÇÜLDÜ: alan F1'ini
         0,667'den 0,333'e düşürdü, başka yerlerde yeni yanlış pozitif açtı.
-        Doğrusu seçim katmanında çözmek — S-14'e bırakıldı.
+        Doğrusu seçim katmanında çözmek — oraya bırakıldı.
         """
         odul = cikar(
             "Davet eden kişi, kişi başı maksimum 2.000 TL, toplamda 5 kişi "
@@ -374,7 +374,7 @@ class TestOdulMiktariSecimi:
         assert odul != pytest.approx(10_000.0)
 
     def test_toplamda_gecen_gercek_odul_elenmez(self) -> None:
-        """17 Ağu (S-14) — vetonun yan hasarı kapatıldı.
+        """17 Ağu — vetonun yan hasarı kapatıldı.
 
         Veto "toplamda" sözcüğüne bakıyordu ve şu cümlede 300 TL'yi eliyordu:
         *"kazanılabilecek maksimum nakit ödül tutarı TOPLAMDA 300 TL'dir"*.
@@ -828,7 +828,7 @@ def test_geri_sarma_kesik_olmayan_sayiya_dokunmaz() -> None:
 
 
 class TestDolayliIfadeler:
-    """Şartname 5.2 — dört ifade, biri sayılı üçü sayısız (S-08).
+    """Şartname 5.2 — dört ifade, biri sayılı üçü sayısız.
 
     Şartname bu dördünü ADIYLA sayıyor:
 

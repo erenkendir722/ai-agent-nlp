@@ -1,4 +1,4 @@
-# Dayanıklılık ölçümü (S-07)
+# Dayanıklılık ölçümü
 
 Şartname 5.2 — *«eksik veya farklı yazılmış bilgiler karşısında doğru sonuç»*.
 
@@ -29,7 +29,7 @@ girmez — bozma, bulunamayan bir şeyi kaybettiremez.
 > 🔑 **`uydurdu` = 0.** Kanıt zinciri tutuyor: kural katmanı,
 > doğru cümle silindiğinde bile ham metinde karşılığı olmayan bir değer
 > ÜRETMİYOR. Kalan kusur uydurma değil, **seçim** kusuru — sayfadaki
-> yanlış sayıya kayıyor. Bu ayrım S-14'ün çalışma alanını belirler:
+> yanlış sayıya kayıyor. Bu ayrım seçim katmanının alanını belirler:
 > düzeltilecek şey çıkarım değil, adaylar arasından seçim.
 
 ## Bozma türüne göre

@@ -3,7 +3,7 @@
         kapsam cikti-ornekleri veri-seti \
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         altin-tur2 altin-tur2-fark kural-olc \
-        gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-pptx sunum-metni veri-kalitesi \
+        gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-pptx veri-kalitesi \
         ekran-goruntuleri \
         suresi-gecenleri-ele yinelenenleri-ele liste-sayfalarini-ele \
         finansman-cek cerez-govdesini-onar \
@@ -33,7 +33,6 @@ export PYTHONIOENCODING := utf-8
 # geçişinde yeni ScriptRunner thread'i açtığı için, `st.dataframe` olan bir
 # sayfadan çıkınca uygulama komple ölüyor — 18 Ağustos'ta sayfa geçişinde
 # yaşandı. Sistem ayırıcısı bu yolu kapatır.
-# Ayrıntı: docs/ARAYUZ_INCELEME.md — «Ortam» bölümü.
 #
 # `export`: bu yalnız `run`'ın derdi değil. `AppTest` de her sayfa için yeni
 # bir ScriptRunner thread'i açtığından `make test` aynı yerden çöküyordu —
@@ -247,16 +246,6 @@ birim-goc:  ## eski veritabanına birim ekler (şema v1.1.0 -> v1.2.0)
 uygunluk-goc:  ## mevcut kayıtlara uygunluk koşullarını yazar (A-08, LLM'siz)
 	$(PYTHON) tools/uygunluk_goc.py $(if $(deneme),--deneme)
 
-# --- görev panosu ---
-gorev:  ## görev durumu (ad=Esra ile kişiye özel)
-	@$(PYTHON) tools/gorevler.py $(ad)
-
-gorev-dogrula:  ## görev panosunun bağımlılıklarını denetle
-	@$(PYTHON) tools/gorevler.py --dogrula
-
-git-kontrol:  ## GitHub ile senkron mu (pull/push gerekiyor mu)
-	@python3 tools/git_kontrol.py baslangic | $(PYTHON) -c "import json,sys; d=json.load(sys.stdin); print(d.get('systemMessage','✅ Temiz'))"
-
 # --- sunum ---
 # HTML kaynaktan PDF üretir. Carlito fontu docs/sunum/fontlar/ içinde gömülü
 # durur (LibreOffice dağıtımından, SIL Open Font License) — makinede kurulu
@@ -279,9 +268,6 @@ else ifeq ($(KROM_ISLETIM),Linux)
 else
   KROM ?= C:/Program Files/Google/Chrome/Application/chrome.exe
 endif
-
-sunum-metni:  ## slayt metin dokumu -> docs/sunum/sunum_icerik.txt
-	$(PYTHON) tools/sunum_metni.py
 
 ekran-goruntuleri:  ## arayuz ekran goruntuleri -> docs/gorseller/ (once `make run`)
 	$(PYTHON) tools/ekran_goruntuleri.py $(if $(adres),--adres $(adres))

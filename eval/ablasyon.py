@@ -62,7 +62,7 @@ YAPILANDIRMALAR: tuple[tuple[str, dict[str, bool]], ...] = (
     # Kural önce: LLM gerektirmediği için saniyeler sürer ve bir sorun varsa
     # LLM koşularından ÖNCE ortaya çıkar.
     #
-    # İKİ SORU, BEŞ SATIR (A-09, 26 Ağu):
+    # İKİ SORU, BEŞ SATIR (26 Ağu):
     #   Soru 1 — hangi ÇIKARIM KATMANI ne katıyor?   kural / llm / hibrit
     #   Soru 2 — hangi AJAN ne katıyor?              hibrit_elestirmensiz / tam
     #

@@ -91,7 +91,7 @@ _BASLIK_SINIRI = 32
 # Sözlük kullanılıyor, `@dataclass` DEĞİL: sayfa betiği her çizimde baştan
 # koşar, burada tanımlanan bir sınıf her koşuda yeni bir nesne olur ve
 # `st.session_state`'teki örnek eski sınıftan geldiği için `isinstance`
-# false döner (CLAUDE.md — Streamlit sayfasında `@dataclass` tanımlama).
+# false döner. Bu yüzden Streamlit sayfasında `@dataclass` tanımlanmaz.
 
 
 def _bos_sohbet() -> dict:

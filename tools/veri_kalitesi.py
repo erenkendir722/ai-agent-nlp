@@ -1,4 +1,4 @@
-"""Veri kalitesi denetimi — `docs/VERI_KALITESI.md` üretir (G-07).
+"""Veri kalitesi denetimi — `docs/VERI_KALITESI.md` üretir.
 
 NEDEN ELLE YAZILAN BİR BELGE DEĞİL:
 Jürinin "bankalar sitelerini değiştirirse ne olur?" sorusunun cevabı, elle
@@ -378,7 +378,7 @@ def rapor_yaz(kayitlar: list, durum: dict) -> str:
 
 
 def main(argv: list[str]) -> int:
-    ap = argparse.ArgumentParser(description="Veri kalitesi denetimi (G-07)")
+    ap = argparse.ArgumentParser(description="Veri kalitesi denetimi")
     ap.add_argument(
         "--kati", action="store_true", help="eşik aşılırsa çıkış kodu 1 döner"
     )

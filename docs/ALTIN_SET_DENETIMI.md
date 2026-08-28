@@ -36,7 +36,7 @@ etiket değiştirilmedi.
 | 7 | 12 öksüz metin dosyası | 🟡 | ✅ kapandı |
 | 8 | `?` hiç kullanılmamış — 53 hücrede sessiz "metinde YOK" iddiası | 🟡 | ✅ kapandı |
 | 9 | `etiketleme_ek_esra.csv` zayıf dolduruldu | 🟡 | ⚠️ **Esra onayı bekliyor** |
-| 10 | `GOREVLER.md`'deki %80,8 hiçbir zaman veriden üretilmemiş | 🔴 | ✅ kapandı |
+| 10 | Görev panosundaki %80,8 hiçbir zaman veriden üretilmemiş | 🔴 | ✅ kapandı |
 | 11 | Okuma kâğıtları da genişletme turunu görmüyordu | 🟠 | ✅ kapandı |
 | 12 | `MALIYET_TABLOSU` vetosu doğru kolonu da kesiyordu | 🔴 | ✅ kapandı |
 | 13 | EVREN sapması **sayısal alanlara da** vuruyor | 🟠 | 📌 belgelendi |
@@ -78,7 +78,7 @@ farklıydı.
 ❌ Bu oran SUNUMDA KULLANILAMAZ
 ```
 
-Bu, [`GOREVLER.md`](../GOREVLER.md) H-02 satırındaki *«Kopya şüphesi YOK —
+Bu, görev panosundaki *«Kopya şüphesi YOK —
 detektör sessiz, etiketleme bağımsız yapıldı, %80,8»* kaydıyla doğrudan
 çelişiyor.
 
@@ -251,10 +251,10 @@ kapatmaktı; en az dolan sayfa bu amacı en az besliyor.
 
 ---
 
-## 🔴 10. `GOREVLER.md`'deki %80,8 hiçbir zaman veriden üretilmemiş
+## 🔴 10. Görev panosundaki %80,8 hiçbir zaman veriden üretilmemiş
 
 Bulgu 1 düzeltilip bağımsız etiketler geri konunca oran %79,2 çıktı — ama
-`GOREVLER.md` H-02 ve `eca1466` commit mesajı **%80,8** diyordu. Aradaki 1,6
+Görev panosu ve `eca1466` commit mesajı **%80,8** diyordu. Aradaki 1,6
 puan araştırıldı ve sebebi bulundu: **böyle bir ölçüm hiç yapılmamış.**
 
 `eca1466` ayrı bir çalışma ağacına alınıp KENDİ dosyalarıyla koşturuldu:
@@ -277,7 +277,7 @@ UnicodeEncodeError: 'charmap' codec can't encode character '\U0001f4ca'
 ```
 
 Oran ekrana hiç gelmedi; yazılan sayı tahmindi. Çökme giderildi
-(`tools/altin_set.py:main`, `tools/gorevler.py`'deki düzeltmenin aynısı).
+(`tools/altin_set.py:main`).
 Aynı hata `eval/calistir.py`'de de vardı: `make eval` `SONUCLAR.md`'yi
 yazdıktan SONRA çöküyor, yani kabuğa hata dönüp "metrikler tazelenmedi"
 izlenimi veriyordu. O da giderildi.
@@ -335,7 +335,7 @@ Regresyon testi `tests/test_kural.py::TestTabloKolonAyrimi`'ye eklendi ve
 
 ## 🟠 13. EVREN sapması sayısal alanlara da vuruyor
 
-`CLAUDE.md` şunu yazıyordu: *«8 kayıt × 4 koşuda oynayan alanların tamamı
+Proje kuralları şunu yazıyordu: *«8 kayıt × 4 koşuda oynayan alanların tamamı
 serbest metindi; sayısal ve enum alanlarda sıfır sapma.»* O ölçüm 8 kayıtlıktı.
 Altın setin **98 kaydı aynı kodla iki kez** çıkarıldığında:
 
@@ -349,7 +349,7 @@ makro-F1:  koşu-1 0,735    koşu-2 0,724
 
 **Sunumda anlamı:** `make eval` sayısı ±0,01 gürültü taşır. «Makro-F1 0,72»
 savunulabilir; «0,724» yanlış bir kesinlik iddiasıdır. Daha önemlisi: bir
-değişikliğin etkisi ancak bu bandın DIŞINDAysa gerçektir. `CLAUDE.md`
+değişikliğin etkisi ancak bu bandın DIŞINDAysa gerçektir. Proje kuralları
 güncellendi.
 
 ---
@@ -438,6 +438,6 @@ güncellendi.
       `finansman_tutari_max` 15 → 16, `odul_miktari` 14 → 14.
 - [x] **10.** Tam korpus `extract` (1022 kayıt, EVREN, ~18 dk) → `derle` →
       `eval` koşuldu. `SONUCLAR.md` artık **✅ Güncel** — bayat damgası kalktı.
-      `GOREVLER.md` (H-02 + H-06), kararlar defteri (5 yeni satır, 16→21) ve
-      `CLAUDE.md` (determinizm kaydı) tazelendi.
+      Görev panosu, kararlar defteri (5 yeni satır, 16→21) ve
+      proje kuralları (determinizm kaydı) tazelendi.
       `make test` **688** ✅, `make lint` ✅.

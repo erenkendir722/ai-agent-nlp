@@ -725,7 +725,7 @@ with sekme_cikarim:
     _cikarim_ciz(c_durum, None, akiyor=False, gecen=0.0)
 
 
-# === SEKME 3 — VERİ DENETİMİ (A: keşif G-19 · B: tazelik G-17) =============
+# === SEKME 3 — VERİ DENETİMİ (A: keşif · B: tazelik) =============
 
 with sekme_tazelik:
   st.markdown(
@@ -736,7 +736,7 @@ with sekme_tazelik:
   )
 
   # ---------------------------------------------------------------------
-  # A) YENİ KAMPANYA KEŞFİ (G-19) — «elimizde OLMAYAN kampanya çıktı mı?»
+  # A) YENİ KAMPANYA KEŞFİ — «elimizde OLMAYAN kampanya çıktı mı?»
   # ---------------------------------------------------------------------
   st.subheader("A · Listede yeni kampanya var mı?")
   st.markdown(
@@ -935,7 +935,7 @@ with sekme_tazelik:
   st.divider()
 
   # ---------------------------------------------------------------------
-  # B) VERİ TAZELİĞİ (G-17) — «elimizdekiler bayatladı mı?»  DEĞİŞMEDİ
+  # B) VERİ TAZELİĞİ — «elimizdekiler bayatladı mı?»  DEĞİŞMEDİ
   # ---------------------------------------------------------------------
   st.subheader("B · Elimizdeki sayfalar değişmiş mi?")
 

@@ -412,7 +412,7 @@ def _model_bolumu(kanit: dict | None) -> list[str]:
         "kısıtlı\" tanımına birebir uyar — şartname 5.10'un hedefi budur. |",
         "| Gemma, Türkçe-Gemma, EmbeddingGemma | Gemma Terms of Use | Kullanım "
         "kısıtlaması ve geri çağırma hükmü içerir. Aynı gerekçe. **Gömme modeli "
-        "seçilirken (S-09) asıl tuzak budur:** EmbeddingGemma teknik olarak "
+        "seçilirken asıl tuzak budur:** EmbeddingGemma teknik olarak "
         "uygun görünür, lisansı uygun değildir. |",
         "",
     ]

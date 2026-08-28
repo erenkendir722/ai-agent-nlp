@@ -1,7 +1,7 @@
 """`cikarim_kos` sözleşmesi — olay akışı, ölçülen sayaçlar, iptal, hata dayanımı.
 
 Hepsi `yalniz_kural=True` ile koşuyor: LLM katmanı kapalı olduğu için AĞ
-GEREKMEZ ve sayılar koşudan koşuya oynamaz. (CLAUDE.md: EVREN bayt düzeyinde
+GEREKMEZ ve sayılar koşudan koşuya oynamaz. (EVREN bayt düzeyinde
 deterministik değil; ilerleme sözleşmesini oynayan bir sayıya bağlamak testi
 kırılgan yapardı.)
 

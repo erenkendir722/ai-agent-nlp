@@ -1,6 +1,6 @@
 # Veri Toplama Etiği — Kanıt Dosyası
 
-**Görev:** G-14 · **Sorumlu:** Görkem · **Son koşu:** 24 Ağustos 2026
+**Son koşu:** 24 Ağustos 2026
 
 Jüri *"veri toplarken hukuki durum neydi?"* diye sorduğunda açılacak dosya budur.
 Buradaki her cümlenin karşısında, onu üreten **komut** ve **kanıt dosyası** var.

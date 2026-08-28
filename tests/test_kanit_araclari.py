@@ -1,4 +1,4 @@
-"""Veri toplama etiği kanıt araçlarının testleri (G-14).
+"""Veri toplama etiği kanıt araçlarının testleri.
 
 Bu araçların çıktısı jüriye kanıt olarak gösteriliyor. Yanlış bir kanıt,
 eksik kanıttan kötüdür: "robots.txt bizi reddetti" ile "robots.txt'i

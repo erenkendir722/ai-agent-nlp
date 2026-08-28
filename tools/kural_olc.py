@@ -3,7 +3,7 @@
 NEDEN VAR — tam ölçüm bu iş için kullanılamaz:
     `make extract && make eval` yaklaşık 18 dakika sürüyor ve üstüne ±0,01
     gürültü taşıyor (EVREN ortak bir vLLM sunucusu; `temperature=0` bayt
-    düzeyinde determinizm getirmiyor, bkz. ADR 013 ve F1_YOL_HARITASI bölüm 0).
+    düzeyinde determinizm getirmiyor, bkz. ADR 013).
     Kural katmanındaki bir veto ya da desen değişikliğinin etkisi çoğu zaman
     o gürültü bandının içinde kalır — yani tam ölçümle ANLAŞILAMAZ.
 

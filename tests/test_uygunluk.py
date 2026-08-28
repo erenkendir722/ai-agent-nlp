@@ -1,4 +1,4 @@
-"""Uygunluk ajanının testleri — kısıtlar metinden nasıl çıkıyor (A-08).
+"""Uygunluk ajanının testleri — kısıtlar metinden nasıl çıkıyor.
 
 Bu ajanın en pahalı hata sınıfı YANLIŞ POZİTİFTİR: uydurulmuş bir kısıt
 muhakemede müşteriyi eler ve gerekçesini ekrana yazar, yani hata jürinin
@@ -129,7 +129,7 @@ class TestTutarlilik:
 
 class TestBoruHattiBaglantisi:
     def test_cikarim_uygunlugu_dolduruyor(self):
-        """`kampanya_cikar` uygunluk ajanını koşmalı — A-08'in asıl kapısı."""
+        """`kampanya_cikar` uygunluk ajanını koşmalı — asıl kapı burasıdır."""
         from src.extraction.uzlastirici import kampanya_cikar
         from src.schema import HamKayit
 

@@ -1,4 +1,4 @@
-"""Chatbot 30 soruluk test seti — doğruluk ve kaynak gösterme ölçümü (S-10).
+"""Chatbot 30 soruluk test seti — doğruluk ve kaynak gösterme ölçümü.
 
     make chatbot-test          # tablo + başarısız soruların dökümü
     make chatbot-test -q       # yalnız özet
@@ -133,7 +133,7 @@ def olc(kayitlar: list[KampanyaKaydi] | None = None) -> dict[str, Any] | None:
 
 
 def _yazdir(olcum: dict[str, Any], ayrintili: bool) -> None:
-    print("\n=== CHATBOT TEST SETİ (S-10) ===\n")
+    print("\n=== CHATBOT TEST SETİ ===\n")
     dogruluk = olcum["dogruluk"]
     kaynak = olcum["kaynak_gosterme_orani"]
 
@@ -170,7 +170,7 @@ def _yazdir(olcum: dict[str, Any], ayrintili: bool) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Chatbot test seti (S-10)")
+    ap = argparse.ArgumentParser(description="Chatbot test seti")
     ap.add_argument("-v", "--ayrintili", action="store_true", help="cevapları da bas")
     args = ap.parse_args(argv)
 

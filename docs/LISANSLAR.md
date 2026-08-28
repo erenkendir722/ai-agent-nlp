@@ -91,7 +91,7 @@ Hayır — üç sebeple, üçü de teslimde sorulabilir:
 | Model ailesi | Lisans | Neden kullanılmadı |
 |---|---|---|
 | Llama 3.x/4, Turkish-Llama | Llama Community License | Kullanıcı sayısı eşiği, adlandırma ve kullanım kısıtları içerir. "Açık gibi görünen ama kısıtlı" tanımına birebir uyar — şartname 5.10'un hedefi budur. |
-| Gemma, Türkçe-Gemma, EmbeddingGemma | Gemma Terms of Use | Kullanım kısıtlaması ve geri çağırma hükmü içerir. Aynı gerekçe. **Gömme modeli seçilirken (S-09) asıl tuzak budur:** EmbeddingGemma teknik olarak uygun görünür, lisansı uygun değildir. |
+| Gemma, Türkçe-Gemma, EmbeddingGemma | Gemma Terms of Use | Kullanım kısıtlaması ve geri çağırma hükmü içerir. Aynı gerekçe. **Gömme modeli seçilirken asıl tuzak budur:** EmbeddingGemma teknik olarak uygun görünür, lisansı uygun değildir. |
 
 ## Elle incelenen lisanslar
 

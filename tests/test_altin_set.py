@@ -1,4 +1,4 @@
-"""Altın set araçlarının testleri (H-01 / H-02).
+"""Altın set araçlarının testleri.
 
 Bu araç cevap anahtarını üretiyor; buradaki bir hata tüm doğruluk metriklerini
 sessizce bozar. En çok test edilen şey bu yüzden hücre çözümlemesi: boş hücre

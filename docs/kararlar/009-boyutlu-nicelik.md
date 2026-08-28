@@ -1,7 +1,7 @@
 # ADR 009 — Sayısal alanlar birimlerini taşır
 
 **Tarih:** 19 Ağustos 2026 · **Durum:** kabul edildi · **Sorumlu:** Eren
-**İlgili bulgu:** `docs/DUZELTME_TASARIMI.md` § 1.1
+**İlgili bulgu:** düzeltme tasarımı § 1.1
 **Şema etkisi:** **v1.1.0 → v1.2.0** (eklemeli; `Alan.birim` alanı)
 
 ## Bağlam
@@ -164,7 +164,7 @@ sıralamanın **sonuna** düşüyor, yani zararsızlaştı. Ama semantik olarak
 yanlış: bu bir ücret değil, komisyona uygulanan bir indirimdir.
 
 Kökten çözümü **`Dayanak`** kavramıdır (yüzde neyin yüzdesi?) ve
-`docs/DUZELTME_TASARIMI.md` § 1.1b'de tasarlandı. Bu ADR'nin kapsamına
+Düzeltme tasarımı § 1.1b'de tasarlandı. Bu ADR'nin kapsamına
 alınmadı çünkü ayrı bir mekanizma (dayanak çözümleme) gerektiriyor ve
 `ALAN_BOYUTLARI` sözleşmesi onu eklemeye hazır. Bilinen kusur olarak
 `docs/HATA_ANALIZI.md`'ye yazılır — gizlenmez.

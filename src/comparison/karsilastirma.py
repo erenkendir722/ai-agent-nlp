@@ -172,7 +172,7 @@ def turu_olcut_kapsaminda(kampanya_turu: str | None, alan_adi: str) -> bool:
     profil kolunda elde `Kampanya` var ve aynı bilgi bir `Alan` içinde
     (`kampanya.kampanya_turu.deger`). Kapıyı ikinci kez yazmak yerine tür
     değerini alan bu sürüm ayrıldı — ADR 020'nin kapsam kararı tek yerde
-    kalsın diye (CLAUDE.md: «kopya tutma»).
+    kalsın diye — kopya tutulmaz.
     """
     kapsam = OLCUT_KAPSAMI.get(alan_adi)
     if kapsam is None:

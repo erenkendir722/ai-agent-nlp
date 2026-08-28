@@ -1,7 +1,7 @@
 # ADR 010 — Sayısal doğrulama kalkanı köken tipli hâle getirildi
 
 **Tarih:** 19 Ağustos 2026 · **Durum:** kabul edildi · **Sorumlu:** Eren
-**İlgili bulgu:** `docs/DUZELTME_TASARIMI.md` § 1.2
+**İlgili bulgu:** düzeltme tasarımı § 1.2
 **Şema etkisi:** yok (`src/schema.py` değişmedi, v1.1.0 korunuyor)
 
 ## Bağlam
@@ -39,7 +39,7 @@ hiçbir denetimden geçmiyordu.
 
 | Seçenek | Neden reddedildi |
 |---|---|
-| İzin listesine `ham_metin`'in tüm sayılarını eklemek | Kalkanı kökten gevşetir: "sayfada geçen herhangi bir sayı" meşru olurdu. `CLAUDE.md`: *"Kalkanı zayıflatma."* |
+| İzin listesine `ham_metin`'in tüm sayılarını eklemek | Kalkanı kökten gevşetir: "sayfada geçen herhangi bir sayı" meşru olurdu. Proje kuralı: *"Kalkanı zayıflatma."* |
 | `_kosul_cevabi`'na `dogrulanacak_metin=""` vermek | Koşul yolunu tümüyle denetimsiz bırakır; kör noktayı çoğaltır. |
 | Alıntıları tırnak/regex ile atlamak | Biçime bağlı ezber; tırnak biçimi değişince sessizce çöker. |
 
@@ -74,7 +74,7 @@ Bu değişiklik kalkanı **gevşetmez, sertleştirir**:
 - Gevşeyen tek şey, bankanın kendi metnindeki sayının "uydurma" sayılması
   hatasıydı.
 
-`CLAUDE.md`'nin talimatı birebir uygulandı: *"Kalkan yanlış pozitif veriyorsa
+Proje kuralı birebir uygulandı: *"Kalkan yanlış pozitif veriyorsa
 çözüm kalkanı gevşetmek değil, denetlenecek metni doğru seçmektir."* Doğru
 seçim, metnin kökenini bildirmekten geçiyordu.
 

@@ -1,4 +1,4 @@
-"""Ablasyon tablosunun SAVUNMA KATMANI (S-13 · ADR 011).
+"""Ablasyon tablosunun SAVUNMA KATMANI (ADR 011).
 
 Tablo sunumun en güçlü slaydı ve sayıları elle kopyalanmıyor.
 

@@ -62,7 +62,7 @@ Durdurma: `docker compose down` · Hacimlerle birlikte: `docker compose down -v`
 
 ### Doğrulanmış çalıştırma — 18 Ağustos 2026
 
-E-02 kapsamında gerçekten koşuldu (Apple M1, 8 GB RAM, Docker 29.7.2, 5,8 GB
+Gerçekten koşuldu (Apple M1, 8 GB RAM, Docker 29.7.2, 5,8 GB
 konteyner belleği, aarch64):
 
 | Adım | Sonuç |
@@ -89,7 +89,7 @@ yoksa takas başlar.
 
 **Kaynak kullanımını görmek için:** `docker stats --no-stream`
 
-### Hava boşluğu (air-gap) — E-07, 18 Ağustos 2026
+### Hava boşluğu (air-gap) — 18 Ağustos 2026
 
 Yığın iki ağa ayrıldı. Amaç: **model sunucusunun internete rotası fiziksel
 olarak olmasın**, ama arayüz tarayıcıdan açılabilsin.
@@ -164,7 +164,7 @@ da gidecek yeri kalmaz ve iddia eksiksiz olur.
 Konteynerler sağlıklıydı, içeriden 200 dönüyorlardı, ama host'tan 8501 ve
 8000 **erişilemez** oldu. Jüri demosunda bu, ekranın kararması demekti.
 
-#### Demo adımları (E-07)
+#### Demo adımları
 
 ```bash
 docker compose up -d

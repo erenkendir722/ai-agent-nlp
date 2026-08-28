@@ -78,7 +78,7 @@ class CikarimDurumu:
 
 @dataclass
 class TazelikDurumu:
-  """Tazelik yoklamasının canlı biriktirdiği durum (G-17)."""
+  """Tazelik yoklamasının canlı biriktirdiği durum."""
 
   bankalar: dict[str, BankaDurumu] = field(default_factory=dict)
   olaylar: list[GunlukSatiri] = field(default_factory=list)
@@ -200,7 +200,7 @@ def tazelik_kartlarini_kapat(durum: TazelikDurumu) -> None:
 
 @dataclass
 class KesifDurumu:
-  """Yeni kampanya keşfinin canlı biriktirdiği durum (G-19)."""
+  """Yeni kampanya keşfinin canlı biriktirdiği durum."""
 
   bankalar: dict[str, BankaDurumu] = field(default_factory=dict)
   olaylar: list[GunlukSatiri] = field(default_factory=list)

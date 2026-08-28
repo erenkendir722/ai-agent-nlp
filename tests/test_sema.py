@@ -30,7 +30,7 @@ from tools.altin_set import CEKIRDEK_ALANLAR, csv_basliklari
 
 # v1.0.0'da dondurulan on altı alan. Bu demet DEĞİŞMEMELİ; değişmesi
 # gerekiyorsa docs/kararlar/ altına ADR yazılır ve altın set yeniden
-# etiketlenir (bkz. CLAUDE.md "Değiştirmeden önce bilinmesi gerekenler").
+# etiketlenir; şema donmuştur ve ADR'siz değişmez.
 DONMUS_ALANLAR = (
     "kampanya_turu",
     "urun_turu",

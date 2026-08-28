@@ -1,7 +1,6 @@
 # ADR 014 — Harici vektör veritabanı yok: gömme + yerel kosinüs
 
 **Tarih:** 25 Ağustos 2026 · **Durum:** kabul edildi · **Sorumlu:** Eren
-**İlgili görev:** S-09 (gömme boru hattı + kosinüs benzerlik RAG)
 **Şema etkisi:** yok · **Önceki karar:** [ADR 013](013-evren-model-lisans-durusu.md)
 
 ## Bağlam
@@ -28,7 +27,7 @@ Ayrıca proje planı Qdrant altyapısını zaten bütçe dışı ilan etmiş:
 > Bu süreyle şunlar **yapılamaz**: … PostgreSQL + Qdrant altyapısı, mikroservis
 > mimarisi.
 
-Ve S-09'un tanımı hiç Qdrant demiyor: *«Gömme boru hattı + **kosinüs benzerlik**
+Ve görev tanımı hiç Qdrant demiyor: *«Gömme boru hattı + **kosinüs benzerlik**
 RAG»*, bitti ölçütü *«`src/rag/` içinde gömme + kosinüs arama var»*.
 
 ## Karar
@@ -58,7 +57,7 @@ nokta çarpımına iniyor: `skorlar = dizey @ sorgu`.
 Bu ölçekte Qdrant hiçbir şey kazandırmıyor. Kaybettirdiği ise somut: var
 olmayan bir sunucuya bağımlılık, demoda ağ riski, kurulacak bir servis daha.
 
-**Hava boşluğu demosu için de doğru karar bu** — CLAUDE.md'nin yerel yedek yolu
+**Hava boşluğu demosu için de doğru karar bu** — projenin yerel yedek yolu
 (`LLM_SAGLAYICI=ollama`) sunucusuz çalışmak üzere kurgulanmış; RAG'ın buna
 aykırı olması tutarsızlık olurdu.
 
@@ -78,7 +77,7 @@ aykırı olması tutarsızlık olurdu.
 > ✅ **Bu madde [ADR 015](015-rag-indeksi-depoda.md) ile kapandı (26 Ağu):**
 > indeks depoya alındı. Aşağıdaki uyarı kaydın bütünlüğü için duruyor.
 
-⚠️ **Çevrimdışı paket (E-14) indeks dosyasını elle içermeli.** İndeks depoda
+⚠️ **Çevrimdışı paket indeks dosyasını elle içermeli.** İndeks depoda
 durmuyor ve kurulması EVREN'e bağlı; hava boşluğu demosunda ağ olmayacağı için
 `data/vektor_indeksi.npz` pakete konmazsa koşul soruları cevapsız kalır.
 

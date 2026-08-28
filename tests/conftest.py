@@ -24,7 +24,6 @@ NEDEN VAR:
     hiçbir şeyden sonra çalışamaz; conftest.py pytest'in en erken kancası
     olduğu için burada duruyor.
 
-    Ayrıntı: docs/ARAYUZ_INCELEME.md — «Ortam» bölümü.
 """
 
 from __future__ import annotations

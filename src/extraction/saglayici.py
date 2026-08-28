@@ -78,7 +78,7 @@ cümlenin ortasında kesiliyordu. `_kismi_json_kurtar` bunu kurtarıyor, ama
 kurtarma kayıpsız yol değildir — kesilen alan gerçekten kaybolur."""
 
 SICAKLIK = 0.0
-"""Örnekleme sıcaklığı. 0,1'den sıfıra indirildi (S-20).
+"""Örnekleme sıcaklığı. 0,1'den sıfıra indirildi.
 
 ÖLÇÜLEN SORUN: `temperature=0,1` ile aynı kod, aynı girdi ve aynı model iki
 koşu arasında **6/96 kayıtta** farklı sınıflandırma üretiyordu; dördü altın

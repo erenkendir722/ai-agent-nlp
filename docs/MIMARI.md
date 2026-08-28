@@ -238,7 +238,7 @@ ortak sözleşme `src/ajanlar/temel.py` içindeki `AjanIzi` — her koşu ekrand
 | **Muhakeme** | `muhakeme.py` | Müşteri profilini kısıtlara karşı çözer, toplam maliyeti hesaplar, sıralar | ✗ |
 | **Orkestratör** | `orkestrator.py` | Soruyu doğru ajana yönlendirir, izleri toplar, dürüstlük uyarılarını ekler | ✗ |
 
-**Uygunluk ajanı neden LLM'siz** (A-08, 26 Ağustos): alanların çoğu zaten
+**Uygunluk ajanı neden LLM'siz** (26 Ağustos): alanların çoğu zaten
 uzlaştırılmış alanların yeniden yorumlanmasıdır — `max_tutar` ←
 `finansman_tutari_max`, `max_vade_ay` ← `vade_ay_max`, `musteri_tipi` ←
 `hedef_kitle`. Kanıtlanmış bir değeri ikinci kez modele sormak yeni bir
@@ -414,7 +414,7 @@ kullanamıyordu.
 Kalkan *"bu sayı kayıtta var mı?"* diye sorar. Sormadığı bir soru vardı:
 ***"bu kayıt, sorulanın kendisi mi?"***
 
-Ölçüldü (25 Ağustos, S-10 test seti): *«Garanti Bankası'nın konut kredisi
+Ölçüldü (25 Ağustos): *«Garanti Bankası'nın konut kredisi
 faizi kaç?»* sorusuna sistem **Türkiye Finans'ın** oranını veriyordu — üstelik
 kaynakçasıyla, yani doğrulanmış görünerek. Kalkan bunu yakalayamaz, çünkü sayı
 gerçekten yapısal veride var; yalnızca **yanlış bankanın**.

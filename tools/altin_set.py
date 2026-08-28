@@ -1,4 +1,4 @@
-"""Altın set araçları — örneklem çıkar, etiketleri derle, seti denetle (H-01).
+"""Altın set araçları — örneklem çıkar, etiketleri derle, seti denetle.
 
 Altın set İNSAN işidir. Bu araç etiket üretmez; yalnız etiketlemenin etrafındaki
 mekanik işi yapar:
@@ -152,7 +152,7 @@ uzlaşmamız %X» cümlesi 5 kayıtlık ortak blok yerine setin TAMAMI üzerinde
 kurulabilir."""
 
 UYUM_ADET = 5
-"""Örneklemin ilk 5'ini DÖRDÜ BİRDEN etiketler (H-02).
+"""Örneklemin ilk 5'ini DÖRDÜ BİRDEN etiketler.
 
 İki işi birden görür: etiketleyiciler arası uyum oranını ölçer (sunumda
 «etiketleme uzlaşmamız %X» cümlesi buradan çıkar) ve bu 5 örnek çoğunluk
@@ -582,7 +582,7 @@ def uyum_dosyalari(
 
 
 def uyum_hesapla(kisiler: tuple[str, ...] = KISILER, onek: str = UYUM_ONEK) -> dict[str, Any]:
-    """Etiketleyiciler arası uyum — ikili eşleşme oranı (H-02'nin çıktısı).
+    """Etiketleyiciler arası uyum — ikili eşleşme oranı.
 
     İKİ ORAN HESAPLANIR, çünkü tek oran yanıltıcıdır:
 
@@ -1103,10 +1103,10 @@ def komut_ornekle(adet: int, zorla: bool = False) -> int:
         print()
 
     print(f" {len(secilen)} örnek seçildi (tohum {TOHUM}, katmanlı)\n")
-    print(f" 1⃣ UYUM BLOĞU — {len(uyum_blogu)} örnek, DÖRDÜ DE etiketler (H-02)")
+    print(f" 1⃣ UYUM BLOĞU — {len(uyum_blogu)} örnek, DÖRDÜ DE etiketler")
     for kisi in KISILER:
         print(f"       data/gold/etiketleme_uyum_{kisi.lower()}.csv")
-    print("\n 2⃣ KİŞİSEL PAY — tek etiketleyici (H-01)")
+    print("\n 2⃣ KİŞİSEL PAY — tek etiketleyici")
     for kisi, sayi in sayilar.items():
         print(f"       data/gold/etiketleme_{kisi.lower()}.csv → {kisi}: {sayi} örnek")
 
@@ -1551,7 +1551,7 @@ def okuma_kagitlari_yaz(kisiler: tuple[str, ...] = KISILER) -> list[Path]:
 
 
 def komut_denetle(ad: str | None) -> int:
-    """Kişi CSV'sini pushlamadan önce denetler — H-01'in kalite kapısı."""
+    """Kişi CSV'sini pushlamadan önce denetler — altın setin kalite kapısı."""
     kisiler = (ad,) if ad else KISILER
     onekler = ("etiketleme_", UYUM_ONEK, EK_ONEK, EK_UYUM_ONEK)
     """HER TURUN dosyası denetlenir — `derle` neyi okuyorsa `denetle` de onu açar.
@@ -1781,12 +1781,12 @@ def main() -> int:
     # Windows konsolu cp1254; çıktıdaki // işaretleri orada
     # UnicodeEncodeError fırlatıyordu — `altin-uyum` uyum oranını hesaplayıp
     # tam da onu basacağı satırda çöküyordu (25 Ağustos). Aynı düzeltme
-    # `tools/gorevler.py:main` içinde de var. Yalnız CLI yolunda; testler
+    # Yalnız CLI yolunda; testler
     # modülü içe aktarırken dokunulmaz.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    ap = argparse.ArgumentParser(description="Altın set araçları (H-01)")
+    ap = argparse.ArgumentParser(description="Altın set araçları")
     alt = ap.add_subparsers(dest="komut", required=True)
 
     p_ornekle = alt.add_parser("ornekle", help="katmanlı örneklem + kişi başı CSV")
@@ -1810,7 +1810,7 @@ def main() -> int:
     p_t2f = alt.add_parser("tur2-fark", help="tur-2'yi altın setle karşılaştır (uzlaştırma listesi)")
     p_t2f.add_argument("--ad", required=True, help="hangi kişinin tur-2 sayfası")
 
-    alt.add_parser("uyum", help="etiketleyiciler arası uyum oranı (H-02)")
+    alt.add_parser("uyum", help="etiketleyiciler arası uyum oranı")
     alt.add_parser("derle", help="CSV'leri altin_set.jsonl'e derle + denetle")
 
     args = ap.parse_args()

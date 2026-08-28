@@ -212,7 +212,6 @@ fark edilir, bayat olan doğru görünür.
 |---|---|
 | [`docs/SONUCLAR.md`](SONUCLAR.md) | Güncel sayılar — `make eval` üretir |
 | [`docs/HATA_ANALIZI.md`](HATA_ANALIZI.md) | Hata örnekleri ve sınıflandırma |
-| [`docs/JURI_PROVASI.md`](JURI_PROVASI.md) | Jüri sorularına 30 saniyelik cevaplar ve kanıt dosyaları (E-19) |
 | [`docs/ALTIN_SET_DENETIMI.md`](ALTIN_SET_DENETIMI.md) | Altın setin kendi denetimi |
 | [`docs/DAYANIKLILIK.md`](DAYANIKLILIK.md) | Bozuk/eksik girdiye karşı davranış |
 | [`docs/GORULMEMIS_METIN.md`](GORULMEMIS_METIN.md) | Eğitimde görülmemiş metin sınaması |

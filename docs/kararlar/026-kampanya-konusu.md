@@ -208,7 +208,7 @@ yazılsaydı ilk `make crawl` onu geride bırakırdı.
 işini yapıyor. Ama kayıt SEÇİMİ deterministik olmak zorunda: `make eval`
 sayılarının ve kalkanın altındaki zemin bu. Gömmeye bağlanan bir süzgeç,
 EVREN'in bayt düzeyinde deterministik olmadığı ölçülmüş bir ortamda
-(CLAUDE.md) aynı soruya iki farklı kampanya döndürebilirdi.
+(proje kuralı) aynı soruya iki farklı kampanya döndürebilirdi.
 
 **`sifat_fiil_mi`'yi dar kurala çevirip iki yerde birden kullanmak.**
 Dar kural «sağlayan banka»yı kaçırır ve ADR 024'ün kapattığı kusur geri

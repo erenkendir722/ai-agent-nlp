@@ -1,4 +1,4 @@
-"""Model çıktı örnekleri — dokümantasyon başlığı 9 (ES-15).
+"""Model çıktı örnekleri — dokümantasyon başlığı 9.
 
     python tools/cikti_ornekleri.py     # docs/CIKTI_ORNEKLERI.md üret
 
@@ -16,7 +16,7 @@ NEDEN ELLE YAZILMIYOR:
     2. sayısal   — kâr payı + vade + ücret birlikte çıkmış kayıt
     3. eksik     — az alan dolu; sistemin "Belirtilmemiş" dediği yer
     4. dolaylı   — "avantajlı / özel oranlı / düşük maliyetli" ifadesi geçen
-    5. uygunluk  — uygunluk koşulu çıkarılmış kayıt (A-08)
+    5. uygunluk  — uygunluk koşulu çıkarılmış kayıt
     Seçim deterministiktir: aynı veritabanı aynı örnekleri verir.
 """
 

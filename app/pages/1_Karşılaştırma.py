@@ -414,7 +414,7 @@ sirali = sirala(suzulmus, secili_kriter, agirliklar)
 # panele indi (`panelde_topla`), bir tiklama uzakta.
 uyarilari_goster(uyarilar(sirali), panelde_topla=True)
 # ---------------------------------------------------------------------------
-# ES-08: Yan yana maliyet ve vade duyarliligi
+# Yan yana maliyet ve vade duyarliligi
 # ---------------------------------------------------------------------------
 #
 # BU IKI BOLUM SAYFANIN EN ALTINDAYDI (27 Agustos). Tablonun altinda, 270

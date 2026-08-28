@@ -280,7 +280,7 @@ def test_yillik_maliyet_orani_kar_payi_sanilmaz():
 
 def test_gercek_kar_payi_orani_hala_yakalanir():
     """Karşı kontrol: sınır doğru olanı elemiyor. Bir kısıtı sıkarken yalnız
-    'reddediyor mu' diye bakmak yetmez (bkz. SPRINT0_RAPORU 5.3)."""
+    'reddediyor mu' diye bakmak yetmez (Sprint 0 raporu 5.3)."""
     assert _oran("Konut finansmanında aylık kâr payı oranı %1,89'dan başlıyor.") == 1.89
 
 

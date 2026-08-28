@@ -63,7 +63,7 @@ KOK = Path(__file__).resolve().parents[2]
 IZLEME_DIZIN = KOK / "data" / "izleme"
 TABAN_DOSYASI = IZLEME_DIZIN / "tazelik.json"
 """Taban çizgisi. `data/raw` ve `data/katilim.db`'ye ASLA yazılmaz — ölçümlerin
-üzerinde koştuğu veri teslim için donmuş durumda (G-17 uyarısı)."""
+üzerinde koştuğu veri teslim için donmuş durumda."""
 
 ZAMAN_ASIMI = 20.0
 

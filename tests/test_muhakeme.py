@@ -226,7 +226,7 @@ def test_elenenler_en_sona_gider(ajan):
 # "Manşet oran tuzağı" — sunum iddiasının sayısal dayanağı
 # ---------------------------------------------------------------------------
 #
-# Plan_Guncellemeleri_v3.md şu örneği veriyordu:
+# Proje planı şu örneği veriyordu:
 #   "%1,87 / 96 ay / 5.000 TL masraflı bir ürün, %1,89 / 120 ay / masrafsız
 #    bir üründen PAHALI olabilir."
 # Bu örnek YANLIŞ: 800.000 TL'de 96 ay toplam 1.739.844 TL, 120 ay ise

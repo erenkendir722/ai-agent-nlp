@@ -2,14 +2,14 @@
 
 **Tarih:** 27 Ağustos 2026
 **Durum:** kabul edildi
-**Bağlam:** G-17 · mentör geri bildirimi madde 3 ([`../MENTOR_GERI_BILDIRIMI.md`](../MENTOR_GERI_BILDIRIMI.md))
+**Bağlam:** mentör geri bildirimi madde 3
 
 ## Bağlam
 
 Mentör, «klasik try-catch ötesinde tetikleyici (trigger) ve dinleyici (listener)
 mantıkları; kampanya açılış/kapanış saatlerine göre (08:00, 17:00, 24:00)
 periyodik tetikleyici ya da metadata kontrolü» önerdi. O ana kadar toplama
-yalnız elle tetikleniyordu (`make crawl`); `docs/JURI_PROVASI.md` §11 bunu
+yalnız elle tetikleniyordu (`make crawl`); jüri provası notları bunu
 açıkça «yok» diye yazıyordu.
 
 ## Karar
@@ -48,7 +48,7 @@ Dokuz bankanın her birinden bir kampanya URL'i yoklandı (27 Ağustos):
 | Hiçbir doğrulayıcı vermeyen | **7 / 9** |
 | Koşullu GET'e `304` dönen | **2 / 2** — veren iki banka da doğru davrandı |
 
-Yani G-17'nin önerdiği «ucuz yol» tek başına bankaların yedisini kapsamıyor;
+Yani önerilen «ucuz yol» tek başına bankaların yedisini kapsamıyor;
 içerik özeti şart. Tersi de doğru: veren ikisinde sayfa gövdesi hiç
 indirilmiyor. Bu yüzden **önce koşullu GET, olmazsa içerik özeti.**
 
@@ -101,7 +101,7 @@ gelir ve gerçek değişiklik de onunla birlikte gözden kaçar.
 - `make tazelik [adet=N] [demo=1]` · arayüzde **Boru Hattı → 3 · Veri Tazeliği**
 - Yazılan tek yer `data/izleme/tazelik.json` (`.gitignore`'da — taban çizgisi
   onu kuran makinenin ağ yolundan üretilir, taşınamaz)
-- `docs/JURI_PROVASI.md` §11 artık «hiçbiri yok» demiyor: dinleyici ve içerik
+- Jüri provası notları artık «hiçbiri yok» demiyor: dinleyici ve içerik
   özeti var, periyodik tetikleyici bilinçli olarak kurulu değil
 - Şemaya dokunulmadı (`SEMA_SURUMU` değişmedi) — `HamKayit` üzerinde yeni alan
   yok, taban çizgisi ayrı dosyada duruyor

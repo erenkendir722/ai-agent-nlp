@@ -1,4 +1,4 @@
-"""Chatbot test kümesinin bütünlüğü (S-10) — AĞ İSTEMEZ.
+"""Chatbot test kümesinin bütünlüğü — AĞ İSTEMEZ.
 
 Kümenin kendisini koşmak ağ ister (`make chatbot-test`); burada yalnız
 kümenin SÖZLEŞMESİ denetleniyor. Amaç, bozuk bir soru dosyasının ölçümü
@@ -91,6 +91,6 @@ def test_kapsam_disi_sorularda_kaynak_beklenmiyor(sorular):
 
 
 def test_hedefler_gorev_tanimiyla_uyumlu():
-    """GOREVLER.md S-10: doğruluk ≥ 0,88 · kaynak gösterme oranı 1,00."""
+    """Doğruluk ≥ 0,88 · kaynak gösterme oranı 1,00."""
     assert DOGRULUK_HEDEFI == 0.88
     assert KAYNAK_HEDEFI == 1.00

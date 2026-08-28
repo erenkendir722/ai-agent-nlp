@@ -124,7 +124,7 @@ def _kismi_json_kurtar(icerik: str) -> dict[str, Any]:
 # Genel amaçlı bir model "kâr payı"nı faiz sanabilir veya "murabaha"yı bilmeyebilir.
 # Bu sözlük, alan bilgisini modele doğrudan taşır.
 #
-# TEK KAYNAK — G-10 (26 Ağustos):
+# TEK KAYNAK (26 Ağustos):
 #     Metin burada DEĞİL, `docs/TERIM_SOZLUGU.md` §12'de durur ve oradan okunur.
 #     Önceden iki kopya vardı (kodda sabit, dokümanda tablo) ve "sözlüğü
 #     güncelleyince istemi de güncelle" adımı elle takip ediliyordu. İki kopya,

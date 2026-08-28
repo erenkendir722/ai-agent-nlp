@@ -1,4 +1,4 @@
-"""Veri seti dışa aktarımı — yayınlanabilir sürüm + veri kartı (G-11).
+"""Veri seti dışa aktarımı — yayınlanabilir sürüm + veri kartı.
 
     python tools/veri_seti_disa_aktar.py          # data/exports/ altına yaz
     python tools/veri_seti_disa_aktar.py --deneme # ne yazılacağını göster
@@ -201,7 +201,7 @@ def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Veri seti dışa aktarımı (G-11)")
+    ap = argparse.ArgumentParser(description="Veri seti dışa aktarımı")
     ap.add_argument("--deneme", action="store_true", help="yazmadan göster")
     return calistir(ap.parse_args().deneme)
 

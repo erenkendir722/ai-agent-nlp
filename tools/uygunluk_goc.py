@@ -1,4 +1,4 @@
-"""Uygunluk göçü — mevcut kayıtlara `uygunluk` koşullarını yazar (A-08).
+"""Uygunluk göçü — mevcut kayıtlara `uygunluk` koşullarını yazar.
 
     python tools/uygunluk_goc.py --deneme    # ne değişecek, YAZMADAN göster
     python tools/uygunluk_goc.py             # uygula
@@ -7,7 +7,7 @@ NEDEN GÖÇ, NEDEN YENİDEN ÇIKARIM DEĞİL:
     Uygunluk koşulları LLM'siz türetilir (`src/ajanlar/uygunluk.py`): çoğu
     zaten çıkarılmış alanların yeniden yorumlanması, kalanı metin kalıbı.
     1024 kaydı EVREN'den yeniden geçirmek ~8 dakika sürer ve — ölçüldüğü gibi
-    (`CLAUDE.md`, «EVREN bayt düzeyinde deterministik DEĞİL») — başka alanların
+    EVREN bayt düzeyinde deterministik değildir — başka alanların
     değerlerini oynatır. O zaman `docs/SONUCLAR.md`'deki makro-F1, uygunlukla
     hiç ilgisi olmayan sebeplerle değişirdi.
 
@@ -98,7 +98,7 @@ def calistir(deneme: bool, url: str = VERITABANI_URL) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Uygunluk göçü (A-08)")
+    ap = argparse.ArgumentParser(description="Uygunluk göçü")
     ap.add_argument("--deneme", action="store_true", help="yazmadan göster")
     return calistir(ap.parse_args().deneme)
 

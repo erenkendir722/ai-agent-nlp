@@ -312,7 +312,7 @@ _KARSILASTIRMA_IPUCLARI = (
     "en dusuk", "en yuksek", "en uzun", "fark", " vs ", "gore daha",
     # ÇOĞUL banka sorusu korpusun tamamına sorulur, tek kayda değil:
     # «masrafsız kampanya sunan bankalar hangileri?» tekil sorguya
-    # düşüyordu ve tek bankanın verisiyle cevaplanıyordu (25 Ağu, S-10).
+    # düşüyordu ve tek bankanın verisiyle cevaplanıyordu (25 Ağu).
     "bankalar hangi", "hangi bankalar", "bankalari hangi", "hangi bankalarin",
 )
 _KOSUL_IPUCLARI = (
@@ -323,7 +323,7 @@ _TEKIL_IPUCLARI = (
     "oran", "kar payi", "vade", "tutar", "limit", "masraf", "ucret", "ne kadar",
     "kac", "odul", "indirim", "taksit",
     # `kampanya_bitis` YAPISAL bir alan; «ne zaman bitiyor?» sorusu metin
-    # aramasına değil o alana gitmeli. Eksikti (25 Ağu, S-10).
+    # aramasına değil o alana gitmeli. Eksikti (25 Ağu).
     "ne zaman", "bitis", "bitiyor", "sona er", "gecerlilik", "son tarih",
 )
 _TAHMIN_IPUCLARI = (
@@ -335,7 +335,7 @@ _TAHMIN_IPUCLARI = (
 
 Sistemin elinde YALNIZCA bugünkü kampanya verisi var. «2027'de oranlar ne
 olacak?» sorusuna bugünün oranlarını kaynakçayla sunmak, tahmin yapmadığı
-hâlde tahmin yapıyormuş izlenimi verir — ölçüldü (25 Ağu, S-10). Veri
+hâlde tahmin yapıyormuş izlenimi verir — ölçüldü (25 Ağu). Veri
 iddiası ile kehanet arasındaki fark kullanıcıya açıkça söylenmeli."""
 
 _KAPSAM_DISI_IPUCLARI = (
@@ -519,7 +519,7 @@ def sorulan_bankalar(soru: str, banka_adlari: Iterable[str]) -> list[str]:
     Eşleştirmenin banka adından başka hiçbir alana bakmaması bu ayrımı
     mümkün kılıyor: girdi bir ad kümesi, çıktı eşleşen adlar.
 
-    İKİ ÖLÇÜT — ölçülmüş hata (25 Ağustos, S-10):
+    İKİ ÖLÇÜT — ölçülmüş hata (25 Ağustos):
         Eskiden yalnız «ilk iki sözcük» aranıyordu (`albaraka turk`). Ama
         kullanıcı «Albaraka» der, «Albaraka Türk» demez. Sonucu şartnamenin
         KENDİ örnek senaryosunu düşürüyordu: «Kuveyt Türk mü daha avantajlı,
@@ -694,7 +694,7 @@ def sifat_fiil_mi(sozcuk: str) -> bool:
 def yabanci_banka_soruluyor(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
     """Soru, korpusta OLMAYAN bir bankayı adlandırıyor mu?
 
-    NEDEN VAR — ölçülmüş hata (25 Ağustos, S-10 test seti):
+    NEDEN VAR — ölçülmüş hata (25 Ağustos):
         «Garanti Bankası'nın konut kredisi faizi kaç?» sorusuna sistem
         **Türkiye Finans'ın** oranını veriyordu, üstelik kaynakçasıyla —
         yani doğrulanmış görünüyordu. Sebep `sor()` içindeki
@@ -796,7 +796,7 @@ def alan_disi_soru(soru: str, kayitlar: list[KampanyaKaydi]) -> bool:
 
     NEDEN ALLOWLIST — kapsam dışı tespiti eskiden yasak listesiydi
     (`_KAPSAM_DISI_IPUCLARI`: "hava durumu", "mac skoru", "sarki"...).
-    Ölçüldüğünde (25 Ağu, S-10) beş kapsam dışı sorunun beşi de içeri
+    Ölçüldüğünde (25 Ağu) beş kapsam dışı sorunun beşi de içeri
     sızmıştı: «Bugün hava nasıl?» listedeki "hava durumu" ifadesine
     uymuyor, «Bana bir şiir yaz» "sarki" değil, «Bitcoin fiyatı»
     listede hiç yok.
@@ -2046,7 +2046,7 @@ def _sistem_cevabi() -> Cevap:
             "verisinden cevaplanamaz. Uydurmak yerine kaynağı göstereyim — "
             "cevabı depoda yazılı:\n"
             "- Mimari ve katmanlar: `docs/MIMARI.md`\n"
-            "- Şartname uyumu ve kanıtlar: `docs/SARTNAME_UYUM.md`\n"
+            "- Veri toplama etiği ve kanıtlar: `docs/kanit/`\n"
             "- Tasarım kararları ve gerekçeleri: `docs/kararlar/`\n"
             "- Terminoloji: `docs/TERIM_SOZLUGU.md`\n"
             "- Ölçüm sonuçları: `docs/SONUCLAR.md`",
@@ -2977,7 +2977,7 @@ def _kosul_cevabi(
         CevapParcasi("Veri setinde bulunan ilgili bilgiler:", Koken.DUZ)
     ]
     kaynaklar: list[Kaynakca] = []
-    
+
     # Payload yapısı: {"kampanya_id": str, "banka_adi": str, "metin": str}
     for i, sonuc in enumerate(arama_sonuclari, 1):
         alinti = sonuc["metin"].strip()[:400]
@@ -2989,7 +2989,7 @@ def _kosul_cevabi(
                 alinti=alinti,
             )
         )
-        
+
         # Orijinal KampanyaKaydi nesnesini bul (kaynaklar için)
         kayit = next((k for k in kayitlar if k.kampanya_id == sonuc["kampanya_id"]), None)
         if kayit:
@@ -3153,7 +3153,7 @@ def _cevapla(
     # "banka adı geçmiyor" durumu için doğrudur (örn. «en düşük oran hangi
     # bankada?»), ama "banka adı geçiyor ama bizde yok" durumunda uydurma
     # üretir. İkisi ayrılmadan önce «Garanti Bankası'nın oranı kaç?» sorusuna
-    # Türkiye Finans'ın oranı dönüyordu (25 Ağu, S-10).
+    # Türkiye Finans'ın oranı dönüyordu (25 Ağu).
     if yabanci_banka_soruluyor(soru, kayitlar):
         bankalar = _bilinen_bankalar(kayitlar)
         return Cevap(

@@ -58,8 +58,8 @@ def _varsayilan_isci() -> int:
 
     YERELDE 1 OLMAK ZORUNDA. Ollama tek makinede koşuyor; ikinci bir istek
     modeli belleğe ikinci kez yüklemeye çalışır ve 8 GB'lık makinede bellek
-    takasına girer — `CLAUDE.md`'deki "extract koşarken Streamlit'i kapat"
-    uyarısının sebebi de budur. Paralellik orada hız değil, çökme getirir.
+    takasına girer — "extract koşarken Streamlit'i kapat" uyarısının sebebi
+    budur. Paralellik orada hız değil, çökme getirir.
 
     EVREN'DE İŞ BİZİM MAKİNEMİZDE DEĞİL. 8×H200 üzerinde vLLM sürekli
     yığınlama yapıyor; eş zamanlı istek zaten beklediği çalışma biçimi.
@@ -597,8 +597,8 @@ def komut_extract(args: argparse.Namespace) -> int:
 
     NEDEN SÜZGEÇ VAR: ham veri düzeltildiğinde 900+ kaydın hepsini yeniden
     çıkarmak hem gereksiz hem zararlı — EVREN bayt düzeyinde deterministik
-    değil, dokunulmayan kayıtların değerleri de oynardı (bkz. CLAUDE.md,
-    «SAPMA SAYISAL ALANLARA DA VURUYOR»). Süzgeç dokunulanı yalıtır.
+    değil, sapma sayısal alanlara da vuruyor: dokunulmayan kayıtların
+    değerleri de oynardı. Süzgeç dokunulanı yalıtır.
 
     İKİ KADEME, ÇÜNKÜ İKİSİNİN DE KARŞILIĞI ÇIKTI:
         `--banka 0214`  bir bankanın gövde ayıklaması toptan düzeldi (27 Ağu)
@@ -724,7 +724,7 @@ def komut_durum(_: argparse.Namespace) -> int:
 
 
 def komut_tazelik(args: argparse.Namespace) -> int:
-    """Veri tazeliği denetimi (G-17) — kampanya sayfaları değişmiş mi?
+    """Veri tazeliği denetimi — kampanya sayfaları değişmiş mi?
 
     `Tetikleyici.cron_satiri()`'nin çağırdığı hedef budur. Ürünleşince cron
     bu komutu koşar; bugün elle ya da arayüzden çağrılır.
@@ -771,7 +771,7 @@ def komut_tazelik(args: argparse.Namespace) -> int:
 
 
 def komut_kesif(args: argparse.Namespace) -> int:
-    """Yeni kampanya keşfi (G-19) — listede olup elimizde olmayan var mı?
+    """Yeni kampanya keşfi — listede olup elimizde olmayan var mı?
 
     YALNIZ liste keşfi koşar; detay sayfası çekilmez, hiçbir kayıt yazılmaz.
     `data/raw` ve `data/katilim.db` bu komuttan etkilenmez.
@@ -839,7 +839,7 @@ def _tazelik_ilerlemesi(olay: object) -> None:
 
 
 def komut_vektor(_: argparse.Namespace) -> int:
-    """RAG vektör indeksini kurar (S-09, ADR 014).
+    """RAG vektör indeksini kurar (ADR 014).
 
     Harici vektör veritabanı yok: paragraflar EVREN `bge-m3-embed` ile
     gömülüp yerel bir `.npz` dosyasına yazılır, arama numpy ile yapılır.
@@ -921,7 +921,7 @@ def ayristirici_kur() -> argparse.ArgumentParser:
     p_vektor.set_defaults(islev=komut_vektor)
 
     p_tazelik = altlar.add_parser(
-        "tazelik", help="kampanya sayfaları değişmiş mi (G-17 dinleyicisi)"
+        "tazelik", help="kampanya sayfaları değişmiş mi (tazelik dinleyicisi)"
     )
     p_tazelik.add_argument(
         "--adet", type=int, default=0, help="yalnız ilk N adres (0 = hepsi)"
@@ -932,7 +932,7 @@ def ayristirici_kur() -> argparse.ArgumentParser:
     p_tazelik.set_defaults(islev=komut_tazelik)
 
     p_kesif = altlar.add_parser(
-        "kesif", help="listede olup elimizde olmayan kampanya var mı (G-19)"
+        "kesif", help="listede olup elimizde olmayan kampanya var mı"
     )
     p_kesif.add_argument("--banka", nargs="*", default=[], help="yalnız bu banka kodları")
     p_kesif.add_argument(
@@ -944,6 +944,13 @@ def ayristirici_kur() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Windows konsolu cp1254; `durum` çıktısındaki «↔» orada
+    # UnicodeEncodeError fırlatıyordu — komut veriyi okuduktan SONRA, yani
+    # kabuğa hata dönüyor ve durum okunamamış sanılıyor. Aynı düzeltme
+    # `eval/calistir.py` ve `tools/altin_set.py` içinde de var.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
     args = ayristirici_kur().parse_args(argv)
     _gunlugu_kur(args.ayrintili)
 

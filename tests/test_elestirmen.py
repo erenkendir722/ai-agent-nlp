@@ -59,7 +59,7 @@ def test_bicim_farki_halusinasyon_sayilmaz(elestirmen):
 )
 def test_gercek_degerler_kabul_edilir(elestirmen, alan, ifade):
     """Karşı kontrol: kalkanın sıkı olması, doğru olanı reddetmesi demek değil.
-    Yalnız 'reddediyor mu' diye bakmak yetmez (bkz. SPRINT0_RAPORU 5.3)."""
+    Yalnız 'reddediyor mu' diye bakmak yetmez (Sprint 0 raporu 5.3)."""
     kabul, _ = elestirmen.dogrula(alan, ifade, METIN)
     assert kabul is True
 
@@ -95,7 +95,7 @@ def test_ret_kaydi_hata_analizi_icin_tutulur(elestirmen):
 def test_siniflandirma_ve_ozet_alanlari_metinde_aranmaz(elestirmen, alan):
     """Enum etiketi metinde geçmez ('konut_finansmani'), özet ise modelin
     yeniden ifade etmesi meşrudur. Bunları reddetmek kendi metriğimizi
-    hatalı biçimde kötü gösterirdi (bkz. SPRINT0_RAPORU 5.4)."""
+    hatalı biçimde kötü gösterirdi (Sprint 0 raporu 5.4)."""
     assert alan not in KANIT_ZORUNLU_ALANLAR
     kabul, _ = elestirmen.dogrula(alan, "konut_finansmani", METIN)
     assert kabul is True

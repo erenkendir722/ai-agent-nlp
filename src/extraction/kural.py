@@ -634,9 +634,9 @@ KURALLAR: tuple[KuralTanimi, ...] = (
             #      kayıtlarda seçimi kaydırıp iki yeni hata açtı.
             # Ders: bu bir ELEME değil SIRALAMA sorunu. Aday eleyerek
             # çözülmüyor; `secim="en_yuksek"` ödül alanı için yanlış ölçüt.
-            # Doğru çözüm seçim katmanında — S-14'e bırakıldı.
+            # Doğru çözüm seçim katmanında — seçime bırakıldı.
             #
-            # 17 Ağu (S-14) — VETO DARALTILDI: "toplamda" → "kisi icin".
+            # 17 Ağu — VETO DARALTILDI: "toplamda" → "kisi icin".
             # "toplamda" jenerik bir sözcük ve yan hasar veriyordu: Hayat
             # Finans'ın *"kazanılabilecek maksimum nakit ödül tutarı TOPLAMDA
             # 300 TL'dir"* cümlesinde 300 TL gerçek ödül tutarı olduğu hâlde

@@ -16,7 +16,7 @@ TEK KATI KURAL: işçi iş parçacığı hiçbir `st.*` çağırmaz.
     İş parçacığındaki istisna `is.hata`'ya alınır ve arayüzde kırmızı kutuyla
     gösterilir; `dev_mode` açıksa tam yığın izi de. Yakalanıp yok sayılmaz —
     `embed_text`'in sıfır vektör döndürüp RAG'ı dört gün çalışıyor
-    göstermesinin dersi (bkz. CLAUDE.md, «Sessiz yutma yasak»).
+    göstermesinin dersi: sessiz yutma yasak.
 """
 
 from __future__ import annotations

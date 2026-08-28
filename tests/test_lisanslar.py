@@ -1,4 +1,4 @@
-"""Lisans raporu üretecinin testleri (G-13, şartname 5.10).
+"""Lisans raporu üretecinin testleri (şartname 5.10).
 
 Bu raporun tek işi bir iddiayı KANITLAMAK: "kısıtlı lisanslı bileşen yok."
 Sessizce yanlış bir rapor, hiç rapor olmamasından kötüdür — jüri ona bakarak

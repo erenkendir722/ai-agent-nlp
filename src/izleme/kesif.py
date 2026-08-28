@@ -55,7 +55,7 @@ KESIF_DOSYASI = IZLEME_DIZIN / "kesif.json"
 """Keşif taban çizgisi — banka başına son koşunun URL kümesi.
 
 `.gitignore`'da: türetilmiş ve makineye özgü. `data/raw` ile
-`data/katilim.db`'ye ASLA yazılmaz (G-17 kuralı burada da geçerli).
+`data/katilim.db`'ye ASLA yazılmaz (aynı kural burada da geçerli).
 """
 
 IZLEME_PARAMETRELERI = frozenset(

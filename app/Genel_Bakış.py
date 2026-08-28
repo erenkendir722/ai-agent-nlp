@@ -25,7 +25,6 @@ from pathlib import Path
 #
 # `import pandas`tan ÖNCE olmalı: pandas pyarrow'u kendi import'unda getiriyor
 # ve ayırıcı import anında seçiliyor. Aşağıdaki E402'ler bu yüzden.
-# Ayrıntı: docs/ARAYUZ_INCELEME.md — «Ortam» bölümü.
 os.environ.setdefault("ARROW_DEFAULT_MEMORY_POOL", "system")
 
 import pandas as pd  # noqa: E402
@@ -220,7 +219,7 @@ with tab_piyasa:
       temiz_k = format_kategori(k)
       yeni_dagilim[temiz_k] = yeni_dagilim.get(temiz_k, 0) + v
     dagilim = yeni_dagilim
-    
+
 
     if dagilim:
       cerceve = pd.DataFrame(
@@ -243,12 +242,12 @@ with tab_piyasa:
 
   with sag:
     st.subheader("Banka × Tür ısı haritası")
-    
+
     gercek_kayitlar = [
       {"Banka": format_bank_name(k.banka_adi), "Tür": format_kategori(k.kampanya_turu)}
       for k in kayitlar
     ]
-    
+
     tablo = pd.DataFrame(gercek_kayitlar)
     capraz = pd.crosstab(tablo["Banka"], tablo["Tür"])
     if not capraz.empty:
@@ -287,7 +286,7 @@ with tab_piyasa:
         st.plotly_chart(isi, use_container_width=True, theme=None)
 
 with tab_sistem:
-  # ES-05 Veri Kalitesi ve Şeffaflık
+  # Veri Kalitesi ve Şeffaflık
   st.subheader("Veri kalitesi ve şeffaflık")
 
   eval_ozet = sonuclari_oku()
@@ -345,7 +344,7 @@ with tab_sistem:
   q1, q2 = st.columns(2)
   with q1:
     st.markdown("**Güven skoru dağılımı**")
-    
+
     guvenler = [k.ortalama_guven for k in kayitlar if k.ortalama_guven > 0]
     if guvenler:
       hist_df = pd.DataFrame({"Güven Skoru": guvenler})
@@ -362,7 +361,7 @@ with tab_sistem:
 
   with q2:
     st.markdown("**Alan doluluğu**")
-    
+
     # Basitçe dolulukları veri yapısından sayıyoruz
     alan_doluluk = {
       "Kâr Payı": sum(1 for k in kayitlar if k.kar_payi_orani is not None),
@@ -377,7 +376,7 @@ with tab_sistem:
         {"Alan": k, "Doluluk (%)": (v / toplam) * 100}
         for k, v in alan_doluluk.items()
       ]).sort_values("Doluluk (%)", ascending=True)
-      
+
       fig_bar = px.bar(
         doluluk_df, x="Doluluk (%)", y="Alan", orientation="h",
         text_auto=".0f", color_discrete_sequence=[RENK_ANA],

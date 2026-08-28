@@ -1,4 +1,4 @@
-"""Çıkarımın deterministik olduğunu koruyan testler (S-20).
+"""Çıkarımın deterministik olduğunu koruyan testler.
 
 NEDEN BU TESTLER VAR — 20 Ağustos'ta ölçülen hata:
     `temperature=0,1` ile aynı kod, aynı girdi ve aynı model iki koşu

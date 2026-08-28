@@ -88,7 +88,7 @@ metnine göre yazılmıştı ve macOS'ta tutmuyordu.
 ## Sonuçları
 
 - `src/vektor_db.py` — varsayılan gömme modeli `bge-m3-embed`, boyut denetimi eklendi
-- `docs/SARTNAME_UYUM.md` · `docs/LISANSLAR.md` · `CLAUDE.md` — «jenerik uç
+- `docs/LISANSLAR.md` — «jenerik uç
   kullanılmaz» ifadeleri bu ADR'ye göre güncellendi
 - `eval/lisanslar.py` — `BAAI/bge-m3` artık «aday» değil, **kullanılıyor**
 - ✅ Qdrant sorunu **ADR 014** ile kapandı: `qdrant.ssyz.org.tr` DNS'te

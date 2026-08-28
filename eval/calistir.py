@@ -15,7 +15,7 @@ metriğin kendisinden daha pahalıya patlar.
 
   ALTIN SET GEREKTİRENLER — altın set 15 Ağustos'ta geldi, aktif:
     alan bazlı doğruluk, kesinlik/duyarlılık/F1, makro-F1
-    (dayanıklılık düşüşü S-07'nin bozuk varyant üreticisini bekliyor)
+    (dayanıklılık düşüşü bozuk varyant üreticisini bekliyor)
 
 Altın set yoksa ikinci grup "beklemede" olarak raporlanır; koşu ÇÖKMEZ.
 
@@ -64,7 +64,7 @@ ABLASYON_SIRASI: tuple[tuple[str, str], ...] = (
 )
 """Ablasyon tablosunun satır sırası — `eval/ablasyon.py::YAPILANDIRMALAR` ile aynı.
 
-İlk üç satır ÇIKARIM KATMANLARINI, son iki satır AJANLARI ölçer (A-09).
+İlk üç satır ÇIKARIM KATMANLARINI, son iki satır AJANLARI ölçer.
 `hibrit` ile `hibrit_elestirmensiz` arasındaki fark eleştirmen ajanının,
 `hibrit` ile `tam` arasındaki fark yüklem ajanının katkısıdır."""
 
@@ -541,7 +541,7 @@ def rapor_yaz(
                 "400 kez yeniden örneklendi. Aralık genişse sebebi modelin "
                 "kararsızlığı değil, altın setin küçüklüğüdür. **Sunumda makro-F1 "
                 "tek başına değil, aralığıyla ve örnek sayısıyla söylenmelidir** — "
-                "aynı disiplin H-02'de etiketleyici uyumu için de uygulandı.",
+                "aynı disiplin etiketleyici uyumu için de uygulandı.",
                 "",
             ]
         s += [
@@ -731,7 +731,7 @@ def main() -> int:
     # Windows konsolu cp1254; son satırdaki orada UnicodeEncodeError
     # fırlatıyordu. `make eval` SONUCLAR.md'yi YAZDIKTAN sonra çöküyor, yani
     # kabuğa hata dönüyor ve metrikler tazelenmemiş sanılıyor. Aynı düzeltme
-    # `tools/gorevler.py` ve `tools/altin_set.py` içinde de var.
+    # `tools/altin_set.py` içinde de var.
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 

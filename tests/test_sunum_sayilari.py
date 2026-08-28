@@ -254,7 +254,7 @@ class TestAnlatiSayilari:
     def test_yuklem_katkisi_cumlesi_dogru(self) -> None:
         """«Birlikte 0,79 · yüklem eklenince 0,82» iddiası ölçümle tutmalı.
 
-        Tam eşitlik aranmaz: CLAUDE.md'ye göre EVREN bayt düzeyinde deterministik
+        Tam eşitlik aranmaz: EVREN bayt düzeyinde deterministik
         değil ve makro-F1 **±0,01 gürültü** taşıyor. Slaytta 0,79 mu 0,80 mı
         yazdığı o bandın içinde kalır; testin işi kesinlik dayatmak değil,
         slaytın ölçümden **bandın dışına** kaymasını yakalamak.

@@ -1,4 +1,4 @@
-"""KVKK taraması — toplanan ham metinde kişisel veri var mı? (G-14 kanıtı)
+"""KVKK taraması — toplanan ham metinde kişisel veri var mı? (veri toplama etiği kanıtı)
 
 NEDEN BİR CÜMLE YETMEZ:
     `docs/VERI_METODOLOJISI.md` "kişisel veri toplanmaz" diyor. Bu bir NİYET
@@ -125,7 +125,7 @@ def rapor_uret(veri: dict) -> str:
         "",
         f"_Otomatik üretildi: {veri['uretildi']} · `tools/kvkk_taramasi.py`_",
         "",
-        "Bu rapor **G-14** (veri toplama etiği kanıtı) kapsamındadır ve",
+        "Bu rapor veri toplama etiği kanıtı kapsamındadır ve",
         "`docs/kanit/VERI_TOPLAMA_ETIGI.md` tarafından kanıt olarak gösterilir.",
         "",
         f"Taranan ham kayıt: **{veri['kayit_sayisi']}** (`data/raw/*/*.json` — başlık + gövde metni).",
@@ -211,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-    ayristirici = argparse.ArgumentParser(description="KVKK kişisel veri taraması (G-14)")
+    ayristirici = argparse.ArgumentParser(description="KVKK kişisel veri taraması")
     ayristirici.add_argument(
         "--kati", action="store_true", help="şüpheli bulgu varsa çıkış kodu 1 döndür"
     )
