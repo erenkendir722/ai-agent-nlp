@@ -158,7 +158,7 @@ katkısını yanlış metrikte aramak, "işe yaramıyor" sonucunu verirdi.
 
 Zaman: 5 yapılandırma × 1024 kayıt, 16 işçiyle ~25 dakika (EVREN yoğunken
 2 saate kadar çıkıyor — 28 Ağustos'ta ölçüldü). **Bu ablasyon 26 Ağustos'ta,
-o günkü kod sürümüyle koşuldu; bugünkü korpus 1.019 kayıttır**
+o günkü kod sürümüyle koşuldu; bugünkü korpus 921 kayıttır**
 (`docs/SONUCLAR.md`). Tablo kollar arası farkı ölçer ve beş kolu da aynı
 korpusta, aynı kodla, tek koşuda ürettiği için kendi içinde geçerlidir; mutlak
 sayılar için `SONUCLAR.md` okunur. Daha hızlısı gerekirse

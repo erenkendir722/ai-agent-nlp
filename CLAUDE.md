@@ -170,6 +170,21 @@ değişiklik iddia etmez) · özet **bütün boşlukları atar**, çünkü Albar
 sayfayı tek boşluk farkıyla iki biçimde veriyor ve dakikada bir yanlış alarm
 üretiyordu. Ayrıntı: `docs/kararlar/018-tetikleyici-dinleyici.md`.
 
+**AYIKLAMA ÇIKARIMIN PARÇASI DEĞİL — `make extract` sonrası YENİDEN KOŞULUR
+(28 Ağu).** Korpus 726'dan 1.019'a çıktığında sayının 98'i şişkindi: 95 kayıt
+birebir kopya, 7'si kategori listeleme sayfası. Sebep basit ve kalıcı:
+ayıklama araçları veritabanına yazar, `data/raw` DEĞİŞMEZ (izlenebilirlik
+kanıtı odur), dolayısıyla her yeni `make extract` sildiklerini geri getirir.
+Kopyanın kaynağı da kalıcı: kimlik URL'den türer (`Kampanya.kimlik_uret`) ve
+bankalar aynı sayfayı iki adresten yayımlıyor — TOM Bank `/kampanyalar/X` ile
+`/cok-kazananlar-kulubu-kampanya/X` (61 kayıt), Albaraka/Kuveyt/T. Finans'ta
+takma adres ve `.aspx` harf varyantları. **Çıkarımdan sonraki sıra:**
+`make yinelenenleri-ele uygula=1` → `make liste-sayfalarini-ele uygula=1` →
+`make vektor` (korpus izi değişti) → `make kapsam veri-seti cikti-ornekleri
+veri-kalitesi` → `make eval`. Altın set kayıtları iki araçta da muaf, ölçüm
+zemini kaymaz. `make durum` iki sayıyı yan yana gösterir: **1.019 gezilen
+sayfa, 921 kampanya** — ikisi de doğru, ikisi ayrı şey.
+
 **İndekslenemeyen sayfa kampanya sayılmaz (27 Ağu).** Korpustaki 8 kayıt
 Ziraat'in kategori LİSTELEME sayfasıydı (`/kampanyalar/market-ve-gida`,
 `/kart-kampanyalari`), gövdeleri baştan sona «Son Gün …» tekrarı. Zararsız

@@ -14,7 +14,7 @@ iddiası zaten «bilmediğini söyler» olduğu için, boş alan demoyu **güçl
 ## 0. Çekimden önce — 10 dakikalık hazırlık
 
 ```bash
-make durum          # 1.019 kampanya · 9 banka · RAG indeksi «güncel» demeli
+make durum          # 921 kampanya · 9 banka · RAG indeksi «güncel» demeli
 make test           # yeşil olmalı; kırmızıysa çekime başlama
 GOMME_SAGLAYICI=ollama .venv/bin/python -c "import src.vektor_db as v; v.gom('x')"
                     # yerel gömme yolu bir kez sınanır (aşağıda «kurtarma»)
@@ -38,7 +38,7 @@ mimari anlatımı değil. Sıra, sistemin iddiasını en hızlı kanıtlayan sı
 
 | Süre | Ekran | Ne yapılır | Söylenecek tek cümle |
 |---|---|---|---|
-| 0:00–0:25 | **Genel Bakış** | Kapsam kartları, banka dağılımı, son çekim tarihi | «Dokuz faal katılım bankasının tamamı, 1.019 kampanya — hepsi kaynağıyla birlikte.» |
+| 0:00–0:25 | **Genel Bakış** | Kapsam kartları, banka dağılımı, son çekim tarihi | «Dokuz faal katılım bankasının tamamı, 921 kampanya — hepsi kaynağıyla birlikte.» |
 | 0:25–1:15 | **Müşteri Profili** | Maaş müşterisi · 800.000 TL · 120 ay → sırala | «Sıralama manşet orana göre değil, toplam maliyete göre.» |
 | 1:15–1:40 | aynı ekran | Bir kalemi aç: kâr payı, vade, tahsis ücreti ve **kaynak alıntısı** | «Her değerin altında geldiği cümle ve adresi var.» |
 | 1:40–2:20 | **Karşılaştırma** | İki bankayı seç, ağırlıkları oynat, sıralamanın değiştiğini göster | «Ağırlık bizim değil kullanıcının; formül açık.» |

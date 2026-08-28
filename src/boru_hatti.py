@@ -698,9 +698,25 @@ def komut_durum(_: argparse.Namespace) -> int:
         print(f"  {'ham kayıt (data/raw)':22}: {len(ham_kimlikler)}")
         print(f"  {'korpusta':22}: {len(ham_kimlikler) - len(eksik)}")
         if eksik:
+            # FARKIN İKİ SEBEBİ VAR — 28 Ağustos'ta ölçüldü.
+            #
+            # Burada eskiden tek satır yazıyordu: «EKSİK — N ham kayıt
+            # çıkarılmamış; `make extract` ile tamamlanır». O gün fark 98'di
+            # ve tamamı BİLEREK ayıklanmıştı (95 kopya + 7 liste sayfası,
+            # `make yinelenenleri-ele` · `make liste-sayfalarini-ele`).
+            # Mesajın söylediğini yapan biri 95 kopyayı sessizce geri
+            # getirirdi — ve sayım yeniden şişerdi. Ayıklama `data/raw`a
+            # dokunmadığı için bu fark KALICIDIR, kusur değildir.
             print(
-                f"  EKSİK — {len(eksik)} ham kayıt çıkarılmamış; "
-                "`make extract` ile tamamlanır"
+                f"  FARK — {len(eksik)} ham kayıt korpusta değil. İki sebebi olabilir:"
+            )
+            print(
+                "    · bilerek ayıklanmış (kopya ya da liste sayfası) — bu fark BEKLENEN;"
+                "\n      `make yinelenenleri-ele` / `make liste-sayfalarini-ele` kuru koşusu gösterir"
+            )
+            print(
+                "    · çıkarımda düşmüş — `make extract` tamamlar, AMA ayıklananları da"
+                "\n      geri getirir; sonrasında ayıklama adımları yeniden koşulmalı"
             )
         else:
             print("  tam — her ham kayıt korpusta")

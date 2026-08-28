@@ -1,10 +1,10 @@
 # Model Çıktılarının Örnekleri
 
-_Otomatik üretildi: 28.08.2026 09:34 · `make cikti-ornekleri`_
+_Otomatik üretildi: 28.08.2026 10:19 · `make cikti-ornekleri`_
 
 **Şartname madde 6**, proje dokümantasyonunda *«model çıktılarının örnekleri»*
 başlığını zorunlu tutuyor. Aşağıdaki çıktıların tamamı **işlenmiş
-veritabanından** (1019 kayıt) seçilmiştir; hiçbiri elle yazılmadı
+veritabanından** (921 kayıt) seçilmiştir; hiçbiri elle yazılmadı
 veya güzelleştirilmedi. Her tabloda değerin hangi katmandan geldiği
 (`kural` / `llm` / `hibrit`) ve güven skoru yazar.
 
@@ -169,21 +169,26 @@ Sayfada bilgi açıkça yazılıysa sistem alanların çoğunu çıkarır.
 
 Kampanya sayfası az bilgi veriyorsa sistem **boş bırakır**. Şartname madde 11'in tablosu da bu ifadeyi kullanıyor; uydurmak yerine bilmediğini söylemek doğru davranıştır.
 
-**Kaynak:** Türkiye Emlak Katılım Bankası A.Ş. · [https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/atik-su-aritma-ve-geri-kazanimi-yatirim-ve-isletme-finansmani](https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/atik-su-aritma-ve-geri-kazanimi-yatirim-ve-isletme-finansmani) · çekim 27.08.2026
+**Kaynak:** Türkiye Emlak Katılım Bankası A.Ş. · [https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/e-fatura-teminatli-finansman](https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/e-fatura-teminatli-finansman) · çekim 27.08.2026
 
 **Girdi (ham metinden):**
 
-> Atık Su Arıtma ve Geri Kazanımı Yatırım ve İşletme Finansmanı Çevreyi koruma amacı taşıyan, insan yaşamının iyileştirilmesine katkı sunan atık su geri dönüşüm ve arıtma projelerinin finanse edilmesi amaçlanmıştır. Firmaların yeni yapacağı; - Atık su altyapımı, - Atık su arıtımı, - Atık berterafı, - Katı atık geri kazanım tesisi yatırımlarının veya var olan tesislerini iyileştirmeye yönelik yatırımlarının finansmanı i…
+> E-Fatura Teminatlı Finansman × E-Fatura Teminatlı Finansman Nedir? E-Fatura Teminatlı Finansman; Kobi, Ticari ve Kurumsal segmentteki müşterilerimizin finansman ihtiyacını karşılamak adına E-Fatura alacaklarını teminat olarak göstererek, ihtiyaç duydukları finansmana ulaşabilecekleri murabaha temelli finansman ürünüdür. E-Fatura Teminatlı Finansman ile tedarikçilere, mal alan alıcı firmalara sattıkları mal veya hizme…
 
 **Yapısal çıktı:**
 
 | Alan | Değer | Birim | Yöntem | Güven |
 |---|---|---|---|---|
-| `kampanya_turu` | yatirim_urunu | — | llm | 0.80 |
-| `urun_turu` | Yatırım ve İşletme Finansmanı | — | llm | 0.70 |
-| `kampanya_avantaji` | Mevcut fiyatlarından 2 puan kâr payı indirimi ve OGEM-VAK aracılığı ile isme özel fidan bağışı | — | llm | 0.70 |
+| `kampanya_turu` | finansman | — | llm | 0.80 |
+| `urun_turu` | E-Fatura Teminatlı Finansman | — | llm | 0.70 |
+| `kampanya_kosullari` | Kobi, Ticari ve Kurumsal segmentteki müşterilere yöneliktir. E-Fatura alacaklarının teminat gösterilmesi gerekir. Fatura üzerinde vade (son ödeme tarihi) bulunması şarttır. Ek teminata ihtiyaç duyulmaz. Murabaha temelli bir üründür. Operasyonel süreçleri kısaltır ve fiziki evrak sirkülasyonunu ortadan kaldırır. Detaylı bilgi için şubeye başvurulmalıdır. | — | llm | 0.70 |
 
-**Belirtilmemiş (13 alan):** Hedef kitle, Kâr payı oranı, Azami finansman tutarı, Azami vade, Taksit sayısı, Tahsis ücreti, Masraf bilgisi, Masrafsız mı, Ödül miktarı, İndirim oranı, Alışveriş puanı, Kampanya bitişi, Kampanya koşulları
+**Belirtilmemiş (13 alan):** Hedef kitle, Kâr payı oranı, Azami finansman tutarı, Azami vade, Taksit sayısı, Tahsis ücreti, Masraf bilgisi, Masrafsız mı, Ödül miktarı, İndirim oranı, Alışveriş puanı, Kampanya avantajı, Kampanya bitişi
+
+**Uygunluk koşulları (muhakeme ajanının girdisi):**
+
+- müşteri tipi: segment
+- segment: KOBİ
 
 ---
 

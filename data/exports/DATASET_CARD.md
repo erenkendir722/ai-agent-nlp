@@ -10,11 +10,11 @@ TEKNOFEST 2026 Yapay Zekâ Dil Ajanları Yarışması 2. Senaryo için üretildi
 
 | | |
 |---|---|
-| Kayıt sayısı | **1019** |
+| Kayıt sayısı | **921** |
 | Banka sayısı | **9** |
 | Şema sürümü | `1.2.0` |
 | Alan sayısı (kayıt başına) | 16 yapısal alan + uygunluk koşulları |
-| Dolu hücre | 5299 / 16304 |
+| Dolu hücre | 4778 / 14736 |
 | Dil | Türkçe |
 | Lisans | Apache-2.0 (kod ve derleme) · kaynak metinler ilgili bankalara aittir |
 
@@ -29,13 +29,13 @@ TEKNOFEST 2026 Yapay Zekâ Dil Ajanları Yarışması 2. Senaryo için üretildi
 
 | Banka | Kayıt |
 |---|---|
-| Ziraat Katılım Bankası A.Ş. | 219 |
-| Kuveyt Türk Katılım Bankası A.Ş. | 213 |
-| Albaraka Türk Katılım Bankası A.Ş. | 137 |
-| T.O.M. Katılım Bankası A.Ş. | 123 |
-| Türkiye Emlak Katılım Bankası A.Ş. | 110 |
-| Vakıf Katılım Bankası A.Ş. | 76 |
-| Türkiye Finans Katılım Bankası A.Ş. | 70 |
+| Ziraat Katılım Bankası A.Ş. | 211 |
+| Kuveyt Türk Katılım Bankası A.Ş. | 205 |
+| Albaraka Türk Katılım Bankası A.Ş. | 127 |
+| Türkiye Emlak Katılım Bankası A.Ş. | 109 |
+| Vakıf Katılım Bankası A.Ş. | 72 |
+| Türkiye Finans Katılım Bankası A.Ş. | 64 |
+| T.O.M. Katılım Bankası A.Ş. | 62 |
 | Dünya Katılım Bankası A.Ş. | 52 |
 | Hayat Finans Katılım Bankası A.Ş. | 19 |
 
@@ -43,14 +43,14 @@ TEKNOFEST 2026 Yapay Zekâ Dil Ajanları Yarışması 2. Senaryo için üretildi
 
 | Tür | Kayıt |
 |---|---|
-| `diger` | 387 |
-| `alisveris_puani` | 192 |
-| `kart` | 190 |
-| `finansman` | 73 |
-| `tasit_finansmani` | 51 |
-| `yatirim_urunu` | 48 |
-| `ihtiyac_finansmani` | 42 |
-| `konut_finansmani` | 29 |
+| `diger` | 330 |
+| `alisveris_puani` | 191 |
+| `kart` | 172 |
+| `finansman` | 68 |
+| `yatirim_urunu` | 44 |
+| `tasit_finansmani` | 44 |
+| `ihtiyac_finansmani` | 38 |
+| `konut_finansmani` | 27 |
 | `yeni_musteri` | 7 |
 
 ## Nasıl toplandı

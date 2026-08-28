@@ -25,13 +25,13 @@ Sağdaki tabloyu göster:
 
 ## 03 · Kapsam &nbsp;— Görkem &nbsp;· 30 sn
 
-> Dokuz faal katılım bankasının tamamı, 1.019 kampanya, 1.761 geçen test, sıfır
+> Dokuz faal katılım bankasının tamamı, 921 kampanya, 1.761 geçen test, sıfır
 > ticari dış servis bağımlılığı. Her kayıt **16 alanlı bir kanıt zinciri** taşır:
 > kaynak URL, dayandığı cümle, güven skoru ve hangi katmandan çıktığı.
 
 Dengesizliği kendin söyle, jüri sormadan:
 
-> Dağılım dengesiz — en geniş kapsam en darın **11,5 katı.** Ölçtük ve raporladık.
+> Dağılım dengesiz — en geniş kapsam en darın **11,1 katı.** Ölçtük ve raporladık.
 > Sıralamayı bozmuyor, çünkü motor tekil ürünleri karşılaştırıyor, banka
 > ortalaması almıyor.
 
@@ -86,7 +86,7 @@ Sağdaki kutuyu atlama:
 
 Tabloyu okuma, sınırlara geç:
 
-> Sınırları saklamıyoruz. Kâr payı doluluğu %18 — çoğu banka oranı başvuru
+> Sınırları saklamıyoruz. Kâr payı doluluğu %17 — çoğu banka oranı başvuru
 > ekranında veriyor, biz uydurmak yerine “Belirtilmemiş” diyoruz.
 > Kapsam dengesiz, ölçtük ve rapor ettik.
 > **Sakladığımız an, sakladığımız şeyin dışındaki her sayı da şüpheli hâle gelir.**
@@ -109,7 +109,7 @@ gerekirse depo açılır.
 | “Veriyi nasıl topladınız, izin aldınız mı?” | robots kapısı, 2 sn nezaket, 16 alan adının kararı günlükte, KVKK taraması temiz | `docs/kanit/` |
 | “Şartnamedeki örneği denediniz mi?” | İlk koşuda 12 iddiadan 4'ü hatalıydı; düzeltildi, teste bağlandı — **11/11** | `tests/test_kural.py` |
 | “Sıralamayı neye göre yapıyorsunuz?” | Beş kriter, ağırlığı kullanıcı belirler (%40/%25/%20/%15), formül açık | `src/comparison/` |
-| “Uygunluk nasıl çıkarılıyor?” | Kayıtların **%87,1'inde** kısıt çıkıyor; zorunlu ürün yükümlülük kanıtına bağlanınca %59'dan **%24,3'e** indi | `src/ajanlar/uygunluk.py` |
+| “Uygunluk nasıl çıkarılıyor?” | Kayıtların **%87,3'ünde** kısıt çıkıyor; zorunlu ürün yükümlülük kanıtına bağlanınca %59'dan **%24,3'e** indi | `src/ajanlar/uygunluk.py` |
 | “Kurum içinde çalışır mı?” | Docker üç konteyner; hava boşluğu testinde DNS ve internet kapalıyken çalıştı; **10 sızıntı testi** | `docker-compose.yml` |
 | “Model lisansları?” | 89 paket tarandı, kısıtlı lisans **0**; dört model kaynağından teyitli, Llama/Gemma yok | `docs/LISANSLAR.md` |
 | “RAG nasıl?” | **15.916** paragraf yerel dosyada, arama numpy nokta çarpımı; harici vektör veritabanı yok | `src/vektor_db.py` |

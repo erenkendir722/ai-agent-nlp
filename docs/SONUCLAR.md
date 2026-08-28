@@ -1,6 +1,6 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 28.08.2026 03:10 · `make eval`_
+_Otomatik üretildi: 28.08.2026 10:19 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
@@ -8,17 +8,17 @@ _Otomatik üretildi: 28.08.2026 03:10 · `make eval`_
 
 ## Veri kapsamı
 
-- İşlenen kampanya: **1019**
+- İşlenen kampanya: **921**
 - Banka sayısı: **9**
-- Toplam alan: 16304 · Dolu: 5299
+- Toplam alan: 14736 · Dolu: 4778
 
 ## Altın set gerektirmeyen metrikler
 
 | Metrik | Değer | Hedef | Durum |
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | hedefte |
-| **Halüsinasyon oranı** | %0.19 | ≤ %3 | hedefte |
-| Alan doluluğu | %32.5 | — | — |
+| **Halüsinasyon oranı** | %0.21 | ≤ %3 | hedefte |
+| Alan doluluğu | %32.4 | — | — |
 | Ortalama güven | 0.782 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | hedefte |
 | Denetimsiz cevap parçası | %0.0 | %0 | hedefte |
@@ -44,9 +44,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 3465 |
-| `kural` | 1701 |
-| `hibrit` | 133 |
+| `llm` | 3140 |
+| `kural` | 1519 |
+| `hibrit` | 119 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
@@ -66,17 +66,17 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | Alan | Doluluk |
 |---|---|
 | `kampanya_turu` | %100 |
-| `urun_turu` | %88 |
+| `urun_turu` | %89 |
 | `kampanya_avantaji` | %82 |
 | `kampanya_kosullari` | %61 |
-| `kampanya_bitis` | %47 |
-| `vade_ay_max` | %45 |
-| `taksit_sayisi` | %26 |
+| `kampanya_bitis` | %45 |
+| `vade_ay_max` | %44 |
+| `taksit_sayisi` | %25 |
 | `odul_miktari` | %19 |
-| `kar_payi_orani` | %18 |
+| `kar_payi_orani` | %17 |
 | `indirim_orani` | %7 |
-| `finansman_tutari_max` | %7 |
-| `hedef_kitle` | %6 |
+| `hedef_kitle` | %7 |
+| `finansman_tutari_max` | %6 |
 | `masrafsiz_mi` | %6 |
 | `tahsis_ucreti` | %4 |
 | `alisveris_puani` | %3 |

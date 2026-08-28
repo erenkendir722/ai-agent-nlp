@@ -51,7 +51,7 @@ Tasarım alındı, **iddialar depoya karşı denetlendi.** Düzeltilenler:
 | Vakıf 142 · TOM 14 · «**FUPS**/Diğer» · Dünya Katılım yok | Gerçek dokuz banka: Ziraat 219 · Kuveyt Türk 213 · Albaraka 137 · TOM 123 · Emlak 110 · T.Finans 64 · Vakıf 49 · Dünya 45 · Hayat 19 |
 | Ablasyonda «Tam Hiyerarşi %0.21» | Ablasyonun kendi değeri **%0,42**; %0,19 *eval*'den, başka koşu |
 | «**Klasik Vektör RAG** %83.3 / %0.70» kolonu | O değerler ablasyonun «Yalnız dil modeli» kolu. **Vektör-RAG taban çizgisi hiç ölçülmedi** — kolon, ölçülmüş üç kolla değiştirildi |
-| Grup başına «%100 Tam kapsam» | Kapsam **11,5× dengesiz**; şablonun kendi sonuç sayfası da bunu söylüyordu (kendi içinde çelişki) |
+| Grup başına «%100 Tam kapsam» | Kapsam **11,1× dengesiz**; şablonun kendi sonuç sayfası da bunu söylüyordu (kendi içinde çelişki) |
 
 ## Palet — ölçülerek seçildi
 
@@ -135,13 +135,13 @@ Slayttaki her sayı depodan gelir; hiçbiri elle yazılmaz.
 
 | Sayı | Nereden |
 |---|---|
-| 1.019 işlenmiş kampanya · 9 banka | `docs/SONUCLAR.md` · `src.depolama.tum_kayitlar` |
-| 16.414 paragraf · 1024 boyut | `make durum` — RAG indeksi (`data/vektor_indeksi.npz`) |
+| 921 işlenmiş kampanya · 9 banka | `docs/SONUCLAR.md` · `src.depolama.tum_kayitlar` |
+| 15.100 paragraf · 1024 boyut | `make durum` — RAG indeksi (`data/vektor_indeksi.npz`) |
 | Ablasyon tablosu (5 satır) · 1.024 ham kayıt | `data/ablasyon.json` — tek koşu, tek kod parmak izi (`make ablasyon`) |
 | Makro-F1 ve %95 güven aralığı | `docs/SONUCLAR.md` (400 kez önyükleme) |
 | Halüsinasyon · şema geçerliliği · kalkan 0/35 | `docs/SONUCLAR.md`, `eval/sorular.yaml` |
-| Uygunluk %87,1 · zorunlu ürün %24,3 | `make uygunluk-goc --deneme` · `src/ajanlar/uygunluk.py` |
-| Kâr payı doluluğu %18 · «diğer» %38 · dengesizlik 11,5× | canlı veritabanı — `TestSinirlarPaneli` denetliyor |
+| Uygunluk %87,3 · zorunlu ürün %24,3 | `make uygunluk-goc --deneme` · `src/ajanlar/uygunluk.py` |
+| Kâr payı doluluğu %17 · «diğer» %36 · dengesizlik 11,1× | canlı veritabanı — `TestSinirlarPaneli` denetliyor |
 | Geçen test sayısı | `make test` |
 | 89 paket · 0 kısıtlı lisans · 4 model teyitli | `docs/LISANSLAR.md` (`make lisanslar-teyit`) |
 | Toplam maliyet tuzağı (2.033.129 / 2.028.925 TL) | `src.comparison.karsilastirma.toplam_maliyet` · `tests/test_muhakeme.py` |
@@ -160,9 +160,10 @@ depoya baktığında en pahalı hatadır. Nöbetçi: `tests/test_sunum_sayilari.
 - ~~PPTX sürümü~~ → **28 Ağu'da kapandı.** `make sunum-pptx` PDF'ten üretir
   (`tools/sunum_pptx.py`); konuşma metni slayt notu olarak gömülüdür. PPTX'in
   hangi PDF'ten üretildiği içine damgalanır, nöbetçi `TestPptxPdfIleAyni`.
-- ~~`docs/KAPSAM_RAPORU.md` bayat~~ → **28 Ağu'da kapandı.** Rapor 1.019
-  kayıtlık canlı korpustan yeniden üretildi (11,5×); slayt aynı değeri yazıyor.
+- ~~`docs/KAPSAM_RAPORU.md` bayat~~ → **28 Ağu'da kapandı.** Rapor 921
+  kayıtlık canlı korpustan yeniden üretildi (11,1×); slayt aynı değeri yazıyor.
 - **Demo videosu 5 dk** (madde 6) ve **sunum videosu 1 dk** (madde 10) — ES-17, ES-18.
-  ⚠️ Slayt sayıları **28 Ağustos'ta** güncellendi (korpus 979 → 1.019, banka
-  dağılımı, ablasyon tablosu). Video bu tarihten ÖNCE çekildiyse kapaktaki
-  sayılar slaytla ayrışır; kayıt tarihini kontrol edin.
+  ⚠️ Slayt sayıları **28 Ağustos'ta iki kez** güncellendi: önce 979 → 1.019
+  (eksik çıkarımlar tamamlandı), sonra 1.019 → **921** (95 kopya + 7 liste
+  sayfası ayıklandı). Video bu tarihten ÖNCE çekildiyse kapaktaki sayılar
+  slaytla ayrışır; kayıt tarihini kontrol edin.

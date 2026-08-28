@@ -26,7 +26,7 @@ tutar; unutulan bir gereklilik yüzünden puan kaybetmenin panzehiri budur.
 
 | Eski uyarı | Ölçülen gerçek |
 |---|---|
-| ~~10 faal bankanın 2'sinde veri yok~~ | **9 faal bankanın 9'unda da kampanya var** (931 işlenmiş kampanya; `make durum`). Madde 5.1 karşılandı |
+| ~~10 faal bankanın 2'sinde veri yok~~ | **9 faal bankanın 9'unda da kampanya var** (921 işlenmiş kampanya; `make durum`). Madde 5.1 karşılandı |
 | ~~Docker hiç çalıştırılmadı~~ | 18 Ağu'da koşuldu; 3 konteyner sağlıklı, hava boşluğu ölçüldü |
 | ~~Teslim tarihi belirsiz~~ | Fiziki final **27 Ağustos**, madde 3'teki takvim bağlayıcı (E-20) |
 | ~~Terim sözlüğü yok~~ | [`docs/TERIM_SOZLUGU.md`](TERIM_SOZLUGU.md) — 60+ terim ve **istem bloğu oradan besleniyor** (G-10) |
@@ -96,7 +96,7 @@ planlanmalı.
 | 5.2 | *"avantajlı kâr payı fırsatı"* yorumlanmalı | 🟠 | Sayı uydurmama davranışı test edilecek | Samet (S-08) |
 | 5.2 | *"özel oranlı finansman"* yorumlanmalı | 🟠 | S-08 | Samet |
 | 5.2 | *"düşük maliyetli finansman"* yorumlanmalı | 🟠 | S-08 | Samet |
-| 5.3 | Kâr payı oranı çıkarımı | 🟡 | Doluluk **%15,8** (147/931 kayıt), altın sette **F1 0,780** (N=21). Düşük doluluk kaynaktan geliyor: bankaların çoğu oranı kampanya sayfasında değil başvuru ekranında veriyor; kart/puan kampanyalarında oran zaten yok. Uydurmak yerine `Belirtilmemiş` deniyor | Samet (S-02) |
+| 5.3 | Kâr payı oranı çıkarımı | 🟡 | Doluluk **%17,4** (160/921 kayıt), altın sette **F1 0,780** (N=21). Düşük doluluk kaynaktan geliyor: bankaların çoğu oranı kampanya sayfasında değil başvuru ekranında veriyor; kart/puan kampanyalarında oran zaten yok. Uydurmak yerine `Belirtilmemiş` deniyor | Samet (S-02) |
 | 5.3 | Finansman tutarı · vade · taksit sayısı · tahsis ücreti · masraf bilgisi | ✅ | `src/schema.py` alanları mevcut, doluluk `docs/SONUCLAR.md`'de | Samet |
 | 5.3 | Kampanya türü · ödül miktarı · indirim oranı · alışveriş puanı · kampanya süresi · koşulları | ✅ | Şemada tam karşılığı var | Samet |
 | 5.3 | Hedef kitle bilgileri (yeni/mevcut/maaş/segment) | ✅ | `HedefKitle` enum'u dördünü de kapsıyor | Samet |
@@ -138,7 +138,7 @@ planlanmalı.
 |---|---|---|---|---|
 | 1 | Sistem mimarisi ve veri akışı | ✅ | `docs/MIMARI.md` | Eren (E-15) |
 | 2 | Kullanılan NLP yaklaşımı | ✅ | [`docs/MIMARI.md`](MIMARI.md) bölüm 3 — beş katman (normalizasyon · kural · LLM · uzlaştırma · RAG) | Eren (S-16) |
-| 3 | Kullanılan veri seti ve açıklaması | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §0 — 1.019 işlenmiş kampanya (ham envanterin tamamı), 9 banka, dağılım ve sınırlar; yayın sürümü `data/exports/` + veri kartı | Görkem (G-15) |
+| 3 | Kullanılan veri seti ve açıklaması | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §0 — 921 işlenmiş kampanya (1.019 gezilen sayfa; 95 kopya + 7 liste sayfası sayılmaz), 9 banka, dağılım ve sınırlar; yayın sürümü `data/exports/` + veri kartı | Görkem (G-15) |
 | 4 | Veri ön işleme adımları | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §3–4 — gövde ayıklama, Türkçe küçültme tuzağı, sayı/tarih normalizasyonu | Görkem (G-15) |
 | 5 | Model veya kural yapısının açıklaması | ✅ | [`docs/MODEL_VE_KURAL_YAPISI.md`](MODEL_VE_KURAL_YAPISI.md) | Eren (S-16) |
 | 6 | Benzer ürünler nasıl karşılaştırılıyor | ✅ | [`docs/KARSILASTIRMA_YONTEMI.md`](KARSILASTIRMA_YONTEMI.md) | Eren (E-15) |
@@ -154,7 +154,7 @@ planlanmalı.
 | Ağırlık | Kriter | Bizdeki dayanak | Risk |
 |---|---|---|---|
 | **%30** | Model Başarısı ve Anlamlandırma | Altın set + `make eval` + ablasyon | 🔴 Altın set 16 Ağu'da bitmezse ölçüm yok |
-| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 5 ekran, API | ✅ **1.019 kampanya / 9 faal banka** — 28 Ağu ölçümü; ham envanter ile korpus eşit (`make durum`). «96/300» hedefi 15 Ağu'dan kalma bayat satırdı |
+| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 5 ekran, API | ✅ **921 kampanya / 9 faal banka** — 28 Ağu ölçümü (`make durum`; 1.019 gezilen sayfanın yinelenmeden arındırılmış hâli). «96/300» hedefi 15 Ağu'dan kalma bayat satırdı |
 | **%20** | Teknik İmplementasyon ve Mimari | Donmuş şema, hibrit çıkarım, modüler yapı | ✅ |
 | **%20** | On-Prem Uygulanabilirlik | Docker (**18 Ağu'da koşuldu**), yerel LLM yolu, hava boşluğu ölçümü, sızıntı testleri, **[`KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md)** (LDAP/AD · vekil · ambar besleme · denetim izi) | ✅ Bu satır 18 Ağu'dan beri bayattı — Docker koşulmuştu, tabloya yansımamıştı |
 | **%10** | Yenilikçilik ve Yaratıcılık | Kanıt zinciri, sayısal doğrulama kalkanı, hava boşluğu | 🟠 Dokümantasyon netliği de bu kalemde |

@@ -784,6 +784,18 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         slaytları · `sunum/README`), üretilen raporlar yeniden koşuldu
         (`veri-seti` · `kapsam` · `cikti-ornekleri` · `veri-kalitesi` · `kanit`).
       ↳ Açık kalan tek teslim şartı **E-01 (depo public) + E-03 (`v1.0`)**.
+      ↳ 🔴 **İKİNCİ TUR (28 Ağu, «1019 fazla değil mi?» sorusu üzerine):**
+        korpus şişikti. 1.019 kaydın **95'i birebir kopya** (aynı sayfa iki
+        adresten; TOM Bank tek başına 61) ve **7'si kategori listeleme
+        sayfası**. Ayıklandı → **921**. Sebep kalıcı: ayıklama araçları
+        veritabanına yazar, `data/raw` değişmez, yani her `make extract`
+        onları geri getirir — **ayıklama artık çıkarımın sabit devamıdır**
+        (CLAUDE.md'ye yazıldı). Ardından `make vektor` + bütün raporlar +
+        `make eval` yeniden koştu; altın set muafiyeti sayesinde makro-F1
+        (0,817) ve sayısal doğruluk (0,927) DEĞİŞMEDİ.
+      ↳ 🐛 `make durum` bu farkı «EKSİK — `make extract` ile tamamlanır» diye
+        gösteriyordu; söyleneni yapan 95 kopyayı geri getirirdi. Mesaj iki
+        sebebi de yazacak şekilde düzeltildi (`src/boru_hatti.py`).
       ⛔ **Önce bitmeli:** S-16 (Samet) · G-15 (Görkem) · ES-15 (Esra) · ES-16 (Esra) · ES-17 (Esra) · ES-18 (Esra) · ES-13 (Esra) · G-12 (Görkem)
       ↳ README bölüm "GitHub ve Teslimat Kontrol Listesi"ndeki her satır
       ↳ 10 dokümantasyon başlığının hepsi var mı, PDF **ve** PPTX var mı,

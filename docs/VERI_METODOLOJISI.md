@@ -11,25 +11,39 @@
 
 | | |
 |---|---|
-| Ham kayıt (`data/raw`) | **1.019** — toplanan sayfa anlık görüntüsü |
-| İşlenen kampanya (veritabanı) | **1.019** — ham envanterin tamamı korpusta |
+| Ham kayıt (`data/raw`) | **1.019** — gezilen sayfa anlık görüntüsü |
+| İşlenen kampanya (veritabanı) | **921** — yinelenen ve liste sayfaları ayıklandıktan sonra |
 | Banka | **9** — BDDK listesindeki **faal** katılım bankalarının tamamı |
 | Şema sürümü | `1.2.0` (16 yapısal alan + uygunluk koşulları) |
-| Dolu hücre | 5.299 / 16.304 (%32,5) |
-| Uygunluk koşulu çıkarılan kayıt | 888 (%87,1) |
+| Dolu hücre | 4.778 / 14.736 (%32,4) |
+| Uygunluk koşulu çıkarılan kayıt | 804 (%87,3) |
 | Son çekim | 28 Ağustos 2026 |
 | Yayınlanan sürüm | [`data/exports/`](../data/exports/) — CSV + JSONL + [veri kartı](../data/exports/DATASET_CARD.md) |
 
 Banka ve tür bazlı dağılım, dengesizliğin etkisiyle birlikte ayrı bir dosyada:
 [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (`make kapsam` ile yeniden üretilir).
 
-> ⚠️ **İki sayı 28 Ağustos'ta EŞİTLENDİ.** Bu tablo 26 Ağustos'ta iki ayrı
-> sayı taşıyordu (1.024 ham sayfa · 931 işlenmiş kampanya): aradaki fark, LLM
-> katmanının geçici hatalarından düşen kayıtlardı, süresi geçmiş kampanya
-> ayıklaması değil. Eksik kayıtlar yeniden çıkarıldı ve fark kapandı —
-> `make durum` artık «ham envanter ↔ korpus: tam» diyor. Bir sonraki `make
-> crawl` farkı yeniden açabilir; **karşılaştırmayı `make durum` yapar**, bu
-> tablo değil.
+> ⚠️ **İKİ SAYI İKİ FARKLI ŞEYDİR: 1.019 gezilen sayfa, 921 kampanya.**
+> Aradaki 98 kayıt silinmedi diye eksik değil, **sayılmadığı için** yok:
+>
+> * **95'i birebir kopya.** Aynı sayfa iki adresten geziliyor ve kimlik
+>   URL'den türediği (`Kampanya.kimlik_uret`) için iki kayıt oluyor. Ölçülen
+>   kaynaklar: TOM Bank aynı kampanyayı `/kampanyalar/X` ve
+>   `/cok-kazananlar-kulubu-kampanya/X` altında yayımlıyor (61 kayıt);
+>   Albaraka/Kuveyt Türk/Türkiye Finans'ta takma adres varyantları var
+>   (`/konut-finansmani` ↔ `/konut-finansmani/konut-finansmani`,
+>   `.aspx` büyük/küçük harf). Gövdeler boşluk farkına kadar aynı.
+> * **7'si kampanya değil, kategori LİSTELEME sayfası** — indekslenemiyor
+>   (`vektor_db.paragraflara_ayir` boş dönüyor), yani içinde paragraf yok,
+>   «Son Gün …» tekrarından ibaret.
+>
+> Doğruluk, doluluk ve kapsam sayıları hep **921**'e aittir; KVKK taraması ve
+> robots kanıtı **1.019**'a, çünkü onlar gezilen sayfanın kanıtıdır.
+> `data/raw` DEĞİŞMEZ — kopya diye silmek kazımanın kendisini yanlış
+> gösterirdi. **Bu yüzden `make extract` her koşuşunda ayıklama da yeniden
+> koşulur:** `make yinelenenleri-ele uygula=1` ve
+> `make liste-sayfalarini-ele uygula=1`, ardından `make vektor`.
+> Karşılaştırmayı `make durum` yapar, bu tablo değil.
 
 > **Boş hücre her zaman eksik veri değildir.** Kart kampanyasında kâr payı oranı
 > yoktur; kampanya sayfası oranı yazmıyorsa sistem `Belirtilmemiş` der. Doluluk
@@ -248,20 +262,20 @@ Dürüst raporlama, eksiği gizlemekten daha değerlidir:
    Yeni kampanya çıkarsa listeye elle eklenmelidir — eksik kalırsa sistem
    uyarmaz.
 3. **Kapsam bankalar arasında dengesiz.** En geniş kapsamlı bankada, en dar
-   kapsamlının 11,5 katı kayıt var (28 Ağu ölçümü). Bu bir yanlılık kaynağıdır ve ölçülüp
+   kapsamlının 11,1 katı kayıt var (28 Ağu ölçümü). Bu bir yanlılık kaynağıdır ve ölçülüp
    yazılmıştır: [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (şartname 15.1).
    *Not: 9 Ağustos'ta "T.O.M. Katılım'da kampanya sayfası bulunamadı" yazıyordu;
    toplayıcı yeniden koşulduğunda o bankadan 103 kayıt geldi. Madde düzeltildi.*
 4. **Kâr payı oranları çoğu kampanya sayfasında yazmaz;** başvuru ekranında
    veya hesaplama aracında bulunur. Bu, veri setinin gerçek bir özelliğidir ve
-   `Belirtilmemiş` olarak raporlanır — uydurulmaz. Ölçülen doluluk: %18.
+   `Belirtilmemiş` olarak raporlanır — uydurulmaz. Ölçülen doluluk: %17.
 5. **Veri bir anlık görüntüdür.** Kampanyalar sürelidir; her kayıt kendi
    `cekim_tarihi`'ni taşır. Süresi geçmiş kayıtlar `make suresi-gecenleri-ele`
    ile ayıklanabilir.
 6. **Yabancı para cinsinden tutarlar TL sayılabiliyor.** Şema
    `finansman_tutari_max` alanını TL olarak tanımlar; "600 Milyon Euro"
-   gibi bir ifade sayı olarak çıkarılır ama birimi TL varsayılır. 1.019
-   kayıtta iki örneği var ve `make veri-kalitesi` raporunda «> 10.000.000 TL»
+   gibi bir ifade sayı olarak çıkarılır ama birimi TL varsayılır. 921
+   kayıtta bir örneği var ve `make veri-kalitesi` raporunda «> 10.000.000 TL»
    satırında görünür — gizlenmiyor, ama düzeltilmesi şema değişikliği
    gerektirir (yeni bir para birimi boyutu).
 7. **Bazı EFT kodları doğrulanmamıştır** (§1.3).

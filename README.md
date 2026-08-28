@@ -295,7 +295,7 @@ baştan sona taranır (görev E-17).
       GitHub API'de ikisi de görünüyor (28 Ağu)
 - [x] Kurulum adımları net: [`docs/KURULUM.md`](docs/KURULUM.md)
 - [x] Bağımlılıkların eksiksiz listesi: `requirements.txt` + [`docs/LISANSLAR.md`](docs/LISANSLAR.md)
-- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/) — 1.019 kayıt (28 Ağu)
+- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/) — 921 kayıt (28 Ağu)
 - [x] `v1.0` sürüm etiketi atıldı ve push'landı (28 Ağu)
 
 ### Dokümantasyon — madde 6'nın 10 başlığı
