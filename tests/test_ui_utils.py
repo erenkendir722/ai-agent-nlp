@@ -168,3 +168,69 @@ def test_satis_notu_word_belgesi_bicim_tasir():
     assert "Calibri" in _BELGE_BICIMI, "Word'ün tanıdığı bir yazı tipi yok"
     # Gövde çeviricisi belge üreticisiyle aynı yerden gelmeli.
     assert _serbest_metin_html("## X").startswith("<h3>")
+
+
+# ---------------------------------------------------------------------------
+# Tablo → Word belgesi: SAYFAYA SIĞMALI
+# ---------------------------------------------------------------------------
+#
+# Tablo `df.to_html()` ile olduğu gibi gömülüyordu, yani sayfa genişliği hiç
+# hesaba katılmıyordu. Word varsayılan dikey A4 açar; on sütunluk
+# karşılaştırma tablosu ve içindeki tam kaynak adresleri sayfanın dışına
+# taşıyordu — indirilen belge okunmuyordu.
+
+
+def _cerceve(sutun_sayisi: int, url_ekle: bool = False):
+    import pandas as pd
+
+    satir = {f"S{i}": f"kısa{i}" for i in range(sutun_sayisi - (1 if url_ekle else 0))}
+    if url_ekle:
+        satir["Kaynak URL"] = "https://www.ornekbanka.com.tr/" + "uzun-adres-" * 6
+    return pd.DataFrame([satir])
+
+
+def test_genis_tablo_yatay_sayfaya_doner():
+    """Beş sütunu aşan tablo yatay A4 istemeli."""
+    from app.ui_utils import _word_bayt
+
+    dar = _word_bayt(_cerceve(4), "dar").decode()
+    genis = _word_bayt(_cerceve(10), "geniş").decode()
+
+    assert "landscape" not in dar, "dört sütun için yatay sayfa gereksiz"
+    assert "landscape" in genis, "on sütunluk tablo dikey sayfaya sığmaz"
+    # `size` tek başına Word'de yön değiştirmiyor.
+    assert "mso-page-orientation" in genis, "Word'ün yön özelliği yok"
+
+
+def test_tablo_sayfaya_uyar_satir_tasmaz():
+    """Tablo sayfaya uymalı; uzun adres hücreyi dışarı itmemeli."""
+    from app.ui_utils import _word_bayt
+
+    belge = _word_bayt(_cerceve(6, url_ekle=True), "kaynaklı").decode()
+
+    assert "table-layout: fixed" in belge, (
+        "tablo en uzun hücreye göre genişler — tek URL tabloyu dışarı iter"
+    )
+    assert "width: 100%" in belge, "tablo sayfa genişliğine oturmuyor"
+    assert "overflow-wrap: anywhere" in belge, (
+        "adres boşluk taşımaz; bölünecek yer bulamazsa hücreyi zorlar"
+    )
+
+
+def test_sutun_genisligi_icerikten_turer():
+    """Uzun adres sütunu, kısa sayı sütunundan geniş olmalı."""
+    import re
+
+    from app.ui_utils import _word_bayt
+
+    belge = _word_bayt(_cerceve(6, url_ekle=True), "kaynaklı").decode()
+    genislikler = [float(g) for g in re.findall(r"width:([\d.]+)%", belge)]
+
+    assert len(genislikler) == 6, "her sütuna genişlik verilmemiş"
+    assert abs(sum(genislikler) - 100) < 1.5, f"toplam %100 değil: {sum(genislikler)}"
+    # URL son sütun; kısa sütunların hepsinden geniş olmalı.
+    assert genislikler[-1] > max(genislikler[:-1]), (
+        "eşit bölüşüm: adres dar sütuna sıkışıp onlarca satıra sarılır"
+    )
+    # Ama tabloyu da yutmamalı.
+    assert genislikler[-1] < 60, "tek sütun tabloyu yuttu"

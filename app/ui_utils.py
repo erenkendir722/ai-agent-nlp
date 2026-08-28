@@ -480,6 +480,12 @@ _ASAMALAR = (
 )
 
 
+def _bugun_yazi() -> str:
+    from datetime import date
+
+    return f"{date.today():%d.%m.%Y}"
+
+
 def _csv_bayt(cerceve) -> bytes:
     """Excel'in Türkçe yerelinde doğru açtığı CSV.
 
@@ -491,23 +497,101 @@ def _csv_bayt(cerceve) -> bytes:
     return cerceve.to_csv(index=False, sep=";").encode("utf-8-sig")
 
 
-def _word_bayt(cerceve, baslik: str) -> bytes:
-    """Word'ün açtığı HTML tablo — `.doc` uzantısıyla.
+# Sütun sayısı bu eşiği aşınca belge YATAY döner. Eşik ölçülmüş değil,
+# geometrik: dikey A4'ün 17 cm'lik yazı alanına, okunur bir puntoyla en
+# fazla beş sütun sığıyor.
+_YATAY_ESIGI = 5
+# Bu sayının üstünde punto da düşer; yoksa yatay sayfada bile taşar.
+_KUCUK_PUNTO_ESIGI = 7
+
+
+def _tablo_belge_bicimi(sutun_sayisi: int) -> str:
+    """Sayfa yönü ve punto SÜTUN SAYISINDAN türer, elle yazılmaz.
+
+    NEDEN VAR — 28 Ağustos: tablo `df.to_html()` ile olduğu gibi
+    gömülüyordu, yani sayfa genişliği hiç hesaba katılmıyordu. Word varsayılan
+    dikey A4 açıyor; on sütunluk karşılaştırma tablosu ve içindeki tam
+    kaynak adresleri sayfanın dışına taşıyor, çıktı okunmaz oluyordu.
+
+    Üç şey birlikte çözüyor:
+      1. `table-layout: fixed` + `width: 100%` — tablo sayfaya UYAR, tersi
+         değil. Bu olmadan tarayıcı/Word en uzun hücreye göre genişletir ve
+         tek bir URL bütün tabloyu dışarı iter.
+      2. `overflow-wrap: anywhere` — adres boşluk taşımaz, bölünecek yer
+         bulamazsa hücreyi zorlar. Bu, onu her yerden bölmeye izin verir.
+      3. Sütun çoksa sayfa YATAY döner. `mso-page-orientation` Word'ün
+         kendi özelliği; `size` tek başına Word'de yön değiştirmiyor.
+    """
+    yatay = sutun_sayisi > _YATAY_ESIGI
+    punto = 8.5 if sutun_sayisi > _KUCUK_PUNTO_ESIGI else 9.5
+    sayfa = (
+        "size: 29.7cm 21cm; mso-page-orientation: landscape; margin: 1.2cm;"
+        if yatay
+        else "size: 21cm 29.7cm; margin: 1.8cm;"
+    )
+    return f"""
+@page {{ {sayfa} }}
+body {{ font-family: Calibri, Segoe UI, sans-serif; color: #1a1a1a; }}
+h1 {{ font-size: 16pt; margin: 0 0 2pt 0; }}
+.alt-bilgi {{ color: #666666; font-size: 9pt; }}
+.ust {{ border-bottom: 2px solid #0B6B4A; padding-bottom: 7pt; margin-bottom: 12pt; }}
+table {{ border-collapse: collapse; width: 100%; table-layout: fixed;
+         font-size: {punto}pt; }}
+th, td {{ border: 1px solid #B8B8B8; padding: 3pt 5pt; text-align: left;
+          vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }}
+th {{ background: #EEF4F1; font-weight: 600; }}
+tr:nth-child(even) td {{ background: #FAFAFA; }}
+"""
+
+
+# Sütun genişliği hesabında bir hücreye tanınan en dar / en geniş karakter
+# payı. Alt sınır «%1,89» gibi kısa sütunun okunmaz hâle gelmesini, üst sınır
+# tek bir uzun adresin tabloyu tek başına yutmasını engelliyor.
+_ASGARI_SUTUN = 7
+_AZAMI_SUTUN = 40
+# Genişlik hesabı için taranan satır sayısı — tamamını taramak 900 kayıtlık
+# bir dışa aktarımda bedava değil ve ilk 200 satır dağılımı zaten veriyor.
+_ORNEKLEM = 200
+
+
+def _sutun_genislikleri(cerceve) -> str:
+    """İçeriğe göre orantılı `<colgroup>`.
+
+    `table-layout: fixed` tek başına sütunları EŞİT böler: «Güven» sütunu
+    («0,87») ile «Kaynak URL» sütunu aynı genişliği alıyor, adres onlarca
+    satıra sarılırken sayı sütununda boşluk duruyordu. Genişlik en uzun
+    hücreden türetilir; iki uçtan kırpılır ki ne kısa sütun okunmaz olsun
+    ne uzun adres tabloyu yutsun.
+    """
+    paylar = []
+    for sutun in cerceve.columns:
+        ornek = cerceve[sutun].head(_ORNEKLEM)
+        en_uzun = max([len(str(sutun))] + [len(str(deger)) for deger in ornek])
+        paylar.append(min(max(en_uzun, _ASGARI_SUTUN), _AZAMI_SUTUN))
+    toplam = sum(paylar) or 1
+    return "<colgroup>" + "".join(
+        f"<col style='width:{pay / toplam * 100:.1f}%'>" for pay in paylar
+    ) + "</colgroup>"
+
+
+def _word_bayt(cerceve, baslik: str, alt_bilgi: str = "") -> bytes:
+    """Word'ün açtığı HTML tablo — `.doc` uzantısıyla, sayfaya SIĞARAK.
 
     `python-docx` EKLENMEDİ. Yeni bağımlılık `make lisanslar` gerektirir ve
     hava boşluklu kurulumda bir paket daha taşımak demektir; Word, HTML'i
-    `.doc` uzantısıyla sorunsuz açıyor. Aynı hile Excel çıktısında 27
-    Ağustos'tan beri kullanılıyor (`_excel_html`), yani ikinci bir yol
-    açmıyoruz.
+    `.doc` uzantısıyla sorunsuz açıyor.
     """
     return (
         "<html><head><meta charset='utf-8'>"
-        "<style>body{font-family:Calibri,sans-serif;font-size:11pt;}"
-        "table{border-collapse:collapse;}"
-        "th,td{border:1px solid #999;padding:5px 8px;text-align:left;}"
-        "th{background:#EFEFEF;}</style></head><body>"
-        f"<h2>{baslik}</h2>"
-        + cerceve.to_html(index=False)
+        f"<style>{_tablo_belge_bicimi(len(cerceve.columns))}</style></head><body>"
+        f"<div class='ust'><h1>{html.escape(baslik)}</h1>"
+        + (f"<div class='alt-bilgi'>{html.escape(alt_bilgi)}</div>" if alt_bilgi else "")
+        + "</div>"
+        # `<colgroup>` tablonun İÇİNDE olmalı; `to_html` onu üretmiyor.
+        # İlk «>» `<table …>` etiketini kapatan karakterdir.
+        + cerceve.to_html(index=False, border=0).replace(
+            ">", ">" + _sutun_genislikleri(cerceve), 1
+        )
         + "</body></html>"
     ).encode("utf-8")
 
@@ -640,6 +724,7 @@ def disa_aktar(cerceve, *, dosya_adi: str, anahtar: str, baslik: str = "") -> No
     Tek yardımcı — hangi ekrandan indirilirse indirilsin dosya aynı.
     """
     ad = baslik or dosya_adi
+    alt = f"{len(cerceve)} satır · {_bugun_yazi()}"
     s1, s2 = st.columns(2)
     s1.download_button(
         "CSV indir",
@@ -651,7 +736,7 @@ def disa_aktar(cerceve, *, dosya_adi: str, anahtar: str, baslik: str = "") -> No
     )
     s2.download_button(
         "Word indir",
-        data=_word_bayt(cerceve, ad),
+        data=_word_bayt(cerceve, ad, alt),
         file_name=f"{dosya_adi}.doc",
         mime="application/msword",
         use_container_width=True,
