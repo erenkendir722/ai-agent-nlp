@@ -2862,12 +2862,30 @@ def _karsilastirma_cevabi(soru: str, kayitlar: list[KampanyaKaydi]) -> Cevap:
 # sistemine göre değişiyor (Windows "getaddrinfo failed", macOS "nodename nor
 # servname provided") ve metne dayalı eski kural Mac'te tutmuyor, chatbot'u
 # ilk koşul sorusunda çökertiyordu.
+#
+# 5xx DE BURADADIR — 28 Ağustos'ta ölçüldü. EVREN'in gömme arka ucu düştüğünde
+# servis erişilemez OLMUYOR: geçit ayakta kalıyor ve isteğe **HTTP 500** ile
+# cevap veriyor:
+#
+#     openai.InternalServerError: Error code: 500 —
+#     "Hosted_vllmException - Cannot connect to host host.docker.internal:8028
+#      ... Received Model Group=bge-m3-embed"
+#
+# Yani ağ kesintisiyle AYNI olgu, farklı taşıyıcı. Tuple yalnız bağlantı
+# hatalarını taşıdığı için chatbot o gün ilk koşul sorusunda çöküyordu ve
+# `make test` bu yüzden kırmızıydı (`test_kalkan_sonucu_ize_yazilir`).
+# Ayrım servisin KİMİN arızası olduğuna göre kurulur:
+#   5xx → SERVİSİN arızası, zarifçe düşülür (`InternalServerError` yalnız
+#         500 değil, bütün 5xx'i toplar: 502/503/504 de bu sınıftır).
+#   4xx → BİZİM yapılandırma hatamız (404 «uç yok», 401 «anahtar yok») ve
+#         fırlatılır: sessiz yutma yasağı tam olarak bunun içindir.
 _BAGLANTI_HATALARI = (
     _httpx.ConnectError,
     _httpx.ConnectTimeout,
     _httpx.ReadTimeout,
     _openai.APIConnectionError,
     _openai.APITimeoutError,
+    _openai.InternalServerError,  # 5xx — servisin kendi arızası (28 Ağu)
     OSError,  # socket.gaierror bunun altında
 )
 

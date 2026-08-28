@@ -135,13 +135,13 @@ Slayttaki her sayı depodan gelir; hiçbiri elle yazılmaz.
 
 | Sayı | Nereden |
 |---|---|
-| 734 işlenmiş kampanya · 9 banka | `docs/SONUCLAR.md` · `src.depolama.tum_kayitlar` |
-| 12.391 paragraf · 1024 boyut | `make durum` — RAG indeksi (`data/vektor_indeksi.npz`) |
+| 1.019 işlenmiş kampanya · 9 banka | `docs/SONUCLAR.md` · `src.depolama.tum_kayitlar` |
+| 16.414 paragraf · 1024 boyut | `make durum` — RAG indeksi (`data/vektor_indeksi.npz`) |
 | Ablasyon tablosu (5 satır) · 1.024 ham kayıt | `data/ablasyon.json` — tek koşu, tek kod parmak izi (`make ablasyon`) |
 | Makro-F1 ve %95 güven aralığı | `docs/SONUCLAR.md` (400 kez önyükleme) |
 | Halüsinasyon · şema geçerliliği · kalkan 0/35 | `docs/SONUCLAR.md`, `eval/sorular.yaml` |
-| Uygunluk %70,1 · zorunlu ürün %24,3 | `make uygunluk-goc --deneme` · `src/ajanlar/uygunluk.py` |
-| Kâr payı doluluğu %19 · «diğer» %37 · dengesizlik 11,4× | canlı veritabanı — `TestSinirlarPaneli` denetliyor |
+| Uygunluk %87,1 · zorunlu ürün %24,3 | `make uygunluk-goc --deneme` · `src/ajanlar/uygunluk.py` |
+| Kâr payı doluluğu %18 · «diğer» %38 · dengesizlik 11,5× | canlı veritabanı — `TestSinirlarPaneli` denetliyor |
 | Geçen test sayısı | `make test` |
 | 89 paket · 0 kısıtlı lisans · 4 model teyitli | `docs/LISANSLAR.md` (`make lisanslar-teyit`) |
 | Toplam maliyet tuzağı (2.033.129 / 2.028.925 TL) | `src.comparison.karsilastirma.toplam_maliyet` · `tests/test_muhakeme.py` |
@@ -154,14 +154,15 @@ depoya baktığında en pahalı hatadır. Nöbetçi: `tests/test_sunum_sayilari.
 
 ## Hâlâ eksik
 
-- **`data-sayi="test"` teyit edilmedi.** 27 Ağustos'ta bu makinede
-  `from lxml import etree` **Windows Uygulama Denetimi ilkesiyle engellendi**;
-  pytest 5 modülü toplayamadığı için sayım 1456'da kaldı (gerçek sayı daha
-  yüksek). Slayttaki 1604 rakamı **bu makinede doğrulanamadı** —
-  `make test`'in koştuğu bir makinede `pytest tests/test_sunum_sayilari.py`
-  gerçek sayıyı söyleyip slaytı düzelttirecek.
-- **PPTX sürümü** (şartname madde 6 PDF *ve* PPTX istiyor) — ES-13.
+- ~~`data-sayi="test"` teyit edilmedi~~ → **28 Ağu'da kapandı.** Sayım macOS'ta
+  koştu (`pytest --collect-only`), slayt gerçek sayıya eşitlendi ve
+  `test_slayttaki_test_sayisi_dogru` her koşuda yeniden denetliyor.
+- ~~PPTX sürümü~~ → **28 Ağu'da kapandı.** `make sunum-pptx` PDF'ten üretir
+  (`tools/sunum_pptx.py`); konuşma metni slayt notu olarak gömülüdür. PPTX'in
+  hangi PDF'ten üretildiği içine damgalanır, nöbetçi `TestPptxPdfIleAyni`.
+- ~~`docs/KAPSAM_RAPORU.md` bayat~~ → **28 Ağu'da kapandı.** Rapor 1.019
+  kayıtlık canlı korpustan yeniden üretildi (11,5×); slayt aynı değeri yazıyor.
 - **Demo videosu 5 dk** (madde 6) ve **sunum videosu 1 dk** (madde 10) — ES-17, ES-18.
-- `docs/KAPSAM_RAPORU.md` 1.024 kayıtlık korpustan üretilmiş (11,9×); canlı
-  veritabanı 734 kayıt ve 11,4× diyor. Slayt canlı değeri kullanıyor,
-  raporun `make kapsam` ile tazelenmesi gerekiyor.
+  ⚠️ Slayt sayıları **28 Ağustos'ta** güncellendi (korpus 979 → 1.019, banka
+  dağılımı, ablasyon tablosu). Video bu tarihten ÖNCE çekildiyse kapaktaki
+  sayılar slaytla ayrışır; kayıt tarihini kontrol edin.

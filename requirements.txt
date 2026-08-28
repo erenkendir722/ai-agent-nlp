@@ -25,6 +25,11 @@ plotly==5.24.1
 fastapi==0.115.5
 uvicorn==0.32.1
 
+# --- Sunum ciktisi (yalniz `make sunum-pptx`) ---
+python-pptx==1.0.2     # MIT — PPTX yazimi
+pypdfium2==4.30.0      # Apache-2.0/BSD-3 — PDF sayfasini goruntuye cevirir
+                       # (PyMuPDF AGPL-3.0 oldugu icin BILEREK kullanilmiyor)
+
 # --- Geliştirme / test ---
 pytest==8.3.3
 ruff==0.7.4

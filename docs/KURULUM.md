@@ -197,8 +197,9 @@ make kur
 # 2) Ollama'yı başlat (ayrı bir terminalde)
 ollama serve
 
-# 3) Modeli indir (tek seferlik, ~3,4 GB)
-ollama pull qwen3.5:4b-q4_K_M
+# 3) Modelleri indir (tek seferlik, ~3,4 GB + ~1,2 GB)
+ollama pull qwen3.5:4b-q4_K_M   # yedek çıkarım modeli
+ollama pull bge-m3              # yedek GÖMME modeli — RAG'ın yerel yolu
 
 # 4) Ortam yapılandırması
 cp .env.example .env
@@ -378,6 +379,30 @@ dışarıya çıkışı **altyapı düzeyinde** engellenir.
 | `WebDriverException` / `chromedriver` hatası | Chrome kurulu değil ya da sürücü indirilemedi | Chrome'u kurun; ağ kısıtlıysa `webdriver-manager` yerine Selenium Manager devreye girer, ikisi de erişemiyorsa toplama yapılamaz |
 | Bir bankadan hiç kayıt gelmiyor, diğerleri geliyor | O bankanın sitesi yapı değiştirmiş — CSS seçicisi tutmuyor | `src/collector/kaziyicilar/<banka>.py` içindeki seçiciyi güncelleyin; `crawl --banka <kod>` ile tek başına deneyin |
 | `robots.txt reddetti` günlüğü | Site otomatik erişimi kapatmış | Beklenen davranış; manuel toplama kullanın |
+| Chatbot: «Metin araması şu anda erişilemiyor» | **EVREN'in gömme ucu düşmüş** (`bge-m3-embed`) | Aşağıya bakın — yerel gömmeye geçin |
+
+### EVREN gömme ucu düştüğünde — 28 Ağustos 2026'da yaşandı
+
+Belirti: sayısal sorular çalışıyor, «kampanya koşulları neler?» gibi METİN
+soruları «erişilemiyor» diyor. `make saglayici-dogrula` **başarılı** olur —
+o, sohbet ucunu sınar; düşen taraf gömme ucudur:
+
+```bash
+.venv/bin/python -c "import src.vektor_db as v; print(len(v.gom('deneme')))"
+# openai.InternalServerError: 500 — "Cannot connect to host ... bge-m3-embed"
+```
+
+Çözüm tek satır: **gömmeyi yerele al.** İndeks zaten depoda (ADR 015) ve
+`bge-m3` ile `bge-m3-embed` aynı modeldir (`BAAI/bge-m3`, 1024 boyut):
+
+```bash
+ollama pull bge-m3                 # bir kez, ~1,2 GB
+GOMME_SAGLAYICI=ollama make run    # ya da .env'e yazın
+```
+
+Çıkarım (`make extract`) EVREN'de kalmaya devam eder — düşen yalnız gömme
+ucudur. Demo öncesi bu yolu **bir kez deneyin**: model indirilmemişse
+komut ağ ister ve salonda ağ olmayabilir.
 
 ### 8 GB makinede çıkarım hızı — ölçülmüş uyarı
 

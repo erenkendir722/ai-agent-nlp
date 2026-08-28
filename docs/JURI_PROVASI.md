@@ -41,13 +41,13 @@ kalite meselesi değil. Setin kendi denetimi ayrı bir dosyada:
 
 ---
 
-## 2. «`kar_payi_orani` doluluğu %16. En önemli alan bu değil mi?»
+## 2. «`kar_payi_orani` doluluğu %18. En önemli alan bu değil mi?»
 
-> **Evet, en önemli alan bu ve bilerek boş bırakıyoruz.** 931 kayıtta 147'sinde
-> dolu. Sebep model değil kaynak: bankaların çoğu oranı kampanya sayfasında
+> **Evet, en önemli alan bu ve bilerek boş bırakıyoruz.** 1.019 kayıtta
+> 179'unda dolu. Sebep model değil kaynak: bankaların çoğu oranı kampanya sayfasında
 > değil başvuru ekranında veriyor, kart ve puan kampanyalarında oran zaten
 > yok. Uydurmak yerine `Belirtilmemiş` diyoruz — **çıkardığımız yerde doğru
-> çıkarıyoruz: altın set F1'i 0,780** (N=21, yani küçük bir örneklem).
+> çıkarıyoruz: altın set F1'i 0,857** (N=21, yani küçük bir örneklem).
 
 **Kaynak:** [`docs/SONUCLAR.md`](SONUCLAR.md) doluluk tablosu · `make durum`
 
@@ -110,7 +110,7 @@ uydurma sayılıyordu. Kalkanı gevşetmedik; denetlenecek metni doğru seçtik.
 **Kaynak:** [`docs/kanit/ROBOTS_KONTROL_GUNLUGU.md`](kanit/ROBOTS_KONTROL_GUNLUGU.md) ·
 [`docs/kanit/VERI_TOPLAMA_ETIGI.md`](kanit/VERI_TOPLAMA_ETIGI.md) · `make kanit`
 
-**Devamı gelirse — «KVKK?»:** 1.024 ham kaydın tamamı tarandı, kimliği belirli
+**Devamı gelirse — «KVKK?»:** 1.019 ham kaydın tamamı tarandı, kimliği belirli
 gerçek kişiye ait veri **yok** ([`docs/kanit/KVKK_TARAMASI.md`](kanit/KVKK_TARAMASI.md),
 `make kanit-kvkk`). Toplanan şey kamuya açık kampanya sayfaları.
 
@@ -147,11 +147,11 @@ hangi sayının hangi kodla üretildiği geriye dönük bulunabiliyor.
 
 ---
 
-## 8. «`diger` oranı %44,7. Sınıflandırma çalışmıyor mu?»
+## 8. «`diger` oranı %38,0. Sınıflandırma çalışmıyor mu?»
 
-> **Sistemin en zayıf noktası burası ve kapatmıyoruz.** 931 kaydın 416'sı
+> **Sistemin en zayıf noktası burası ve kapatmıyoruz.** 1.019 kaydın 387'si
 > `diger`. Ama dikkat: bu **doluluk** değil **doğruluk** sorusu değildir —
-> `kampanya_turu` altın sette 98 örnekle ölçüldü ve **F1 0,796**, yani sınıf
+> `kampanya_turu` altın sette 92 örnekle ölçüldü ve **F1 0,761**, yani sınıf
 > atadığımız yerde çoğunlukla doğru atıyoruz. `diger`'in yüksekliği asıl olarak
 > **veri** sorunu: toplanan sayfaların bir kısmı kampanya değil, genel ürün
 > sayfası. Hata analizi ikinci bir modu daha ayırıyor — kategoride haklı ama
@@ -186,7 +186,7 @@ yarım yapıp sayıları yeniden üretmek, elimizdeki tutarlı ölçüm setini b
 kelime örüntüsü), sorgu **kod**, cevap şablonu **kod**. LLM'in bu boru hattındaki
 tek işi metinden alan çıkarmaktır — sorgulamak değil.
 
-**Token limiti sorusu buraya bağlanır:** 931 kaydı modele göndermiyoruz, hiç
+**Token limiti sorusu buraya bağlanır:** 1.019 kaydı modele göndermiyoruz, hiç
 göndermedik. Karşılaştırma ve sıralama SQLite + saf Python üzerinde koşuyor;
 bağlam penceresi bu mimaride bir kısıt değil.
 
@@ -296,27 +296,35 @@ operatörün kararı. Kurumsal yerleşim tasarımı
 
 | Ne | Değer | Nereden |
 |---|---|---|
-| Ham sayfa (toplanan) | **1.024** | `data/raw/**/*.json` |
-| İşlenen kampanya | **931** | `make durum` |
+| Ham sayfa (toplanan) | **1.019** | `data/raw/**/*.json` |
+| İşlenen kampanya | **1.019** (ham envanterin tamamı) | `make durum` |
 | Banka | **9 faal** (BDDK listesinin tamamı) | `make durum` |
-| Makro-F1 | **0,818** (GA 0,750–0,866, n=98) | `docs/SONUCLAR.md` |
-| Sayısal alan doğruluğu | **0,930** | `docs/SONUCLAR.md` |
-| Halüsinasyon oranı | **%0,45** (hedef ≤%3) | `docs/SONUCLAR.md` |
+| Makro-F1 | **0,817** (GA 0,756–0,868, n=92) | `docs/SONUCLAR.md` |
+| Sayısal alan doğruluğu | **0,927** | `docs/SONUCLAR.md` |
+| Halüsinasyon oranı | **%0,19** (hedef ≤%3) | `docs/SONUCLAR.md` |
 | Kalkan yanlış blok | **%0** (0/35) | `docs/SONUCLAR.md` |
-| Alan doluluğu | **%25,2** (3.752/14.896) | `docs/SONUCLAR.md` |
-| Test | **847** + doctest | `make test` |
-| RAG paragraf | **13.763** · 1024 boyut | `make durum` |
+| Alan doluluğu | **%32,5** (5.299/16.304) | `docs/SONUCLAR.md` |
+| Test | **1.761** | `make test` |
+| RAG paragraf | **16.414** · 1024 boyut | `make durum` |
 
-> ⚠️ **1.024 ile 931 karıştırılmamalı.** 1.024 toplanan ham sayfadır (KVKK
-> taraması o küme üzerinde koştu); 931 ölçümlerin üzerinde koştuğu işlenmiş
-> kampanyadır — 26 Ağustos'ta süresi geçmiş kampanyalar ayıklandı. Doğruluk,
-> doluluk ve kapsam sayıları hep **931**'e aittir.
+> ⚠️ **Bugün tek bir sayı var: 1.019.** Ham envanter (`data/raw`) ile korpus
+> 28 Ağustos'ta eşitlendi — `make durum` «ham envanter ↔ korpus: tam» diyor.
+> Doğruluk, doluluk, kapsam ve KVKK taraması sayıları hep **1.019**'a aittir.
+> (26 Ağustos'ta iki ayrı sayı vardı — 1.024 ham / 931 işlenmiş; aradaki fark
+> LLM'in geçici hatalarından düşen kayıtlardı, yeniden çıkarıldılar.)
 >
-> Tek istisna [`data/ablasyon.json`](../data/ablasyon.json): ayıklamadan önce
-> 1.024 kayıt üzerinde koşuldu ve yeniden koşulmadı. Sunumdaki ablasyon tablosu
-> bu etiketi taşıyor. **Sorulursa saklanmaz:** ablasyonun karşılaştırdığı şey
-> kollar arası farktır, beş kol da aynı 1.024 kayıt üzerinde koştuğu için
-> karşılaştırma kendi içinde geçerlidir.
+> **Tek istisna [`data/ablasyon.json`](../data/ablasyon.json) — SORULURSA
+> SAKLANMAZ, ÖNCE BİZ SÖYLERİZ:** o tablo **26 Ağustos'ta, 1.024 kayıtlık
+> korpusta ve o günkü kod sürümüyle** koşuldu; teslim penceresine yeniden
+> koşacak vakit sığmadı (beş kol × 1.019 kayıt ≈ 2 saat). Sunumdaki ablasyon
+> slaydı **bu etiketi taşıyor.**
+>
+> Neden yine de geçerli: ablasyonun ölçtüğü şey mutlak skor değil,
+> **kollar arası farktır** — beş kol da aynı korpusta, aynı kodla, tek koşuda
+> üretildi (`kod_parmak_izi` beşinde de aynı, `tests/test_sunum_sayilari.py`
+> bunu denetliyor). «Kural tek başına az doldurur, model çok doldurur isabeti
+> düşük, birlikte daha iyi» sonucu korpusun 5 kayıt büyümesinden etkilenmez.
+> Bugünün korpusundaki mutlak sayılar için doğru adres `docs/SONUCLAR.md`.
 
 ---
 

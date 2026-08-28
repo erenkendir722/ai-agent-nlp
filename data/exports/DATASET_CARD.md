@@ -1,6 +1,6 @@
 # Veri Kartı — SVARTAL Katılım Bankacılığı Kampanya Veri Seti
 
-_Otomatik üretildi: 26.08.2026 · `make veri-seti`_
+_Otomatik üretildi: 28.08.2026 · `make veri-seti`_
 
 Türkiye'de faaliyet gösteren **katılım bankalarının** herkese açık kampanya
 sayfalarından toplanmış, yapısal alanlara çıkarılmış kampanya kayıtları.
@@ -10,11 +10,11 @@ TEKNOFEST 2026 Yapay Zekâ Dil Ajanları Yarışması 2. Senaryo için üretildi
 
 | | |
 |---|---|
-| Kayıt sayısı | **931** |
+| Kayıt sayısı | **1019** |
 | Banka sayısı | **9** |
 | Şema sürümü | `1.2.0` |
 | Alan sayısı (kayıt başına) | 16 yapısal alan + uygunluk koşulları |
-| Dolu hücre | 3752 / 14896 |
+| Dolu hücre | 5299 / 16304 |
 | Dil | Türkçe |
 | Lisans | Apache-2.0 (kod ve derleme) · kaynak metinler ilgili bankalara aittir |
 
@@ -29,29 +29,29 @@ TEKNOFEST 2026 Yapay Zekâ Dil Ajanları Yarışması 2. Senaryo için üretildi
 
 | Banka | Kayıt |
 |---|---|
-| Kuveyt Türk Katılım Bankası A.Ş. | 190 |
-| Türkiye Finans Katılım Bankası A.Ş. | 172 |
-| Ziraat Katılım Bankası A.Ş. | 162 |
-| Albaraka Türk Katılım Bankası A.Ş. | 126 |
-| T.O.M. Katılım Bankası A.Ş. | 97 |
-| Türkiye Emlak Katılım Bankası A.Ş. | 78 |
-| Dünya Katılım Bankası A.Ş. | 54 |
-| Vakıf Katılım Bankası A.Ş. | 36 |
-| Hayat Finans Katılım Bankası A.Ş. | 16 |
+| Ziraat Katılım Bankası A.Ş. | 219 |
+| Kuveyt Türk Katılım Bankası A.Ş. | 213 |
+| Albaraka Türk Katılım Bankası A.Ş. | 137 |
+| T.O.M. Katılım Bankası A.Ş. | 123 |
+| Türkiye Emlak Katılım Bankası A.Ş. | 110 |
+| Vakıf Katılım Bankası A.Ş. | 76 |
+| Türkiye Finans Katılım Bankası A.Ş. | 70 |
+| Dünya Katılım Bankası A.Ş. | 52 |
+| Hayat Finans Katılım Bankası A.Ş. | 19 |
 
 ## Kampanya türü dağılımı
 
 | Tür | Kayıt |
 |---|---|
-| `diger` | 416 |
-| `kart` | 194 |
-| `alisveris_puani` | 108 |
-| `yatirim_urunu` | 46 |
-| `tasit_finansmani` | 46 |
-| `finansman` | 43 |
-| `ihtiyac_finansmani` | 41 |
+| `diger` | 387 |
+| `alisveris_puani` | 192 |
+| `kart` | 190 |
+| `finansman` | 73 |
+| `tasit_finansmani` | 51 |
+| `yatirim_urunu` | 48 |
+| `ihtiyac_finansmani` | 42 |
 | `konut_finansmani` | 29 |
-| `yeni_musteri` | 8 |
+| `yeni_musteri` | 7 |
 
 ## Nasıl toplandı
 

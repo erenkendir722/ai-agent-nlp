@@ -342,3 +342,48 @@ class TestSinirlarPaneli:
         assert abs(_sayi(slayt_kat.group(1)) - beklenen_kat) < 0.05, (
             f"slayt {slayt_kat.group(1)}× diyor, gerçek {beklenen_kat}×. Slaytı düzeltin."
         )
+
+
+# ---------------------------------------------------------------------------
+# PPTX — şartnamenin istediği ikinci biçim (madde 6)
+#
+# PPTX, `Svartal_Sunum.pdf`'ten TÜRETİLİR (`make sunum-pptx`). Türetilmiş her
+# çıktı gibi kaynağından ayrışabilir: slayt düzeltilir, `make sunum` koşulur,
+# PPTX yenilenmez ve jüriye iki farklı sürüm gider.
+#
+# Dosya TARİHİNE bakılmaz — `git checkout` her dosyaya o anın tarihini yazar,
+# yani depodan taze çekilmiş bayat bir PPTX «yeni» görünür. Bu yüzden araç
+# kaynak PDF'in sha256'sını PPTX'in içine yazıyor; nöbetçi onu karşılaştırır.
+
+PDF = KOK / "docs" / "sunum" / "Svartal_Sunum.pdf"
+PPTX = KOK / "docs" / "sunum" / "Svartal_Sunum.pptx"
+
+
+@pytest.mark.skipif(not PPTX.exists() or not PDF.exists(), reason="sunum üretilmemiş")
+class TestPptxPdfIleAyni:
+    def test_ayni_pdften_uretilmis(self) -> None:
+        import hashlib
+
+        pptx = pytest.importorskip("pptx")
+
+        sunum = pptx.Presentation(str(PPTX))
+        damga = (sunum.core_properties.comments or "").strip()
+        beklenen = f"kaynak-pdf-sha256={hashlib.sha256(PDF.read_bytes()).hexdigest()}"
+        assert damga == beklenen, (
+            "PPTX başka bir PDF'ten üretilmiş — `make sunum-pptx` koşun.\n"
+            f"  PPTX içindeki damga : {damga or '(yok)'}\n"
+            f"  Şimdiki PDF         : {beklenen}"
+        )
+
+    def test_sayfa_sayisi_ve_orani_pdf_ile_ayni(self) -> None:
+        pptx = pytest.importorskip("pptx")
+        pdfium = pytest.importorskip("pypdfium2")
+
+        belge = pdfium.PdfDocument(str(PDF))
+        sunum = pptx.Presentation(str(PPTX))
+        assert len(sunum.slides) == len(belge), "PPTX ile PDF'in sayfa sayısı ayrışmış"
+
+        en_pt, boy_pt = belge[0].get_size()
+        assert abs(
+            sunum.slide_width / sunum.slide_height - en_pt / boy_pt
+        ) < 0.01, "PPTX slayt oranı PDF sayfasıyla aynı değil (16:9 bozulmuş)"

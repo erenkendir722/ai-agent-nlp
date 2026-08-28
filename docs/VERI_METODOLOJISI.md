@@ -3,7 +3,7 @@
 Şartname madde 6'nın *"Kullanılan veri seti ve açıklaması"* (başlık 3) ve
 *"Veri ön işleme adımları"* (başlık 4) başlıklarına karşılık gelir.
 
-**Son güncelleme: 26 Ağustos 2026** — sayılar işlenmiş veritabanından alındı.
+**Son güncelleme: 28 Ağustos 2026** — sayılar işlenmiş veritabanından alındı.
 
 ---
 
@@ -11,25 +11,25 @@
 
 | | |
 |---|---|
-| Ham kayıt (`data/raw`) | **1.024** — toplanan sayfa anlık görüntüsü |
-| İşlenen kampanya (veritabanı) | **931** — süresi geçmiş kampanyalar ayıklandıktan sonra |
+| Ham kayıt (`data/raw`) | **1.019** — toplanan sayfa anlık görüntüsü |
+| İşlenen kampanya (veritabanı) | **1.019** — ham envanterin tamamı korpusta |
 | Banka | **9** — BDDK listesindeki **faal** katılım bankalarının tamamı |
 | Şema sürümü | `1.2.0` (16 yapısal alan + uygunluk koşulları) |
-| Dolu hücre | 3.752 / 14.896 (%25,2) |
-| Uygunluk koşulu çıkarılan kayıt | 814 (%87,4) |
-| Son çekim | 24 Ağustos 2026 |
+| Dolu hücre | 5.299 / 16.304 (%32,5) |
+| Uygunluk koşulu çıkarılan kayıt | 888 (%87,1) |
+| Son çekim | 28 Ağustos 2026 |
 | Yayınlanan sürüm | [`data/exports/`](../data/exports/) — CSV + JSONL + [veri kartı](../data/exports/DATASET_CARD.md) |
 
 Banka ve tür bazlı dağılım, dengesizliğin etkisiyle birlikte ayrı bir dosyada:
 [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (`make kapsam` ile yeniden üretilir).
 
-> ⚠️ **İki sayı iki farklı şeydir, karıştırılmamalı.** **1.024** toplanan ham
-> sayfadır (`data/raw/**/*.json`, KVKK taraması da bu küme üzerinde koştu);
-> **931** ise ölçümlerin üzerinde koştuğu işlenmiş kampanyadır — 26 Ağustos'ta
-> süresi geçmiş kampanyalar korpustan ayıklandı. Doğruluk/doluluk/kapsam
-> sayıları hep **931**'e aittir. Tek istisna
-> [`data/ablasyon.json`](../data/ablasyon.json): ayıklamadan önce, 1.024 kayıt
-> üzerinde koşuldu ve yeniden koşulmadı — sunumda o tablo bu etiketle sunulur.
+> ⚠️ **İki sayı 28 Ağustos'ta EŞİTLENDİ.** Bu tablo 26 Ağustos'ta iki ayrı
+> sayı taşıyordu (1.024 ham sayfa · 931 işlenmiş kampanya): aradaki fark, LLM
+> katmanının geçici hatalarından düşen kayıtlardı, süresi geçmiş kampanya
+> ayıklaması değil. Eksik kayıtlar yeniden çıkarıldı ve fark kapandı —
+> `make durum` artık «ham envanter ↔ korpus: tam» diyor. Bir sonraki `make
+> crawl` farkı yeniden açabilir; **karşılaştırmayı `make durum` yapar**, bu
+> tablo değil.
 
 > **Boş hücre her zaman eksik veri değildir.** Kart kampanyasında kâr payı oranı
 > yoktur; kampanya sayfası oranı yazmıyorsa sistem `Belirtilmemiş` der. Doluluk
@@ -240,7 +240,7 @@ Dürüst raporlama, eksiği gizlemekten daha değerlidir:
    toplama adımı yoktur (imaj toplanmış veriyi işler). Yeniden toplama yerel
    kurulumda yapılır.
    *Not: burada eskiden "statik HTML çekilir, Playwright kapsam dışı, kalanı
-   manuel toplanır" yazıyordu; `data/raw`'daki 1.024 kaydı fiilen Selenium
+   manuel toplanır" yazıyordu; `data/raw`'daki kayıtları fiilen Selenium
    kazıyıcıları üretti. Madde düzeltildi.*
 2. **Bir bankada otomatik URL keşfi yok.** Türkiye Finans'ın kampanya listesi
    gezilebilir bir yapıda olmadığı için adresler `data/banks.yaml` ·
@@ -248,20 +248,20 @@ Dürüst raporlama, eksiği gizlemekten daha değerlidir:
    Yeni kampanya çıkarsa listeye elle eklenmelidir — eksik kalırsa sistem
    uyarmaz.
 3. **Kapsam bankalar arasında dengesiz.** En geniş kapsamlı bankada, en dar
-   kapsamlının 13,6 katı kayıt var. Bu bir yanlılık kaynağıdır ve ölçülüp
+   kapsamlının 11,5 katı kayıt var (28 Ağu ölçümü). Bu bir yanlılık kaynağıdır ve ölçülüp
    yazılmıştır: [`KAPSAM_RAPORU.md`](KAPSAM_RAPORU.md) (şartname 15.1).
    *Not: 9 Ağustos'ta "T.O.M. Katılım'da kampanya sayfası bulunamadı" yazıyordu;
    toplayıcı yeniden koşulduğunda o bankadan 103 kayıt geldi. Madde düzeltildi.*
 4. **Kâr payı oranları çoğu kampanya sayfasında yazmaz;** başvuru ekranında
    veya hesaplama aracında bulunur. Bu, veri setinin gerçek bir özelliğidir ve
-   `Belirtilmemiş` olarak raporlanır — uydurulmaz. Ölçülen doluluk: %16.
+   `Belirtilmemiş` olarak raporlanır — uydurulmaz. Ölçülen doluluk: %18.
 5. **Veri bir anlık görüntüdür.** Kampanyalar sürelidir; her kayıt kendi
    `cekim_tarihi`'ni taşır. Süresi geçmiş kayıtlar `make suresi-gecenleri-ele`
    ile ayıklanabilir.
 6. **Yabancı para cinsinden tutarlar TL sayılabiliyor.** Şema
    `finansman_tutari_max` alanını TL olarak tanımlar; "600 Milyon Euro"
-   gibi bir ifade sayı olarak çıkarılır ama birimi TL varsayılır. 1.024
-   kayıtta bir örneği var ve `make veri-kalitesi` raporunda «> 10.000.000 TL»
+   gibi bir ifade sayı olarak çıkarılır ama birimi TL varsayılır. 1.019
+   kayıtta iki örneği var ve `make veri-kalitesi` raporunda «> 10.000.000 TL»
    satırında görünür — gizlenmiyor, ama düzeltilmesi şema değişikliği
    gerektirir (yeni bir para birimi boyutu).
 7. **Bazı EFT kodları doğrulanmamıştır** (§1.3).

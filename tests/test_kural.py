@@ -825,3 +825,54 @@ def test_geri_sarma_kesik_olmayan_sayiya_dokunmaz() -> None:
     assert _sayi_basina_geri_sar("1.700.000 TL", 2) == 0        # cok gruplu
     assert _sayi_basina_geri_sar("abc", 1) == 1                 # rakam yok
     assert _sayi_basina_geri_sar("", 0) == 0                    # bos metin
+
+
+class TestDolayliIfadeler:
+    """Şartname 5.2 — dört ifade, biri sayılı üçü sayısız (S-08).
+
+    Şartname bu dördünü ADIYLA sayıyor:
+
+        «%2,05 kâr payı oranı»  ·  «avantajlı kâr payı fırsatı»
+        «özel oranlı finansman» ·  «düşük maliyetli finansman»
+
+    İlkinde sayı VAR, diğer üçünde YOK. Ölçülen davranış tek cümleyle:
+    **sayı yoksa alan boş kalır.** Bu testin varlık sebebi, «avantajlı»
+    sözcüğünü gören bir kuralın sayfadaki başka bir yüzdeyi kâr payı sanmasıdır
+    — o hata sessizdir, çünkü üretilen değer makul görünür.
+
+    Kural katmanı ölçülüyor: deterministik, ağ istemez. LLM katmanının aynı
+    metinlerde ne yaptığı `docs/GORULMEMIS_METIN.md`'de ayrı ölçülüyor —
+    ikisini tek teste sıkıştırmak, ölçümü tekrarlanamaz yapardı.
+    """
+
+    SAYISIZ = (
+        "Yeni ev sahibi olmak isteyen müşterilerimize avantajlı kâr payı "
+        "fırsatı sunuyoruz. Vade 120 aya kadar.",
+        "Konut ihtiyacınız için özel oranlı finansman imkânı. "
+        "Vade 60 aya kadar, başvurular şubelerimizden yapılabilir.",
+        "Düşük maliyetli finansman ile hayalinizdeki eve kavuşun. "
+        "Vade seçenekleri 36 aydan başlar.",
+    )
+
+    def test_sayili_ifade_okunur(self) -> None:
+        alanlar = cikar(
+            "Konut finansmanında %2,05 kâr payı oranı ile 120 aya varan vade."
+        )
+        assert alanlar.get("kar_payi_orani") == pytest.approx(2.05)
+
+    @pytest.mark.parametrize("metin", SAYISIZ)
+    def test_sayisiz_ifadede_oran_uydurulmaz(self, metin: str) -> None:
+        assert "kar_payi_orani" not in cikar(metin), (
+            "sayısı olmayan ifadeden kâr payı oranı üretildi"
+        )
+
+    @pytest.mark.parametrize("metin", SAYISIZ)
+    def test_sayisiz_ifade_baska_alani_da_kirletmez(self, metin: str) -> None:
+        """«düşük maliyetli» masrafsızlık BEYANI değildir; vade okunmaya devam eder.
+
+        İki yönlü denetim: uydurma yok, ama var olan sayı da kaybolmuyor —
+        aksi hâlde «hiçbir şey çıkarma» stratejisi testi geçerdi.
+        """
+        alanlar = cikar(metin)
+        assert "masrafsiz_mi" not in alanlar
+        assert alanlar.get("vade_ay_max") is not None

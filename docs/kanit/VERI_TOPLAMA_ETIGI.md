@@ -16,7 +16,7 @@ Beyan tek başına kanıt değildir: aşağıdaki tabloların hepsi yeniden üre
 | [`ROBOTS_KONTROL_GUNLUGU.md`](ROBOTS_KONTROL_GUNLUGU.md) | Her alan adı için robots.txt kararı, crawl-delay, gönderilen başlıklar | `make kanit-robots` |
 | [`robots-kontrol-gunlugu.json`](robots-kontrol-gunlugu.json) | Aynı günlüğün makine okunur hâli (HTTP durumu, sha256) | `make kanit-robots` |
 | [`robots/`](robots/) | Çekilen robots.txt dosyalarının bayt kopyaları | `make kanit-robots` |
-| [`KVKK_TARAMASI.md`](KVKK_TARAMASI.md) | Toplanan metinde kişisel veri taraması (1024 kayıt) | `make kanit-kvkk` |
+| [`KVKK_TARAMASI.md`](KVKK_TARAMASI.md) | Toplanan metinde kişisel veri taraması (1019 kayıt) | `make kanit-kvkk` |
 | `src/collector/toplayici.py` | Nezaket kurallarının **uygulandığı** kod (`RobotsBekcisi`, `NezaketSirasi`) — beyan değil, davranış | — |
 | `src/collector/temel_kaziyici.py` | Kapının **çağrıldığı** yer: her kampanya sayfası çekilmeden önce | — |
 | `tests/test_toplayici.py` | robots kapısının ve nezaket sırasının testleri | `make test` |
@@ -31,10 +31,10 @@ bir günlük yanlış bilgi verir. Teslim öncesi son kez koşulur.
 
 | | |
 |---|---|
-| Toplanan ham kayıt | **1024** (`data/raw/*/*.json`) |
+| Toplanan ham kayıt | **1019** (`data/raw/*/*.json`) |
 | Banka sayısı | **9** (kampanya yayımlayan tüm faal bankalar) |
 | Toplama aralığı | 9 – 24 Ağustos 2026 |
-| HTTP durumu | 1024 kaydın **tamamı 200** — hata sayfası, yönlendirme kalıntısı yok |
+| HTTP durumu | 1019 kaydın **tamamı 200** — hata sayfası, yönlendirme kalıntısı yok |
 | Saklanan alanlar | banka kodu/adı, URL, çekim tarihi, HTTP durumu, sayfa başlığı, gövde metni |
 
 Her kayıt **kaynak URL'sini ve çekim tarihini taşır**. Bu, izlenebilirliğin
@@ -112,7 +112,7 @@ uymanın anlamını da ortadan kaldırırdı.
 | Sayfa zaman aşımı | 180 sn | `tarayici.SAYFA_ZAMAN_ASIMI` |
 | robots.txt zaman aşımı | 10 sn | `ROBOTS_ZAMAN_ASIMI` |
 
-İki haftaya yayılmış 1024 sayfa, saniyede birden az istek demektir. Hiçbir
+İki haftaya yayılmış 1019 sayfa, saniyede birden az istek demektir. Hiçbir
 bankanın sunucusuna ölçülebilir yük binmedi.
 
 ---
@@ -178,7 +178,7 @@ Toplayıcı kişisel veri hedeflemez; ama toplanan şey kamuya açık sayfa metn
 ve bankalar o sayfalara iletişim bilgisi koyar. Niyet ile sonucun aynı olduğunu
 **tarama** gösterir: [`KVKK_TARAMASI.md`](KVKK_TARAMASI.md) (`make kanit-kvkk`).
 
-24 Ağustos 2026 taraması, 1024 kayıt:
+28 Ağustos 2026 taraması, 1019 kayıt:
 
 | Bulgu | Sonuç |
 |---|---|

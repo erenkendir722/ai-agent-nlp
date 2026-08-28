@@ -1,5 +1,5 @@
 {
-  "uretildi": "2026-08-26T12:11:33+03:00",
+  "uretildi": "2026-08-28T09:45:09+03:00",
   "kullanici_ajani": "TEKNOFEST-2026-SVARTAL-Bot (+kendireren722@gmail.com)",
   "asgari_istek_araligi_sn": 2.0,
   "uretici": "tools/robots_kanit.py",
@@ -113,7 +113,72 @@
           "uygulanan_bekleme_sn": 2.0
         },
         {
-          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx",
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/banka-calisanlarina-ozel-ihtiyac-finansmani.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/mastercard-business-kart-firsat.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/tuzel-onbarding-avantaj-paketi.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yakininizi-davet-edin.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ihtiyac-finansmani-kampanyasi.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/fatura-2300tl-bonus.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/turkiye-finans-avantajlariyla-mobilden-tanis.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/masrafsiz-bankacilik.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/emeklilere-nakit-promosyon.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/bes-ile-yarininiza-deger-katin.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/gunluk-hesap-vade-kampanyasi.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/katilim-hesabi-kampanyasi.aspx",
+          "izinli": true,
+          "uygulanan_bekleme_sn": 2.0
+        },
+        {
+          "url": "https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yeni-yatirim-hesabiniza-sifir-komisyon.aspx",
           "izinli": true,
           "uygulanan_bekleme_sn": 2.0
         }
@@ -189,17 +254,12 @@
           "uygulanan_bekleme_sn": 2.0
         },
         {
-          "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar",
+          "url": "https://vakifkatilim.com.tr/tr/kendim-icin/kampanyalar",
           "izinli": true,
           "uygulanan_bekleme_sn": 2.0
         },
         {
-          "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=2&kendimIcin=false&isimIcin=false",
-          "izinli": true,
-          "uygulanan_bekleme_sn": 2.0
-        },
-        {
-          "url": "https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=3&kendimIcin=false&isimIcin=false",
+          "url": "https://vakifkatilim.com.tr/tr/isim-icin/kampanyalar",
           "izinli": true,
           "uygulanan_bekleme_sn": 2.0
         }
@@ -316,7 +376,7 @@
           "uygulanan_bekleme_sn": 2.0
         },
         {
-          "url": "https://tombank.com.tr/kampanyalar.html",
+          "url": "https://tombankhadi.com/hadi-kazan/kampanyalar",
           "izinli": true,
           "uygulanan_bekleme_sn": 2.0
         }

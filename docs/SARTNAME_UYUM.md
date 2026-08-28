@@ -18,8 +18,8 @@ tutar; unutulan bir gereklilik yüzünden puan kaybetmenin panzehiri budur.
 
 | # | Sorun | Neden kritik | Kim |
 |---|---|---|---|
-| 1 | **Demo videosu yok (5 dk *ve* 1 dk)** | Madde 6 ve madde 10 ayrı ayrı zorunlu tutuyor | Esra (ES-17, ES-18) |
-| 2 | **Sunum materyalinin PPTX sürümü yok** | Madde 6 PDF **ve** PPTX istiyor; PDF hazır (`docs/sunum/Svartal_Sunum.pdf`) | Esra (ES-13) |
+| 1 | **İki videonun BAĞLANTISI depoda yok** | Çekim 28 Ağu'da tamamlandı sayıldı; madde 6 videoyu teslimat kalemi sayıyor, bağlantı README listesine yazılmadan kapanmaz | Esra (ES-17, ES-18) |
+| 2 | 🔴 **Depo herkese açık DEĞİL** | 28 Ağu ölçümü: anonim istek 404. Madde 6 açık depo istiyor; 26 Ağu'da açılmıştı, kapanmış | Eren (E-01) |
 | 3 | **`v1.0` sürüm etiketi atılmadı** | Madde 9 sürüm izlenebilirliği; teslim adımının son halkası | Eren (E-03, E-18) |
 
 ### ✅ 26 Ağustos'ta kapandığı doğrulanan maddeler
@@ -130,7 +130,7 @@ planlanmalı.
 | Videoda: metin girdisi verilmesi | ❌ | | Esra |
 | Videoda: yapılandırılmış çıktı | ❌ | | Esra |
 | Videoda: karşılaştırma sonuçları | ❌ | | Esra |
-| **Sunum materyali — PDF *ve* PPTX** | 🟠 | PDF hazır: [`docs/sunum/Svartal_Sunum.pdf`](sunum/Svartal_Sunum.pdf) (`make sunum` ile üretilir). PPTX bekliyor | Esra (ES-13) |
+| **Sunum materyali — PDF *ve* PPTX** | ✅ | İkisi de depoda: [`Svartal_Sunum.pdf`](sunum/Svartal_Sunum.pdf) (`make sunum`) · [`Svartal_Sunum.pptx`](sunum/Svartal_Sunum.pptx) (`make sunum-pptx`, 28 Ağu). PPTX PDF'ten türetilir; hangi PDF'ten geldiği içine damgalanır | Esra (ES-13) |
 
 ### Proje dokümantasyonu — 10 başlık (madde 6)
 
@@ -138,7 +138,7 @@ planlanmalı.
 |---|---|---|---|---|
 | 1 | Sistem mimarisi ve veri akışı | ✅ | `docs/MIMARI.md` | Eren (E-15) |
 | 2 | Kullanılan NLP yaklaşımı | ✅ | [`docs/MIMARI.md`](MIMARI.md) bölüm 3 — beş katman (normalizasyon · kural · LLM · uzlaştırma · RAG) | Eren (S-16) |
-| 3 | Kullanılan veri seti ve açıklaması | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §0 — 931 işlenmiş kampanya (1.024 ham sayfa), 9 banka, dağılım ve sınırlar; yayın sürümü `data/exports/` + veri kartı | Görkem (G-15) |
+| 3 | Kullanılan veri seti ve açıklaması | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §0 — 1.019 işlenmiş kampanya (ham envanterin tamamı), 9 banka, dağılım ve sınırlar; yayın sürümü `data/exports/` + veri kartı | Görkem (G-15) |
 | 4 | Veri ön işleme adımları | ✅ | [`docs/VERI_METODOLOJISI.md`](VERI_METODOLOJISI.md) §3–4 — gövde ayıklama, Türkçe küçültme tuzağı, sayı/tarih normalizasyonu | Görkem (G-15) |
 | 5 | Model veya kural yapısının açıklaması | ✅ | [`docs/MODEL_VE_KURAL_YAPISI.md`](MODEL_VE_KURAL_YAPISI.md) | Eren (S-16) |
 | 6 | Benzer ürünler nasıl karşılaştırılıyor | ✅ | [`docs/KARSILASTIRMA_YONTEMI.md`](KARSILASTIRMA_YONTEMI.md) | Eren (E-15) |
@@ -154,7 +154,7 @@ planlanmalı.
 | Ağırlık | Kriter | Bizdeki dayanak | Risk |
 |---|---|---|---|
 | **%30** | Model Başarısı ve Anlamlandırma | Altın set + `make eval` + ablasyon | 🔴 Altın set 16 Ağu'da bitmezse ölçüm yok |
-| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 5 ekran, API | ✅ **931 kampanya / 9 faal banka** — 26 Ağu ölçümü (1.024 ham sayfa toplandı, süresi geçenler ayıklandı). «96/300» hedefi 15 Ağu'dan kalma bayat satırdı |
+| **%20** | Fonksiyonellik ve Senaryo Kapsamı | Uçtan uca boru hattı, 5 ekran, API | ✅ **1.019 kampanya / 9 faal banka** — 28 Ağu ölçümü; ham envanter ile korpus eşit (`make durum`). «96/300» hedefi 15 Ağu'dan kalma bayat satırdı |
 | **%20** | Teknik İmplementasyon ve Mimari | Donmuş şema, hibrit çıkarım, modüler yapı | ✅ |
 | **%20** | On-Prem Uygulanabilirlik | Docker (**18 Ağu'da koşuldu**), yerel LLM yolu, hava boşluğu ölçümü, sızıntı testleri, **[`KURUMSAL_ENTEGRASYON.md`](KURUMSAL_ENTEGRASYON.md)** (LDAP/AD · vekil · ambar besleme · denetim izi) | ✅ Bu satır 18 Ağu'dan beri bayattı — Docker koşulmuştu, tabloya yansımamıştı |
 | **%10** | Yenilikçilik ve Yaratıcılık | Kanıt zinciri, sayısal doğrulama kalkanı, hava boşluğu | 🟠 Dokümantasyon netliği de bu kalemde |
@@ -201,10 +201,10 @@ planlanmalı.
 |---|---|---|---|
 | Son 24 saat **fiziki** — Bilişim Vadisi **Kocaeli** Kampüsü | ⬜ | Çanta listesi hazırlanacak | Eren (E-13) |
 | Sunum **4 dakika** | 🟠 | Görev dağılımı `GOREVLER.md`'de hazır | Esra (ES-13) |
-| Demo videosu **1 dakika** | ❌ | 5 dakikalıktan kesilecek | Esra (ES-18) |
-| Sunumda canlı demo gösterimi **zorunlu** | ⬜ | Prova edilecek | Esra (ES-12) |
+| Demo videosu **1 dakika** | 🟠 | Çekildi sayıldı (28 Ağu); kesim planı `sunum/DEMO_SENARYOSU.md` §2. **Bağlantısı eklenecek** | Esra (ES-18) |
+| Sunumda canlı demo gösterimi **zorunlu** | 🟠 | Senaryo yazıldı: [`sunum/DEMO_SENARYOSU.md`](sunum/DEMO_SENARYOSU.md) (ekran · saniye · kurtarma planı). **Sesli prova kaldı** | Esra (ES-12) |
 | Tüm üyeler birlikte sunacak | ⬜ | Dağılım yapıldı | Herkes |
-| **Sunum GitHub hesabına da yüklenmeli** | ❌ | `sunum/` klasörüne PDF+PPTX konacak | Esra (ES-13) |
+| **Sunum GitHub hesabına da yüklenmeli** | ✅ | `docs/sunum/` altında PDF + PPTX + konuşma metni + demo senaryosu (28 Ağu) | Esra (ES-13) |
 
 > ⚠️ Madde 6 **5 dakikalık**, madde 10 **1 dakikalık** video istiyor.
 > **İkisi de ayrı ayrı teslim edilecek** — biri diğerinin yerine geçmez.
@@ -229,6 +229,7 @@ planlanmalı.
 
 | Tarih | Denetleyen | Bulgu |
 |---|---|---|
+| 28 Ağu | Eren | **Teslim taraması — üçüncü tur.** (1) 🔴 **Depo yine private:** anonim istek `github.com` ve `api.github.com` adreslerinde 404; 26 Ağu'da public yapılmıştı, arada kapanmış. Madde 6'nın «herkese açık depo» şartı hâlâ açık. (2) **PPTX üretildi** (`make sunum-pptx`) — madde 6 iki biçim istiyor, PDF vardı, PPTX yoktu. (3) `make sunum` **macOS'ta hiç çalışmıyordu** (`wildcard` boşluklu Chrome yolunu bölüyor → `Error 127`); PDF ancak Windows makinede üretilebiliyormuş, `uname` ile düzeltildi. (4) **Bayat sayı taraması:** 979/931/1.024/734 → **1.019** olarak eşitlendi (slaytlar, `VERI_METODOLOJISI`, `SARTNAME_UYUM`, `JURI_PROVASI`, `sunum/README`, konuşma metni) ve üretilen bütün raporlar yeniden koşuldu. (5) **EVREN gömme ucu düştüğünde chatbot çöküyordu:** geçit 500 döndürüyor, `_BAGLANTI_HATALARI` yalnız bağlantı hatası taşıyordu; 5xx eklendi (4xx hâlâ fırlatılıyor), iki nöbetçi test yazıldı. (6) `make chatbot-tarama` 248 üretilmiş soruda **sıfır patoloji**. (7) Ekran görüntüleri üretildi (`make ekran-goruntuleri`) ve README'ye eklendi. |
 | 26 Ağu (2. tur) | Eren | **Teslim öncesi ikinci tarama — şartname baştan sona yeniden okundu.** Yeni bulgular: (1) `.venv` bayattı, `selenium` kurulu değildi ve `tests/test_kaziyicilar.py` toplama hatası tüm paketi durduruyordu — bağımlılık `requirements.txt`'te zaten vardı, kurulunca **o gün 814 test yeşil**, `ruff` temiz (26 Ağu akşamı 847); (2) README üç yerde veriyi üreten yolu yanlış gösteriyordu (mermaid'de «Jenerik Toplayıcı httpx+trafilatura», lisans tablosunda `selenium` yok, klon komutunda yanlış depo adı `katilim-lens`) — üçü de düzeltildi; (3) bu panoda «96 ham kayıt» ve «96/300 kampanya» satırları bayattı, gerçek **1.024 ham sayfa** (aynı gün akşamı süresi geçenler ayıklandı → **931 işlenmiş kampanya**); (4) veri setinin GitHub'da eksiksiz olduğu **banka banka API ile sayılarak** teyit edildi (9/9 dizin, 1024 dosya, yerelle birebir). Açık kalan üç kalem değişmedi: PPTX, iki video, `v1.0` etiketi. |
 | 26 Ağu | Eren | **Teslim öncesi tam tarama.** Kapanan maddeler: 5.1 (9/9 faal bankada veri), 5.5 + G-10 (terim sözlüğü isteme bağlandı), 15.1 (kapsam raporu), dokümantasyon başlıkları 3-4-8-9, depo açıklaması. Yeni ölçümler: uygunluk çıkarımı %70,1 (A-08), beş kollu ablasyon (A-09). Açık kalan: PPTX, iki video, `v1.0` etiketi. |
 | 12 Ağu | Eren | İlk tam tarama. Depo private, 2 etiket eksik, veri seti bağlantısı yok, 2 bankada veri yok, madde 9'da tarih çelişkisi bulundu. |

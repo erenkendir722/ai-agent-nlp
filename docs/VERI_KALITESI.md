@@ -1,19 +1,19 @@
 # Veri Kalitesi Raporu
 
-_Otomatik üretildi: 28.08.2026 00:13 · `make veri-kalitesi`_
+_Otomatik üretildi: 28.08.2026 09:42 · `make veri-kalitesi`_
 
 > Bu dosya elle düzenlenmez. `make veri-kalitesi` her koşuda yeniden üretir.
 
-> **Güncel.** Çıkarım 28.08.2026 00:09'de `hibrit` yapılandırmasıyla koştu (78 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> **Güncel.** Çıkarım 28.08.2026 03:09'de `hibrit` yapılandırmasıyla koştu (38 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
-**979 kampanya denetlendi.** 5 kontrol eşiği aştı, 9 kontrol temiz.
+**1019 kampanya denetlendi.** 5 kontrol eşiği aştı, 9 kontrol temiz.
 
 ## Özet
 
 | | Kontrol | Bulgu | Eşik |
 |---|---|---|---|
 | aşıldı | Kâr payı oranı > %5 | 1 | 0 |
-| bilgi | Kâr payı oranı = 0 | 146 | 0 |
+| bilgi | Kâr payı oranı = 0 | 147 | 0 |
 | tamam | Finansman tutarı < 5.000 TL | 0 | 0 |
 | aşıldı | Finansman tutarı > 10.000.000 TL | 2 | 0 |
 | tamam | Vade > 360 ay veya < 1 | 0 | 0 |
@@ -25,7 +25,7 @@ _Otomatik üretildi: 28.08.2026 00:13 · `make veri-kalitesi`_
 | aşıldı | Banka içi kâr payı aralığı > 5 puan | 1 | 0 |
 | tamam | Aynı URL'den birden çok kayıt | 0 | 0 |
 | tamam | Hiçbir alanı çıkarılamayan kayıt | 0 | 0 |
-| aşıldı | Kampanya türü `diger` | 375 | 342 |
+| aşıldı | Kampanya türü `diger` | 387 | 356 |
 
 ## Aykırı değerler
 
@@ -37,7 +37,7 @@ Katılım bankaları kâr payını aylık ilan eder. Üstü ya yıllık orandır
 |---|---|---|
 | 0206 | 11.0 | …efinans.com.tr/tr-tr/bireysel/Sayfalar/gunluk-hesap.aspx |
 
-### bilgi Kâr payı oranı = 0 — 146 kayıt
+### bilgi Kâr payı oranı = 0 — 147 kayıt
 
 Hata DEĞİL sayılır: vade farksız kampanyalarda kâr payı gerçekten sıfırdır. Sayının ani yükselmesi ayrıştırmanın bozulduğunu gösterir.
 
@@ -107,7 +107,7 @@ Kimlik URL'den deterministik üretilir; mükerrer varsa toplayıcı aynı sayfay
 
 Doluluk sıfırsa sayfa büyük olasılıkla kampanya değildir ya da sitenin yapısı değişmiştir.
 
-### aşıldı Kampanya türü `diger` — 375 kayıt
+### aşıldı Kampanya türü `diger` — 387 kayıt
 
 Sınıflandırılamayan kayıt. Oranın yükselmesi ya toplayıcının kampanya olmayan sayfa getirdiğini ya da sınıflandırmanın kırıldığını gösterir.
 
@@ -118,23 +118,23 @@ Sınıflandırılamayan kayıt. Oranın yükselmesi ya toplayıcının kampanya 
 | 0203 | 2026-12-31 | …/tr/kampanyalar/detay/8-taksit-firsatiyla-kasko-zamani-3 |
 | 0203 | 0.0 | …https://www.albaraka.com.tr/tr/kampanyalar |
 | 0203 | 2026-08-31 | …/otopark-ve-vale-harcamalariniza-50-iade-albarakada-troy |
-| … | | *370 kayıt daha* |
+| … | | *382 kayıt daha* |
 
 ## Alan doluluk oranları
 
 | Alan | Boş | Boş oranı |
 |---|---|---|
-| `alisveris_puani` | 946 | %97 |
-| `tahsis_ucreti` | 937 | %96 |
-| `masrafsiz_mi` | 925 | %94 |
-| `hedef_kitle` | 917 | %94 |
-| `finansman_tutari_max` | 915 | %93 |
-| `indirim_orani` | 904 | %92 |
-| `kar_payi_orani` | 802 | %82 |
-| `odul_miktari` | 783 | %80 |
-| `taksit_sayisi` | 720 | %74 |
-| `vade_ay_max` | 532 | %54 |
-| `kampanya_bitis` | 504 | %51 |
+| `alisveris_puani` | 986 | %97 |
+| `tahsis_ucreti` | 977 | %96 |
+| `masrafsiz_mi` | 961 | %94 |
+| `hedef_kitle` | 955 | %94 |
+| `finansman_tutari_max` | 952 | %93 |
+| `indirim_orani` | 944 | %93 |
+| `kar_payi_orani` | 840 | %82 |
+| `odul_miktari` | 823 | %81 |
+| `taksit_sayisi` | 759 | %74 |
+| `vade_ay_max` | 564 | %55 |
+| `kampanya_bitis` | 544 | %53 |
 | `kampanya_turu` | 0 | %0 |
 
 ## Banka kapsamı
@@ -145,10 +145,10 @@ Dengesizlik gizlenmez: bir bankadan 100, diğerinden 16 kampanya varsa karşıla
 |---|---|---|---|---|
 | 0203 | Albaraka Türk Katılım Bankası A.Ş. | 137 | %30 | 49 (%36) |
 | 0205 | Kuveyt Türk Katılım Bankası A.Ş. | 213 | %36 | 48 (%23) |
-| 0206 | Türkiye Finans Katılım Bankası A.Ş. | 64 | %32 | 17 (%27) |
+| 0206 | Türkiye Finans Katılım Bankası A.Ş. | 70 | %31 | 18 (%26) |
 | 0209 | Ziraat Katılım Bankası A.Ş. | 219 | %29 | 40 (%18) |
-| 0210 | Vakıf Katılım Bankası A.Ş. | 49 | %27 | 30 (%61) |
+| 0210 | Vakıf Katılım Bankası A.Ş. | 76 | %25 | 41 (%54) |
 | 0211 | Türkiye Emlak Katılım Bankası A.Ş. | 110 | %34 | 64 (%58) |
 | 0212 | Hayat Finans Katılım Bankası A.Ş. | 19 | %28 | 5 (%26) |
 | 0213 | T.O.M. Katılım Bankası A.Ş. | 123 | %39 | 81 (%66) |
-| 0214 | Dünya Katılım Bankası A.Ş. | 45 | %35 | 41 (%91) |
+| 0214 | Dünya Katılım Bankası A.Ş. | 52 | %34 | 41 (%79) |

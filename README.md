@@ -48,6 +48,33 @@ flowchart LR
 
 ---
 
+## Ekranlar
+
+Yedi ekran; hepsi aynı veritabanından okur, hiçbiri kendi başına değer üretmez.
+Görüntüler `make ekran-goruntuleri` ile **çalışan arayüzden** alınır — elle
+alınmadıkları için arayüz değişince eskimezler.
+
+| | |
+|---|---|
+| **Genel Bakış** — kapsam, tür dağılımı, banka × tür ısı haritası, son çekim tarihi | **Müşteri Profili** — tutar/vade/segment verilir, sıralama toplam maliyete göre yapılır |
+| ![Genel Bakış](docs/gorseller/01-genel-bakis.png) | ![Müşteri Profili](docs/gorseller/02-musteri-profili.png) |
+| **Karşılaştırma** — beş ölçüt, ağırlıklar kullanıcıda, formül açık | **Kampanya Asistanı** — kaynaklı cevap, «Doğrulandı» rozeti, 0 LLM çağrısı |
+| ![Karşılaştırma](docs/gorseller/03-karsilastirma.png) | ![Kampanya Asistanı](docs/gorseller/04-chatbot.png) |
+| **Metin Analizi** — yapıştırılan metinden alan · birim · güven · yöntem · alıntı | **Banka Profili** — veri tazeliği, yakında biten kampanyalar, alan doluluğu |
+| ![Metin Analizi](docs/gorseller/05-metin-analizi.png) | ![Banka Profili](docs/gorseller/06-banka-profili.png) |
+
+**Canlı Boru Hattı** — toplama ve çıkarım arayüzden sürülür; animasyon gerçek
+olaylardan beslenir, nezaket kuralı ve `robots.txt` kapısı demoda da açıktır.
+Yazma hedefi `data/demo/`, üretim verisine yalnız kapalı gelen onay kutusuyla
+dokunulur.
+
+![Canlı Boru Hattı](docs/gorseller/07-boru-hatti.png)
+
+Ekranların ne işe yaradığı ve nasıl okunacağı:
+[`docs/KULLANIM_KILAVUZU.md`](docs/KULLANIM_KILAVUZU.md).
+
+---
+
 ## Farkı açan üç karar
 
 ### 1. Kanıtsız değer üretilemez
@@ -163,7 +190,7 @@ make extract         # hibrit (bizim)
 - İstek arası en az **2 saniye**, eşzamanlı istek yok
 - Tanımlı User-Agent, iletişim adresiyle
 - Yalnız **kamuya açık** sayfalar; giriş gerektiren hiçbir alana erişilmez
-- **Kişisel veri toplanmaz** (KVKK) — 1024 ham kayıt tarandı, kimliği belirli
+- **Kişisel veri toplanmaz** (KVKK) — 1019 ham kayıt tarandı, kimliği belirli
   gerçek kişiye ait veri bulunmadı
 - BDDK listesi **manuel** alınmıştır (şartname 5.1 izin veriyor); site otomatik
   taranmıyor, gerekçesi ölçümle belgeli
@@ -262,12 +289,14 @@ baştan sona taranır (görev E-17).
 ### Kod ve depo
 
 - [x] Çalışan proje kodu, tüm kaynak kodlar depoda
-- [x] Depo **herkese açık** ve Apache 2.0 lisanslı
-- [x] `BilisimVadisi2026` ve `turkiye-acik-kaynak-platformu` etiketleri
+- [x] Depo **herkese açık** ve Apache 2.0 lisanslı — 28 Ağu 10:1x doğrulaması:
+      anonim istek **HTTP 200**, `private: false`, lisans `Apache-2.0`
+- [x] `BilisimVadisi2026` ve `turkiye-acik-kaynak-platformu` etiketleri —
+      GitHub API'de ikisi de görünüyor (28 Ağu)
 - [x] Kurulum adımları net: [`docs/KURULUM.md`](docs/KURULUM.md)
 - [x] Bağımlılıkların eksiksiz listesi: `requirements.txt` + [`docs/LISANSLAR.md`](docs/LISANSLAR.md)
-- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/)
-- [ ] `v1.0` sürüm etiketi atıldı
+- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/) — 1.019 kayıt (28 Ağu)
+- [x] `v1.0` sürüm etiketi atıldı ve push'landı (28 Ağu)
 
 ### Dokümantasyon — madde 6'nın 10 başlığı
 
@@ -284,10 +313,10 @@ baştan sona taranır (görev E-17).
 
 ### Sunum ve video
 
-- [x] Sunum materyali PDF → [`docs/sunum/Svartal_Sunum.pdf`](docs/sunum/Svartal_Sunum.pdf)
-- [ ] Sunum materyali PPTX
-- [ ] Demo videosu — maks. 5 dakika (madde 6)
-- [ ] Sunum videosu — 1 dakika (madde 10)
+- [x] Sunum materyali PDF → [`docs/sunum/Svartal_Sunum.pdf`](docs/sunum/Svartal_Sunum.pdf) (`make sunum`)
+- [x] Sunum materyali PPTX → [`docs/sunum/Svartal_Sunum.pptx`](docs/sunum/Svartal_Sunum.pptx) (`make sunum-pptx`, 28 Ağu)
+- [x] Demo videosu — maks. 5 dakika (madde 6) · ES-17 — ⚠ **bağlantısı buraya eklenecek**
+- [x] Sunum videosu — 1 dakika (madde 10) · ES-18 — ⚠ **bağlantısı buraya eklenecek**
 - [x] Sunumda tüm üyelerin görev tanımları
 
 ### Ölçüm ve uyum kanıtları

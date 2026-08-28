@@ -156,8 +156,12 @@ halüsinasyonda görüldü** (%0,35 ↔ %0,49). Bu beklenen davranıştır: ele�
 işi skor yükseltmek değil, kanıtı olmayan değeri düşürmektir. Bir bileşenin
 katkısını yanlış metrikte aramak, "işe yaramıyor" sonucunu verirdi.
 
-Zaman: 5 yapılandırma × 1024 kayıt, 16 işçiyle ~25 dakika. **Bu ablasyon 26 Ağustos'taki
-korpus ayıklamasından ÖNCE koşuldu; bugünkü korpus 931 kayıttır** (`docs/SONUCLAR.md`). Daha hızlısı gerekirse
+Zaman: 5 yapılandırma × 1024 kayıt, 16 işçiyle ~25 dakika (EVREN yoğunken
+2 saate kadar çıkıyor — 28 Ağustos'ta ölçüldü). **Bu ablasyon 26 Ağustos'ta,
+o günkü kod sürümüyle koşuldu; bugünkü korpus 1.019 kayıttır**
+(`docs/SONUCLAR.md`). Tablo kollar arası farkı ölçer ve beş kolu da aynı
+korpusta, aynı kodla, tek koşuda ürettiği için kendi içinde geçerlidir; mutlak
+sayılar için `SONUCLAR.md` okunur. Daha hızlısı gerekirse
 `make ablasyon altin=1` yalnız altın sette etiketli kayıtları koşar — o zaman
 doluluk sütunu tüm korpusun değil, **altın set korpusunun** doluluğudur.
 

@@ -1,6 +1,6 @@
 # robots.txt Kontrol Günlüğü
 
-_Otomatik üretildi: 2026-08-26T12:11:33+03:00 · `tools/robots_kanit.py`_
+_Otomatik üretildi: 2026-08-28T09:45:09+03:00 · `tools/robots_kanit.py`_
 
 Bu günlük **G-14** (veri toplama etiği kanıtı) kapsamındadır;
 `docs/kanit/VERI_TOPLAMA_ETIGI.md` onu kanıt olarak gösterir.
@@ -39,9 +39,9 @@ büyüğü uygulanır (`RobotsBekcisi.bekleme_suresi`).
 |---|---|---|---|---|---|---|
 | Albaraka Türk (faal)<br>`www.albaraka.com.tr` | HTTP 200 · 299 bayt | yok | 2 sn | 2 | 2 | 0 |
 | Kuveyt Türk (faal)<br>`www.kuveytturk.com.tr` | HTTP 200 · 104 bayt | yok | 2 sn | 3 | 3 | 0 |
-| Türkiye Finans (faal)<br>`www.turkiyefinans.com.tr` | HTTP 200 · 721 bayt | yok | 2 sn | 2 | 2 | 0 |
+| Türkiye Finans (faal)<br>`www.turkiyefinans.com.tr` | HTTP 200 · 721 bayt | yok | 2 sn | 15 | 15 | 0 |
 | Ziraat Katılım (faal)<br>`www.ziraatkatilim.com.tr` | HTTP 200 · 2246 bayt | yok | 2 sn | 2 | 2 | 0 |
-| Vakıf Katılım (faal)<br>`www.vakifkatilim.com.tr` | HTTP 200 · 346 bayt | yok | 2 sn | 4 | 4 | 0 |
+| Vakıf Katılım (faal)<br>`www.vakifkatilim.com.tr` | HTTP 200 · 346 bayt | yok | 2 sn | 3 | 3 | 0 |
 | Emlak Katılım (faal)<br>`www.emlakkatilim.com.tr` | HTTP 200 · 23 bayt | yok | 2 sn | 3 | 3 | 0 |
 | Hayat Finans (faal)<br>`hayatfinans.com.tr` | HTTP 200 · 75 bayt | yok | 2 sn | 3 | 3 | 0 |
 | TOM Katılım (faal)<br>`tombank.com.tr` | HTTP 404 · robots.txt yok | yok | 2 sn | 2 | 2 | 0 |
@@ -52,12 +52,12 @@ büyüğü uygulanır (`RobotsBekcisi.bekleme_suresi`).
 | Fuzul Katılım (kurulus_asamasinda) | — | — | — | 0 | — | _site yok — kuruluş aşamasında_ |
 | Dost Katılım (kurulus_asamasinda) | — | — | — | 0 | — | _site yok — kuruluş aşamasında_ |
 | Katılımevim Katılım (kurulus_asamasinda) | — | — | — | 0 | — | _site yok — kuruluş aşamasında_ |
-| BDDK — kayıt defteri kaynağı (kampanya için taranmaz)<br>`www.bddk.org.tr` | ⚠️ çekilemedi (ConnectError) | yok | 2 sn | 1 | 0 | 1 |
+| BDDK — kayıt defteri kaynağı (kampanya için taranmaz)<br>`www.bddk.org.tr` |  çekilemedi (ConnectError) | yok | 2 sn | 1 | 0 | 1 |
 
-**Toplam:** 25 URL izinli, 1 URL çekilmiyor.
-Çekilmeyen URL toplayıcıya hiç gitmez — kapı `Toplayici._getir` içindedir
-ve isteğe çıkmadan önce sorulur. İki farklı sebep aynı sonucu verir:
-robots.txt `Disallow` ile reddetmiştir, ya da robots.txt okunamamıştır
+**Toplam:** 37 URL izinli, 1 URL çekilmiyor.
+Çekilmeyen URL kazıyıcıya hiç gitmez — kapı `TemelKaziyici._sayfayi_cek`
+içindedir ve tarayıcı adrese gitmeden önce sorulur. İki farklı sebep aynı
+sonucu verir: robots.txt `Disallow` ile reddetmiştir, ya da okunamamıştır
 (o zaman `izinli_mi` `False` döner — temkinli taraf).
 
 Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
@@ -73,8 +73,8 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.albaraka.com.tr` | ✅ izinli | 2 sn |
-| `https://www.albaraka.com.tr/tr/kampanyalar` | ✅ izinli | 2 sn |
+| `https://www.albaraka.com.tr` |  izinli | 2 sn |
+| `https://www.albaraka.com.tr/tr/kampanyalar` |  izinli | 2 sn |
 
 ### Kuveyt Türk (faal)
 
@@ -84,9 +84,9 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.kuveytturk.com.tr` | ✅ izinli | 2 sn |
-| `https://www.kuveytturk.com.tr/kampanyalar/kendim-icin` | ✅ izinli | 2 sn |
-| `https://www.kuveytturk.com.tr/kampanyalar/isim-icin` | ✅ izinli | 2 sn |
+| `https://www.kuveytturk.com.tr` |  izinli | 2 sn |
+| `https://www.kuveytturk.com.tr/kampanyalar/kendim-icin` |  izinli | 2 sn |
+| `https://www.kuveytturk.com.tr/kampanyalar/isim-icin` |  izinli | 2 sn |
 
 ### Türkiye Finans (faal)
 
@@ -96,8 +96,21 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.turkiyefinans.com.tr` | ✅ izinli | 2 sn |
-| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/default.aspx` | ✅ izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/banka-calisanlarina-ozel-ihtiyac-finansmani.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/kamu-calisanlarina-ozel-ihtiyac-finansmani.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/mastercard-business-kart-firsat.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/tuzel-onbarding-avantaj-paketi.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yakininizi-davet-edin.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/ihtiyac-finansmani-kampanyasi.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/fatura-2300tl-bonus.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/turkiye-finans-avantajlariyla-mobilden-tanis.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/masrafsiz-bankacilik.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/emeklilere-nakit-promosyon.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/bes-ile-yarininiza-deger-katin.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/gunluk-hesap-vade-kampanyasi.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/katilim-hesabi-kampanyasi.aspx` |  izinli | 2 sn |
+| `https://www.turkiyefinans.com.tr/tr-tr/kampanyalar/Sayfalar/yeni-yatirim-hesabiniza-sifir-komisyon.aspx` |  izinli | 2 sn |
 
 ### Ziraat Katılım (faal)
 
@@ -107,8 +120,8 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.ziraatkatilim.com.tr` | ✅ izinli | 2 sn |
-| `https://www.ziraatkatilim.com.tr/kart-kampanyalari` | ✅ izinli | 2 sn |
+| `https://www.ziraatkatilim.com.tr` |  izinli | 2 sn |
+| `https://www.ziraatkatilim.com.tr/kart-kampanyalari` |  izinli | 2 sn |
 
 ### Vakıf Katılım (faal)
 
@@ -118,10 +131,9 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.vakifkatilim.com.tr` | ✅ izinli | 2 sn |
-| `https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar` | ✅ izinli | 2 sn |
-| `https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=2&kendimIcin=false&isimIcin=false` | ✅ izinli | 2 sn |
-| `https://www.vakifkatilim.com.tr/tr/kendim-icin/kampanyalar/mevcut-kampanyalar?page=3&kendimIcin=false&isimIcin=false` | ✅ izinli | 2 sn |
+| `https://www.vakifkatilim.com.tr` |  izinli | 2 sn |
+| `https://vakifkatilim.com.tr/tr/kendim-icin/kampanyalar` |  izinli | 2 sn |
+| `https://vakifkatilim.com.tr/tr/isim-icin/kampanyalar` |  izinli | 2 sn |
 
 ### Emlak Katılım (faal)
 
@@ -130,9 +142,9 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.emlakkatilim.com.tr` | ✅ izinli | 2 sn |
-| `https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar` | ✅ izinli | 2 sn |
-| `https://www.emlakkatilim.com.tr/tr/kurumsal/kampanyalar` | ✅ izinli | 2 sn |
+| `https://www.emlakkatilim.com.tr` |  izinli | 2 sn |
+| `https://www.emlakkatilim.com.tr/tr/bireysel/kampanyalar` |  izinli | 2 sn |
+| `https://www.emlakkatilim.com.tr/tr/kurumsal/kampanyalar` |  izinli | 2 sn |
 
 ### Hayat Finans (faal)
 
@@ -142,9 +154,9 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://hayatfinans.com.tr` | ✅ izinli | 2 sn |
-| `https://hayatfinans.com.tr/kampanyalar` | ✅ izinli | 2 sn |
-| `https://hayatfinans.com.tr/isim-kampanyalar` | ✅ izinli | 2 sn |
+| `https://hayatfinans.com.tr` |  izinli | 2 sn |
+| `https://hayatfinans.com.tr/kampanyalar` |  izinli | 2 sn |
+| `https://hayatfinans.com.tr/isim-kampanyalar` |  izinli | 2 sn |
 
 ### TOM Katılım (faal)
 
@@ -154,8 +166,8 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://tombank.com.tr` | ✅ izinli | 2 sn |
-| `https://tombank.com.tr/kampanyalar.html` | ✅ izinli | 2 sn |
+| `https://tombank.com.tr` |  izinli | 2 sn |
+| `https://tombankhadi.com/hadi-kazan/kampanyalar` |  izinli | 2 sn |
 
 ### Dünya Katılım (faal)
 
@@ -165,8 +177,8 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://dunyakatilim.com.tr` | ✅ izinli | 2 sn |
-| `https://dunyakatilim.com.tr/kampanyalar` | ✅ izinli | 2 sn |
+| `https://dunyakatilim.com.tr` |  izinli | 2 sn |
+| `https://dunyakatilim.com.tr/kampanyalar` |  izinli | 2 sn |
 
 ### Adil Katılım (faaliyete_gecmedi)
 
@@ -175,7 +187,7 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.adilkatilim.com.tr` | ✅ izinli | 2 sn |
+| `https://www.adilkatilim.com.tr` |  izinli | 2 sn |
 
 ### İktisat Katılım (faaliyete_gecmedi)
 
@@ -185,7 +197,7 @@ Arşiv kopyaları sunucunun gönderdiği baytlardır; doğrulamak için:
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.iktisatkatilim.com.tr` | ✅ izinli | 2 sn |
+| `https://www.iktisatkatilim.com.tr` |  izinli | 2 sn |
 
 ### Halk Katılım (kurulus_asamasinda)
 
@@ -205,14 +217,14 @@ Atlandı: site yok — kuruluş aşamasında.
 
 ### BDDK — kayıt defteri kaynağı (kampanya için taranmaz)
 
-- robots.txt: `https://www.bddk.org.tr/robots.txt` → ⚠️ çekilemedi (ConnectError)
+- robots.txt: `https://www.bddk.org.tr/robots.txt` →  çekilemedi (ConnectError)
 - Hata ayrıntısı: `ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)`
 - **Sonuç: bu alan adı otomatik taranmaz.** `RobotsBekcisi.izinli_mi`,
   robots.txt okunamadığında `False` döner — temkinli taraf seçilir.
 
 | URL | Karar | Uygulanan bekleme |
 |---|---|---|
-| `https://www.bddk.org.tr` | ⛔ çekilmez — robots.txt okunamadı (temkinli davranış) | 2 sn |
+| `https://www.bddk.org.tr` |  çekilmez — robots.txt okunamadı (temkinli davranış) | 2 sn |
 
 ---
 

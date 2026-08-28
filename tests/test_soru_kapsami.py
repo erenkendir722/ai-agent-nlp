@@ -539,3 +539,71 @@ def test_gosterecek_alan_yoksa_yapisal_ek_yazilmaz(monkeypatch) -> None:
 
     cevap = cb._kosul_cevabi("K Katılım taşıt finansmanı", kayitlar)
     assert "yapısal verileri" not in cevap.metin
+
+
+# ---------------------------------------------------------------------------
+# GÖMME SERVİSİ ARIZASI — 28 Ağustos, teslim taramasında ölçüldü
+#
+# EVREN'in gömme arka ucu düştü. Servis erişilemez OLMADI: geçit ayakta kaldı
+# ve isteğe **HTTP 500** ile cevap verdi ("Cannot connect to host
+# host.docker.internal:8028 ... Received Model Group=bge-m3-embed").
+#
+# `_BAGLANTI_HATALARI` yalnız bağlantı/DNS/zaman aşımı taşıyordu, dolayısıyla
+# 500 gizlenmeden yükseldi ve chatbot ilk koşul sorusunda ÇÖKTÜ — `make test`
+# de bu yüzden kırmızıydı (`test_orkestrator::test_kalkan_sonucu_ize_yazilir`).
+# Jüri demosunun ortasında aynı arıza, ekranda yığın izi demekti.
+#
+# Ayrım servisin KİMİN arızası olduğudur; ikisi birlikte denetlenir, çünkü
+# yalnız birini yazmak diğerini gevşetmeye davettir.
+
+
+def _openai_hatasi(sinif, kod: int):
+    """Gerçek bir OpenAI istisnası kur — `APIStatusError` yanıt nesnesi ister."""
+    import httpx as _httpx
+
+    yanit = _httpx.Response(
+        kod, request=_httpx.Request("POST", "https://evren.test/v1/embeddings")
+    )
+    return sinif("gömme ucu", response=yanit, body=None)
+
+
+def test_gomme_servisi_500_verirse_cevap_zarifce_duser(monkeypatch) -> None:
+    """5xx SERVİSİN arızasıdır: chatbot çökmez, ne olduğunu söyler."""
+    import openai
+
+    from src.rag import chatbot as cb
+
+    def _patla(**_):
+        raise _openai_hatasi(openai.InternalServerError, 500)
+
+    monkeypatch.setattr(cb, "vektor_ara", _patla)
+
+    cevap = cb._kosul_cevabi(
+        "K Katılım taşıt finansmanı koşulları",
+        [_banka("bir", urun_turu="Araç Finansmanı", vade_ay_max=48)],
+    )
+    assert "erişilemiyor" in cevap.metin, cevap.metin
+    assert cevap.dogrulama_gecti, f"kalkan reddetti: {cevap.reddedilen_sayilar}"
+
+
+def test_gomme_ucu_404_verirse_gizlenmez(monkeypatch) -> None:
+    """4xx BİZİM yapılandırma hatamızdır — sessiz yutma yasağı burada işler.
+
+    `embedding` diye bir uç EVREN'de yok ve kodun eski varsayılanı buydu:
+    sessizce 404 alıyordu (ADR 013). O hata gizlenirse chatbot «metin araması
+    erişilemiyor» der ve yanlış yapılandırma günlerce fark edilmez.
+    """
+    import openai
+
+    from src.rag import chatbot as cb
+
+    def _patla(**_):
+        raise _openai_hatasi(openai.NotFoundError, 404)
+
+    monkeypatch.setattr(cb, "vektor_ara", _patla)
+
+    with pytest.raises(openai.NotFoundError):
+        cb._kosul_cevabi(
+            "K Katılım taşıt finansmanı koşulları",
+            [_banka("bir", urun_turu="Araç Finansmanı", vade_ay_max=48)],
+        )

@@ -1,15 +1,15 @@
 # KVKK Taraması — toplanan metinde kişisel veri var mı?
 
-_Otomatik üretildi: 2026-08-26T12:11:34+03:00 · `tools/kvkk_taramasi.py`_
+_Otomatik üretildi: 2026-08-28T09:44:36+03:00 · `tools/kvkk_taramasi.py`_
 
 Bu rapor **G-14** (veri toplama etiği kanıtı) kapsamındadır ve
 `docs/kanit/VERI_TOPLAMA_ETIGI.md` tarafından kanıt olarak gösterilir.
 
-Taranan ham kayıt: **1024** (`data/raw/*/*.json` — başlık + gövde metni).
+Taranan ham kayıt: **1019** (`data/raw/*/*.json` — başlık + gövde metni).
 
 ## Sonuç
 
-✅ **Kimliği belirli gerçek kişiye ait veri bulunmadı.**
+ **Kimliği belirli gerçek kişiye ait veri bulunmadı.**
 
 Sağlama toplamı tutan tek bir T.C. kimlik numarası yok. Bulunan 11 haneli
 sayılar örnek form değerleridir (aşağıda) — sağlama toplamını geçemezler.
@@ -25,7 +25,7 @@ yayımlanmasınlar diye.
 
 | Tür | Farklı değer | Toplam geçiş | Örnekler (maskeli) |
 |---|---|---|---|
-| e-posta | 4 | 56 | `…@hs01.kep.tr`, `…@kuveytturk.com.tr`, `…@collwave.com`, `…@Alldayesim.com` |
+| e-posta | 3 | 7 | `…@kuveytturk.com.tr`, `…@collwave.com`, `…@Alldayesim.com` |
 | IBAN | 6 | 6 | `…0011`, `…0117`, `…0118`, `…0001` |
 | cep telefonu | 1 | 2 | `…3944` |
 

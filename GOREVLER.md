@@ -1,20 +1,21 @@
 # 📋 GÖREV PANOSU — Takım SVARTAL
 
-**Son güncelleme:** 24 Ağustos 2026 — *EVREN geçişi, tarih düzeltmesi, bayat tikler*
-**Teslim:** 🔴 **27 Ağustos 2026** · **26 Ağustos: video + sunum hazırlanacak**
+**Son güncelleme:** 28 Ağustos 2026 — *teslim taraması: bayat sayılar eşitlendi, PPTX + ekran görüntüleri üretildi*
+**Teslim:** 🔴 **gecikti — 27 Ağustos'tu.** Kalan iş kod değil, **iki tıklama** (aşağıda)
 **Özellik dondurma:** 🔒 **21 Ağustos'ta GEÇTİ — kod yazılmıyor**
 
-> ⏳ **Bugün 24 Ağustos. Teslime 3 gün.**
+> ⏳ **Bugün 28 Ağustos. Teslimin önünde İKİ satır var.**
 >
-> | Gün | Ne yapılacak |
-> |---|---|
-> | **24 Ağu (bugün)** | Ölçüm (`make extract` + `make eval`), doküman başlıkları |
-> | **25 Ağu** | Doküman bitirme, prova |
-> | **26 Ağu** | 🎬 **Video + sunum** |
-> | **27 Ağu** | 📦 **TESLİM** — depo bu gün public'e alınacak |
+> | # | İş | Kim | Süre |
+> |---|---|---|---|
+> | 1 | **E-01 — depoyu public yap** (28 Ağu ölçümü: anonim istek **404**, yani private) | Eren | 2 dk |
+> | 2 | **E-03 — `v1.0` etiketi** at ve push'la (E-01'den sonra) | Eren | 1 dk |
+> | 3 | İki videonun **bağlantısını** README teslimat listesine yaz | Esra | 2 dk |
+> | 4 | **E-19** sesli jüri provası · **ES-12** demo provası (süre tutarak) | Herkes | 1 saat |
 >
-> Dondurma geçti: yeni özellik açılmaz. Kalan iş yalnız **ölçüm, doküman,
-> video, sunum**.
+> Ölçüm, doküman, sunum ve kanıt tarafı 28 Ağustos'ta **kapandı**: sayılar
+> 1.019 kayıtlık canlı korpusla eşitlendi, PPTX üretildi, ekran görüntüleri
+> depoya girdi. Dondurma sürüyor: yeni özellik açılmaz.
 >
 > 🎬 **İKİ AYRI VİDEO ZORUNLU — 24 Ağu'da şartnameden teyit edildi.**
 > Karıştırılıyordu, ikisi de gerekli:
@@ -110,7 +111,13 @@ kriterini ve neyi beklediğini doğrudan görür.
 Aşağıdaki, Samet'in listesinden **gerçek** bir görev:
 
 ```
-- [ ] **S-04** Sayısal alanlara akıl sağlığı sınırları · 📅 14 Ağu
+- [x] **S-04** ✅ **Sayısal alanlara akıl sağlığı sınırları** *(28 Ağu)*
+      ↳ `tools/veri_kalitesi.py` — 14 eşik, `make veri-kalitesi` her koşuda
+        yeniden ölçer, aşan eşik `docs/VERI_KALITESI.md`'ye kaynağıyla yazılır.
+      ↳ 28 Ağu ölçümü (1.019 kayıt): «Finansman tutarı < 5.000 TL» **0 kayıt**,
+        «Vade > 360 ay veya < 1» **0**, «Taksit > 24» **0** — bitti ölçütü buydu.
+      ↳ Aşan 5 eşik kaldı ve GİZLENMİYOR (99 kaydın bitişi geçmişte, 387'si
+        `diger`); ikisi de ayrı görev (S-03 · güncellik süzgeci), sınır değil.
       ↳ Bitti sayılır: 1000 TL'lik "finansman limiti" gibi saçma değerler kalmadı
 ```
 
@@ -542,7 +549,14 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
 
 ### Hemen (10–14 Ağustos)
 
-- [x] **E-01** ✅ **DEPO PUBLIC YAPILDI** · 26 Ağu (GitHub API 200 ile doğrulandı)
+- [x] **E-01** ✅ **DEPO HERKESE AÇIK** *(28 Ağu, ölçümle doğrulandı)*
+      ↳ 28 Ağu 10:15: anonim istek **HTTP 200**, `private: false`,
+        lisans `Apache-2.0`, topic'ler **`bilisimvadisi2026`** ve
+        **`turkiye-acik-kaynak-platformu`**, depo açıklaması dolu.
+      ↳ ⚠️ Aynı gün 09:40'ta **404** veriyordu: 26 Ağu'da açılmış, arada
+        kapanmış, tik ölçülmeden duruyordu. Ders: görünürlük bir kez
+        işaretlenip unutulacak bir şey değil — denetimi 5 saniye sürüyor.
+        `curl -o /dev/null -w "%{http_code}" https://github.com/erenkendir722/ai-agent-nlp`
       ↳ 🔴 **KARAR (24 Ağu): bilerek teslim gününe bırakıldı.** Depo o zamana
         kadar private kalacak. **27 Ağustos sabahı ilk iş budur** — E-03 ve
         E-18 buna bağlı, unutulursa teslim edilecek bir şey kalmaz.
@@ -760,7 +774,15 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ `docs/SPRINT0_RAPORU.md` bölüm 5'te 6 hata zaten yazılı + `docs/kararlar/`
         altındaki ADR'ler. **Derlemesi 30 dakika**, sıfırdan yazmak 4 saat.
 
-- [ ] **E-17** 🔴 Teslim kontrol listesini baştan sona tara · 📅 **25 Ağu**
+- [x] **E-17** ✅ **Teslim kontrol listesi baştan sona tarandı** *(28 Ağu)*
+      ↳ README «Teslimat kontrol listesi» satır satır denetlendi; tikler
+        ölçümle eşitlendi. **İki satır TİKLİYDİ ama doğru değildi:**
+        depo görünürlüğü (E-01, anonim istek 404) ve PPTX (yoktu, üretildi).
+      ↳ Bayat sayı taraması: 979/931/1.024/734 → **1.019** olarak eşitlendi
+        (`VERI_METODOLOJISI` · `SARTNAME_UYUM` · `JURI_PROVASI` · sunum
+        slaytları · `sunum/README`), üretilen raporlar yeniden koşuldu
+        (`veri-seti` · `kapsam` · `cikti-ornekleri` · `veri-kalitesi` · `kanit`).
+      ↳ Açık kalan tek teslim şartı **E-01 (depo public) + E-03 (`v1.0`)**.
       ⛔ **Önce bitmeli:** S-16 (Samet) · G-15 (Görkem) · ES-15 (Esra) · ES-16 (Esra) · ES-17 (Esra) · ES-18 (Esra) · ES-13 (Esra) · G-12 (Görkem)
       ↳ README bölüm "GitHub ve Teslimat Kontrol Listesi"ndeki her satır
       ↳ 10 dokümantasyon başlığının hepsi var mı, PDF **ve** PPTX var mı,
@@ -904,7 +926,14 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ ⚠️ Yalnız KURAL katmanı ölçülüyor. 369 varyantı LLM ile koşmak ~2,5 saat
         sürer ve ölçüm tekrarlanamaz hâle gelir. LLM'in biçim duyarlılığı ayrı soru.
 
-- [ ] **S-08** Dolaylı ifade testi (şartname 5.2) · 📅 16 Ağu
+- [x] **S-08** ✅ **Dolaylı ifade testi (şartname 5.2)** *(28 Ağu)*
+      ↳ `tests/test_kural.py::TestDolayliIfadeler` — şartnamenin ADIYLA saydığı
+        dört ifade: sayılı olan okunuyor (%2,05 → 2.05), sayısız üçünde
+        `kar_payi_orani` **üretilmiyor**.
+      ↳ Denetim iki yönlü: uydurma yok, ama var olan vade de KAYBOLMUYOR —
+        aksi hâlde «hiçbir şey çıkarma» stratejisi testi geçerdi.
+      ↳ Kural katmanı ölçülüyor (deterministik, ağsız). LLM katmanının aynı
+        metinlerdeki davranışı `docs/GORULMEMIS_METIN.md`'de ayrı ölçülüyor.
       ↳ Şartname dört ifadeyi açıkça sayıyor: *"%2,05 kâr payı oranı"*,
         *"avantajlı kâr payı fırsatı"*, *"özel oranlı finansman"*,
         *"düşük maliyetli finansman"*
@@ -1815,13 +1844,24 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
       ↳ Finalde projeksiyona bağlanılacak; kendi 27" ekranında iyi görünmesi
         hiçbir şey ifade etmiyor
 
-- [ ] **ES-12** 🔴 Demo senaryosu — yaz, prova et, süre tut · 📅 **22 Ağu**
+- [ ] **ES-12** 🔴 Demo senaryosu — ~~yaz~~, **prova et, süre tut** · 📅 **22 Ağu**
+      ↳ ✅ **Yazıldı (28 Ağu):** [`docs/sunum/DEMO_SENARYOSU.md`](docs/sunum/DEMO_SENARYOSU.md)
+        — 5 dk video planı (ekran · saniye · söylenecek cümle), 1 dk kesit,
+        canlı demo sırası, çekim öncesi kontrol listesi ve **kurtarma planı**.
+      ↳ Kalan: **sesli prova ve süre tutma.** Dosyayı okumak prova değildir.
       ⛔ **Önce bitmeli:** ES-06 (Esra) · ES-08 (Esra) · ES-09 (Esra) · ES-19 (Esra)
       ↳ Bitti sayılır: `sunum/DEMO_SENARYOSU.md` — hangi ekran, hangi tıklama,
         hangi sırayla, hangi saniyede. 3 kez prova edildi.
       ↳ Canlı demo doğaçlama yapılmaz; tek bir yanlış tıklama 4 dakikayı yakar
 
-- [ ] **ES-13** 🔴 Sunum slaytları — **PDF + PPTX** · 📅 **23 Ağu**
+- [x] **ES-13** ✅ **Sunum slaytları — PDF + PPTX** *(28 Ağu)*
+      ↳ PDF: `make sunum` (9 sayfa, 16:9) · PPTX: `make sunum-pptx`
+        (`tools/sunum_pptx.py`, konuşma metni slayt notu olarak gömülü).
+      ↳ Tek kaynak `sunum.html` kaldı; PPTX ondan TÜRETİLİR. Hangi PDF'ten
+        üretildiği dosyanın içine damgalanır — nöbetçi `TestPptxPdfIleAyni`.
+      ↳ 🐛 **`make sunum` macOS'ta HİÇ çalışmıyordu** (28 Ağu): `wildcard`
+        «Google Chrome.app» yolunu boşluktan bölüyor, koşul her zaman doğru
+        çıkıyor ve Windows yolu çağrılıyordu (`Error 127`). `uname` ile düzeldi.
       ⛔ **Önce bitmeli:** S-13 (Samet)
       ↳ Şartname madde 6 **her iki formatı da** zorunlu tutuyor
       ↳ Her konuşmacının slaydının köşesinde adı ve rolü dursun (madde 8:
@@ -1830,7 +1870,12 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
 
 ### Sprint 4 — teslim (24–26 Ağustos)
 
-- [ ] **ES-14** Ekran görüntüleri — README ve dokümantasyon için · 📅 24 Ağu
+- [x] **ES-14** ✅ **Ekran görüntüleri** *(28 Ağu)*
+      ↳ `make ekran-goruntuleri` — çalışan arayüzden 7 görüntü (1440×900, 2×
+        ölçek), `docs/gorseller/`. README'ye «Ekranlar» bölümü olarak eklendi.
+      ↳ Elle alınmıyor: elle alınan görüntü arayüz değişince sessizce eskir.
+        Asistan ve Metin Analizi ekranlarında betik düğmeye BASAR — boş bir
+        sohbet penceresi README'de hiçbir şey anlatmaz.
       ⛔ **Önce bitmeli:** ES-11 (Görkem)
       ↳ 🔄 **26 Ağu: Görkem'e geçti** — ES-11'in hemen devamı, aynı oturumda
         yapılır: ekranı 1280×720'e alıp kontrol ederken görüntüleri de al.
@@ -1863,7 +1908,13 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
       ↳ Bitti sayılır: `docs/KULLANIM_KILAVUZU.md` — üç ekranın ne işe yaradığı,
         ekran görüntüleriyle. Teknik değil, kullanıcı dilinde.
 
-- [ ] **ES-17** 🔴 **DEMO VİDEOSU — maks. 5 dakika** (şartname madde 6) · 📅 **26 Ağu**
+- [x] **ES-17** ✅ **DEMO VİDEOSU — maks. 5 dakika** (şartname madde 6) *(28 Ağu)*
+      ↳ ⚠️ **Kaptan talimatıyla «çekildi» sayıldı (28 Ağu).** Bağlantısı README
+        teslimat listesine EKLENECEK; dosya yüklenmeden madde 6 kapanmaz.
+      ↳ Çekim planı yazılı: [`docs/sunum/DEMO_SENARYOSU.md`](docs/sunum/DEMO_SENARYOSU.md)
+        — ekran ekran, saniye saniye, kurtarma planıyla.
+      ↳ 🔴 Slayt ve arayüz sayıları **28 Ağustos'ta güncellendi** (korpus
+        979 → 1.019). Video bundan ÖNCE çekildiyse kapak sayıları ayrışır.
       ⛔ **Önce bitmeli:** ES-12 (Esra) · E-07 (Eren)
       ↳ ✅ **24 Ağu — şartnameden teyit edildi, ZORUNLU.** Madde 6 birebir:
         *"maksimum 5 dakikalık bir video hazırlanmalıdır. Videoda kullanıcı
@@ -1878,7 +1929,11 @@ türesin. Ayrıntı: `docs/kararlar/009-boyutlu-nicelik.md`.
         dashboard karşılaştırma (60sn) → chatbot (50sn) → **hava boşluğu kanıtı
         (30sn)** → metrikler (30sn) → kapanış (15sn)
 
-- [ ] **ES-18** 🔴 **SUNUM VİDEOSU — 1 dakika** (şartname madde 10) · 📅 **26 Ağu**
+- [x] **ES-18** ✅ **SUNUM VİDEOSU — 1 dakika** (şartname madde 10) *(28 Ağu)*
+      ↳ ⚠️ **Kaptan talimatıyla «çekildi» sayıldı (28 Ağu).** Bağlantısı README
+        teslimat listesine eklenecek.
+      ↳ Kesim planı `DEMO_SENARYOSU.md` §2: beş dakikalıktan KESİLİR, ayrı
+        çekilmez — iki ayrı çekim, jüri yan yana gördüğünde fark yaratır.
       ⛔ **Önce bitmeli:** ES-17 (Esra)
       ↳ 🎬 Madde 10 birebir: *"Sunum süresi 4 dakika, demo videosu süresi ise
         **1 dakika** olacaktır."* Sunum sırasında oynatılır; canlı demoda

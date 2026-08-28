@@ -3,7 +3,8 @@
         kapsam cikti-ornekleri veri-seti \
         altin-ornekle altin-genislet altin-denetle altin-uyum altin-derle \
         altin-tur2 altin-tur2-fark kural-olc \
-        gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-metni veri-kalitesi \
+        gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-pptx sunum-metni veri-kalitesi \
+        ekran-goruntuleri \
         suresi-gecenleri-ele yinelenenleri-ele liste-sayfalarini-ele \
         finansman-cek cerez-govdesini-onar \
         kanit kanit-robots kanit-kvkk
@@ -263,16 +264,35 @@ git-kontrol:  ## GitHub ile senkron mu (pull/push gerekiyor mu)
 # Tarayıcı yolu da işletim sistemine bağlı. Windows'ta Chrome iki yerden
 # birinde durur; ikisi de yoksa değişken elle geçilebilir:
 #     make sunum KROM="C:/.../chrome.exe"
-ifeq ($(wildcard /Applications/Google Chrome.app),)
-  KROM ?= C:/Program Files/Google/Chrome/Application/chrome.exe
-else
+# TARAYICI YOLU İŞLETİM SİSTEMİNE GÖRE — `wildcard` İLE DEĞİL (28 Ağu).
+# Burada eskiden `ifeq ($(wildcard /Applications/Google Chrome.app),)` vardı ve
+# macOS'ta HİÇ tutmuyordu: `wildcard` argümanını boşluktan bölüyor, yani
+# «/Applications/Google» ile «Chrome.app» diye İKİ desen arıyor, ikisi de boş
+# dönüyor ve koşul her zaman doğru çıkıyordu. Sonuç: macOS'ta `make sunum`
+# Windows yolunu çağırıp `Error 127` veriyordu — PDF ancak Windows makinede
+# üretilebiliyordu. `uname` boşluk sorunundan etkilenmez.
+KROM_ISLETIM := $(shell uname -s 2>/dev/null)
+ifeq ($(KROM_ISLETIM),Darwin)
   KROM ?= /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+else ifeq ($(KROM_ISLETIM),Linux)
+  KROM ?= google-chrome
+else
+  KROM ?= C:/Program Files/Google/Chrome/Application/chrome.exe
 endif
 
 sunum-metni:  ## slayt metin dokumu -> docs/sunum/sunum_icerik.txt
 	$(PYTHON) tools/sunum_metni.py
 
+ekran-goruntuleri:  ## arayuz ekran goruntuleri -> docs/gorseller/ (once `make run`)
+	$(PYTHON) tools/ekran_goruntuleri.py $(if $(adres),--adres $(adres))
+
+sunum-pptx:  ## docs/sunum/Svartal_Sunum.pdf -> ...pptx (sartname madde 6 bicimi)
+	$(PYTHON) tools/sunum_pptx.py
+
 sunum:  ## docs/sunum/sunum.html -> docs/sunum/Svartal_Sunum.pdf (9 sayfa, 16:9)
+	@[ -x "$(KROM)" ] || command -v "$(KROM)" >/dev/null 2>&1 || { \
+	  echo "❌ Tarayıcı bulunamadı: $(KROM)"; \
+	  echo "   Yolu elle geçin:  make sunum KROM=\"/yol/chrome\""; exit 1; }
 	@"$(KROM)" --headless --disable-gpu --no-sandbox \
 	  --allow-file-access-from-files --no-pdf-header-footer \
 	  --print-to-pdf="$(CURDIR)/docs/sunum/Svartal_Sunum.pdf" \

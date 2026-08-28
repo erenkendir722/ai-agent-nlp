@@ -142,6 +142,16 @@ DIKKAT = {
         "BSD-3-Clause olarak çift lisanslıdır; **Apache-2.0 seçilmiştir** ve "
         "projemizin lisansıyla aynıdır. Kısıt doğurmaz.",
     ),
+    "pypdfium2": (
+        "(Apache-2.0 OR BSD-3-Clause) AND LicenseRef-PdfiumThirdParty",
+        "Bileşik ifade: sarmalayıcı kod seçmeli (Apache-2.0 **seçilmiştir**), "
+        "gömülü PDFium ikilisi ise kendi üçüncü taraf bildirimlerini taşır — "
+        "hepsi izin verici (BSD/MIT/zlib türevleri, Chromium'un PDF motoru). "
+        "Yalnız `make sunum-pptx` kullanır: PDF sayfasını görüntüye çevirir. "
+        "Yaygın alternatif `PyMuPDF` **AGPL-3.0**'dır ve Apache-2.0 lisanslı bir "
+        "teslimatın bağımlılık ağacına giremezdi; seçim lisans gerekçesiyle "
+        "yapıldı.",
+    ),
     "tld": (
         "MPL-1.1 OR GPL-2.0-only OR LGPL-2.1-or-later",
         "Üçlü seçmeli (disjunctive) lisans. **MPL-1.1 seçilmiştir.** Seçmeli "

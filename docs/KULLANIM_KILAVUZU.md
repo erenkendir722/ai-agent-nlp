@@ -120,6 +120,45 @@ daha önce hiç görmediği bir metinde nasıl davrandığını göstermek için
 
 ---
 
+## 6. Banka Profili — «tek bankanın tam resmi»
+
+Diğer ekranlar kampanya ya da karşılaştırma merkezlidir; *«Kuveyt Türk hakkında
+elimizde ne var?»* sorusunun cevabı hiçbirinde toplu durmuyordu. Bu ekran onu
+toplar ve **yeni çıkarım yapmaz** — tamamı mevcut veriden türetilir.
+
+Üç şeyi bilerek öne çıkarır:
+
+- **Veri tazeliği.** Her bankanın verisi aynı gün çekilmedi; diğer ekranlar
+  hepsini eşit tazelikte gösteriyordu. Buradaki tarih, o bankanın kayıtlarının
+  ne kadar eski olduğunu söyler.
+- **Yakında biten kampanyalar.** Bitiş tarihi olan kayıtlar içinde yedi gün
+  içinde kapananlar ayrı listelenir — elimizdeki en aksiyon alınabilir bilgi.
+- **Neyi bilmiyoruz.** Alan doluluğu banka bazında gösterilir. «Kâr payı oranı
+  şu kadar kayıtta yok» bir kusur itirafı değil ölçümdür: bankaların çoğu oranı
+  kampanya sayfasında yayımlamıyor.
+
+---
+
+## 7. Canlı Boru Hattı — «veriyi biz üretiyoruz, izleyin»
+
+Toplama (9 Selenium kazıyıcısı) ve çıkarım hattı bugüne kadar yalnız terminalde
+koşuyordu. Bu ekran ikisini arayüzden sürer ve **gerçek olaylardan** beslenen bir
+akışla gösterir: sahte ilerleme çubuğu, uydurma gecikme, süslü sayaç yoktur —
+kuyruk boşsa çubuk ilerlemez.
+
+İki sınır bilerek konmuştur:
+
+- **Demo alanına yazar.** Hedef `data/demo_raw/` ve `data/demo/demo.db`'dir.
+  Üretim verisine (`data/raw`, `data/katilim.db`) ancak sekmedeki **kapalı
+  gelen** onay kutusu işaretlenirse dokunulur.
+- **Nezaket kuralı gevşetilmez.** Demo kipi sayfa **sayısını** kısar, temposunu
+  değil: istekler arası ≥2 saniye ve `robots.txt` kapısı demoda da işler.
+
+Jüri önünde en çok bu ekran sorulur: «bu veriyi gerçekten siz mi topladınız?»
+Cevabı tıklayarak vermek için buradadır.
+
+---
+
 ## Sık sorulanlar
 
 **Veriler ne kadar günceldir?**
