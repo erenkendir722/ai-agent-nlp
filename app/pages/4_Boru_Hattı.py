@@ -80,12 +80,12 @@ from app.ui_utils import (  # noqa: E402
   format_bank_name,
   format_kategori,
   inject_custom_css,
-  ortak_kenar,
+  gelistirici_anahtari,
 )
 
 st.set_page_config(page_title="Canlı Boru Hattı", page_icon="", layout="wide")
 inject_custom_css()
-ortak_kenar()
+gelistirici_anahtari()
 sayfa_gezinme()
 st.markdown(akis_css(), unsafe_allow_html=True)
 
@@ -451,10 +451,7 @@ with sekme_toplama:
       )
 
     if t_durum.robots_reddi:
-      st.info(
-        f"**robots.txt {t_durum.robots_reddi} URL'i reddetti** — bu bir kusur değil, "
-        "toplama etiğinin kanıtı. Reddedilen adres çekilmedi."
-      )
+      st.info(f"robots.txt {t_durum.robots_reddi} adresi reddetti — çekilmedi.")
     if t_durum.atlama_sebepleri:
       st.markdown("**Atlama sebepleri**")
       st.dataframe(
@@ -707,10 +704,6 @@ with sekme_cikarim:
 
       if ozet.kampanyalar:
         st.markdown("**Üretilen kampanyalar**")
-        st.caption(
-          "Bu kayıtlar demo veritabanına yazıldığı için Genel Bakış'ta görünmez — "
-          "verinin gerçekten aktığı burada görülür."
-        )
         satirlar = []
         for k in ozet.kampanyalar:
           satirlar.append(
@@ -739,11 +732,8 @@ with sekme_tazelik:
   # ---------------------------------------------------------------------
   st.subheader("A · Yeni Kampanya Keşfi")
   st.markdown(
-    "Bankaların kampanya listesi yeniden taranır: **elimizde olmayan yeni "
-    "kampanya çıkmış mı?**"
-  )
-  st.caption(
-    "Yalnız liste taranır, kampanya sayfaları indirilmez."
+    "Kampanya listeleri yeniden taranır: **elimizde olmayan yeni kampanya "
+    "çıkmış mı?** Yalnız liste taranır, sayfalar indirilmez."
   )
 
   kesif_taban = kesif_taban_oku()
@@ -773,10 +763,7 @@ with sekme_tazelik:
     st.caption(f"{len(k_secili)} / {len(k_tum)} banka seçili")
   with ka2:
     st.metric("Keşif tabanı", f"{len(kesif_taban)} banka")
-    st.caption(
-      "İlk keşif taban çizgisi kurar; «kaldırılmış» iddiası ikinci koşudan "
-      "itibaren anlamlıdır."
-    )
+    st.caption("İlk koşu taban kurar; «kaldırılmış» ikinci koşudan itibaren anlamlı.")
 
   # SÜRE ÖLÇÜLENDİR: Hayat Finans 9 sn, Albaraka 81 sn (27 Ağu, gerçek koşu).
   st.caption(
@@ -948,11 +935,8 @@ with sekme_tazelik:
   taban = taban_oku()
 
   st.markdown(
-    "Elimizdeki kampanya sayfaları **son bakıştan beri değişmiş mi?**"
-  )
-  st.info(
-    "Bu tarama yalnız **tespit eder**, veriyi tazelemez. Değişmiş bir sayfayı "
-    "yeniden toplamak 1. sekmeden, sizin kararınızla yapılır."
+    "Elimizdeki kampanya sayfaları **son bakıştan beri değişmiş mi?** Bu tarama "
+    "yalnız tespit eder; yeniden toplamak 1. sekmeden, sizin kararınızla yapılır."
   )
 
   z1, z2, z3 = st.columns(3)
@@ -962,10 +946,7 @@ with sekme_tazelik:
     "Tasarlanan sıradaki koşu",
     tetikleyici.sonraki_calisma(datetime.now()).strftime("%d %b %H:%M"),
   )
-  st.caption(
-    "Zamanlayıcı bilerek kapalı: otomatik koşu, üzerinde ölçüm yayımladığımız "
-    "veriyi habersiz değiştirebilir. Kurulum satırı hazır, ürünleşince açılır."
-  )
+  st.caption("Zamanlayıcı bilerek kapalı: otomatik koşu yayımlanmış ölçümü değiştirirdi.")
 
   st.divider()
 
@@ -1127,10 +1108,7 @@ with sekme_tazelik:
         )
 
       if z_ozet.robots_reddi:
-        st.info(
-          f"**robots.txt {z_ozet.robots_reddi} adresi reddetti** — denetim de "
-          "bir ziyarettir, kapı burada da işler."
-        )
+        st.info(f"robots.txt {z_ozet.robots_reddi} adresi reddetti — yoklanmadı.")
       st.caption(
         f"Taban çizgisi: `{z_ozet.taban_dosyasi}` · "
         f"yoklama süresi {z_ozet.sure:.0f} sn"

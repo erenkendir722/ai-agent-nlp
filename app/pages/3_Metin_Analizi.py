@@ -23,14 +23,14 @@ from app.ui_utils import (  # noqa: E402
   format_alan_adi,
   format_kategori,
   inject_custom_css,
-  ortak_kenar,
+  gelistirici_anahtari,
   sayfa_gezinme,
   sayfa_sonu,
 )
 
 st.set_page_config(page_title="Metin Analizi", page_icon="", layout="wide")
 inject_custom_css()
-ortak_kenar()
+gelistirici_anahtari()
 sayfa_gezinme()
 st.title("Canlı Metin Analizi")
 
@@ -44,7 +44,6 @@ with st.sidebar:
 - **Eleştirmen** — çıkarım hattında uydurma alanı düşürür
     """
   )
-  st.caption("Önce kural motoru, sonra dil modeli çalışır.")
 
 ORNEK_METIN = """Değerli Müşterimiz,
 Yeni ev alacaklar için harika bir haberimiz var! Konut finansmanı kampanyamız kapsamında, %1,89 kâr payı oranıyla 120 aya varan vade seçenekleri sunuyoruz. 500.000 TL'ye kadar kullanabileceğiniz bu finansmanda hiçbir tahsis ücreti veya gizli masraf bulunmamaktadır (Masrafsız).
@@ -134,9 +133,7 @@ def _lejant() -> str:
         for ad, renk in MOTOR_RENKLERI.items()
     )
     return (
-        f"<div style='margin:2px 0 10px 0;'>{noktalar}"
-        "<span style='font-size:0.8rem;color:#8E8E99;'>Güven yüzdesinin "
-        "üzerine gelin — nasıl ölçüldüğü çıkar.</span></div>"
+        f"<div style='margin:2px 0 10px 0;'>{noktalar}</div>"
     )
 
 
@@ -217,9 +214,8 @@ def _karsilastirma_ciz(kural_k, hibrit_k) -> None:
 
     st.subheader("Regex ile hibrit yan yana")
     st.caption(
-        f"Dil modeli **{yeni_alan}** alanı regex'in hiç bulamadığı yerden ekledi, "
-        f"**{guven_artan}** alanda güveni yükseltti. ⚠ işaretli alanlar serbest "
-        "metindir: müşteriye söylenmeden önce kaynak alıntısıyla doğrulayın."
+        f"Dil modeli **{yeni_alan}** alan ekledi, **{guven_artan}** alanda "
+        "güveni yükseltti. ⚠ serbest metin — kaynağıyla doğrulayın."
     )
     st.markdown(_lejant(), unsafe_allow_html=True)
     st.markdown(
@@ -252,7 +248,7 @@ def _sonucu_ciz(kampanya, rapor_iz, ham, baslik: str):
     st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)
     with st.expander("Yapısal JSON"):
       st.json(clean_json)
-    st.caption("Jüri metni veritabanına yazılmaz. Bankacı onayı burada gösterim içindir.")
+    st.caption("Bu metin veritabanına yazılmaz.")
     st.subheader("Kanıt zinciri")
     for alan_isim, alinti in alintilar:
       with st.expander(alan_isim.replace("_", " ").title()):
@@ -334,7 +330,7 @@ if ham:
     parcalar.append(f"dil modeli **{_sure(llm_s)}**")
   if toplam is not None:
     parcalar.append(f"toplam **{_sure(toplam)}**")
-  st.info(" · ".join(parcalar) + " · maliyet iddiası yok (on-prem / EVREN kotası)")
+  st.info(" · ".join(parcalar))
 
   kural_k = st.session_state.get("analiz_kural")
   hibrit_k = st.session_state.get("analiz_kampanya")

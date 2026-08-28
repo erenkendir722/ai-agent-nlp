@@ -110,13 +110,58 @@ def test_chatbot_manuel_soru_cevap_ve_ajan_izi_cizer() -> None:
     assert "Katılım" in metinler, "cevapta hiçbir banka adı geçmiyor"
 
 
+def _dugme(at, etiket: str):
+    """Düğmeyi ETİKETİYLE bulur, sırasıyla değil.
+
+    `at.button[0]` kırılgandı: kenar çubuğunun ilk düğmesi 28 Ağustos'ta
+    «Yeni sohbet» oldu ve test hâlâ geçiyordu — yanlış düğmeye tıklayıp
+    «örnek soru çalışıyor» diyordu. Testin neyi ölçtüğü etikette yazılı olmalı.
+    """
+    for dugme in at.button:
+        if etiket in str(dugme.label):
+            return dugme
+    raise AssertionError(
+        f"«{etiket}» düğmesi yok; bulunanlar: "
+        + " | ".join(str(d.label)[:40] for d in at.button)
+    )
+
+
 def test_chatbot_ornek_soru_dugmesi_calisir() -> None:
     """Kenar çubuğundaki hazır sorular da aynı kod yolundan geçer."""
     at = _kos(KOK / "app" / "pages" / "2_Chatbot.py")
     assert at.button, "örnek soru düğmesi yok"
 
-    at.button[0].click().run()
+    _dugme(at, "Kuveyt Türk").click().run()
     _istisna_yok(at, "chatbot örnek soru düğmesi")
+
+
+def test_chatbot_yeni_sohbet_eskisini_silmez() -> None:
+    """«Yeni sohbet» arşivler; «Sohbeti sıfırla» siliyordu.
+
+    Ayrım kullanıcının kaybettiği şeydir: sıfırlama sonrası önceki cevaplara
+    dönmenin yolu yoktu. Arşivlendiğinde eski sohbet kenar çubuğunda kendi
+    ilk sorusuyla adlanır ve tıklanınca geri gelir.
+    """
+    at = _kos(KOK / "app" / "pages" / "2_Chatbot.py")
+    at.chat_input[0].set_value(YAPISAL_SORU).run()
+    _istisna_yok(at, "chatbot ilk soru")
+
+    _dugme(at, "Yeni sohbet").click().run()
+    _istisna_yok(at, "chatbot yeni sohbet")
+
+    sohbetler = at.session_state["sohbetler"]
+    assert len(sohbetler) == 2, "yeni sohbet açılmadı"
+    assert sohbetler[0]["gecmis"], "önceki sohbet silinmiş — arşiv yok"
+    assert not sohbetler[1]["gecmis"], "yeni sohbet boş başlamıyor"
+    assert sohbetler[1]["baglam"] is None, (
+        "yeni sohbet önceki sohbetin bağlamını devraldı — yuva devri (ADR 022) "
+        "sohbet başına tutulmalı"
+    )
+
+    # Eski sohbet listede kendi ilk sorusuyla duruyor ve geri açılabiliyor.
+    _dugme(at, YAPISAL_SORU[:20]).click().run()
+    _istisna_yok(at, "chatbot eski sohbete dönüş")
+    assert at.session_state["aktif_sohbet"] == 0
 
 
 # ---------------------------------------------------------------------------

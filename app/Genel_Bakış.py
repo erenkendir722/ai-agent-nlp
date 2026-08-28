@@ -44,7 +44,7 @@ from app.ui_utils import (  # noqa: E402
   format_kategori,
   inject_custom_css,
   kayitlari_yukle,
-  ortak_kenar,
+  gelistirici_anahtari,
   sayfa_gezinme,
   sayfa_sonu,
   sonuclari_oku,
@@ -58,7 +58,7 @@ st.set_page_config(
 )
 
 inject_custom_css()
-ortak_kenar()
+gelistirici_anahtari()
 sayfa_gezinme()
 
 

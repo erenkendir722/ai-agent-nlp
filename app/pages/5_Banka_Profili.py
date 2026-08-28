@@ -44,7 +44,7 @@ from app.ui_utils import (  # noqa: E402
   format_kategori,
   inject_custom_css,
   kayitlari_yukle,
-  ortak_kenar,
+  gelistirici_anahtari,
   sayfa_gezinme,
   sayfa_sonu,
   tr_sayi,
@@ -52,14 +52,12 @@ from app.ui_utils import (  # noqa: E402
 
 st.set_page_config(page_title="Banka Profili", page_icon="", layout="wide")
 inject_custom_css()
-ortak_kenar()
+gelistirici_anahtari()
 sayfa_gezinme()
 
 st.title("Banka Profili")
 st.markdown(
-  '<div class="kl-serit">Tek bir banka hakkında elimizdeki her şey: kapsam, '
-  "kampanya dağılımı, sayısal aralıklar, yakında bitenler ve verinin ne kadar "
-  "taze olduğu.</div>",
+  '<div class="kl-serit">Tek bir banka hakkında elimizdeki her şey.</div>',
   unsafe_allow_html=True,
 )
 
@@ -149,11 +147,7 @@ u4.metric("Masrafsız kampanya", len(masrafsizlar))
 
 # VERİ TAZELİĞİ — diğer ekranlarda hiç görünmüyordu.
 if tazelik is not None and tazelik > 3:
-  st.warning(
-    f"**Veri {tazelik} gün önce çekildi**  \n"
-    "Bankanın sitesi o tarihten sonra değişmiş olabilir; "
-    "Canlı Boru Hattı ekranından yeniden toplayabilirsiniz."
-  )
+  st.warning(f"Veri {tazelik} gün önce çekildi — site o tarihten sonra değişmiş olabilir.")
 
 st.divider()
 
@@ -175,8 +169,7 @@ for k in banka:
 
 if bitenler:
   bitenler.sort(key=lambda s: s["Bitiş"])
-  st.subheader("Yakında biten kampanyalar")
-  st.caption(f"Önümüzdeki {YAKIN_GUN} gün içinde bitiş tarihi dolan kampanyalar.")
+  st.subheader(f"Yakında biten kampanyalar ({YAKIN_GUN} gün)")
   st.dataframe(
     pd.DataFrame(bitenler),
     use_container_width=True,

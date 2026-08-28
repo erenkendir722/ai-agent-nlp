@@ -31,14 +31,14 @@ from app.ui_utils import (  # noqa: E402
     format_hedef_kitle,
     inject_custom_css,
     kampanyalari_yukle,
-    ortak_kenar,
+    gelistirici_anahtari,
     sayfa_gezinme,
     sayfa_sonu,
 )
 
 st.set_page_config(page_title="Müşteri Profili", page_icon="", layout="wide")
 inject_custom_css()
-ortak_kenar()
+gelistirici_anahtari()
 sayfa_gezinme()
 
 st.title("Müşteri Profiline Göre Uygunluk")
@@ -50,9 +50,8 @@ st.title("Müşteri Profiline Göre Uygunluk")
 # Şerit `Genel Bakış` sayfasındakiyle aynı `kl-serit` sınıfını kullanır —
 # ekranlar arası tek görsel dil.
 st.markdown(
-    '<div class="kl-serit">Önünüzdeki müşteriyi tanımlayın; hangi rakip '
-    "kampanyanın <b>gerçekten uygulanabilir</b> olduğunu ve müşteriye "
-    "söylenebilecek toplam maliyeti görün.</div>",
+    '<div class="kl-serit">Müşteriyi tanımlayın; <b>gerçekten uygulanabilir</b> '
+    "rakip kampanyaları ve toplam maliyeti görün.</div>",
     unsafe_allow_html=True,
 )
 # Üstte YALNIZ kullanıcının bilmesi gereken kalır: sıralamanın neye göre
@@ -181,26 +180,21 @@ st.subheader("Uygun kampanyalar")
 # kac kaydin neden dislandigi asagida yaziyor. O cumle olmadan kullanici
 # sistemde yalnizca birkac kampanya var saniyordu.
 gosterilecek = [s for s in uygunlar if s.maliyet]
-disarida = len(uygunlar) - len(gosterilecek)
 
-st.caption(
-    "Toplam geri ödemeye göre sıralı. "
-    "**Devam et** bankanın kendi sayfasını açar, **Detay** kampanyanın "
-    "kayıt dökümüne götürür."
-)
-
+# ÜÇ CÜMLE YERİNE TEK SATIR (28 Ağustos). Burada üst üste üç açıklama
+# vardı: sıralama ölçütü · iki düğmenin ne yaptığı · kaç kaydın neden
+# dışarıda kaldığı. Düğmelerin ne yaptığı ETİKETLERİNDE yazılı, o cümle
+# hiçbir şey eklemiyordu. Dürüstlük beyanı kalır ama sayıyla: kaç kaydın
+# maliyeti hesaplanabildiği bir cümle değil bir orandır.
 if not gosterilecek:
     st.info(
-        f"Bu profile uyan {len(uygunlar)} kampanya var ama hiçbirinde kâr payı "
-        "oranı yayımlanmamış; toplam maliyet hesaplanamıyor. Bankaların çoğu "
-        "oranı başvuru ekranında veriyor. Tutarı ya da vadeyi değiştirip "
-        "tekrar deneyebilirsiniz."
+        f"Bu profile uyan {len(uygunlar)} kampanyanın hiçbirinde kâr payı oranı "
+        "yayımlanmamış; maliyet hesaplanamıyor. Tutarı ya da vadeyi değiştirin."
     )
-elif disarida:
+else:
     st.caption(
-        f"{len(uygunlar)} uygun kampanyanın {len(gosterilecek)} tanesi listeleniyor; "
-        f"kalan {disarida} kampanyada kâr payı oranı kaynakta yayımlanmadığı için "
-        "maliyet hesaplanamadı."
+        "Toplam geri ödemeye göre sıralı · "
+        f"{len(gosterilecek)} / {len(uygunlar)} kampanyada maliyet hesaplanabildi."
     )
 
 # EN AVANTAJLI TEKLIF — «pasif rapor» degil «aktif asistan» (2. inceleme).
@@ -350,16 +344,14 @@ for sira, sonuc in enumerate(gosterilecek[:15], 1):
 with st.expander(f"Nasıl hesaplandı? — {iz.ajan_adi} · {iz.sure_ms} ms", expanded=False):
     st.code(iz.satir(), language=None)
     st.caption(
-        f"Bu ekranda dil modeli çağrısı: **{0 if not iz.llm_kullanildi else 1}**. "
-        "Kısıt çözümü ve taksit hesabı deterministik koddur — aynı girdi her "
-        "zaman aynı sonucu verir."
+        f"Dil modeli çağrısı: **{0 if not iz.llm_kullanildi else 1}** — "
+        "kısıt çözümü ve taksit hesabı deterministik koddur."
     )
 
 st.divider()
 if uygunlar:
-  st.subheader("Teklif Raporu Çıktısı")
-  st.caption("Müşteriye sunulmak üzere hazırlanan özel teklif özetini indirebilirsiniz.")
-  
+  st.subheader("Teklif raporu")
+
   rapor_metni = f"MÜŞTERİ TEKLİF FORMU\n------------------\nFinansman Tutarı: {_tl(profil.tutar)}\nVade: {profil.vade_ay} Ay\nMüşteri Tipi: {tip.value}\n\nUYGUN KAMPANYALAR:\n"
   for i, s in enumerate(uygunlar[:5], 1):
       maliyet_str = _tl(s.maliyet['toplam_geri_odeme']) if s.maliyet else "Belirtilmemiş"

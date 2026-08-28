@@ -3,12 +3,21 @@
 Şartname madde 11'deki iki senaryo birebir desteklenir:
  Senaryo 1: "A Bankası'nın konut finansmanı oranı ne?"    -> tekil bilgi
  Senaryo 2: "A Bankası mı daha avantajlı, C Bankası mı?"   -> gerekçeli karşılaştırma
+
+EKRAN DÜZENİ — 28 Ağustos'ta sadeleştirildi. Cevabın etrafında dört ayrı
+kutu vardı (düşünce günlüğü · niyet satırı · süre satırı · yeşil doğrulama
+kutusu) ve dördü de HER cevapta çıkıyordu. Her koşuda çıkan bir kutu bilgi
+taşımaz, yalnız cevabı ekranın dışına iter. Kalanı tek satırlık çip:
+
+    ① Tekil sorgu   ✓ Doğrulandı        <- ikisi de `title` ile açıklanır
+
+Kaybolan hiçbir şey yok: motorun adı çipin ipucunda, ajan koşumu «Ajan
+izleri» panelinde, kaynaklar açılır «Kaynaklar» kutusunda duruyor.
 """
 
 from __future__ import annotations
 
 import sys
-import time
 from pathlib import Path
 
 import streamlit as st
@@ -16,31 +25,28 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.ajanlar.orkestrator import Orkestrator # noqa: E402
-from src.rag.chatbot import YASAL_UYARI, Niyet, sayi_goster # noqa: E402
-from src.rag.chatbot import _OLCUT_ETIKETLERI as OLCUT_ETIKETLERI # noqa: E402
+from src.rag.chatbot import YASAL_UYARI, Niyet # noqa: E402
 from app.ui_utils import (  # noqa: E402
-  sayfa_gezinme,
-  sayfa_sonu,
+  en_alta_kaydir,
+  gelistirici_anahtari,
   inject_custom_css,
   kayitlari_yukle,
-  ortak_kenar,
+  sayfa_gezinme,
+  sayfa_sonu,
   uyarilari_goster,
 )
 
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
 inject_custom_css()
-ortak_kenar(demo_ipuclari=True)
+gelistirici_anahtari()
 sayfa_gezinme()
 st.title("Kampanya Asistanı")
 
-st.caption(
-  "Sayısal cevaplar **her zaman yapısal veriden** gelir, serbest metin "
-  "aramasından değil. Her cevap kaynağıyla birlikte sunulur ve sayısal "
-  "doğrulama kalkanından geçer."
-)
-
 kayitlar = kayitlari_yukle()
 
+# Üçüncü alan (açıklama) EKRANA YAZILMAZ, çipin `title` ipucunda durur:
+# «Deterministik karşılaştırma motoru» cümlesi ilk cevapta bilgi, onuncuda
+# gürültüdür. Merak eden imlecini götürür.
 NIYET_ETIKETLERI = {
   Niyet.TEKIL_SORGU: ("①", "Tekil sorgu", "Yapısal veritabanı sorgusu"),
   Niyet.KARSILASTIRMA: ("②", "Karşılaştırma", "Deterministik karşılaştırma motoru"),
@@ -61,132 +67,147 @@ ORNEK_SORULAR = [
 ]
 KALKAN_ORNEGI = "Kampanya koşulları neler?"
 
-# ÇOK TURLU SOHBET — bir önceki turun çözülmüş yuvaları (bkz. `src/rag/baglam.py`).
+_BASLIK_SINIRI = 32
+
+
+# ---------------------------------------------------------------------------
+# Sohbetler — «sıfırla» yerine geçmiş
+# ---------------------------------------------------------------------------
 #
-# `SohbetBaglami` MODÜL DÜZEYİNDE tanımlı, bu sayfada değil. Sebebi CLAUDE.md'de
-# yazılı: sayfa betiği her çizimde baştan koştuğu için burada tanımlanan bir
-# sınıf her koşuda YENİ nesne olur, `st.session_state`'teki örnek eski sınıftan
-# geldiği için biriken durum sessizce sıfırlanırdı — tam da hafızanın kaybolması
-# demek olurdu.
-if "baglam" not in st.session_state:
-  st.session_state.baglam = None
+# Kenar çubuğunda «Sohbeti sıfırla» düğmesi ve altında dört satırlık bir
+# açıklama vardı. Düğmenin yaptığı tek şey biriken sohbeti SİLMEKTİ; silmek
+# bir özellik değil kayıptır — kullanıcı yeni bir konuya geçmek için önceki
+# cevapları çöpe atmak zorunda kalıyordu.
+#
+# Yerine geçen model her sohbet arayüzünde aynı: birden çok sohbet, biri
+# aktif. «Yeni sohbet» eskiyi ARŞİVLER, listeden tıklanınca geri gelir.
+#
+# YUVA DEVRİ SOHBET BAŞINA TUTULUR (ADR 022). `baglam` eskiden tek bir
+# oturum anahtarıydı; sohbetler ayrılınca onun da ayrılması ZORUNLU, yoksa
+# yeni sohbet önceki sohbetin bankasını devralırdı — «hafızası karışıyor»
+# denen davranış tam olarak bu olurdu.
+#
+# Sözlük kullanılıyor, `@dataclass` DEĞİL: sayfa betiği her çizimde baştan
+# koşar, burada tanımlanan bir sınıf her koşuda yeni bir nesne olur ve
+# `st.session_state`'teki örnek eski sınıftan geldiği için `isinstance`
+# false döner (CLAUDE.md — Streamlit sayfasında `@dataclass` tanımlama).
+
+
+def _bos_sohbet() -> dict:
+  return {"gecmis": [], "baglam": None}
+
+
+if "sohbetler" not in st.session_state:
+  st.session_state.sohbetler = [_bos_sohbet()]
+  st.session_state.aktif_sohbet = 0
+
+sohbetler = st.session_state.sohbetler
+aktif_no = min(st.session_state.aktif_sohbet, len(sohbetler) - 1)
+st.session_state.aktif_sohbet = aktif_no
+aktif = sohbetler[aktif_no]
+
+
+def _sohbet_basligi(sohbet: dict) -> str:
+  """Sohbetin adı İLK SORUSUDUR — elle isim istemek gereksiz bir adım."""
+  if not sohbet["gecmis"]:
+    return "Yeni sohbet"
+  ilk = " ".join(sohbet["gecmis"][0]["soru"].split())
+  return ilk if len(ilk) <= _BASLIK_SINIRI else ilk[: _BASLIK_SINIRI - 1].rstrip() + "…"
+
 
 with st.sidebar:
-  st.header("Örnek sorular")
-  for ornek in ORNEK_SORULAR:
-    if st.button(ornek, use_container_width=True):
-      st.session_state.bekleyen_soru = ornek
-  if st.button("Kalkan gösterimi: " + KALKAN_ORNEGI, use_container_width=True):
-    st.session_state.bekleyen_soru = KALKAN_ORNEGI
-  st.caption("Son düğme, sistemin kendini nasıl frenlediğini gösterir.")
-
-  st.divider()
-  st.header("Sohbet bağlamı")
-  baglam = st.session_state.baglam
-  if baglam is None or baglam.bos_mu():
-    st.caption("Bağlam boş — ilk soru bekleniyor.")
-  else:
-    if baglam.bankalar:
-      st.caption("Banka: " + ", ".join(baglam.bankalar))
-    if baglam.urun:
-      st.caption(f"Ürün: {baglam.urun}")
-    if baglam.konu:
-      st.caption("Konu: " + ", ".join(baglam.konu))
-    if baglam.olcut:
-      st.caption(f"Ölçüt: {OLCUT_ETIKETLERI.get(baglam.olcut, baglam.olcut)}")
-    if baglam.tutar:
-      st.caption(f"Tutar: {sayi_goster(baglam.tutar)} TL")
-    if baglam.vade_ay:
-      st.caption(f"Vade: {baglam.vade_ay} ay")
-  if st.button("Sohbeti sıfırla", use_container_width=True):
-    st.session_state.gecmis = []
-    st.session_state.baglam = None
+  if st.button(
+    "＋  Yeni sohbet",
+    use_container_width=True,
+    type="primary",
+    disabled=not aktif["gecmis"],
+    help="Bu sohbet listede kalır; istediğinizde geri dönebilirsiniz.",
+  ):
+    sohbetler.append(_bos_sohbet())
+    st.session_state.aktif_sohbet = len(sohbetler) - 1
     st.rerun()
-  st.caption(
-    "Takip sorusu boş yuvaları buradan doldurur; soruda yazılan her zaman "
-    "kazanır. Devralınan yuva cevabın altında beyan edilir."
-  )
+
+  # Boş sohbetler listelenmez (aktif olan hariç): adı olmayan bir satır
+  # tıklanacak bir şey sunmaz. Yeni sohbet ilk sorusuyla birlikte adlanır.
+  listelenecek = [
+    (no, sohbet) for no, sohbet in enumerate(sohbetler)
+    if sohbet["gecmis"] or no == aktif_no
+  ]
+  if any(sohbet["gecmis"] for _, sohbet in listelenecek):
+    st.caption("Sohbetler")
+    for no, sohbet in reversed(listelenecek):
+      if st.button(
+        ("●  " if no == aktif_no else "○  ") + _sohbet_basligi(sohbet),
+        key=f"cb_sohbet_{no}",
+        use_container_width=True,
+      ):
+        st.session_state.aktif_sohbet = no
+        st.rerun()
 
   st.divider()
-  st.header("Mimari")
-  st.markdown(
-    """
-```
-Soru
- └─ Niyet Yönlendirici
-   ├─ tekil_sorgu  SQLite yapısal sorgu
-   ├─ karsilastirma karşılaştırma motoru
-   ├─ kosul_sorgusu metin arama
-   └─ kapsam_disi  kibar ret
- └─ SAYISAL DOĞRULAMA KALKANI
- └─ Kaynak ekleme
-```
-    """
-  )
-  st.markdown("---")
+  st.caption("Örnek sorular")
+  for sira, ornek in enumerate(ORNEK_SORULAR):
+    if st.button(ornek, key=f"cb_ornek_{sira}", use_container_width=True):
+      st.session_state.bekleyen_soru = ornek
+  if st.button(
+    KALKAN_ORNEGI,
+    key="cb_kalkan",
+    use_container_width=True,
+    help="Kalkan gösterimi: sistemin kendini nasıl frenlediğini gösterir.",
+  ):
+    st.session_state.bekleyen_soru = KALKAN_ORNEGI
 
-if "gecmis" not in st.session_state:
-  st.session_state.gecmis = []
 
-def cevap_renderla(cevap, gecen_sure=None):
-  simge, etiket, aciklama = NIYET_ETIKETLERI[cevap.niyet]
-  
-  # Sayısal doğrulama kalkanı — bu yolda Eleştirmen Ajan yok.
-  with st.expander("Ajanın Düşünce Süreci (Loglar)", expanded=False):
-    st.caption(f"**Log 1:** Niyet anlaşıldı: `{etiket}` ({aciklama})")
-    kaynak_sayisi = len(cevap.kaynaklar) if cevap.kaynaklar else 0
-    st.caption(f"**Log 2:** SQLite veritabanından {kaynak_sayisi} ilgili kayıt getirildi.")
-    if cevap.dogrulama_gecti:
-      st.caption("**Log 3:** Sayısal doğrulama kalkanı geçti (yapısal kayıtta karşılığı olmayan sayı yok).")
-    else:
-      tekil = list(dict.fromkeys(cevap.reddedilen_sayilar))
-      st.caption(
-        f"**Log 3:** Sayısal doğrulama kalkanı reddetti. "
-        f"Doğrulanamayan sayılar: {', '.join(tekil)}."
-      )
-    
-  st.caption(f"{simge} **{etiket}** — {aciklama}")
-  if gecen_sure is not None:
-    if cevap.niyet in (Niyet.TEKIL_SORGU, Niyet.KARSILASTIRMA):
-      motor = "LLM yok — yapısal sorgu / karşılaştırma motoru"
-    elif cevap.niyet == Niyet.KOSUL_SORGUSU:
-      motor = "Metin arama + sayısal kalkan"
-    else:
-      motor = "Kapsam dışı ret"
-    st.caption(f"Yanıt {gecen_sure:.1f} saniyede · {motor}")
+def cevap_renderla(cevap) -> None:
+  """Önce CEVAP, sonra tek satır künye. Sıra bilerek böyle.
 
+  Eskiden ekranın en üstünde katlanmış bir günlük paneli, altında iki künye
+  satırı, cevap ise onların altında duruyordu: kullanıcı cevabı okumak için
+  önce sistemin kendi hakkında söylediklerini geçmek zorundaydı.
+  """
   st.markdown(cevap.metin)
+
+  simge, etiket, aciklama = NIYET_ETIKETLERI[cevap.niyet]
+  cipler = [f'<span class="kl-cip" title="{aciklama}">{simge} {etiket}</span>']
+  if cevap.dogrulama_gecti:
+    cipler.append(
+      '<span class="kl-cip kl-cip-onay" title="Cevaptaki her sayının yapısal '
+      'kayıtta karşılığı bulundu; eşleşmeyen sayı olsaydı cevap verilmezdi.">'
+      "✓ Doğrulandı</span>"
+    )
+  st.markdown(f'<div class="kl-meta">{"".join(cipler)}</div>', unsafe_allow_html=True)
+
+  # BAŞARISIZLIK TAM BOY KALIR. Başarı her cevapta olur, bu seyrek ve
+  # kritiktir: kullanıcı sayı görmediğinin farkında olmalı.
+  if not cevap.dogrulama_gecti:
+    st.error(
+      "Sayısal doğrulama başarısız — cevap verilmedi. Doğrulanamayan "
+      f"değerler: {', '.join(dict.fromkeys(cevap.reddedilen_sayilar))}."
+    )
 
   uyarilari_goster(cevap.uyarilar, baslik="Bu cevapla ilgili notlar")
 
-  if cevap.dogrulama_gecti:
-    st.success(
-      "Sayısal doğrulama geçti — cevaptaki her sayının yapısal "
-      "kayıtta karşılığı var."
-    )
-  else:
-    st.error(
-      f"Sayısal doğrulama başarısız. Doğrulanamayan değerler: "
-      f"{', '.join(dict.fromkeys(cevap.reddedilen_sayilar))}. Cevap verilmedi."
-    )
-
+  # KAYNAKLAR AÇILIR KUTUDA (28 Ağustos). Her cevabın altında üç kart açık
+  # duruyordu: alıntılarıyla birlikte cevaptan uzun oluyor, ikinci soruyu
+  # ekranın dışına itiyordu. Kaynak GÖSTERİLİYOR olmalı — sürekli AÇIK
+  # olması gerekmiyor; sayı düğmenin üzerinde yazılı.
   if cevap.kaynaklar:
-    st.markdown("**Kaynaklar**")
-    for kaynak in cevap.kaynaklar:
-      with st.container(border=True):
-        st.markdown(f"**{kaynak.banka_adi}**")
-        st.markdown(f"[Kaynağa git]({kaynak.url})")
+    with st.popover(f"Kaynaklar ({len(cevap.kaynaklar)})", use_container_width=False):
+      for sira, kaynak in enumerate(cevap.kaynaklar):
+        if sira:
+          st.divider()
+        st.markdown(f"**{kaynak.banka_adi}** — [kaynağa git]({kaynak.url})")
         st.caption(f"Çekim tarihi: {kaynak.cekim_tarihi}")
         if kaynak.alinti:
           st.markdown(f"> {kaynak.alinti}")
-    st.caption(f"_{YASAL_UYARI}_")
+      st.caption(f"_{YASAL_UYARI}_")
 
 
-for girdi in st.session_state.gecmis:
+for girdi in aktif["gecmis"]:
   with st.chat_message("user"):
     st.markdown(girdi["soru"])
   with st.chat_message("assistant"):
-    cevap_renderla(girdi["cevap"], girdi.get("gecen_sure"))
+    cevap_renderla(girdi["cevap"])
 
 soru = st.chat_input("Kampanyalar hakkında bir soru sorun…")
 if not soru and (bekleyen := st.session_state.pop("bekleyen_soru", None)):
@@ -198,7 +219,6 @@ if soru:
 
   with st.chat_message("assistant"):
     with st.spinner("Yapısal veri sorgulanıyor…"):
-      baslangic = time.time()
       try:
         # ORKESTRATÖR ÜZERİNDEN (26 Ağustos). Doğrudan `sor()` çağrılırken
         # beşinci niyet (profil sorgusu) erişilemiyordu: «maaş müşterisi,
@@ -206,35 +226,32 @@ if soru:
         # `tekil_sorgu`ya düşüp müşterinin kısıtlarını yok sayıyordu.
         # `kayitlar` geçiriliyor ki chatbot aynı listeyi yeniden okumasın.
         cevap, iz_defteri = Orkestrator().calistir(
-          soru, kayitlar=kayitlar, baglam=st.session_state.baglam
+          soru, kayitlar=kayitlar, baglam=aktif["baglam"]
         )
-        gecen_sure = time.time() - baslangic
       except ConnectionError as e:
         # Yerleşik ConnectionError — Ollama/vektör yolu kapalıyken yakalanır.
         # requests.exceptions.ConnectionError da bunun alt sınıfıdır.
         st.error("Yerel dil modeli sunucusuna (Ollama) veya vektör veritabanına şu anda erişilemiyor.")
         if st.session_state.get("dev_mode", False):
-          with st.expander("Teknik Teşhis (Jüri / Geliştirici İçin)"):
-            st.write("Bağlantı reddedildi. Docker container'ların veya yerel Ollama servisinin çalıştığından emin olun.")
+          with st.expander("Teknik teşhis"):
             st.code(str(e))
         st.stop()
       except Exception as e:
         st.error("Bilinmeyen bir hata oluştu.")
         if st.session_state.get("dev_mode", False):
-          with st.expander("Teknik Teşhis"):
+          with st.expander("Teknik teşhis"):
             st.code(str(e))
         st.stop()
 
-    cevap_renderla(cevap, gecen_sure)
+    cevap_renderla(cevap)
 
     # AJAN İZLERİ — `ajanlar/temel.py`: "jüri ajan mimarisinin varlığını bizim
     # sözümüze değil, ekrandaki koşum kaydına bakarak görür". Panel 26 Ağustos'a
     # kadar hiç çizilmiyordu, çünkü izleri üreten orkestratör çağrılmıyordu.
     with st.expander(f"Ajan izleri — {iz_defteri.ozet()}", expanded=False):
       st.caption(
-        "Her satır bir ajan koşusu. **motor** sütunu kritik: karşılaştırma, "
-        "kısıt çözme ve sayısal kalkan deterministik KODDUR — aritmetiği "
-        "dil modeline yaptırmıyoruz ve bu iddia burada denetlenebilir."
+        "**Motor** sütunu: karşılaştırma, kısıt çözme ve sayısal kalkan "
+        "deterministik KODDUR — aritmetik dil modeline yaptırılmaz."
       )
       st.dataframe(
         [
@@ -261,8 +278,7 @@ if soru:
     # Geliştirici Modu (API)
     if st.session_state.get("dev_mode", False):
       st.markdown("---")
-      st.subheader("Geliştirici Entegrasyonu (Chatbot API)")
-      st.caption("**API Yanıt Özeti (JSON)**")
+      st.caption("**API yanıt özeti (JSON)** — aynı cevap `POST /ask` ucundan da alınır.")
       st.json({
         "niyet": cevap.niyet,
         "metin": cevap.metin,
@@ -270,7 +286,6 @@ if soru:
         "reddedilen_sayilar": cevap.reddedilen_sayilar,
         "kaynak_sayisi": len(cevap.kaynaklar) if cevap.kaynaklar else 0
       })
-      st.markdown("Aşağıdaki cURL komutuyla bu asistanı gerçek API üzerinden sorgulayabilirsiniz (`make api` ile başlatın):")
       curl_cmd = f"""curl -X POST "http://localhost:8000/ask" \\
  -H "Content-Type: application/json" \\
  -d '{{
@@ -281,7 +296,14 @@ if soru:
 
   # BAĞLAM CEVAPTAN ALINIR, sorudan değil: devredilecek banka adı kullanıcının
   # yazdığı metinde değil, cevabın kullandığı kayıtlarda duruyor.
-  st.session_state.baglam = cevap.baglam
-  st.session_state.gecmis.append({"soru": soru, "cevap": cevap, "gecen_sure": gecen_sure})
+  aktif["baglam"] = cevap.baglam
+  aktif["gecmis"].append({"soru": soru, "cevap": cevap})
+
+# YENİ MESAJDAN SONRA EN ALTA (28 Ağustos). Sohbet uzayınca Streamlit
+# kaydırmayı olduğu yerde bırakıyor: kullanıcı soru soruyor, cevap ekranın
+# altında görünmeyen yere yazılıyor ve «cevap vermedi» sanılıyordu.
+# İmza mesaj sayısı: içerik değişmezse bileşen yeniden çizilmez.
+if aktif["gecmis"]:
+  en_alta_kaydir(len(aktif["gecmis"]))
 
 sayfa_sonu()

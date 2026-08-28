@@ -14,6 +14,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from src.collector.toplayici import bankalari_yukle
 from src.schema import alan_etiketi, tur_etiketi
@@ -355,28 +356,72 @@ def _uyari_metni(uyari) -> str:
     return str(uyari)
 
 
-def ortak_kenar(*, demo_ipuclari: bool = True) -> None:
-    """Her sayfada aynı kimlik + geliştirici anahtarı.
+def gelistirici_anahtari() -> None:
+    """Ekranın sağ üstündeki tek anahtar: geliştirici modu.
 
-    Kenar çubuğunun geri kalanı (ağırlık, müşteri formu, örnek soru) sayfaya
-    aittir; burası yalnız ortak başlığı yazar. `dev_mode` anahtarı tek kez
-    tanımlanır — aynı key ile ikinci `st.toggle` Streamlit'te DuplicateWidgetID
-    fırlatır.
+    ESKİDEN KENAR ÇUBUĞUNUN TEPESİNDEYDİ ve yanında marka bloğu («Katılım
+    Lens»), ekip adı ve demo sırası yazıyordu. Üçü de kullanıcının kararını
+    değiştirmeyen SABİT metindi; altı sayfanın altısında, her çizimde tekrar
+    ediyordu. Tekrar eden metin okunmaz, yalnız yer kaplar — kenar çubuğu
+    artık sayfaya ait olana kalıyor (Chatbot'ta sohbet geçmişi,
+    Karşılaştırma'da ağırlıklar).
+
+    Anahtar SAĞ ÜSTTE çünkü sayfanın içeriğine ait değil, uygulamanın kipine
+    ait: içerikle birlikte kaydırılmaz, ilk bakışta göze girmez.
+
+    `dev_mode` anahtarı TEK KEZ tanımlanır — aynı `key` ile ikinci bir
+    `st.toggle` Streamlit'te `DuplicateWidgetID` fırlatır.
     """
-    with st.sidebar:
-        st.markdown("**Katılım Lens**")
-        st.caption("Takım SVARTAL · banka çalışanı aracı")
-        if demo_ipuclari:
-            st.caption(
-                "Demo sırası: Genel Bakış → **Boru Hattı** → Metin Analizi → "
-                "Banka Profili → Karşılaştırma → Müşteri Profili → Chatbot"
-            )
+    _, sag = st.columns([6, 1])
+    with sag:
         st.toggle(
-            "Geliştirici Modu (API)",
+            "Geliştirici",
             key="dev_mode",
-            help="JSON ve cURL çıktılarını açar. Uçlar: GET /compare, POST /ask, POST /extract (localhost:8000).",
+            help="JSON ve cURL çıktılarını açar. Uçlar: GET /compare, "
+            "POST /ask, POST /extract (localhost:8000).",
         )
-        st.markdown("---")
+
+
+def en_alta_kaydir(imza) -> None:
+    """Sayfayı en alta kaydırır — yeni mesaj ekranın dışında kalmasın.
+
+    NEDEN JAVASCRIPT: Streamlit'in kaydırma API'si yok ve `st.markdown` script
+    etiketlerini temizler (`sayfa_gezinme` de bu yüzden saf HTML çapası
+    kullanıyor). `components.html` gerçek bir iframe açar; aynı kökten
+    sunulduğu için `window.parent` erişimi çalışır.
+
+    `imza` yalnız İÇERİĞİ DEĞİŞTİRMEK için var: Streamlit aynı içerikli
+    bileşeni yeniden çizmez, imzasız script ikinci mesajda hiç koşmazdı.
+
+    Seçici listesi bilerek uzun: kaydırılan öge Streamlit sürümüyle değişiyor
+    (`section.main` → `[data-testid="stMain"]`). Hiçbiri tutmazsa sayfa
+    BOZULMAZ, yalnız kaydırma olmaz.
+    """
+    components.html(
+        f"""
+        <script>
+          // imza: {imza}
+          (function () {{
+            const belge = window.parent && window.parent.document;
+            if (!belge) return;
+            const kaydir = function () {{
+              const adaylar = [
+                belge.querySelector('section.main'),
+                belge.querySelector('[data-testid="stMain"]'),
+                belge.querySelector('[data-testid="stAppViewContainer"] section'),
+                belge.scrollingElement,
+              ];
+              adaylar.forEach(function (oge) {{
+                if (oge) oge.scrollTop = oge.scrollHeight;
+              }});
+            }};
+            kaydir();
+            [80, 250, 600].forEach(function (ms) {{ setTimeout(kaydir, ms); }});
+          }})();
+        </script>
+        """,
+        height=0,
+    )
 
 
 def inject_custom_css():
@@ -439,6 +484,25 @@ def inject_custom_css():
         [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {
             color: #ADADB8 !important;
         }
+        /* CEVAP ÜSTBİLGİSİ — niyet ve doğrulama tek satırda, küçük çip.
+           Eskiden ikisi de ayrı kutuydu: yeşil `st.success` kutusu üç satır
+           kaplayıp «doğrulama geçti» diye HER cevapta çıkıyordu. Her koşuda
+           çıkan bir başarı kutusu bilgi taşımaz, yalnız cevabı aşağı iter —
+           bilgi kayboldu sayılmaz, çipin `title`'ında duruyor. BAŞARISIZLIK
+           hâlâ tam boy kırmızı kutudur: o gerçekten seyrek ve kritik. */
+        .kl-meta { margin: 2px 0 12px 0; }
+        .kl-cip {
+            display: inline-block; font-size: 0.74rem; font-weight: 600;
+            padding: 2px 10px; border-radius: 20px; margin-right: 6px;
+            background: rgba(255,255,255,0.05); color: #B4B4BE;
+            border: 1px solid rgba(255,255,255,0.10);
+            cursor: help;
+        }
+        .kl-cip-onay {
+            background: rgba(0,168,107,0.14); color: #4FD1A0;
+            border-color: rgba(0,168,107,0.30);
+        }
+
         .kl-rozet {
             display: inline-block; font-size: 0.72rem; font-weight: 600;
             padding: 2px 9px; border-radius: 20px; margin-left: 8px;

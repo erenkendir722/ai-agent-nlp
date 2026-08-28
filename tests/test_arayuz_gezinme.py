@@ -70,3 +70,29 @@ def test_gezinme_capalari_yardimcida_eslesiyor() -> None:
     assert 'href="#kl-ust"' in kaynak and 'id="kl-ust"' in kaynak
     assert 'href="#kl-alt"' in kaynak, "aşağı okun hedefi yok"
     assert 'id="kl-alt"' in kaynak, "`sayfa_sonu()` `#kl-alt` çapasını basmıyor"
+
+
+def test_gelistirici_anahtari_her_sayfada_bir_kez() -> None:
+    """Sağ üstteki geliştirici anahtarı her sayfada TAM BİR KEZ kurulmalı.
+
+    NEDEN NÖBETÇİ — iki yönde de sessiz bozuluyor:
+
+        hiç çağrılmazsa  ->  `dev_mode` hiç tanımlanmaz, sayfadaki JSON ve
+                             cURL blokları ölür; kimse hata görmez, yalnız
+                             açılmazlar.
+        iki kez çağrılırsa -> aynı `key` ile ikinci `st.toggle`,
+                             Streamlit'te `DuplicateWidgetID` fırlatır.
+
+    Anahtar 28 Ağustos'ta kenar çubuğundaki marka bloğundan (`ortak_kenar`)
+    ayrıldı; o blokla birlikte silinme riski bu testin var olma sebebi.
+    """
+    eksik, fazla = [], []
+    for sayfa in SAYFALAR:
+        sayi = sayfa.read_text(encoding="utf-8").count("gelistirici_anahtari()")
+        if sayi == 0:
+            eksik.append(sayfa.name)
+        elif sayi > 1:
+            fazla.append(sayfa.name)
+
+    assert not eksik, f"geliştirici anahtarı yok: {', '.join(eksik)}"
+    assert not fazla, f"anahtar birden çok kez kuruluyor: {', '.join(fazla)}"

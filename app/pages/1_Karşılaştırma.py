@@ -39,7 +39,7 @@ from app.ui_utils import (  # noqa: E402
   format_kategori,
   inject_custom_css,
   kayitlari_yukle,
-  ortak_kenar,
+  gelistirici_anahtari,
   sonuclari_oku,
   tr_sayi,
   sayfa_gezinme,
@@ -49,7 +49,7 @@ from app.ui_utils import (  # noqa: E402
 
 st.set_page_config(page_title="Karşılaştırma", page_icon="", layout="wide")
 inject_custom_css()
-ortak_kenar()
+gelistirici_anahtari()
 sayfa_gezinme()
 
 
@@ -498,7 +498,6 @@ with _sk_maliyet:
               template="plotly_dark",
             )
             st.plotly_chart(fig, use_container_width=True, key=f"donut_karsilastirma_{i}")
-            st.caption("Toplam geri ödemenin dağılımı.")
         
       # «NEDEN AYNI RAKAM?» (27 Agu, 2. inceleme). Farkli urunler (konut ve
       # tasit) ayni tutar ve vadede birebir ayni maliyeti verebiliyor —
@@ -509,9 +508,8 @@ with _sk_maliyet:
       _gecerliler = [m for m in maliyet_sonuclari if m != float("inf")]
       if len(_gecerliler) > 1 and len({round(m, 2) for m in _gecerliler}) < len(_gecerliler):
         st.caption(
-          "Bazı kampanyalar birebir aynı maliyeti veriyor: toplam geri ödeme "
-          "yalnız **kâr payı oranı, tutar ve vadeden** hesaplanır — ürün türü "
-          "(konut, taşıt) hesaba girmez. Oranları aynıysa maliyetleri de aynıdır."
+          "Aynı maliyet, aynı oran demektir: hesaba yalnız **kâr payı oranı, "
+          "tutar ve vade** girer; ürün türü girmez."
         )
 
       # Kazananı Vurgulama
@@ -523,10 +521,7 @@ with _sk_maliyet:
             kazanan = kampanya_secenekleri[ad]
             with cols[i]:
               st.success("**En uygun seçenek**")
-              st.caption(
-                "Manşet orana değil, tahsis ücreti dâhil TOPLAM geri ödemeye göre. "
-                "Düşük kâr payı her zaman düşük maliyet demek değildir."
-              )
+              st.caption("Tahsis ücreti dâhil toplam geri ödemeye göre.")
 
               # DEVAM YOLU — karşılaştırma bir cevap verir, sonrası boşluktu.
               # Kullanıcı «peki bu banka nasıl bir kurum» ya da «kaynağı nerede»
@@ -575,11 +570,8 @@ with _sk_vade:
     )
     taksit_tavani_acik = v2.toggle(
       "Müşterinin aylık ödeme tavanı belli",
-      help=(
-        "Kapalıyken sistem «en iyi vade» iddia etmez: toplam maliyet vade "
-        "kısaldıkça hep azalır, yani kazanan her zaman en kısa vade olurdu. "
-        "Tavan girilirse tavsiye gerçek bir tavsiyeye dönüşür."
-      ),
+      help="Tavan olmadan «en iyi vade» hep en kısa vade çıkar; "
+           "sistem o yüzden tavsiye vermez.",
     )
     azami_taksit = None
     if taksit_tavani_acik:
@@ -675,10 +667,7 @@ with _sk_vade:
                                    title="Vade uzadıkça aylık taksit")
           st.plotly_chart(fig_taksit, use_container_width=True)
 
-      st.caption(
-        "Kâr payı oranı ve azami vade kampanya kaydından gelir; kaynağı "
-        "«Kayıt detayları» bölümünde açılabilir."
-      )
+
 
 
 
@@ -783,9 +772,8 @@ if benim_bankam != "(Seçilmedi)" and sirali:
     '<span style="background:#D9A441;color:#1A1A1F;font-weight:700;font-size:0.72rem;'
     'padding:2px 8px;border-radius:20px;letter-spacing:0.4px;">AI ÜRETİMİ — DOĞRULANMAMIŞ</span>'
     '<div style="margin-top:7px;color:#C4C4CE;font-size:0.88rem;line-height:1.55;">'
-    "Bu bölüm sayfadaki <b>tek</b> serbest metin çıktısıdır ve sayısal doğrulama "
-    "kalkanından <b>geçmez</b>. Satış argümanı taslağı olarak kullanın; oran, vade "
-    "ve maliyet için yukarıdaki tabloyu esas alın.</div></div>",
+    "Sayfadaki tek serbest metin çıktısı; sayısal kalkandan <b>geçmez</b>. "
+    "Rakam için yukarıdaki tabloyu esas alın.</div></div>",
     unsafe_allow_html=True,
   )
   if st.button("Rakip analizi taslağı üret"):
@@ -835,9 +823,8 @@ Sadece analizi ver, profesyonel bir B2B dili kullan."""
               ],
               temperature=0.3
           )
-          st.success("Battlecard başarıyla üretildi!")
-          st.markdown(f"> **Not:** {model_adi} modeli kullanıldı.")
           st.info(response.choices[0].message.content)
+          st.caption(f"{model_adi} modeliyle üretildi.")
         except Exception as e:
           st.error(f"EVREN API'sine ulaşılamadı: {str(e)}")
 
@@ -895,8 +882,7 @@ for kayit in sirali[:20]:
 st.divider()
 
 if st.session_state.get("dev_mode", False):
-  st.subheader("Geliştirici Entegrasyonu (B2B API)")
-  st.markdown("Aşağıdaki cURL komutuyla filtrelenmiş sonuçları gerçek API'den çekebilirsiniz (`make api` ile başlatın):")
+  st.caption("**Filtrelenmiş sonuçlar API'den** (`make api` ile başlatın):")
   
   curl_cmd = f"""curl "http://localhost:8000/compare?kriter={secili_kriter.value}&limit=10"
 """
