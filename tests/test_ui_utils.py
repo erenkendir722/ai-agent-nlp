@@ -106,3 +106,65 @@ def test_gercek_sonuclar_dosyasi_makul_aralikta():
             "docs/SONUCLAR.md'deki halüsinasyon oranı ya hedefi aştı ya da "
             "birim kaydı (oran bekleniyor, yüzde değil)."
         )
+
+
+# ---------------------------------------------------------------------------
+# Serbest metin → Word belgesi
+# ---------------------------------------------------------------------------
+#
+# Satış notu bir TABLO DEĞİL, bir metindir. Bir süre tek hücreli bir CSV
+# olarak iniyordu: Word'de açıldığında başlıksız, satırsız, tek bir dev
+# hücreydi ve kimsenin işine yaramıyordu. Aşağısı, indirilen belgenin
+# gerçekten biçimlenmiş olduğunu tutuyor.
+
+
+def test_serbest_metin_baslik_ve_madde_uretir():
+    """Markdown başlığı `<h3>`, madde `<li>` olmalı."""
+    from app.ui_utils import _serbest_metin_html
+
+    html_cikti = _serbest_metin_html("## Güçlü Yönlerimiz\n- 120 ay vade\n- Masrafsız")
+
+    assert "<h3>Güçlü Yönlerimiz</h3>" in html_cikti
+    assert html_cikti.count("<li>") == 2
+    assert "<ul>" in html_cikti and "</ul>" in html_cikti
+
+
+def test_numarali_satir_baslik_mi_madde_mi():
+    """Kısa ve noktasız numaralı satır BAŞLIK, cümle olan MADDE değil paragraf.
+
+    Dil modeli bazen `## Başlık` yerine `1. Başlık` yazıyor. İkisini de
+    başlık saymak «1. Vade 120 aya çıkarılabilir.» gibi bir cümleyi de
+    başlığa çevirirdi — ayrım uzunluk ve noktalama.
+    """
+    from app.ui_utils import _serbest_metin_html
+
+    assert "<h3>Görüşmede Ne Söylenmeli</h3>" in _serbest_metin_html(
+        "1. Görüşmede Ne Söylenmeli"
+    )
+    cumle = _serbest_metin_html("1. Vade 120 aya çıkarılabilir.")
+    assert "<h3>" not in cumle, "cümle başlığa çevrildi"
+
+
+def test_metin_html_kacirilir_sonra_kalinlastirilir():
+    """Kullanıcı metnindeki `<` kaçırılmalı, bizim `<b>`imiz kaçırılmamalı.
+
+    Ters sıra bir enjeksiyon yolu açardı: indirilen belge Word'de açılıyor
+    ama aynı üretici bir gün tarayıcıya basılırsa metindeki etiket çalışırdı.
+    """
+    from app.ui_utils import _serbest_metin_html
+
+    cikti = _serbest_metin_html("**kalın** ve <script>alert(1)</script>")
+
+    assert "<b>kalın</b>" in cikti
+    assert "<script>" not in cikti
+    assert "&lt;script&gt;" in cikti
+
+
+def test_satis_notu_word_belgesi_bicim_tasir():
+    """Belge başlık bloğu, gövde ve dipnot taşımalı — düz metin yığını değil."""
+    from app.ui_utils import _BELGE_BICIMI, _serbest_metin_html
+
+    assert "@page" in _BELGE_BICIMI, "sayfa kenar boşluğu tanımlı değil"
+    assert "Calibri" in _BELGE_BICIMI, "Word'ün tanıdığı bir yazı tipi yok"
+    # Gövde çeviricisi belge üreticisiyle aynı yerden gelmeli.
+    assert _serbest_metin_html("## X").startswith("<h3>")

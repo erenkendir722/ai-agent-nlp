@@ -7,7 +7,6 @@ bu panel o izlenebilirliğin arayüzdeki karşılığıdır.
 
 from __future__ import annotations
 
-import io
 import datetime
 import sys
 from pathlib import Path
@@ -35,6 +34,7 @@ from src.schema import HedefKitle, Kampanya  # noqa: E402
 from app.ui_utils import (  # noqa: E402
   RENK_ANA,
   disa_aktar,
+  metin_word_indir,
   RENK_IKINCIL,
   RENK_UYARI,
   format_bank_name,
@@ -364,10 +364,14 @@ def _enum_yazi(alan) -> str:
   return alan.goster()
 
 
-def _csv_olustur(kayitlar):
-  satirlar = []
-  for k in kayitlar:
-    satirlar.append({
+def _aktarim_cercevesi(kayitlar):
+  """İndirilen tablo — EKRANDAKİNDEN DAHA ZENGİN, bilerek.
+
+  Ekranda yer kısıtlı; dosyada değil. Kaynak URL ve çekim tarihi burada
+  taşınıyor çünkü indirilen bir tablo kaynağından koparsa denetlenemez.
+  """
+  return pd.DataFrame([
+    {
       "Banka": format_bank_name(k.banka_adi),
       "Kampanya/Ürün": format_kategori(k.urun_turu or k.kampanya_turu) if (k.urun_turu or k.kampanya_turu) else "—",
       "Hedef Kitle": format_hedef_kitle(k.hedef_kitle) if k.hedef_kitle else "—",
@@ -377,42 +381,29 @@ def _csv_olustur(kayitlar):
       "Tahsis Ücreti": _alan_yazi(k, "tahsis_ucreti"),
       "Güven Skoru": f"{k.ortalama_guven:.2f}",
       "Kaynak URL": k.kaynak_url,
-      "Çekim Tarihi": k.cekim_tarihi.strftime("%Y-%m-%d %H:%M") if k.cekim_tarihi else "—"
-    })
-  df = pd.DataFrame(satirlar)
-  return df.to_csv(index=False, sep=';').encode('utf-8-sig')
+      "Çekim Tarihi": k.cekim_tarihi.strftime("%Y-%m-%d %H:%M") if k.cekim_tarihi else "—",
+    }
+    for k in kayitlar
+  ])
 
-
-def _excel_html(kayitlar) -> bytes:
-  """Excel'in açtığı HTML tablo — ek paket yok, on-prem uyumlu."""
-  df = pd.read_csv(io.BytesIO(_csv_olustur(kayitlar)), sep=';')
-  return (
-    "<html><head><meta charset='utf-8'></head><body>"
-    + df.to_html(index=False)
-    + "</body></html>"
-  ).encode("utf-8")
 
 secili_kriter: Kriter = st.session_state.kriter
 
-col_c, col_d, col_e = st.columns([2, 1, 1])
+sirali_export = sirala(suzulmus, secili_kriter, agirliklar)
+
+# İNDİRME ORTAK YARDIMCIYA BAĞLANDI (28 Ağustos). Bu sayfa kendi CSV ve
+# Excel üreticisini taşıyordu; kalan dört ekran `disa_aktar` kullanıyordu.
+# İki yol, iki ayraç kararı, iki kodlama — indirilen dosya hangi ekrandan
+# geldiğine göre değişiyordu.
+col_c, col_d = st.columns([2, 2])
 with col_c:
   st.caption(f"Sıralama ölçütü: **{KRITER_ETIKETLERI[secili_kriter]}**")
-sirali_export = sirala(suzulmus, secili_kriter, agirliklar)
 with col_d:
-  st.download_button(
-    label="CSV indir",
-    data=_csv_olustur(sirali_export),
-    file_name="kampanyalar_export.csv",
-    mime="text/csv",
-    use_container_width=True
-  )
-with col_e:
-  st.download_button(
-    label="Excel indir",
-    data=_excel_html(sirali_export),
-    file_name="kampanyalar_export.xls",
-    mime="application/vnd.ms-excel",
-    use_container_width=True
+  disa_aktar(
+    _aktarim_cercevesi(sirali_export),
+    dosya_adi="kampanya_karsilastirma",
+    anahtar="ks_tablo",
+    baslik=f"Kampanya karşılaştırması — {KRITER_ETIKETLERI[secili_kriter]}",
   )
 
 sirali = sirala(suzulmus, secili_kriter, agirliklar)
@@ -878,12 +869,15 @@ Bizim Ürünlerimiz ({benim_bankam}):
 Rakip Ürünleri:
 {onlar_ozet}
 
-Lütfen analizini şu başlıklarla yap:
-1. Bizim Üstün Olduğumuz Yönler (Avantajlar)
-2. Rakiplerin Üstün Olduğu Yönler (Zayıflıklar)
-3. Satış Stratejisi (Müşteriye ne söylemeliyiz?)
+Analizi TAM OLARAK şu üç başlıkla ve markdown biçiminde yaz:
 
-Sadece analizi ver, profesyonel bir B2B dili kullan."""
+## Güçlü Yönlerimiz
+## Rakiplerin Öne Geçtiği Noktalar
+## Görüşmede Ne Söylenmeli
+
+Her başlığın altına kısa maddeler yaz, her madde "- " ile başlasın.
+Sadece analizi ver, profesyonel bir B2B dili kullan; başlık ve madde
+dışında bir biçim kullanma."""
 
           response = client.chat.completions.create(
               model=model_adi,
@@ -910,14 +904,32 @@ Sadece analizi ver, profesyonel bir B2B dili kullan."""
   # Taslak, üretildiği koşuda da sonrakilerde de BURADA çizilir — tek yer.
   _not = st.session_state.get("ks_satis_notu")
   if _not:
-    st.info(_not["metin"])
-    _i1, _i2 = st.columns([3, 1])
+    # `st.info` DEĞİL: mavi bildirim kutusu bir DURUM bildirir, bu bir
+    # belge. Kenarlıklı kapta `st.markdown` başlıkları ve maddeleri
+    # gerçekten biçimlendiriyor — kutu içinde düz metin yığınıydı.
+    with st.container(border=True):
+      st.markdown(_not["metin"])
+
+    # CSV KALDIRILDI. Satış notu bir TABLO DEĞİL: tek hücreye sıkıştırılan
+    # metin, açıldığında başlıksız ve satırsız tek bir dev hücre oluyordu.
+    # Tablo indirmesi tabloya, metin indirmesi metne.
+    _i1, _i2 = st.columns([1, 2])
     with _i1:
-      disa_aktar(
-        pd.DataFrame([{"Banka": _not["banka"], "Satış notu": _not["metin"]}]),
+      metin_word_indir(
+        _not["metin"],
         dosya_adi=f"satis_notu_{_not['banka'].lower().replace(' ', '_')}",
         anahtar="ks_satis_notu_indir",
-        baslik=f"{_not['banka']} — satış notu taslağı",
+        baslik=f"{_not['banka']} — Satış Notu",
+        alt_bilgi=(
+          f"{datetime.date.today():%d.%m.%Y} · Rakip seti: "
+          + ", ".join(format_bank_name(b) for b in secili_bankalar[:4])
+          + ("…" if len(secili_bankalar) > 4 else "")
+        ),
+        dipnot=(
+          f"Bu metin {_not['model']} dil modeliyle üretilmiş bir TASLAKTIR ve "
+          "sayısal doğrulamadan geçmez. Oran, vade ve maliyet için "
+          "Katılım Lens karşılaştırma tablosunu esas alın."
+        ),
       )
     _i2.caption(f"{_not['model']} modeliyle üretildi.")
 

@@ -8,6 +8,7 @@ yedi bankada ayrışmıştı ("Türkiye Emlak Katılım Bankası A.Ş." kayıt d
 
 from __future__ import annotations
 
+import html
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -509,6 +510,125 @@ def _word_bayt(cerceve, baslik: str) -> bytes:
         + cerceve.to_html(index=False)
         + "</body></html>"
     ).encode("utf-8")
+
+
+_KALIN_DESENI = re.compile(r"\*\*(.+?)\*\*")
+_BASLIK_DESENI = re.compile(r"^\s*#{1,6}\s*(.+)$")
+_MADDE_DESENI = re.compile(r"^\s*[-*\u2022]\s+(.+)$")
+_NUMARALI_DESENI = re.compile(r"^\s*\d+[.)]\s+(.{1,90})$")
+
+
+def _satir_ici(ham: str) -> str:
+    """Satır içi biçim — ÖNCE kaçır, SONRA kalınlaştır.
+
+    Ters sıra bir enjeksiyon yolu açardı: `<b>` etiketini biz koyup sonra
+    kaçırsaydık kendi etiketimizi de kaçırırdık; kullanıcı metnindeki `<`
+    ise kaçırılmadan geçerdi.
+    """
+    return _KALIN_DESENI.sub(r"<b>\1</b>", html.escape(ham))
+
+
+def _serbest_metin_html(metin: str) -> str:
+    """Dil modelinin markdown'ımsı çıktısını okunur HTML'e çevirir.
+
+    NEDEN GEREKLİ: satış notu bir TABLO DEĞİL, bir metindir. Tek hücreye
+    sıkıştırılınca başlıklar, maddeler ve paragraf araları kayboluyor;
+    Word'de tek satırlık dev bir hücre açılıyordu.
+
+    Numaralı satır İKİ ANLAMA gelebiliyor — «1. Avantajlar» bir başlık,
+    «1. Vade 120 aya çıkarılabilir.» bir madde. Ayrım uzunluk ve noktalama:
+    kısa ve noktasız olan başlıktır. İstemde markdown başlığı isteniyor,
+    bu yalnız yedek yol.
+    """
+    parcalar: list[str] = []
+    liste_acik = False
+
+    def _listeyi_kapat() -> None:
+        nonlocal liste_acik
+        if liste_acik:
+            parcalar.append("</ul>")
+            liste_acik = False
+
+    for ham in metin.splitlines():
+        satir = ham.strip()
+        if not satir:
+            _listeyi_kapat()
+            continue
+
+        if baslik := _BASLIK_DESENI.match(satir):
+            _listeyi_kapat()
+            parcalar.append(f"<h3>{_satir_ici(baslik.group(1))}</h3>")
+        elif madde := _MADDE_DESENI.match(satir):
+            if not liste_acik:
+                parcalar.append("<ul>")
+                liste_acik = True
+            parcalar.append(f"<li>{_satir_ici(madde.group(1))}</li>")
+        elif (
+            (numarali := _NUMARALI_DESENI.match(satir))
+            and not numarali.group(1).rstrip().endswith((".", ",", ";", ":"))
+        ):
+            _listeyi_kapat()
+            parcalar.append(f"<h3>{_satir_ici(numarali.group(1))}</h3>")
+        else:
+            _listeyi_kapat()
+            parcalar.append(f"<p>{_satir_ici(satir)}</p>")
+
+    _listeyi_kapat()
+    return "".join(parcalar)
+
+
+_BELGE_BICIMI = """
+@page { margin: 2.2cm 2cm; }
+body { font-family: Calibri, Segoe UI, sans-serif; font-size: 11pt;
+       color: #1a1a1a; line-height: 1.55; }
+h1 { font-size: 18pt; margin: 0 0 2pt 0; }
+h3 { font-size: 12.5pt; margin: 16pt 0 4pt 0; color: #0B6B4A;
+     border-bottom: 1px solid #D8D8D8; padding-bottom: 3pt; }
+p  { margin: 0 0 8pt 0; }
+ul { margin: 0 0 10pt 0; padding-left: 18pt; }
+li { margin-bottom: 4pt; }
+.ust { border-bottom: 2px solid #0B6B4A; padding-bottom: 8pt; margin-bottom: 14pt; }
+.alt-bilgi { color: #666666; font-size: 9pt; margin-top: 2pt; }
+.dipnot { margin-top: 22pt; padding-top: 8pt; border-top: 1px solid #D8D8D8;
+          color: #666666; font-size: 9pt; }
+"""
+
+
+def metin_word_indir(
+    metin: str,
+    *,
+    dosya_adi: str,
+    anahtar: str,
+    baslik: str,
+    alt_bilgi: str = "",
+    dipnot: str = "",
+    etiket: str = "Word olarak indir",
+) -> None:
+    """Serbest metni biçimlendirilmiş bir Word belgesi olarak indirtir.
+
+    `disa_aktar`dan AYRI: o tablo indirir (CSV + Word), bu metin indirir.
+    İkisini tek fonksiyona zorlamak, çağıranın elindeki şeyin tablo mu metin
+    mi olduğunu belirsizleştirirdi — nitekim satış notu bir süre tek hücreli
+    bir CSV olarak iniyordu ve o dosyanın kimseye faydası yoktu.
+    """
+    belge = (
+        "<html><head><meta charset='utf-8'>"
+        f"<style>{_BELGE_BICIMI}</style></head><body>"
+        f"<div class='ust'><h1>{html.escape(baslik)}</h1>"
+        + (f"<div class='alt-bilgi'>{html.escape(alt_bilgi)}</div>" if alt_bilgi else "")
+        + "</div>"
+        + _serbest_metin_html(metin)
+        + (f"<div class='dipnot'>{html.escape(dipnot)}</div>" if dipnot else "")
+        + "</body></html>"
+    )
+    st.download_button(
+        etiket,
+        data=belge.encode("utf-8"),
+        file_name=f"{dosya_adi}.doc",
+        mime="application/msword",
+        use_container_width=True,
+        key=anahtar,
+    )
 
 
 def disa_aktar(cerceve, *, dosya_adi: str, anahtar: str, baslik: str = "") -> None:
