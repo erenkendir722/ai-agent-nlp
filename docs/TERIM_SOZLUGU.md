@@ -222,7 +222,7 @@ sorudadır: **ücret finansmana mı ait, başka bir hizmete mi?**
 |---|---|---|---|
 | **Kart kampanyası** | Kredi veya banka kartı harcamasına bağlı kampanya. | `kampanya_turu = kart` | — |
 | **Alışveriş puanı** | Harcama karşılığı kazanılan, harcamada kullanılabilen puan. | `alisveris_puani` (`Birim.TL` veya `Birim.PUAN`) | ✓ |
-| **Nakit iade** | Harcamanın bir kısmının hesaba geri ödenmesi. | `odul_miktari`; `kar_payi_orani` VETOSU | ✓ |
+| **Nakit iade / iade** | Harcamanın bir kısmının hesaba geri ödenmesi. | `odul_miktari`; `kar_payi_orani` VETOSU | ✓ |
 | **Mil** | Uçuş programlarında kazanılan puan birimi. | `odul_miktari`; `kar_payi_orani` VETOSU | ✓ |
 | **Taksitlendirme** | Kart harcamasının taksitlere bölünmesi. | `taksit_sayisi` | — |
 | **Ekstre** | Kart dönem hesap özeti. | `FINANSMAN_DISI_UCRET` | — |

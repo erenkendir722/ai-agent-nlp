@@ -31,6 +31,7 @@ from src.rag.chatbot import (
     Niyet,
     eksik_nicelikler,
     kalkandan_gecir,
+    konu_sozcukleri,
     niyet_belirle,
     sayi_goster,
     sorulan_bankalar,
@@ -39,6 +40,7 @@ from src.rag.chatbot import (
     urun_etiketi_uyar,
 )
 from src.rag.baglam import Devir, SohbetBaglami, baglam_guncelle, soruyu_tamamla
+from src.rag.konu import konu_agirliklari, konu_suz
 from src.rag.chatbot import sor as chatbot_sor
 from src.comparison.karsilastirma import ALAN_YONLERI, turu_olcut_kapsaminda
 from src.rag.chatbot import alan_goster
@@ -560,6 +562,27 @@ def _urun_suz(soru: str, kampanyalar: list[Kampanya]) -> list[Kampanya]:
     ]
 
 
+def _konu_suz(
+    soru: str,
+    adaylar: list[Kampanya],
+    kayitlar: list[KampanyaKaydi],
+    korpus: list[Kampanya],
+) -> list[Kampanya]:
+    """Soruda kampanya KONUSU adlandırılmışsa kümeyi ona daraltır.
+
+    Sözcük çıkarımı `KampanyaKaydi` korpusunu ister (banka adları, segment
+    dağarcığı oradan okunuyor); ağırlıklandırma ise elde hangi tip varsa
+    onun üzerinde çalışır — `rag.konu` iki tipi de tanır.
+
+    AYIRT EDİCİLİK SÜZGEÇLERDEN ÖNCEKİ KÜMEDE ÖLÇÜLÜR (`korpus`), daraltma
+    süzülmüş kümede yapılır (`adaylar`) — chatbot kolundaki kuralın aynısı.
+    Ölçü süzülmüş kümede alınsaydı eşik soruya göre oynardı: aynı sözcük beş
+    kayıtlık bir kümede «her yerde geçiyor», 979 kayıtta «nadir» çıkardı.
+    """
+    agirlik = konu_agirliklari(konu_sozcukleri(soru, kayitlar), korpus)
+    return konu_suz(agirlik, adaylar)
+
+
 def _profil_kaynagi(
     sonuc: UygunlukSonucu, kimlik_kampanya: dict[str, Kampanya]
 ) -> Kaynakca:
@@ -726,7 +749,15 @@ class Orkestrator:
         #
         # BANKA SÜZGECİ 27 Ağustos'ta eklendi ve aynı gerekçeyle ÖNCE koşar
         # (bkz. `_banka_suz`).
+        korpus = kampanyalar
         kampanyalar = _urun_suz(soru, _banka_suz(soru, kampanyalar))
+        # KONU SÜZGECİ PROFİL KOLUNDA DA İŞLER (28 Ağustos, ADR 026).
+        #
+        # Aynı refleks, aynı sebep: «Emlak Katılım'dan 1.000.000 TL KENTSEL
+        # DÖNÜŞÜM finansmanı, 120 ay» sorusunda kentsel dönüşüm kampanyası
+        # bankanın diğer konut kayıtlarıyla aynı torbada duruyordu. Ölçü
+        # `rag.konu`'dan gelir — chatbot koluyla iki ayrı ölçü tutulmaz.
+        kampanyalar = _konu_suz(soru, kampanyalar, kayitlar, korpus) or kampanyalar
 
 
         sonuclar, muhakeme_izi = self.muhakeme.calistir((profil, kampanyalar))

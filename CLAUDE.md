@@ -83,6 +83,7 @@ Kritik yol: `H-01 (altın set) → S-12 (make eval) → S-13 (ablasyon) → ES-1
 | Karşılaştırma | `src/comparison/karsilastirma.py` |
 | Chatbot + kalkan | `src/rag/chatbot.py` |
 | Çok turlu sohbet (yuva devri) | `src/rag/baglam.py` |
+| Kampanya konusu eşleşmesi | `src/rag/konu.py` |
 | Chatbot boşluk taraması | `eval/soru_taramasi.py` |
 | RAG gömme + kosinüs arama | `src/vektor_db.py` |
 | Arayüz / API | `app/` · `src/api/sunucu.py` |
@@ -338,10 +339,38 @@ ama `KAPSAM_DISI` etiketiyle dönüyordu ve arayüzdeki rozet «Kibar ret» yaz�
 anlamlı yazım ayıracıdır. **Sözlük gövdesi kullanıcıya OKUNUR** — oraya gerekçe
 yazma, chatbot onu cevap diye okur. Tanım sözlükte, gerekçe ADR'de.
 
-**`make chatbot-tarama` — sorular korpustan ÜRETİLİR.** 194 soru (dokuz banka ×
-beş ölçüt × altı ürün × yazım biçimleri), beklenen cevap bilinmez, yalnız
-patoloji aranır (kapsam dışı reddedilen meşru soru · ölçüt kayması · yanlış
-banka · kalkan reddi · sızan kapsam dışı). Elle yazılan 31 soruluk set
+**Kampanyanın KONUSU dördüncü süzgeçtir; sözlüğü korpustur (ADR 026, 28 Ağu).**
+«TOM Katılım'ın **akaryakıt** kampanyasında ne kadar iade var?» sorusuna A101
+meyve-sebze kampanyasının 250 TL'si dönüyordu — doğru kayıt aynı bankada,
+aynı kümedeydi. Banka · ürün · segment tanınıyor, kampanyanın KONUSU hiçbir
+yerde okunmuyordu ve kararı `doluluk_orani` veriyordu. **Kalkan bunu göremez:**
+o «bu sayı kayıtta var mı?» diye sorar, «bu kayıt sorulan şey mi?» diye sormaz.
+
+Konu sözlüğü ELLE YAZILMAZ — ürün sınıfı şemada sonludur, kampanya konusu
+değildir; yazılan liste ilk `make crawl`'da geride kalır. Üç ölçüm:
+**kampanyanın adı adresinin SON dilimidir** (gövde başka kampanyalardan söz
+eder: TOM'un 10 kaydı «akaryakıt» diyor, adında taşıyan 4'ü · LLM özeti soru
+dilini yankılar: «güncel» 4, «belirli» 24 kayda eşleşiyordu, adres diliminde
+ikisi de sıfır) · **ayırt edicilik `KONU_TAVANI`'yla ölçülür** (%3'ün üstü
+kampanyayı değil kampanyacılığı adlandırır: «varan» 114, «özel» 77) ·
+**süzgeç birleşimdir** (üç konu sayan soru, üçünü birden taşıyan kampanyayı
+sormaz). Sıra `konu → sorulan alan → güncellik → ölçüt değeri → doluluk`:
+konu bir tercih değil KİMLİK kısıtıdır, yoksa «akaryakıt kampanyasında ne
+kadar iade» sorusu bankanın EN YÜKSEK ödülünü gösterir.
+
+Konu sözcüğü ARTIKTIR: sistemin zaten çözdüğü her şey (`_cozulmus_sozcukler`)
+düşürülür, kalanı iki dilbilgisi kapısı eler. **`sifat_fiil_mi` burada
+KULLANILAMAZ** — o kural yalnız «banka»nın önündeki sözcüğe bakar; her
+sözcüğe uygulanınca korpustan 43 konu adı yutuyordu («restoran», «worldpuan»
+ve bütün ayrılma hâlleri: «mağazadan», «marketten»). Ayrım gövde
+uzunluğundadır (`AZAMI_FIIL_GOVDESI`): fiil gövdesi kısadır («ol-», «ver-»),
+ad uzun gövde bırakır («restor-»).
+
+**`make chatbot-tarama` — sorular korpustan ÜRETİLİR.** 248 soru (dokuz banka ×
+beş ölçüt × altı ürün × banka başına üç KONU × yazım biçimleri), beklenen cevap
+bilinmez, yalnız patoloji aranır (kapsam dışı reddedilen meşru soru · ölçüt
+kayması · yanlış banka · yanlış KAMPANYA · kalkan reddi · sızan kapsam dışı).
+Elle yazılan 31 soruluk set
 (`make chatbot-test`) derindir ama kapsamı yazıldığı kadardır; ADR 024'ün iki
 kusurunu da göremezdi. Ağ kullanır, o yüzden `eval/` altında.
 
@@ -472,9 +501,9 @@ make vektor       # RAG vektör indeksini kur (gömme + kosinüs, ~70 sn)
 make tazelik      # kampanya sayfaları değişmiş mi (G-17) [adet=N demo=1]
 make kesif        # listede olup elimizde olmayan kampanya var mı (G-19) [banka=X]
 make run          # Streamlit arayüzü
-make test         # testler (1630 test)
+make test         # testler (1697 test)
 make eval         # metrikler -> docs/SONUCLAR.md
-make chatbot-tarama # chatbot boşluk taraması (194 üretilmiş soru) [adet=N]
+make chatbot-tarama # chatbot boşluk taraması (248 üretilmiş soru) [adet=N]
 make ablasyon     # 5 kollu ablasyon (katman + ajan katkısı), ~25 dk
 make uygunluk-goc # mevcut kayıtlara uygunluk koşullarını yaz (A-08, LLM'siz)
 make kapsam       # banka bazlı kapsam raporu -> docs/KAPSAM_RAPORU.md
