@@ -320,7 +320,22 @@ for sira, sonuc in enumerate(gosterilecek[:15], 1):
                 if st.button("Detay", key=f"mp_detay_{sonuc.kampanya_id}", use_container_width=True):
                     # Banka Profili sayfasi bu iki anahtari okur: ilki banka
                     # secicisini, ikincisi vurgulanacak kampanyayi kurar.
-                    st.session_state["bp_secili_banka"] = kampanya.banka_kodu
+                    #
+                    # BANKA ADI, KOD DEGIL (28 Agustos). Burada `banka_kodu`
+                    # yaziliyordu («0206») ama Banka Profili'ndeki secicinin
+                    # secenekleri banka ADLARI («Turkiye Finans Katilim
+                    # Bankasi A.S.»). Deger hicbir secenege uymuyor, oradaki
+                    # gecerlilik kapisi onu sessizce dusuruyor ve secici
+                    # alfabetik ILK bankaya (Albaraka) konumlaniyordu:
+                    # «Detay» dugmesi hangi kampanyada tiklanirsa tiklansin
+                    # ayni bankayi aciyordu.
+                    #
+                    # Kapi dogru is yapiyor (bayat deger sayfayi kirmasin),
+                    # kusur yazan taraftaydi. Karsilastirma ekrani ayni
+                    # anahtara zaten `banka_adi` yaziyor — iki yazar ayni
+                    # tipi kullanmak zorunda. Nobetci:
+                    # `test_banka_profili_secimi_ADLA_kurulur`.
+                    st.session_state["bp_secili_banka"] = kampanya.banka_adi
                     st.session_state["bp_vurgu_kampanya"] = sonuc.kampanya_id
                     st.switch_page("pages/5_Banka_Profili.py")
 
