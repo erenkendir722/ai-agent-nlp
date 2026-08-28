@@ -21,10 +21,12 @@ from src.rag.chatbot import alan_goster  # noqa: E402
 from src.schema import BIRIM_GOSTERIMLERI, METINSEL_ALANLAR, HamKayit  # noqa: E402
 from app.ui_utils import (  # noqa: E402
   RENK_ANA,
+  RENK_IKINCIL,
   format_alan_adi,
   format_kategori,
   inject_custom_css,
   gelistirici_anahtari,
+  mimari_kenari,
   sayfa_gezinme,
   sayfa_sonu,
 )
@@ -32,6 +34,7 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Metin Analizi", page_icon="", layout="wide")
 inject_custom_css()
 gelistirici_anahtari()
+mimari_kenari("Çıkarım")
 sayfa_gezinme()
 st.title("Canlı Metin Analizi")
 
@@ -93,8 +96,19 @@ def _tablo_kur(kampanya):
       BIRIM_GOSTERIMLERI.get(alan_obj.birim, "{}").replace("{}", "").strip()
       if alan_obj.birim else "—"
     )
+    # SERBEST METİN İŞARETİ. Bu alanlar müşteriye doğrudan söylenecek
+    # cümleler ve çoğunu dil modeli üretir — sayısal alanlardan daha
+    # riskliler. Liste ELLE YAZILMAZ: `METINSEL_ALANLAR` şemadan gelir.
+    # İşaret eskiden yan yana karşılaştırma tablosundaydı; o tablo kalkınca
+    # buraya taşındı, yoksa uyarı komple kaybolurdu.
+    isaret = (
+      " ⚠"
+      if alan_ismi in METINSEL_ALANLAR
+      and str(alan_obj.yontem).upper() != "KURAL"
+      else ""
+    )
     satirlar.append({
-      "Alan": alan_ismi.replace("_", " ").title(),
+      "Alan": format_alan_adi(alan_ismi) + isaret,
       "Değer": _deger_yazi(alan_ismi, alan_obj),
       "Birim": birim_str or "—",
       "Güven": f"%{alan_obj.guven * 100:.0f}",
@@ -116,7 +130,7 @@ def _motor_rozet(x: str) -> str:
 
 # Rozet renkleri TEK YERDE (lejant ile tablo aynı kaynaktan okur — ikisi
 # ayrışırsa lejant yalan söyler).
-MOTOR_RENKLERI = {"KURAL": "#00BCD4", "LLM": "#2196F3", "HİBRİT": "#9C27B0"}
+MOTOR_RENKLERI = {"KURAL": RENK_IKINCIL, "LLM": "#8E7CC3", "HİBRİT": RENK_ANA}
 
 
 def _lejant() -> str:
@@ -138,94 +152,17 @@ def _lejant() -> str:
     )
 
 
-def _guven_hucresi(oran: float) -> str:
-    """Güven yüzdesi — noktalı alt çizgi ve açıklama balonu (3. madde).
+def _guven_ipucu(yazi: str) -> str:
+    """Güven hücresi — noktalı alt çizgi ve açıklama balonu.
 
-    Düz alt çizgi «tıklanabilir bağlantı» izlenimi veriyordu. Noktalı çizgi
-    HTML'de kısaltma/açıklama işaretidir ve `cursor:help` ile birlikte
-    tıklanamayacağını söyler; lejant satırı da bunu yazıyla doğruluyor.
+    Düz alt çizgi «tıklanabilir bağlantı» izlenimi veriyordu; noktalı çizgi
+    HTML'de kısaltma/açıklama işaretidir ve `cursor:help` tıklanamayacağını
+    söyler.
     """
     return (
         "<span title='Modelin kendi bildirdiği güven; bağımsız kalibrasyon yok.' "
         "style='cursor:help;text-decoration:underline dotted;"
-        f"text-underline-offset:3px;'>%{oran * 100:.0f}</span>"
-    )
-
-
-def _alan_ozeti(kampanya, alan_ismi: str) -> tuple[str, str, float] | None:
-    """Bir alanın (değer, yöntem, güven) üçlüsü — yoksa None."""
-    alan = getattr(kampanya, alan_ismi, None) if kampanya is not None else None
-    if not alan or getattr(alan, "yontem", "belirtilmemis") == "belirtilmemis":
-        return None
-    return _deger_yazi(alan_ismi, alan), str(alan.yontem).upper(), float(alan.guven)
-
-
-def _karsilastirma_ciz(kural_k, hibrit_k) -> None:
-    """Regex ve hibrit sonucu ALAN BAZINDA hizalı, yan yana (1. madde).
-
-    Eskiden iki tam tablo ALT ALTA çiziliyordu: kullanıcı «Yalnız regex»i
-    okuyor, kaydırıyor, «Hibrit sonuç»u okuyor ve ikisini kafasında
-    eşleştirmeye çalışıyordu. Karşılaştırmanın bütün gücü FARKTA — dil
-    modelinin neyi eklediği, hangi güveni yükselttiği. Dikey akışta o fark
-    kayboluyordu.
-
-    Katkı sütunu farkı ADLANDIRIR; okuyucunun iki sayıyı çıkarması gerekmez.
-    """
-    adlar = [
-        ad for ad in hibrit_k.model_fields
-        if ad not in _ATLANAN
-        and (_alan_ozeti(kural_k, ad) or _alan_ozeti(hibrit_k, ad))
-    ]
-    if not adlar:
-        return
-
-    satirlar = []
-    yeni_alan = guven_artan = 0
-    for ad in adlar:
-        k = _alan_ozeti(kural_k, ad)
-        h = _alan_ozeti(hibrit_k, ad)
-
-        if k is None and h is not None:
-            katki = f"<b style='color:{RENK_ANA};'>dil modeli ekledi</b>"
-            yeni_alan += 1
-        elif k is not None and h is not None and h[2] > k[2] + 0.001:
-            katki = (
-                f"<b style='color:{RENK_ANA};'>güven "
-                f"+{(h[2] - k[2]) * 100:.0f} puan</b>"
-            )
-            guven_artan += 1
-        elif k is not None and h is None:
-            katki = "<span style='color:#D98A8A;'>hibritte düştü</span>"
-        else:
-            katki = "<span style='color:#8E8E99;'>değişmedi</span>"
-
-        # SERBEST METIN ISARETI (4. madde). Bu alanlar musteriye dogrudan
-        # soylenecek cumleler ve dil modeli uretiyor — sayisal alanlardan
-        # daha riskliler. Liste elle yazilmadi: `METINSEL_ALANLAR` semadan.
-        isaret = " ⚠" if ad in METINSEL_ALANLAR and h and h[1] != "KURAL" else ""
-
-        satirlar.append({
-            "Alan": format_alan_adi(ad) + isaret,
-            "Yalnız regex": (
-                f"{k[0]} · {_motor_rozet(k[1])} {_guven_hucresi(k[2])}" if k else
-                "<span style='color:#6E6E78;'>—</span>"
-            ),
-            "Hibrit (kural + dil modeli)": (
-                f"{h[0]} · {_motor_rozet(h[1])} {_guven_hucresi(h[2])}" if h else
-                "<span style='color:#6E6E78;'>—</span>"
-            ),
-            "Katkı": katki,
-        })
-
-    st.subheader("Regex ile hibrit yan yana")
-    st.caption(
-        f"Dil modeli **{yeni_alan}** alan ekledi, **{guven_artan}** alanda "
-        "güveni yükseltti. ⚠ serbest metin — kaynağıyla doğrulayın."
-    )
-    st.markdown(_lejant(), unsafe_allow_html=True)
-    st.markdown(
-        pd.DataFrame(satirlar).to_html(escape=False, index=False),
-        unsafe_allow_html=True,
+        f"text-underline-offset:3px;'>{yazi}</span>"
     )
 
 
@@ -242,13 +179,7 @@ def _sonucu_ciz(kampanya, rapor_iz, ham, baslik: str):
   with col1:
     df = pd.DataFrame(satirlar)
     df["Yöntem"] = df["Yöntem"].map(_motor_rozet)
-    df["Güven"] = df["Güven"].map(
-      lambda g: (
-        "<span title='Modelin kendi bildirdiği güven; bağımsız kalibrasyon yok.' "
-        "style='cursor:help;text-decoration:underline dotted;"
-        f"text-underline-offset:3px;'>{g}</span>"
-      )
-    )
+    df["Güven"] = df["Güven"].map(_guven_ipucu)
     st.markdown(_lejant(), unsafe_allow_html=True)
     st.markdown(df.to_html(escape=False, index=False), unsafe_allow_html=True)
     with st.expander("Yapısal JSON"):
@@ -299,11 +230,8 @@ if st.button("Analiz Et", type="primary"):
       govde_metin=metin,
     )
     try:
-      kampanya_kural, rapor_kural = kampanya_cikar(kayit, llm_kullan=False)
-      st.session_state.analiz_kural = kampanya_kural
-      st.session_state.analiz_kural_iz = getattr(rapor_kural, "trace_log", {})
       st.session_state.analiz_metin = metin
-      with st.spinner("LLM katmanı çalışıyor (13–100 sn olabilir)…"):
+      with st.spinner("Kural motoru ve dil modeli çalışıyor (13–100 sn olabilir)…"):
         kampanya, rapor = kampanya_cikar(kayit, llm_kullan=True)
       st.session_state.analiz_kampanya = kampanya
       st.session_state.analiz_iz = getattr(rapor, "trace_log", {})
@@ -337,28 +265,9 @@ if ham:
     parcalar.append(f"toplam **{_sure(toplam)}**")
   st.info(" · ".join(parcalar))
 
-  kural_k = st.session_state.get("analiz_kural")
   hibrit_k = st.session_state.get("analiz_kampanya")
-
-  if kural_k is not None and hibrit_k is not None:
+  if hibrit_k is not None:
     st.divider()
-    _karsilastirma_ciz(kural_k, hibrit_k)
-
-  # Tam dokumler ASAGIDA ve SEKMEDE: yan yana tablo «ne degisti» sorusunu
-  # cevapliyor, bunlar «her alanin kaniti ne» sorusunu. Ikincisi daha uzun
-  # ve daha az sıklıkla soruluyor.
-  if kural_k is not None or hibrit_k is not None:
-    st.divider()
-    sk_hibrit, sk_regex = st.tabs(["Hibrit sonuç — tam döküm", "Yalnız regex — tam döküm"])
-    with sk_hibrit:
-      if hibrit_k is not None:
-        _sonucu_ciz(hibrit_k, iz, ham, "Kural + dil modeli + uzlaştırıcı")
-      else:
-        st.info("Hibrit çıkarım henüz koşmadı.")
-    with sk_regex:
-      if kural_k is not None:
-        _sonucu_ciz(kural_k, st.session_state.get("analiz_kural_iz"), ham, "Yalnız kural motoru")
-      else:
-        st.info("Kural motoru sonucu yok.")
+    _sonucu_ciz(hibrit_k, iz, ham, "Kural + dil modeli + uzlaştırıcı")
 
 sayfa_sonu()

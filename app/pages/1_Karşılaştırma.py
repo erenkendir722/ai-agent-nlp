@@ -44,6 +44,7 @@ from app.ui_utils import (  # noqa: E402
   inject_custom_css,
   kayitlari_yukle,
   gelistirici_anahtari,
+  mimari_kenari,
   sonuclari_oku,
   tr_sayi,
   sayfa_gezinme,
@@ -54,6 +55,7 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Karşılaştırma", page_icon="", layout="wide")
 inject_custom_css()
 gelistirici_anahtari()
+mimari_kenari("Motor")
 sayfa_gezinme()
 
 

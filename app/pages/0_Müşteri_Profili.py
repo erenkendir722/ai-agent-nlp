@@ -32,6 +32,7 @@ from app.ui_utils import (  # noqa: E402
     inject_custom_css,
     kampanyalari_yukle,
     gelistirici_anahtari,
+  mimari_kenari,
     sayfa_gezinme,
     sayfa_sonu,
 )
@@ -39,6 +40,7 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Müşteri Profili", page_icon="", layout="wide")
 inject_custom_css()
 gelistirici_anahtari()
+mimari_kenari("Motor")
 sayfa_gezinme()
 
 st.title("Müşteri Profiline Göre Uygunluk")

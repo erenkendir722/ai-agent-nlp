@@ -29,6 +29,7 @@ from src.rag.chatbot import YASAL_UYARI, Niyet # noqa: E402
 from app.ui_utils import (  # noqa: E402
   en_alta_kaydir,
   gelistirici_anahtari,
+  mimari_kenari,
   inject_custom_css,
   kayitlari_yukle,
   sayfa_gezinme,
@@ -39,6 +40,7 @@ from app.ui_utils import (  # noqa: E402
 st.set_page_config(page_title="Chatbot", page_icon="", layout="wide")
 inject_custom_css()
 gelistirici_anahtari()
+mimari_kenari("Arayüz")
 sayfa_gezinme()
 st.title("Kampanya Asistanı")
 

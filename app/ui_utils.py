@@ -426,19 +426,73 @@ def gelistirici_anahtari() -> None:
     artık sayfaya ait olana kalıyor (Chatbot'ta sohbet geçmişi,
     Karşılaştırma'da ağırlıklar).
 
-    Anahtar SAĞ ÜSTTE çünkü sayfanın içeriğine ait değil, uygulamanın kipine
-    ait: içerikle birlikte kaydırılmaz, ilk bakışta göze girmez.
+    Anahtar SAĞ ÜSTTE, Streamlit'in kendi üst çubuğunda — «Deploy»un solunda.
+    Sayfanın içeriğine ait değil, uygulamanın KİPİNE ait: içerikle birlikte
+    kaydırılmaz ve başlıkla ekranın tepesi arasında yer açmaz.
+
+    NASIL: Streamlit'in üst çubuğuna widget konamaz, o yüzden anahtar normal
+    akışta çiziliyor ve CSS ile oraya SABİTLENİYOR. Bağ `.kl-dev-isaret`
+    işaretçisi: `:has()` ile onu içeren yatay blok `position: fixed` oluyor.
+    İşaretçi olmadan seçici sayfadaki ilk `st.columns`'a çarpardı.
 
     `dev_mode` anahtarı TEK KEZ tanımlanır — aynı `key` ile ikinci bir
     `st.toggle` Streamlit'te `DuplicateWidgetID` fırlatır.
     """
     _, sag = st.columns([6, 1])
     with sag:
+        st.markdown('<span class="kl-dev-isaret"></span>', unsafe_allow_html=True)
         st.toggle(
             "Geliştirici",
             key="dev_mode",
             help="JSON ve cURL çıktılarını açar. Uçlar: GET /compare, "
             "POST /ask, POST /extract (localhost:8000).",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Mimari şeridi — «bu ekran zincirin neresi?»
+# ---------------------------------------------------------------------------
+#
+# NEDEN VAR: sistem beş katmandan geçiyor ve her ekran bunlardan yalnız
+# birini gösteriyor. Ekranlar arasında gezen biri (özellikle jüri) hangi
+# parçaya baktığını bilmiyordu; Chatbot'ta bir ASCII kutu vardı, o da yalnız
+# orada ve yalnız chatbot'u anlatıyordu.
+#
+# Diyagram HER SAYFADA AYNI, değişen tek şey vurgulu satır. Aynı şekli
+# tekrar görmek zincirin kendisini öğretir; sayfaya özel beş ayrı çizim
+# beş ayrı şey öğretirdi.
+#
+# Metinler KISA tutulur: kenar çubuğu bir doküman değil, bir konum
+# göstergesi. Ayrıntı `docs/MIMARI.md`'de.
+_ASAMALAR = (
+    ("Toplama", "9 bankanın kampanya sayfaları"),
+    ("Çıkarım", "kural + dil modeli + uzlaştırıcı"),
+    ("Depolama", "şema sözleşmesi · her değer kaynaklı"),
+    ("Motor", "karşılaştırma ve muhakeme — kod"),
+    ("Arayüz", "cevap + sayısal doğrulama kalkanı"),
+)
+
+
+def mimari_kenari(aktif: str | None = None) -> None:
+    """Kenar çubuğuna beş aşamalı zinciri çizer, `aktif` olanı vurgular.
+
+    `aktif` aşama adıdır («Çıkarım»); tanınmayan ad verilirse hiçbiri
+    vurgulanmaz — sayfa KIRILMAZ. Yazım hatası bir istisna değil, sönük bir
+    şerit üretir.
+    """
+    satirlar = []
+    for sira, (ad, alt) in enumerate(_ASAMALAR, 1):
+        sinif = "kl-adim aktif" if ad == aktif else "kl-adim"
+        satirlar.append(
+            f'<div class="{sinif}"><div class="kl-adim-no">{sira}</div>'
+            f'<div><div class="kl-adim-ad">{ad}</div>'
+            f'<div class="kl-adim-alt">{alt}</div></div></div>'
+        )
+    with st.sidebar:
+        st.caption("Sistem akışı")
+        st.markdown(
+            f'<div class="kl-mimari">{"".join(satirlar)}</div>',
+            unsafe_allow_html=True,
         )
 
 
@@ -456,7 +510,16 @@ def en_alta_kaydir(imza) -> None:
     Seçici listesi bilerek uzun: kaydırılan öge Streamlit sürümüyle değişiyor
     (`section.main` → `[data-testid="stMain"]`). Hiçbiri tutmazsa sayfa
     BOZULMAZ, yalnız kaydırma olmaz.
+
+    ÖNCE ÇAPA, SONRA `scrollTop` (28 Ağustos). `scrollTop = scrollHeight` tek
+    başına yetmiyordu: kullanıcı YUKARI KAYDIRMIŞKEN soru sorduğunda cevap
+    aşağıda kalıyordu. Sebep sırada — cevabın altındaki ajan izleri tablosu ve
+    açılır paneller yerleştikçe sayfa uzuyor, 600 ms'de alınan `scrollHeight`
+    nihai yükseklik değil. Çapa (`#kl-sohbet-sonu`) sayfanın sonunda duran
+    GERÇEK bir öge; `scrollIntoView` onu her seferinde bulur. Israr 1,4
+    saniyeye çıktı, aralıklar sıklaştı.
     """
+    st.markdown('<div id="kl-sohbet-sonu"></div>', unsafe_allow_html=True)
     components.html(
         f"""
         <script>
@@ -465,18 +528,25 @@ def en_alta_kaydir(imza) -> None:
             const belge = window.parent && window.parent.document;
             if (!belge) return;
             const kaydir = function () {{
+              const capa = belge.querySelector('#kl-sohbet-sonu');
+              if (capa && capa.scrollIntoView) {{
+                capa.scrollIntoView({{block: "end", inline: "nearest"}});
+              }}
               const adaylar = [
                 belge.querySelector('section.main'),
                 belge.querySelector('[data-testid="stMain"]'),
                 belge.querySelector('[data-testid="stAppViewContainer"] section'),
                 belge.scrollingElement,
+                belge.documentElement,
               ];
               adaylar.forEach(function (oge) {{
                 if (oge) oge.scrollTop = oge.scrollHeight;
               }});
             }};
             kaydir();
-            [80, 250, 600].forEach(function (ms) {{ setTimeout(kaydir, ms); }});
+            [40, 120, 260, 500, 900, 1400].forEach(function (ms) {{
+              setTimeout(kaydir, ms);
+            }});
           }})();
         </script>
         """,
@@ -495,6 +565,69 @@ def inject_custom_css():
 
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
+
+        /* ÜST BOŞLUK — Streamlit ana bloğa ~6rem üst dolgu veriyor. Geniş
+           düzende bu, dizüstü ekranında başlığın altındaki ilk içeriği
+           katlamanın altına itiyordu: sayfanın tepesinde bir avuç boşluk,
+           altında sıkışmış içerik. Dolgu okunurluğu bozmayacak kadar
+           kısaldı; sayfa adı hâlâ nefes alıyor. */
+        [data-testid="stMainBlockContainer"],
+        [data-testid="stAppViewBlockContainer"],
+        .block-container {
+            padding-top: 2.1rem !important;
+        }
+        [data-testid="stSidebarUserContent"] { padding-top: 1.4rem; }
+        h1 { padding-top: 0 !important; margin-top: 0 !important; }
+
+        /* GELİŞTİRİCİ ANAHTARI ÜST ÇUBUKTA — «Deploy»un solunda.
+           Streamlit'in üst çubuğuna widget konamıyor; anahtar normal akışta
+           çiziliyor ve buradan oraya SABİTLENİYOR. Böylece hem başlıkla
+           ekranın tepesi arasında yer kaplamıyor hem de kaydırınca kaybolmuyor.
+           Bağ `.kl-dev-isaret`: onu içeren yatay bloğu seçiyoruz, sayfadaki
+           ilk `st.columns`'ı değil. */
+        div[data-testid="stHorizontalBlock"]:has(.kl-dev-isaret) {
+            position: fixed;
+            top: 0.45rem;
+            right: 7.4rem;
+            width: auto;
+            min-width: 0;
+            z-index: 1000;
+            gap: 0;
+        }
+        div[data-testid="stHorizontalBlock"]:has(.kl-dev-isaret)
+            > div[data-testid="stColumn"]:first-child { display: none; }
+        div[data-testid="stHorizontalBlock"]:has(.kl-dev-isaret)
+            > div[data-testid="stColumn"] { width: auto !important; flex: 0 0 auto; }
+        .kl-dev-isaret { display: none; }
+        div[data-testid="stHorizontalBlock"]:has(.kl-dev-isaret) label p {
+            font-size: 0.78rem !important;
+            color: #9A9AA5 !important;
+        }
+
+        /* MİMARİ ŞERİDİ — kenar çubuğunda, sayfanın hangi aşamayı gösterdiği
+           vurgulu. Beş satır, sabit sıra: aynı diyagram her ekranda. */
+        .kl-mimari { margin: 2px 0 6px 0; }
+        .kl-adim {
+            display: flex; gap: 9px; align-items: flex-start;
+            padding: 6px 9px; border-radius: 8px; margin-bottom: 3px;
+            border: 1px solid transparent;
+        }
+        .kl-adim-no {
+            flex: 0 0 18px; height: 18px; border-radius: 50%;
+            background: rgba(255,255,255,0.07); color: #9A9AA5;
+            font-size: 0.68rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: 1px;
+        }
+        .kl-adim-ad { font-size: 0.82rem; font-weight: 600; color: #C4C4CE; line-height: 1.3; }
+        .kl-adim-alt { font-size: 0.72rem; color: #8E8E99; line-height: 1.4; margin-top: 1px; }
+        .kl-adim.aktif {
+            background: rgba(0,168,107,0.10);
+            border-color: rgba(0,168,107,0.32);
+        }
+        .kl-adim.aktif .kl-adim-no { background: #00A86B; color: #10231B; }
+        .kl-adim.aktif .kl-adim-ad { color: #FFFFFF; }
+        .kl-adim.aktif .kl-adim-alt { color: #A8C9BB; }
         /* Üst çubuğu gizleme: projeksiyonda sayfa adı ve menü okunur kalsın. */
 
         /* SAYFA ALT BASLIGI — eskiden yesil gradyanli bir SERITTI.

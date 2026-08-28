@@ -47,6 +47,7 @@ from app.ui_utils import (  # noqa: E402
   inject_custom_css,
   kayitlari_yukle,
   gelistirici_anahtari,
+  mimari_kenari,
   sayfa_gezinme,
   sayfa_sonu,
   sonuclari_oku,
@@ -61,6 +62,7 @@ st.set_page_config(
 
 inject_custom_css()
 gelistirici_anahtari()
+mimari_kenari()
 sayfa_gezinme()
 
 
