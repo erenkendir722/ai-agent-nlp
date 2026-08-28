@@ -8,10 +8,10 @@
 >
 > | # | İş | Kim | Süre |
 > |---|---|---|---|
-> | 1 | **E-01 — depoyu public yap** (28 Ağu ölçümü: anonim istek **404**, yani private) | Eren | 2 dk |
-> | 2 | **E-03 — `v1.0` etiketi** at ve push'la (E-01'den sonra) | Eren | 1 dk |
-> | 3 | İki videonun **bağlantısını** README teslimat listesine yaz | Esra | 2 dk |
-> | 4 | **E-19** sesli jüri provası · **ES-12** demo provası (süre tutarak) | Herkes | 1 saat |
+> | ~~1~~ | ~~E-01 depoyu public yap~~ → ✅ 28 Ağu (anonim istek 200, iki topic yerinde) | Eren | — |
+> | ~~2~~ | ~~E-03 `v1.0` etiketi~~ → ✅ 28 Ağu, `5055014`'e push'landı | Eren | — |
+> | **1** | İki videonun **bağlantısını** README teslimat listesine yaz | Esra | 2 dk |
+> | **2** | **E-19** sesli jüri provası · **ES-12** demo provası (süre tutarak) | Herkes | 1 saat |
 >
 > Ölçüm, doküman, sunum ve kanıt tarafı 28 Ağustos'ta **kapandı**: sayılar
 > 1.019 kayıtlık canlı korpusla eşitlendi, PPTX üretildi, ekran görüntüleri
@@ -592,10 +592,11 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
         `ai-agent-nlp`) ve "model ilk çalıştırmada iner" (inmiyor, `ollama pull`
         zorunlu). Jüri talimatı birebir izlese ikinci komutta duruyordu.
 
-- [x] **E-03** ✅ **Sürüm etiketleri atıldı** *(26 Ağu)*
-      ↳ Üçü de açıklamalı (annotated) etiket, sprint sonundaki commit'e:
+- [x] **E-03** ✅ **Sürüm etiketleri atıldı** *(26 Ağu · `v1.0` 28 Ağu)*
+      ↳ Dördü de açıklamalı (annotated) etiket, sprint sonundaki commit'e:
         `v0.1` → `940018f` (10 Ağu, Sprint 0) · `v0.2` → `680c904` (16 Ağu,
-        Sprint 1) · `v0.9` → `cc2b9af` (23 Ağu, Sprint 3)
+        Sprint 1) · `v0.9` → `cc2b9af` (23 Ağu, Sprint 3) ·
+        **`v1.0` → `5055014` (28 Ağu, teslim)**
       ↳ ⚠️ **Etiketler 26 Ağustos'ta geriye dönük atıldı** ve bu, etiket
         mesajlarının içinde yazılı. Haftalık atılmadıkları gizlenmiyor —
         commit tarihleri zaten görünüyor, ters bir şey iddia etmek jüride
@@ -788,12 +789,15 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ 10 dokümantasyon başlığının hepsi var mı, PDF **ve** PPTX var mı,
         5 dk **ve** 1 dk video var mı, veri seti bağlantısı çalışıyor mu
 
-- [ ] **E-18** 🔴 **TESLİM** — her şey GitHub'da, `v1.0` etiketi · 📅 **27 Ağu**
-      ↳ 📅 **25 Ağu: tarih 25 → 27 Ağustos'a çekildi.** Burada 25 Ağu 20:00
-        yazıyordu ama bağlı olduğu E-01 (depoyu public yap) 24 Ağu'da bilerek
-        27'ye bırakılmıştı — yani iki tarih çelişiyordu. Teslim için resmî
-        bilgi henüz gelmedi; gelince güncellenecek.
-      ⛔ **Önce bitmeli:** E-17 (Eren)
+- [x] **E-18** ✅ **TESLİM — depo public, `v1.0` push'landı** *(28 Ağu)*
+      ↳ `v1.0` → `5055014` (açıklamalı etiket, kapsam ve ölçüm sayıları
+        etiketin gövdesinde). GitHub API'de görünüyor; `v1.0` sürümündeki
+        README anonim olarak **HTTP 200** ile okunuyor.
+      ↳ Depo herkese açık, Apache-2.0, iki topic de yerinde (E-01).
+      ↳ 🔴 **Tek eksik: iki videonun BAĞLANTISI.** README teslimat listesinde
+        yerleri hazır («⚠ bağlantısı eklenecek»); madde 6 videoyu ayrı
+        teslimat kalemi sayıyor, link yazılmadan o satır kapanmaz.
+      ↳ 📅 25 Ağu'da tarih 25 → 27'ye çekilmişti; fiilen 28 Ağustos'ta oldu.
 
 - [ ] **E-19** Jüri soru-cevap provası · 📅 26 Ağu
       ⛔ **Önce bitmeli:** S-13 (Samet) · E-07 (Eren)
