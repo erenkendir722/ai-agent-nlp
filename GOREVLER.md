@@ -1449,6 +1449,61 @@ Bunlar dördünüzün birlikte yapacağı işler. Kimse tek başına bitiremez.
       ↳ Bitti sayılır ✔: mekanizma koşuyor · `make test` yeşil (1017) · ADR yazıldı ·
         `docs/JURI_PROVASI.md` §11 «yok» demekten çıktı
 
+- [x] **G-20** ✅ **Eksik finansman ürün sayfaları çekildi** *(28 Ağu, Görkem)* — *takım isteği*
+      ↳ Soru: **«elimizdeki finansman listesi gerçekten korpusta var mı?»**
+        Ölçüm: 149 URL'in **108'i vardı, 41'i yoktu**; eksiklerin 33'ü
+        kurumsal/ticari taraftaydı.
+      ↳ Kök neden toplama aşamasındaydı, üç biçimde aynı hata: Vakıf'ta
+        `urun_bolumleri` yalnız `.../finansmanlar` (alt ürünler KATEGORİ
+        sayfalarından linkli, `urun_urlleri()` tek seviye geziyor) · Dünya'da
+        `urun_bolumleri` **hiç tanımlı değil** · Türkiye Finans'ta `/tr-tr/ticari`
+        kökü yok. Albaraka'nın 1 eksiği **404** — ölü sayfa, listede yorumda.
+      ↳ **Ölçüm 1 —** «Tümünü Göster» (`mask-area-open-btn`) düğmesi bir sorun
+        DEĞİL: salt CSS kırpması, maskelenen metin `page_source` içinde eksiksiz.
+        Vakıf konut finansmanı httpx ile **6001 karakter**, depodaki Selenium
+        kaydıyla birebir aynı. Tıklayan kod **yazılmadı**.
+      ↳ **Ölçüm 2 —** listede iki URL yazım hatası: `...-desteği` 404 veriyor,
+        sitenin kendi bağlantısı düz g ile `...-destegi` (200).
+      ↳ **Ölçüm 3 —** Dünya'nın 4 sayfası gövde olarak **6971 karakterlik ÇEREZ
+        AYDINLATMA METNİ** üretiyordu; sayfa doğru, kusur trafilatura'nın ana
+        içerik seçiminde. `TemelKaziyici.cerez_katmanini_kaldir` eklendi.
+        «Görünmeyen her ögeyi at» denendi ve **geri alındı** — sağlam sayfaları
+        kırpıyordu (Vakıf'ta «murabaha» düşüyordu). Dar seçici: bozuk sayfalar
+        düzeldi, sağlam sayfa **birebir aynı** kaldı.
+      ↳ Araç `tools/finansman_cek.py` · liste `data/seed/finansman_urlleri.txt`
+        · `make finansman-cek` (uygula=1 olmadan yalnız gösterir).
+      ↳ ⚠️ **Donmuş veri kapısı:** diskte JSON'u olan URL **atlanır**. Altın
+        setin 92 kaydının 29'u bu üç bankada (0206:18 · 0210:9 · 0214:2);
+        gövdeleri tazelenseydi `make eval` zemini kayardı. Doğrulandı:
+        `git status data/raw` → **40 eklendi, 0 değişti**; makro-F1 **0.817 →
+        0.817**. Çıkarım `--kimlik` ile koştu, `--banka` ile DEĞİL.
+      ↳ `data/raw` **979 → 1019** · korpus 1019 · RAG indeksi yeniden kuruldu.
+      ↳ ⚠️ **Dürüst sınır — açık kalan iş:** `banks.yaml` · `urun_bolumleri`
+        kökleri EKLENMEDİ (kapsam «yalnız listedeki URL'ler» seçildi). Yani
+        bir sonraki tam `make crawl` bu 40 sayfayı **yine bulamaz**; liste elle
+        güncellenmezse kapsam yeniden açılır ve sistem haber vermez. Türkiye
+        Finans `seed_urls`'ündeki kabul edilmiş ödünleşmenin aynısı.
+      ↳ **NÜKSEDEN KUSUR — aynı oturumda ayrıca giderildi.** Dünya Katılım'ın
+        **38 kampanya kaydında** `govde_metin` çerez aydınlatma metniydi ve
+        çıkarım ondan alan üretmişti (33'ünde `vade_ay_max`, 7'sinde
+        `kar_payi_orani` — KVKK metninden türetilmiş uydurma değerler).
+        27 Ağu'da `e86ac41` bunu bir kez düzeltmişti; **28 Ağu'da `2207ec4`
+        ile geri geldi** (commit chatbot cevaplarıyla ilgiliydi, veri
+        değişikliği fark edilmeden içine bindi). Sebebi: düzeltme VERİYE
+        uygulanmıştı, SEBEBE değil — ve nöbetçisi yoktu.
+      ↳ Üç kademe birden kapatıldı: **sebep** `cerez_katmanini_kaldir`
+        (bundan sonraki her toplama temiz gövde üretir) · **geçmiş**
+        `tools/cerez_govdesini_onar.py` — saklı HTML'den onarır, **ağa
+        çıkmaz** (arşiv şartname 5.1 kanıtı, sayfa bugün değişmiş olabilir) ·
+        **nöbetçi** `tests/test_cerez_govdesi.py`, üretim korpusunu denetler.
+      ↳ 38/38 onarıldı (6971 krk → 621–2459 krk). Altın setteki 1 kayıt
+        (`0214-ab3545caa00c`) onarımdan sonra etiketle **birebir uyuştu**
+        (`yatirim_urunu`, vade null) — onarım ölçüm zeminini bozmadı,
+        DÜZELTTİ. Makro-F1 **0.817 → 0.817**, sayısal doğruluk 0.927 sabit.
+      ↳ Bitti sayılır ✔: `make test` yeşil (1736) · `make lint` temiz ·
+        149 URL'in 148'i korpusta (tek eksik 404) · korpusta çerez gövdeli
+        kayıt **0** · üretim ölçüm zemini korundu
+
 - [x] **G-19** ✅ **Yeni kampanya keşfi** *(27 Ağu, Görkem)* — *takım isteği*
       ↳ Soru: **«listede olup elimizde OLMAYAN kampanya var mı?»** G-17'deki
         tazelik dinleyicisi bunu yapısal olarak göremiyordu: yalnız bildiği

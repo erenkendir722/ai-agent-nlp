@@ -1,0 +1,170 @@
+# Finansman ÜRÜN sayfaları — ELLE TUTULAN liste
+#
+# NE İŞE YARAR: `tools/finansman_cek.py` bu listeyi okur ve diskte OLMAYAN
+# sayfaları çeker. Kampanya listeleri gezilerek keşfediliyor; finansman ürün
+# ağacının bu bölümü keşfedilmiyor, çünkü `data/banks.yaml` · `urun_bolumleri`
+# kökleri tek seviye geziliyor ve alt ürünler KATEGORİ sayfalarından linkli.
+#
+#     YENİ FİNANSMAN ÜRÜNÜ ÇIKARSA BU LİSTEYE ELLE EKLENMELİ.
+#     Otomatik keşif yok; liste eskirse kayıt eksik kalır ve sistem bunu
+#     HABER VERMEZ. (Türkiye Finans `seed_urls`'ünde kabul edilmiş olan
+#     aynı ödünleşme — bkz. data/banks.yaml, 0206 · `not:`)
+#
+# BİÇİM: satır başına bir URL. `#` ile başlayan satır yorumdur, boş satır
+# atlanır. Aynı URL'in iki kez yazılması zararsız — araç tekilleştirir.
+#
+# 28 Ağu 2026 ölçümü (149 benzersiz URL): 108'i envanterde vardı, 41'i yoktu.
+# Eksiklerin 33'ü kurumsal/ticari taraftaydı.
+
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/konut-finansmani/konut-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani/tasit-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani/togg-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani/dijital-arac-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani/deniz-tasitlari-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/tasit-finansmani/tasit-kiralama-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani/is-yeri-finansman
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani/arsa-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/gayrimenkul-finansmani/2b-arazi-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/bayide-finansman
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac/pratik-finansman-kart
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac/sms-li-finansman
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac/subesiz-umre-finansmani
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac/jet-finansman
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac/motosiklet-atv-bisiklet
+https://www.albaraka.com.tr/tr/bireysel/finansmanlar/ihtiyac/egitim-finansmani
+http://albaraka.com.tr/tr/bireysel/finansmanlar/birikimlerinizi-koruyan-bes-teminatli-finansman-albarakada
+
+# 404 — sayfa kaldırılmış, üstelik finansman ürünü değil (kredi notu
+# sorgulama). Bilerek yorumda: silinirse listeye yeniden eklenir.
+# https://www.albaraka.com.tr/tr/bireysel/finansmanlar/kredi-notu-öğrenme
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/konut-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/ilk-evim-konut-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/arsa-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/2b-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/gurbetten-silaya-gayrimenkul-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/konut-finansmanlari/is-yeri-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/arac-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/dijital-arac-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/dijital-motosiklet-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/motosiklet-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/togg-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/alisveris-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/teknosa-alisveris-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/lc-waikiki-alisveris-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/trendyol-alisveris-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/hepsiburada-alisveris-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/cebimpos-ile-alisveris-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/taksitlio-alisveris-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/kazancli-fon-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/elektrikli-arac-sarj-unitesi-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/bisiklet-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/alisveris-finansmanlari/ihtiyac-kart
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/kira-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/tekne-tuketici-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/seyahat-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/egitim-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/hac-umre-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar/yesil-konut-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar/surdurulebilir-arac-finansmani
+https://www.kuveytturk.com.tr/kendim-icin/finansmanlar/surdurulebilir-finansmanlar/cati-ges-finansmani
+https://www.kuveytturk.com.tr/isim-icin/finansman-urunleri/gayri-nakdi-finansman/kabul-aval-kredileri
+https://www.kuveytturk.com.tr/isim-icin/finansman-urunleri/gayri-nakdi-finansman/teminat-mektuplari
+https://www.kuveytturk.com.tr/isim-icin/finansman-urunleri/gayri-nakdi-finansman/referans-mektuplari
+https://www.kuveytturk.com.tr/isim-icin/finansman-urunleri/gayri-nakdi-finansman/akreditifler
+https://www.kuveytturk.com.tr/isim-icin/finansman-urunleri/gayri-nakdi-finansman/dogrudan-borclandirma-sistemi
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/ihtiyac-finansmani/Sayfalar/ihtiyac-finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/ihtiyac-finansmani/Sayfalar/extra-limit.aspx
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/ihtiyac-finansmani/Sayfalar/dijital-ihtiyac-finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/tasit-finansmani/Sayfalar/tasit-Finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/konut-finansmani/Sayfalar/konut-finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/tasit-finansmani/Sayfalar/dijital-tasit-finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/arsa-finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/bireysel/Sayfalar/isyeri-finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/ticari/nakdi-finansman/Sayfalar/nakdi-finansman.aspx
+https://www.turkiyefinans.com.tr/tr-tr/ticari/dis-ticaret-ve-finansmani/Sayfalar/vadeli-ihracat-finansmani-vif.aspx
+https://www.turkiyefinans.com.tr/tr-tr/ticari/gayri-nakdi-finansman/Sayfalar/default.aspx
+https://www.turkiyefinans.com.tr/tr-tr/ticari/nakdi-finansman/Sayfalar/esnek-destek-finansmani.aspx
+https://www.turkiyefinans.com.tr/tr-tr/ticari/nakdi-finansman/Sayfalar/finansman-destegi.aspx
+https://www.turkiyefinans.com.tr/tr-tr/ticari/nakdi-finansman/Sayfalar/taksitli-ticari-finansman.aspx
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/konut-finansmani
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/hizli-fon-finansmani
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/arsa-finansmani
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/tasit-finansmani
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/motosiklet-finansmani
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/ihtiyac-finansmani
+https://www.vakifkatilim.com.tr/tr/yardimci-sayfalar/hesaplama-araclari/finansman-hesaplama
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/is-yeri-finansmani
+https://www.vakifkatilim.com.tr/tr/kendim-icin/finansmanlar/kentsel-donusum-finansmani
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/finansal-kiralamalar
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/kobi-destekli-finansmanlar
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/tarim-finansmanlari
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/finansal-kiralamalar/finansal-kiralama
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/finansal-kiralamalar/katki-payli-finansal-kiralama
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/kobi-destekli-finansmanlar/kosgeb-destekli-finansman
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/kobi-destekli-finansmanlar/katilim-finans-kefalet
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/tarim-finansmanlari/elektronik-urun-senedi-karsiligi-kredi
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/tarim-finansmanlari/tarim-finansman-urunleri
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar/eximbank-teminat-mektubu
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar/harici-garanti-kontrgaranti
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar/kabul-aval-finansmani
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/vadeli-ihracatin-finansmani
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar/teminat-mektuplari
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar/elektronik-teminat-mektubu
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar/referans-mektuplari
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/gayrinakdi-finansmanlar/akreditif
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/tcmb-destekli-eximbank-ihracat-finansmani
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/soik-finansman-destegi
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/e-finansman
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/dbs-alacaklariniz-ile-finansman
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/eximbank-katilim-esasli-ihracat-alacak-sigortasi-keas
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/mevsim-donemsel-isletme-finansmani
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/tedarikci-finansman-sistemi
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/kobi-finansman-destegi
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/proje-finansmani
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/gft-alacaklariniz-ile-finansman
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/is-yeri-finansmani
+https://www.vakifkatilim.com.tr/tr/isim-icin/finansmanlar/nakdi-finansmanlar/ticari-tasit-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/toki-islemleri
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/gayrimenkul-sertifikasi-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/ihtiyac-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/isyeri-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/birlikte-isyeri-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/elektronik-urun-senedi-elus-alim-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/kentsel-donusum-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/gonlune-gore-konut-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/birlikte-arsa-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/konut-finansmani
+https://www.emlakkatilim.com.tr/tr/bireysel/finansmanlar/tasit-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/gayrinakdi-finansman/teminat-mektuplari
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/gayrinakdi-finansman/akreditifler
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/gayrinakdi-finansman/kabul-aval-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/gayrinakdi-finansman/referans-mektuplari
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/franchising-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/kosgeb-istihdami-koruma-destek-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/gayrimenkul-sertifikasi-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/turk-eximbank-katilim-bankalari-araciligiyla-ihracat-destek-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/teminata-donusen-tasarruf-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/kadin-girisimci-destek-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/mavi-finansman
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/cevreci-ihracat-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/enerji-verimliligi-yonetim-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/atik-su-aritma-ve-geri-kazanimi-yatirim-ve-isletme-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/isletme-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/taksitli-ticari-finansman
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/atik-yonetimi-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/diger-nakdi-fon-kullandirim
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/ihracatci-kadin-girisimci-destek-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/e-fatura-teminatli-finansman
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/yatirim-taahhutlu-avans-finansmani
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/turk-eximbank-alacak-sigortasi-teminatli-finansman
+https://www.emlakkatilim.com.tr/tr/kurumsal/finansmanlar/nakdi-finansman/kfk-destekli-finansman
+https://dunyakatilim.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmani
+https://dunyakatilim.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/enerya-ihtiyac-finansmani
+https://dunyakatilim.com.tr/kendim-icin/finansmanlar/ihtiyac-finansmanlari/enerya-karz-i-hasen
+https://dunyakatilim.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/arac-finansmani
+https://dunyakatilim.com.tr/kendim-icin/finansmanlar/arac-finansmanlari/cevre-dostu-arac-finansmani
+https://dunyakatilim.com.tr/isim-icin/finansmanlar/nakdi-finansman/taksitli-ticari-finansman
+https://dunyakatilim.com.tr/isim-icin/finansmanlar/nakdi-finansman/isletme-finansmani

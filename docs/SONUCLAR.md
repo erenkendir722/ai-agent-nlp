@@ -1,16 +1,16 @@
 # Değerlendirme Sonuçları
 
-_Otomatik üretildi: 28.08.2026 00:13 · `make eval`_
+_Otomatik üretildi: 28.08.2026 03:10 · `make eval`_
 
 > Bu dosya elle düzenlenmez. Sunumdaki her sayı buradan kopyalanır.
 
-> **Güncel.** Çıkarım 28.08.2026 00:09'de `hibrit` yapılandırmasıyla koştu (78 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
+> **Güncel.** Çıkarım 28.08.2026 03:09'de `hibrit` yapılandırmasıyla koştu (38 kayıt) ve o tarihten beri çıkarım kodu değişmedi.
 
 ## Veri kapsamı
 
-- İşlenen kampanya: **979**
+- İşlenen kampanya: **1019**
 - Banka sayısı: **9**
-- Toplam alan: 15664 · Dolu: 5150
+- Toplam alan: 16304 · Dolu: 5299
 
 ## Altın set gerektirmeyen metrikler
 
@@ -18,8 +18,8 @@ _Otomatik üretildi: 28.08.2026 00:13 · `make eval`_
 |---|---|---|---|
 | Şema geçerliliği | 1.00 | 1,00 | hedefte |
 | **Halüsinasyon oranı** | %0.19 | ≤ %3 | hedefte |
-| Alan doluluğu | %32.9 | — | — |
-| Ortalama güven | 0.783 | — | — |
+| Alan doluluğu | %32.5 | — | — |
+| Ortalama güven | 0.782 | — | — |
 | **Kalkan yanlış blok oranı** | %0.0 | %0 | hedefte |
 | Denetimsiz cevap parçası | %0.0 | %0 | hedefte |
 
@@ -32,7 +32,7 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Parça kökeni | Sayı | Doğrulama ölçütü |
 |---|---|---|
-| `yapisal` | 22 | yapısal kayıtta birebir karşılığı olmalı |
+| `yapisal` | 36 | yapısal kayıtta birebir karşılığı olmalı |
 | `alinti` | 44 | kaynak metnin alt dizesi + sayıları alıntının içinde |
 | `sistem` | 9 | sayılar `hesap` girdilerinden yeniden üretilebilmeli |
 | `duz` | 22 | sayı içeremez (yapıcıda denetlenir) |
@@ -44,9 +44,9 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 
 | Yöntem | Alan sayısı |
 |---|---|
-| `llm` | 3334 |
-| `kural` | 1684 |
-| `hibrit` | 132 |
+| `llm` | 3465 |
+| `kural` | 1701 |
+| `hibrit` | 133 |
 
 ## Halüsinasyon örnekleri (hata analizi)
 
@@ -69,12 +69,12 @@ Kalkanın iki yönlü bir hata uzayı var; ikisi ayrı ölçülür:
 | `urun_turu` | %88 |
 | `kampanya_avantaji` | %82 |
 | `kampanya_kosullari` | %61 |
-| `kampanya_bitis` | %49 |
-| `vade_ay_max` | %46 |
+| `kampanya_bitis` | %47 |
+| `vade_ay_max` | %45 |
 | `taksit_sayisi` | %26 |
-| `odul_miktari` | %20 |
+| `odul_miktari` | %19 |
 | `kar_payi_orani` | %18 |
-| `indirim_orani` | %8 |
+| `indirim_orani` | %7 |
 | `finansman_tutari_max` | %7 |
 | `hedef_kitle` | %6 |
 | `masrafsiz_mi` | %6 |

@@ -5,6 +5,7 @@
         altin-tur2 altin-tur2-fark kural-olc \
         gorev gorev-dogrula git-kontrol hava-boslugu sunum sunum-metni veri-kalitesi \
         suresi-gecenleri-ele yinelenenleri-ele liste-sayfalarini-ele \
+        finansman-cek cerez-govdesini-onar \
         kanit kanit-robots kanit-kvkk
 
 # SANAL ORTAMIN YERİ İŞLETİM SİSTEMİNE GÖRE DEĞİŞİR (26 Ağustos).
@@ -152,6 +153,12 @@ yinelenenleri-ele:  ## ayni icerikli yinelenen kayitlari sil (uygula=1 olmadan y
 
 liste-sayfalarini-ele:  ## indekslenemeyen liste sayfalarini sil (uygula=1 olmadan yalniz gosterir)
 	$(PYTHON) tools/liste_sayfalarini_ele.py $(if $(uygula),--uygula)
+
+finansman-cek:  ## listede olup envanterde olmayan finansman sayfalarini cek (uygula=1 olmadan yalniz gosterir)
+	$(PYTHON) -m tools.finansman_cek $(if $(uygula),--uygula) $(if $(gorunmez),--gorunmez)
+
+cerez-govdesini-onar:  ## govdesi cerez metni olan kayitlari sakli HTML'den onar (uygula=1 olmadan yalniz gosterir)
+	$(PYTHON) -m tools.cerez_govdesini_onar $(if $(uygula),--uygula)
 
 # --- Veri toplama etigi kanitlari (G-14) — docs/kanit/VERI_TOPLAMA_ETIGI.md ---
 kanit: kanit-robots kanit-kvkk  ## veri toplama etigi kanitlarini yenile (robots + KVKK)

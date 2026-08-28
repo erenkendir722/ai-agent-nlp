@@ -12,9 +12,16 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from selenium.common.exceptions import WebDriverException
+
 from src.collector.kaziyicilar import KAZIYICILAR, kaziyici_sinifi
 from src.collector.kaziyicilar.tom_katilim import SURESI_GECTI_KALIPLARI
-from src.collector.temel_kaziyici import Ilerleme, TemelKaziyici, benzersiz
+from src.collector.temel_kaziyici import (
+    CEREZ_KATMANI_SECICILER,
+    Ilerleme,
+    TemelKaziyici,
+    benzersiz,
+)
 from src.collector.toplayici import EN_AZ_GOVDE_UZUNLUGU, bankalari_yukle, faal_bankalar
 from src.schema import Banka
 
@@ -623,3 +630,98 @@ class TestListeyiTamamla:
 
         assert [o.asama for o in olaylar] == ["hata"]
         assert "eksik" in olaylar[0].mesaj
+
+
+# ---------------------------------------------------------------------------
+# Çerez katmanı — 28 Ağu ölçümünün nöbetçisi
+# ---------------------------------------------------------------------------
+
+
+class CerezSurucu(SahteSurucu):
+    """Çalıştırılan betiği kaydeden sahte sürücü."""
+
+    def __init__(self, sayfalar: dict[str, str] | None = None) -> None:
+        super().__init__(sayfalar)
+        self.betikler: list[str] = []
+
+    def execute_script(self, betik: str, *_: Any) -> Any:
+        self.betikler.append(betik)
+        return 3
+
+
+@patch("time.sleep")
+class TestCerezKatmani:
+    def test_sayfa_cekilirken_cerez_katmani_kaldirilir(self, _uyu: MagicMock) -> None:
+        """Ölçülen kusurun nöbetçisi (Dünya Katılım, 28 Ağu).
+
+        Bu çağrı düşerse dört finansman sayfası gövde olarak 6971 karakterlik
+        ÇEREZ AYDINLATMA METNİ taşır ve çıkarım o metinden alan üretir.
+        """
+        kaziyici, _ = kaziyici_kur(urller=["https://deneme.com.tr/k/1"])
+        surucu = CerezSurucu()
+        kaziyici.surucu = surucu  # type: ignore[assignment]
+
+        list(kaziyici.tara())
+
+        assert any("querySelectorAll" in b for b in surucu.betikler), (
+            "sayfa çekilirken çerez katmanı kaldırılmamış"
+        )
+
+    def test_secici_icerik_bilesenlerini_hedeflemez(self, _uyu: MagicMock) -> None:
+        """«modal/popup/overlay» EKLENMEZ — içerik taşıyan bileşenlerin de adı.
+
+        Genel bir sözcük eklenirse gerçek kampanya metni sessizce silinir;
+        ölçüldü: görünmeyen her ögeyi atmak Vakıf'ta «murabaha»yı düşürüyordu.
+        """
+        assert set(CEREZ_KATMANI_SECICILER).isdisjoint(
+            {"modal", "popup", "overlay", "banner", "dialog"}
+        )
+
+    def test_js_calismazsa_govde_ayiklamasi_yine_yapilir(self, _uyu: MagicMock) -> None:
+        """Çerez kaldırma İSTEĞE BAĞLI kademedir — sayfayı düşürmez."""
+        kaziyici, _ = kaziyici_kur(urller=["https://deneme.com.tr/k/1"])
+
+        class PatlayanSurucu(SahteSurucu):
+            def execute_script(self, *_: Any) -> Any:
+                raise WebDriverException("JS kapalı")
+
+        kaziyici.surucu = PatlayanSurucu()  # type: ignore[assignment]
+        kayitlar = list(kaziyici.tara())
+
+        assert len(kayitlar) == 1
+        assert "kâr payı oranı" in kayitlar[0].govde_metin
+
+    def test_atilan_oge_sayisi_dondurulur(self, _uyu: MagicMock) -> None:
+        kaziyici, _ = kaziyici_kur(urller=[])
+        kaziyici.surucu = CerezSurucu()  # type: ignore[assignment]
+        assert kaziyici.cerez_katmanini_kaldir() == 3
+
+
+# ---------------------------------------------------------------------------
+# Tek sayfa çekimi — `tools/finansman_cek.py` bunun üzerine kurulu
+# ---------------------------------------------------------------------------
+
+
+@patch("time.sleep")
+class TestSayfaKaydi:
+    def test_tek_sayfa_kayda_cevrilir(self, _uyu: MagicMock) -> None:
+        kaziyici, surucu = kaziyici_kur(urller=[])
+        kayit = kaziyici.sayfa_kaydi("https://deneme.com.tr/urun/1")
+
+        assert kayit is not None
+        assert kayit.url == "https://deneme.com.tr/urun/1"
+        assert kayit.banka_kodu == "0203"
+        assert surucu.gezilen == ["https://deneme.com.tr/urun/1"]
+
+    def test_robots_reddederse_kayit_uretilmez(self, _uyu: MagicMock) -> None:
+        """Tek sayfa yolu robots kapısını ATLAMAZ — `tara()` ile aynı disiplin."""
+        kaziyici, surucu = kaziyici_kur(urller=[], izinli=False)
+        assert kaziyici.sayfa_kaydi("https://deneme.com.tr/urun/1") is None
+        assert surucu.gezilen == []
+
+    def test_kisa_govde_elenir(self, _uyu: MagicMock) -> None:
+        kaziyici, _ = kaziyici_kur(
+            urller=[],
+            sayfalar={"https://deneme.com.tr/kisa": KISA_SAYFA},
+        )
+        assert kaziyici.sayfa_kaydi("https://deneme.com.tr/kisa") is None

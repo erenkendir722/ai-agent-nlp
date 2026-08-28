@@ -74,6 +74,34 @@ sitenin isteklerinden birini düşürmesine zemin hazırlıyor. Hem nezaket hem
 kayıp oranı için tempo kasten yavaşlatılır.
 """
 
+CEREZ_KATMANI_SECICILER = (
+    "cookie",
+    "cerez",
+    "consent",
+    "kvkk",
+    "onetrust",
+)
+"""Çerez onay katmanını tanıtan sınıf/kimlik parçaları.
+
+DAR TUTULUR. Buraya «modal», «popup», «overlay» gibi genel sözcükler
+EKLENMEZ: onlar içerik taşıyan bileşenlerin de adıdır ve eklenirse gerçek
+kampanya metni sessizce silinir. Ölçüt «gizli mi» de değil — bkz.
+`TemelKaziyici.cerez_katmanini_kaldir` gövdesindeki ölçüm.
+"""
+
+CEREZ_KATMANI_JS = """
+var parcalar = %s;
+var secici = parcalar.map(function (p) {
+    return "[class*='" + p + "'],[id*='" + p + "']";
+}).join(",");
+var atilan = 0;
+document.querySelectorAll(secici).forEach(function (oge) {
+    if (oge.parentNode) { oge.parentNode.removeChild(oge); atilan++; }
+});
+return atilan;
+""" % list(CEREZ_KATMANI_SECICILER)
+
+
 Asama = Literal["url_kesfi", "sayfa", "atlandi", "hata", "bitti"]
 
 
@@ -201,6 +229,54 @@ class TemelKaziyici:
                     continue
                 time.sleep(1)
                 return
+
+    def cerez_katmanini_kaldir(self) -> int:
+        """Çerez onay katmanını DOM'dan siler. Atılan öge sayısını döner.
+
+        NEDEN GEREKLİ — 28 Ağustos'ta ölçüldü, Dünya Katılım:
+        Dört finansman sayfası gövde olarak **6971 karakterlik ÇEREZ
+        AYDINLATMA METNİ** üretiyordu. Sayfa doğruydu (`<title>` «İşletme
+        Finansmanı | Dünya Katılım»), ürün metni de DOM'da duruyordu; kusur
+        trafilatura'nın ana içerik seçimindeydi — gizli duran onay modalı
+        gerçek içerikten uzun olduğu için «ana içerik» seçiliyordu.
+
+        Zararsız değildi: kayıt KVKK çerez metnini taşıyıp finansman sayılır,
+        çıkarım o metinden alan üretir ve ortaya kaynak alıntılı, güvenilir
+        görünen uydurma bir finansman ürünü çıkardı. Ziraat'in liste
+        sayfalarıyla aynı hata biçimi (bkz. `tools/liste_sayfalarini_ele.py`).
+
+        NEDEN «GÖRÜNMEYEN HER ÖGEYİ AT» DEĞİL — o da denendi, ölçüldü, geri
+        alındı. `offsetParent === null` olan her ögeyi atmak bozuk sayfayı
+        düzeltiyor ama SAĞLAM sayfaları kırpıyordu:
+
+            Dünya · araç finansmanı      3461 -> 2379   (sağlam sayfa küçüldü)
+            Vakıf · konut finansmanı     6312 -> 5204   «murabaha» DÜŞTÜ
+
+        Vakıf'ta düşen şey tam da `mask-area-open-btn` arkasındaki SSS metni,
+        yani korunması gereken içerik. Ölçüt görünürlük olamaz: kapalı akordeon
+        da görünmez, ama içeriktir.
+
+        Dar seçici ile ölçüm (aynı dört sayfa):
+
+            Dünya · işletme finansmanı   6971 -> 569    çerez metni gitti
+            Dünya · enerya karz-ı hasen  6971 -> 1524   çerez metni gitti
+            Dünya · araç finansmanı      3461 -> 3461   DEĞİŞMEDİ
+            Vakıf · konut finansmanı     6312 -> 6001   maskeli içerik DURUYOR
+
+        Sözcük dağarcığı `acilir_pencereleri_kapat` ile aynı ailedendir;
+        ikisi ayrı işler yapar: o TIKLAR (örtüyü kapatır), bu SİLER (kapatılsa
+        da DOM'da kalan onay metnini ana içerik yarışından çıkarır). Kabul
+        tıklaması modalı DOM'dan kaldırmıyor — ölçüldü, tıklamadan sonra da
+        6971 geliyordu.
+        """
+        try:
+            atilan = self.surucu.execute_script(CEREZ_KATMANI_JS)
+        except WebDriverException as hata:
+            # Veri hatası değil: sayfa çerez katmanı taşımıyor olabilir ya da
+            # JS çalıştırılamamıştır. Gövde ayıklaması yine de yapılır.
+            log.debug("çerez katmanı kaldırılamadı: %s", hata)
+            return 0
+        return int(atilan or 0)
 
     def sayfayi_ac(self, url: str) -> None:
         """Liste sayfasını nezaket ve robots kapısından geçirerek açar."""
@@ -482,6 +558,22 @@ class TemelKaziyici:
             mesaj=f"{self.banka.kisa_ad}: {uretilen}/{toplam} kayıt",
         )
 
+    def sayfa_kaydi(self, url: str) -> HamKayit | None:
+        """Tek sayfayı kayda çevirir — liste keşfi olmadan.
+
+        `tara()` kampanya listesini gezip bulduğu her adresi çeker. Elde
+        ZATEN adres varsa (bkz. `data/seed/finansman_urlleri.txt`) o keşif
+        adımının karşılığı yok; çekilecek tek şey sayfanın kendisi.
+
+        Ayrı bir yol DEĞİL: robots kapısı, nezaket sırası, gövde eşiği ve
+        `HamKayit` üretimi `_sayfayi_cek`'te tektir ve burası onu çağırır.
+        İkinci bir çekme yolu yazılsaydı, iki yol arasındaki her ayrışma
+        sessizce farklı disiplinde kayıt üretirdi.
+
+        `sira`/`toplam` ilerleme bildiriminin sayaçları; tek sayfada 1/1.
+        """
+        return self._sayfayi_cek(url, 1, 1)
+
     def _sayfayi_cek(self, url: str, sira: int, toplam: int) -> HamKayit | None:
         if self.banka.robots_kontrol and not self.bekci.izinli_mi(url):
             log.info("robots.txt reddetti, atlanıyor: %s", url)
@@ -500,6 +592,7 @@ class TemelKaziyici:
             return None
 
         time.sleep(SAYFA_YERLESME_SANIYE)
+        self.cerez_katmanini_kaldir()
         ham_html = self.surucu.page_source
         govde = (
             trafilatura.extract(
