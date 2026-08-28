@@ -86,7 +86,7 @@ Sağdaki kutuyu atlama:
 
 Tabloyu okuma, sınırlara geç:
 
-> Sınırları saklamıyoruz. Kâr payı doluluğu %19 — çoğu banka oranı başvuru
+> Sınırları saklamıyoruz. Kâr payı doluluğu %18 — çoğu banka oranı başvuru
 > ekranında veriyor, biz uydurmak yerine “Belirtilmemiş” diyoruz.
 > Kapsam dengesiz, ölçtük ve rapor ettik.
 > **Sakladığımız an, sakladığımız şeyin dışındaki her sayı da şüpheli hâle gelir.**
@@ -112,7 +112,7 @@ gerekirse depo açılır.
 | “Uygunluk nasıl çıkarılıyor?” | Kayıtların **%70,1'inde** kısıt çıkıyor; zorunlu ürün yükümlülük kanıtına bağlanınca %59'dan **%24,3'e** indi | `src/ajanlar/uygunluk.py` |
 | “Kurum içinde çalışır mı?” | Docker üç konteyner; hava boşluğu testinde DNS ve internet kapalıyken çalıştı; **10 sızıntı testi** | `docker-compose.yml` |
 | “Model lisansları?” | 89 paket tarandı, kısıtlı lisans **0**; dört model kaynağından teyitli, Llama/Gemma yok | `docs/LISANSLAR.md` |
-| “RAG nasıl?” | **12.383** paragraf yerel dosyada, arama numpy nokta çarpımı; harici vektör veritabanı yok | `src/vektor_db.py` |
+| “RAG nasıl?” | **15.916** paragraf yerel dosyada, arama numpy nokta çarpımı; harici vektör veritabanı yok | `src/vektor_db.py` |
 
 ## Canlı demo
 

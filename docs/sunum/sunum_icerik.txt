@@ -44,7 +44,7 @@ Sıralamayı orana değil,
 toplam maliyet fonksiyonuna
 göre yapıyoruz; hesap testle sabitli.
 ◔ Sektörel Darboğaz & Yanıltıcı Oran Analizi
-MUHAMMED EREN
+SEKTÖREL ANALİZ
 02 / 09
 
 === SAYFA 3 ===
@@ -127,7 +127,7 @@ yanında taşır. Sayfa oran veya masraf vermiyorsa sistem tahmin yürütmez,
 «Belirtilmemiş»
 bırakır.
 ▣ Veri Havuzu & Şema Doğrulama Taahhüdü
-GÖRKEM
+KAPSAM RAPORU
 03 / 09
 
 === SAYFA 4 ===
@@ -177,7 +177,7 @@ aritmetik ve güvenlik kısıtları deterministik kodla garanti altına alınır
 30 satır
 .
 ◈ Deterministik Güvenlik Kalkanı & Ajan Akışı
-MUHAMMED EREN
+MİMARİ DİYAGRAMI
 04 / 09
 
 === SAYFA 5 ===
@@ -226,7 +226,7 @@ Bu tablo yalnız
 ölçmedik
 ; ölçmediğimiz bir sistemle kıyaslama yapmıyoruz.
 ⇄ Katman Kıyaslaması & Halüsinasyon Dayanımı
-SAMET
+KIYASLAMA TABLOSU
 05 / 09
 
 === SAYFA 6 ===
@@ -283,7 +283,7 @@ bayt düzeyinde deterministik değil
 ±0,01 gürültü
 taşır. 92 örnekle tek ondalık hane üzerinden övünmek yanlış bir kesinlik iddiasıdır.
 ▥ Deneysel Testler & Metrik Doğrulama
-SAMET
+ABLASYON ANALİZİ
 06 / 09
 
 === SAYFA 7 ===
@@ -323,7 +323,7 @@ Oran beyan edilmemiş; sayı üretme, alanı boş bırak
 vade=120 ay | tahsis=%0,50 | oran=Belirtilmemiş
 Yanıt 0 ms | LLM çağrısı: 0 | Meşru soruda yanlış engelleme: 0/35
 ◇ Canlı Asistan Denetimi & Güvenli Yanıt Üretimi
-ESRA
+CANLI DOĞRULAMA
 07 / 09
 
 === SAYFA 8 ===
@@ -372,7 +372,7 @@ gürültü taşır; model servisi bayt düzeyinde deterministik değil.
 github.com/erenkendir722/ai-agent-nlp
 ✓ Apache-2.0 Açık Kaynak
 ▤ Doğrulama Metrikleri & Açık Kaynak Şeffaflığı
-MUHAMMED EREN
+DEĞERLENDİRME
 08 / 09
 
 === SAYFA 9 ===
@@ -391,6 +391,14 @@ Jüri Oturumu
 Soru, teknik eleştiri ve
 canlı test senaryolarınızı
 yanıtlamaktan memnuniyet duyarız.
+Muhammed Eren
+Takım lideri · Mimari ve entegrasyon
+Samet
+Bilgi çıkarımı · Ölçüm ve ablasyon
+Görkem
+Veri toplama · Veri kalitesi
+Esra
+Arayüz · Asistan ve panolar
 ⚑ TEKNOFEST 2026 · Yapay Zekâ Dil Ajanları Yarışması
-SVARTAL TAKIMI
+KAPANIŞ
 09 / 09
