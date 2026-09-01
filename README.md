@@ -394,55 +394,6 @@ URL'den deterministik üretildiği için aynı sayfa aynı kaydın üstüne yaza
 
 ---
 
-## Teslimat kontrol listesi
-
-Şartname madde 6, 9 ve 10'un istediği her teslimat kalemi.
-
-### Kod ve depo
-
-- [x] Çalışan proje kodu, tüm kaynak kodlar depoda
-- [x] Depo **herkese açık** ve Apache 2.0 lisanslı
-- [x] `BilisimVadisi2026` ve `turkiye-acik-kaynak-platformu` etiketleri
-- [x] Kurulum adımları net: [`docs/KURULUM.md`](docs/KURULUM.md)
-- [x] Bağımlılıkların eksiksiz listesi: `requirements.txt` + [`docs/LISANSLAR.md`](docs/LISANSLAR.md)
-- [x] Veri setinin herkese açık indirme bağlantısı: [`data/exports/`](data/exports/) — 921 kayıt
-- [x] `v1.0` sürüm etiketi atıldı ve push'landı
-
-### Dokümantasyon — madde 6'nın 10 başlığı
-
-- [x] 1. Sistem mimarisi ve veri akışı → [`docs/MIMARI.md`](docs/MIMARI.md)
-- [x] 2. Kullanılan NLP yaklaşımı → [`docs/MIMARI.md`](docs/MIMARI.md) §3
-- [x] 3. Kullanılan veri seti ve açıklaması → [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md)
-- [x] 4. Veri ön işleme adımları → [`docs/VERI_METODOLOJISI.md`](docs/VERI_METODOLOJISI.md) §3
-- [x] 5. Model veya kural yapısının açıklaması → [`docs/MODEL_VE_KURAL_YAPISI.md`](docs/MODEL_VE_KURAL_YAPISI.md)
-- [x] 6. Benzer ürünler nasıl karşılaştırılıyor → [`docs/KARSILASTIRMA_YONTEMI.md`](docs/KARSILASTIRMA_YONTEMI.md)
-- [x] 7. Adım adım çalıştırma talimatları → [`docs/KURULUM.md`](docs/KURULUM.md)
-- [x] 8. Karşılaşılan problemler ve çözümler → [`docs/PROBLEMLER_VE_COZUMLER.md`](docs/PROBLEMLER_VE_COZUMLER.md)
-- [x] 9. Model çıktılarının örnekleri → [`docs/CIKTI_ORNEKLERI.md`](docs/CIKTI_ORNEKLERI.md)
-- [x] 10. Performans değerlendirme yöntemleri → [`docs/DEGERLENDIRME_YONTEMI.md`](docs/DEGERLENDIRME_YONTEMI.md)
-
-### Sunum ve video
-
-- [x] Sunum materyali PDF → [`docs/sunum/Svartal_Sunum.pdf`](docs/sunum/Svartal_Sunum.pdf) (`make sunum`)
-- [x] Sunum materyali PPTX → [`docs/sunum/Svartal_Sunum.pptx`](docs/sunum/Svartal_Sunum.pptx) (`make sunum-pptx`)
-- [x] Sunumda tüm üyelerin görev tanımları
-- [x] Demo videosu — maks. 5 dakika (madde 6) → [`docs/sunum/SVARTAL_DEMO.mp4`](docs/sunum/SVARTAL_DEMO.mp4) (5:00 · 1920×1020 · 23,6 MB)
-- [ ] **Sunum videosu — 1 dakika (madde 10): ayrı çekim, henüz yok**
-
-### Ölçüm ve uyum kanıtları
-
-- [x] Ölçüm sonuçları: [`docs/SONUCLAR.md`](docs/SONUCLAR.md)
-- [x] Değerlendirme yöntemi ve altın set: [`docs/DEGERLENDIRME_YONTEMI.md`](docs/DEGERLENDIRME_YONTEMI.md) · [`docs/ETIKETLEME_KILAVUZU.md`](docs/ETIKETLEME_KILAVUZU.md)
-- [x] Banka bazlı kapsam ve dengesizlik (madde 15.1): [`docs/KAPSAM_RAPORU.md`](docs/KAPSAM_RAPORU.md)
-- [x] Veri toplama etiği kanıtları: [`docs/kanit/`](docs/kanit/) (`make kanit`)
-- [x] Model ve paket lisansları teyitli: [`docs/LISANSLAR.md`](docs/LISANSLAR.md) (`make lisanslar-teyit`)
-- [x] Terim sözlüğü, 5 resmî kavram dahil: [`docs/TERIM_SOZLUGU.md`](docs/TERIM_SOZLUGU.md)
-- [x] Tasarım kararları ve gerekçeleri: [`docs/kararlar/`](docs/kararlar/) — 26 ADR
-- [x] Testler yeşil (`make test`) ve kod denetimi temiz (`make lint`)
-- [ ] Ablasyon tablosu `docs/SONUCLAR.md`'ye işlenecek (`make ablasyon`, ~25 dk)
-
----
-
 ## Lisans
 
 [Apache License 2.0](LICENSE)
